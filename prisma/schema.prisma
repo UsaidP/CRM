@@ -1,0 +1,359 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Organization {
+  id                      String             @id @default(uuid())
+  name                    String
+  slug                    String             @unique
+  reraBrokerRegistration  String?
+  settingsJson            String             @default("{\"currency\":\"INR\",\"state\":\"Maharashtra\"}")
+  users                   User[]
+  projects                DeveloperProject[]
+  leads                   Lead[]
+  campaigns               InboundCampaign[]
+  portals                 ClientPortal[]
+  visits                  SiteVisit[]
+  deals                   DealTransaction[]
+  createdAt               DateTime           @default(now())
+  updatedAt               DateTime           @updatedAt
+}
+
+model User {
+  id                String               @id @default(uuid())
+  organizationId    String
+  organization      Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  fullName          String
+  email             String               @unique
+  phoneE164         String
+  role              String               @default("SALES_EXECUTIVE") // SUPER_ADMIN, BROKER_MANAGER, SALES_EXECUTIVE, TELECALLER
+  isActive          Boolean              @default(true)
+  verifiedUnits     PropertyUnit[]       @relation("UnitVerifier")
+  auditLogs         InventoryAuditLog[]  @relation("AuditUser")
+  assignedLeads     Lead[]               @relation("AssignedBroker")
+  portalsCreated    ClientPortal[]       @relation("PortalCreator")
+  siteVisitsHosted  SiteVisit[]          @relation("VisitHost")
+  dealsClosed       DealTransaction[]    @relation("ClosingBroker")
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+
+  @@index([organizationId, role])
+}
+
+model DeveloperProject {
+  id                          String             @id @default(uuid())
+  organizationId              String
+  organization                Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  developerName               String
+  projectName                 String
+  reraNumber                  String
+  microMarket                 String             // e.g. "Kharghar Sector 35", "Taloja Phase 1", "Kharghar Sector 20"
+  subLocality                 String?
+  latitude                    Float?
+  longitude                   Float?
+  distanceToMetroKm           Float?
+  hasOccupancyCertificate     Boolean            @default(false)
+  commencementCertificateDate DateTime?
+  expectedPossessionDate      DateTime?
+  totalTowers                 Int                @default(1)
+  totalFloors                 Int                @default(15)
+  basePricePerSqft            Float
+  brochureUrl                 String?
+  youtubeWalkthroughUrl       String?
+  masterPlanUrl               String?
+  amenitiesJson               String             @default("[]") // JSON Array of strings
+  developerSalesPocName       String?
+  developerSalesPocPhone      String?
+  standardCommissionPercent   Float              @default(2.0)
+  units                       PropertyUnit[]
+  campaigns                   InboundCampaign[]
+  deals                       DealTransaction[]
+  createdAt                   DateTime           @default(now())
+  updatedAt                   DateTime           @updatedAt
+
+  @@index([microMarket])
+  @@index([reraNumber])
+}
+
+model PropertyUnit {
+  id                          String              @id @default(uuid())
+  projectId                   String
+  project                     DeveloperProject    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  unitNumber                  String?
+  bhk                         Int                 // 1, 2, 3, 4
+  bathrooms                   Int                 @default(2)
+  balconies                   Int                 @default(1)
+  floorNumber                 Int
+  totalFloors                 Int
+  carpetAreaSqft              Int
+  facing                      String              @default("EAST")
+  possessionStatus            String              // READY_TO_MOVE, UNDER_CONSTRUCTION
+  possessionDate              DateTime?
+
+  // Financial Breakdown (INR)
+  agreementValue              Float
+  stampDutyRate               Float               @default(6.0)
+  registrationFee             Float               @default(30000.0)
+  gstRate                     Float               @default(5.0)
+  floorRiseCharges            Float               @default(0.0)
+  parkingCharges              Float               @default(250000.0)
+  societyDevelopmentCharges   Float               @default(150000.0)
+  allInTotalCost              Float
+
+  // Verification & Freshness Lifecycle
+  verificationStatus          String              @default("DRAFT")
+  verifiedByUserId            String?
+  verifiedBy                  User?               @relation("UnitVerifier", fields: [verifiedByUserId], references: [id])
+  lastVerifiedAt              DateTime            @default(now())
+  verificationNotes           String?
+  photoGalleryJson            String              @default("[]")
+  videoReelUrl                String?
+  isHotDeal                   Boolean             @default(false)
+  isExclusive                 Boolean             @default(false)
+
+  auditLogs                   InventoryAuditLog[]
+  campaigns                   InboundCampaign[]
+  portalUnits                 ClientPortalUnit[]
+  deals                       DealTransaction[]
+  createdAt                   DateTime            @default(now())
+  updatedAt                   DateTime            @updatedAt
+
+  @@index([bhk, allInTotalCost])
+  @@index([verificationStatus, lastVerifiedAt])
+  @@index([projectId])
+}
+
+model InventoryAuditLog {
+  id                 String       @id @default(uuid())
+  propertyUnitId     String
+  propertyUnit       PropertyUnit @relation(fields: [propertyUnitId], references: [id], onDelete: Cascade)
+  auditorUserId      String
+  auditorUser        User         @relation("AuditUser", fields: [auditorUserId], references: [id])
+  previousStatus     String
+  newStatus          String
+  priceChangedFrom   Float?
+  priceChangedTo     Float?
+  auditNotes         String
+  createdAt          DateTime     @default(now())
+}
+
+model InboundCampaign {
+  id                   String            @id @default(uuid())
+  organizationId       String
+  organization         Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  campaignName         String
+  channelType          String            // YOUTUBE_SHORT, YOUTUBE_VIDEO, INSTAGRAM_REEL, INSTAGRAM_DM, FB_GROUP, WHATSAPP_GROUP, DIRECT_CALL
+  contentId            String?           // e.g. Reel ID, Video ID, FB Group Name
+  targetProjectId      String?
+  targetProject        DeveloperProject? @relation(fields: [targetProjectId], references: [id])
+  targetPropertyUnitId String?
+  targetPropertyUnit   PropertyUnit?     @relation(fields: [targetPropertyUnitId], references: [id])
+  customSlug           String            @unique // e.g. 'yt-sec35-sobha', 'fb-kharghar-investors'
+  waPrefilledText      String
+  totalClicks          Int               @default(0)
+  totalLeadsGenerated  Int               @default(0)
+  isActive             Boolean           @default(true)
+  leads                Lead[]
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+
+  @@index([customSlug])
+  @@index([channelType])
+}
+
+model WebhookEventInbox {
+  id             String    @id @default(uuid())
+  eventSource    String    // INSTAGRAM_GRAPH, WHATSAPP_CLOUD, TELEPHONY_EXOTEL, WEB_FORM
+  idempotencyKey String    @unique
+  payloadJson    String    // Raw JSON string
+  status         String    @default("PROCESSED") // PENDING, PROCESSED, FAILED
+  processedAt    DateTime? @default(now())
+  errorMessage   String?
+  createdAt      DateTime  @default(now())
+
+  @@index([idempotencyKey])
+}
+
+model Lead {
+  id                 String             @id @default(uuid())
+  organizationId     String
+  organization       Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  fullName           String?
+  phoneE164          String             @unique
+  email              String?
+  city               String             @default("Navi Mumbai")
+  leadSource         String             // instagram_reel, youtube_short, whatsapp_group, fb_group, direct_call
+  campaignId         String?
+  campaign           InboundCampaign?   @relation(fields: [campaignId], references: [id])
+  sourceRefUrl       String?
+  assignedBrokerId   String?
+  assignedBroker     User?              @relation("AssignedBroker", fields: [assignedBrokerId], references: [id])
+  currentStage       String             @default("new_uncontacted") // new_uncontacted, discovery_call, portal_shared, visit_scheduled, visit_done, closed_won, closed_lost
+  notes              String?
+  requirements       BuyerRequirement[]
+  communications     CommunicationLog[]
+  portals            ClientPortal[]
+  siteVisits         SiteVisit[]
+  deals              DealTransaction[]
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  @@index([currentStage])
+  @@index([leadSource])
+}
+
+model CommunicationLog {
+  id                  String   @id @default(uuid())
+  leadId              String
+  lead                Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  channel             String   // WHATSAPP, PHONE_CALL, SMS, INSTAGRAM_DM
+  direction           String   // INBOUND, OUTBOUND
+  messageContent      String?
+  callDurationSeconds Int      @default(0)
+  callRecordingUrl    String?
+  metadataJson        String   @default("{}")
+  createdAt           DateTime @default(now())
+
+  @@index([leadId])
+}
+
+model BuyerRequirement {
+  id                   String    @id @default(uuid())
+  leadId               String
+  lead                 Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  budgetMin            Float?
+  budgetMax            Float
+  bhkPreferencesJson   String    @default("[2]")
+  targetLocationsJson  String    @default("[\"Kharghar Sector 35\"]")
+  possessionPreference String?   // READY_TO_MOVE, UNDER_CONSTRUCTION
+  maxPossessionDate    DateTime?
+  minCarpetSqft        Int?
+  loanPreApproved      Boolean   @default(false)
+  purpose              String    @default("self_use")
+  floorPreference      String?   @default("middle")
+  isActive             Boolean   @default(true)
+  createdAt            DateTime  @default(now())
+}
+
+model ClientPortal {
+  id                String               @id @default(uuid())
+  organizationId    String
+  organization      Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  leadId            String
+  lead              Lead                 @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  token             String               @unique // e.g. "rahul-2bhk-kharghar-options"
+  title             String               // e.g. "Curated 2 BHK Properties for Rahul Sharma"
+  customMessage     String?              // Broker personalized greeting
+  createdById       String?
+  createdBy         User?                @relation("PortalCreator", fields: [createdById], references: [id])
+  expiresAt         DateTime?
+  isActive          Boolean              @default(true)
+  totalViews        Int                  @default(0)
+  lastViewedAt      DateTime?
+  portalUnits       ClientPortalUnit[]
+  telemetryLogs     PortalTelemetryLog[]
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+
+  @@index([token])
+  @@index([leadId])
+}
+
+model ClientPortalUnit {
+  id              String        @id @default(uuid())
+  portalId        String
+  portal          ClientPortal  @relation(fields: [portalId], references: [id], onDelete: Cascade)
+  propertyUnitId  String
+  propertyUnit    PropertyUnit  @relation(fields: [propertyUnitId], references: [id], onDelete: Cascade)
+  displayOrder    Int           @default(1)
+  brokerHighlight String?       // e.g. "Exclusive negotiable car parking with builder sales VP"
+  isFeatured      Boolean       @default(false)
+  createdAt       DateTime      @default(now())
+
+  @@index([portalId])
+  @@index([propertyUnitId])
+}
+
+model PortalTelemetryLog {
+  id            String        @id @default(uuid())
+  portalId      String
+  portal        ClientPortal  @relation(fields: [portalId], references: [id], onDelete: Cascade)
+  unitId        String?
+  actionType    String        // PORTAL_OPEN, UNIT_EXPAND, PHOTO_SWIPE, VIDEO_PLAY, BROCHURE_DOWNLOAD, MAP_OPEN, WHATSAPP_CLICK, CALL_CLICK, VISIT_BOOKING_CLICK
+  dwellTimeSec  Int           @default(0)
+  ipAddress     String?
+  userAgent     String?
+  metadataJson  String        @default("{}")
+  createdAt     DateTime      @default(now())
+
+  @@index([portalId, actionType])
+  @@index([createdAt])
+}
+
+// ==========================================
+// PHASE 5: SITE VISITS & DEAL CLOSING LEDGER
+// ==========================================
+
+model SiteVisit {
+  id                 String       @id @default(uuid())
+  organizationId     String
+  organization       Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  leadId             String
+  lead               Lead         @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  assignedBrokerId   String?
+  assignedBroker     User?        @relation("VisitHost", fields: [assignedBrokerId], references: [id])
+  scheduledDate      DateTime     // Date of physical visit
+  timeSlot           String       // e.g. "Saturday 11:00 AM"
+  pickupLocation     String       // e.g. "Kharghar Railway Station (East)", "Central Park Metro", "Home Pickup"
+  cabDetails         String?      // e.g. "Ertiga MH-46-AZ-1234 (Driver: Ramesh 9820011223)"
+  status             String       @default("SCHEDULED") // SCHEDULED, CONFIRMED, IN_PROGRESS, COMPLETED, CANCELLED, NO_SHOW
+  itineraryUnitsJson String       // JSON array of [{ unitId, order, expectedTime, developerPoc, googleMapsLink }]
+  feedbackNotes      String?
+  feedbackRating     Int?         // 1 to 5 stars
+  feedbackOutcome    String?      // TOKEN_SUBMITTED, HIGH_INTEREST, PRICE_OBJECTION, LAYOUT_OBJECTION, NEEDS_MORE_OPTIONS
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  @@index([scheduledDate, status])
+  @@index([leadId])
+}
+
+model DealTransaction {
+  id                     String           @id @default(uuid())
+  organizationId         String
+  organization           Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  leadId                 String
+  lead                   Lead             @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  propertyUnitId         String
+  propertyUnit           PropertyUnit     @relation(fields: [propertyUnitId], references: [id], onDelete: Cascade)
+  developerProjectId     String
+  developerProject       DeveloperProject @relation(fields: [developerProjectId], references: [id], onDelete: Cascade)
+  closingBrokerId        String?
+  closingBroker          User?            @relation("ClosingBroker", fields: [closingBrokerId], references: [id])
+  
+  // Financial & Commission Ledger
+  agreementValue         Float
+  brokeragePercent       Float            @default(2.5) // Standard 2.0% - 3.0%
+  grossBrokerageAmount   Float            // agreementValue * brokeragePercent / 100
+  repCommissionAmount    Float            @default(0)   // Rep's earned split (e.g. 50% or 70%)
+  firmNetBrokerageAmount Float            // Net firm income
+  coBrokerName           String?          // If external channel partner involved
+  coBrokerSharePercent   Float            @default(0)
+  
+  bookingDate            DateTime         @default(now())
+  dealStatus             String           @default("TOKEN_RECEIVED") // TOKEN_RECEIVED, AGREEMENT_REGISTERED, INVOICE_SENT, PAYMENT_RECEIVED, CANCELLED
+  developerInvoiceNumber String?
+  paymentReceivedDate    DateTime?
+  notes                  String?
+  createdAt              DateTime         @default(now())
+  updatedAt              DateTime         @updatedAt
+
+  @@index([dealStatus])
+  @@index([leadId])
+  @@index([developerProjectId])
+}

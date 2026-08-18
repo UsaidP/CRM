@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "notebooklm": {
+      "command": "/Users/usaidpatel/.local/bin/notebooklm-mcp"
+    }
+  }
+}

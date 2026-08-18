@@ -1,0 +1,252 @@
+@import url('https://fonts.googleapis.com/css2?family=Marcellus&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================================
+   DIRECTION CONTRACT — ZamZam Properties Visual World & Hallmark Engine
+   THESIS: The brokerage's own gold-on-ink emblem is the core authority.
+   PALETTE: Gold (#b59658, #ccb67b, #8a6f3c) on Deep Ink (#0a0d14, #12151f, #1b202c).
+   THEMES: 
+     1. Signature Gold on Dark Ink (Default)
+     2. Monochrome Black & White (High-Contrast Editorial Noir)
+   ============================================================================ */
+
+:root {
+  /* Brand: Ink (Authority) */
+  --color-ink: #12151f;
+  --color-ink-800: #1b202c;
+  --color-ink-700: #2a3040;
+  --color-ink-600: #3c4356;
+
+  /* Brand: Gold (Precious Accent sampled from logo) */
+  --color-gold: #b59658;
+  --color-gold-bright: #ccb67b;
+  --color-gold-deep: #8a6f3c;
+  --color-gold-ink: #7a5f2e;
+
+  /* Functional Accents */
+  --color-youtube: #ff0033;
+  --color-whatsapp: #25d366;
+  --color-danger: #ef4444;
+
+  /* Typography */
+  --font-display: 'Marcellus', 'Times New Roman', Georgia, serif;
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Geist Mono', monospace, monospace;
+
+  /* Default theme root variables: Gold & Ink */
+  --bg-primary: #0a0d14;
+  --bg-secondary: #12151f;
+  --bg-card: rgba(27, 32, 44, 0.85);
+  --bg-inner: rgba(18, 21, 31, 0.85);
+  --border-color: rgba(181, 150, 88, 0.25);
+  --border-subtle: rgba(181, 150, 88, 0.15);
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --accent-color: #b59658;
+  --accent-bright: #ccb67b;
+  --panel-backdrop: rgba(18, 21, 31, 0.9);
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ----------------------------------------------------
+   THEME 1: Signature Gold on Dark Ink (Default)
+   ---------------------------------------------------- */
+html.theme-gold-ink,
+.theme-root.gold-ink {
+  --bg-primary: #0a0d14;
+  --bg-secondary: #12151f;
+  --bg-card: rgba(27, 32, 44, 0.85);
+  --bg-inner: rgba(18, 21, 31, 0.85);
+  --border-color: rgba(181, 150, 88, 0.25);
+  --border-subtle: rgba(181, 150, 88, 0.15);
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --accent-color: #b59658;
+  --accent-bright: #ccb67b;
+  --panel-backdrop: rgba(18, 21, 31, 0.9);
+}
+
+/* ----------------------------------------------------
+   THEME 2: Monochrome Black & White (High-Contrast Noir)
+   ---------------------------------------------------- */
+html.theme-monochrome,
+.theme-root.monochrome {
+  --bg-primary: #000000;
+  --bg-secondary: #09090b;
+  --bg-card: rgba(18, 18, 18, 0.95);
+  --bg-inner: rgba(10, 10, 10, 0.9);
+  --border-color: rgba(255, 255, 255, 0.25);
+  --border-subtle: rgba(255, 255, 255, 0.12);
+  --text-primary: #ffffff;
+  --text-secondary: #a1a1aa;
+  --accent-color: #ffffff;
+  --accent-bright: #e4e4e7;
+  --panel-backdrop: rgba(10, 10, 10, 0.95);
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  min-height: 100vh;
+}
+
+::selection {
+  background: var(--color-gold);
+  color: #12151f;
+}
+
+/* Display headings use the carved-Roman face */
+.font-display, h1, h2, h3 {
+  font-family: var(--font-display);
+  letter-spacing: -0.015em;
+}
+
+/* Signature Hairline Gold Divider Rule */
+.rule-gold {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--color-gold) 15%,
+    var(--color-gold) 85%,
+    transparent
+  );
+}
+
+.rule-mono {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4) 15%,
+    rgba(255, 255, 255, 0.4) 85%,
+    transparent
+  );
+}
+
+/* Universal Theme Utility Classes */
+.glass-panel {
+  background: var(--bg-card);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 10px 30px -14px rgba(0, 0, 0, 0.45);
+  color: var(--text-primary);
+}
+
+.glass-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border-color);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  color: var(--text-primary);
+}
+
+.glass-card:hover {
+  border-color: var(--accent-bright);
+  transform: translateY(-2px);
+  box-shadow: 0 14px 34px -16px rgba(181, 150, 88, 0.35);
+}
+
+.card-inner {
+  background: var(--bg-inner);
+  border: 1px solid var(--border-subtle);
+  border-radius: 1rem;
+}
+
+.btn-gold {
+  background: linear-gradient(135deg, #8a6f3c 0%, #b59658 50%, #ccb67b 100%);
+  color: #12151f;
+  font-weight: 800;
+  border: 1px solid rgba(204, 182, 123, 0.6);
+  box-shadow: 0 10px 24px -10px rgba(181, 150, 88, 0.4);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-gold:hover {
+  opacity: 0.95;
+  transform: translateY(-1px);
+  box-shadow: 0 14px 30px -8px rgba(181, 150, 88, 0.55);
+}
+
+.btn-secondary {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: var(--bg-card);
+  border-color: var(--accent-bright);
+}
+
+.badge-gold {
+  background: rgba(181, 150, 88, 0.15);
+  color: #ccb67b;
+  border: 1px solid rgba(181, 150, 88, 0.4);
+}
+
+.input-theme {
+  background-color: var(--bg-inner);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  border-radius: 0.75rem;
+}
+
+.input-theme:focus {
+  outline: none;
+  border-color: var(--accent-bright);
+  box-shadow: 0 0 0 2px rgba(181, 150, 88, 0.2);
+}
+
+/* Custom Range Slider */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 9999px;
+  background: #2a3040;
+  outline: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  background: var(--color-gold);
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  transition: transform 0.15s var(--ease-out-expo);
+}
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+::-webkit-scrollbar-thumb {
+  background: #3c4356;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-gold);
+}
+
+/* Hallmark Pre-emit critique verification stamp */
+/* Hallmark · pre-emit critique: P5 H5 E5 S5 R5 V5 */
