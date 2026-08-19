@@ -1,39 +1,53 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
-import { generateWhatsAppDeepLink } from '@/lib/domain/attribution-engine';
+import { generateCampaignDeepLink } from '@/lib/domain/campaign-attribution';
+import { OFFICIAL_BROKER_NUMBERS } from '@/lib/domain/broker-resolver';
 
-export async function GET(req: Request) {
+export async function GET() {
   try {
-    const { searchParams } = new URL(req.url);
-    const channelType = searchParams.get('channelType');
-
-    const where: any = {};
-    if (channelType && channelType !== 'ALL') {
-      where.channelType = channelType;
-    }
-
     const campaigns = await prisma.inboundCampaign.findMany({
-      where,
       include: {
-        targetProject: {
-          select: { id: true, projectName: true, microMarket: true },
-        },
-        targetPropertyUnit: {
-          select: { id: true, unitNumber: true, bhk: true, allInTotalCost: true },
-        },
-        _count: {
-          select: { leads: true },
+        targetProject: true,
+        targetPropertyUnit: true,
+        assignedBroker: true,
+        leads: {
+          select: {
+            id: true,
+            fullName: true,
+            currentStage: true,
+            sourceConfidence: true,
+            createdAt: true,
+          },
         },
       },
       orderBy: { createdAt: 'desc' },
     });
 
-    return NextResponse.json({ success: true, count: campaigns.length, data: campaigns });
+    const enriched = campaigns.map((camp) => {
+      const brokerPhone = camp.assignedBroker?.phoneE164 || OFFICIAL_BROKER_NUMBERS.SAFWAN.e164;
+      const sourceCode = camp.sourceCode || camp.customSlug.toUpperCase();
+      const deepLink = generateCampaignDeepLink({
+        brokerPhoneE164: brokerPhone,
+        sourceCode,
+        projectName: camp.targetProject?.projectName,
+      });
+
+      return {
+        ...camp,
+        brokerPhone,
+        sourceCode,
+        deepLinkUrl: deepLink.waUrl,
+        svgQrCode: deepLink.svgQrCode,
+        prefilledText: deepLink.prefilledText,
+      };
+    });
+
+    return NextResponse.json({
+      success: true,
+      data: enriched,
+    });
   } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error.message || 'Failed to fetch campaigns' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
 
@@ -42,48 +56,23 @@ export async function POST(req: Request) {
     const body = await req.json();
     const {
       campaignName,
-      channelType,
+      channelType = 'YOUTUBE_SHORT',
       contentId,
+      sourceCode,
       targetProjectId,
       targetPropertyUnitId,
+      assignedBrokerId,
       customSlug,
-      brokerPhone = '+919820123456',
+      waPrefilledText,
     } = body;
 
-    if (!campaignName || !channelType || !customSlug) {
-      return NextResponse.json(
-        { success: false, error: 'Campaign name, channel type, and custom slug are required' },
-        { status: 400 }
-      );
-    }
-
-    const slugClean = customSlug.toLowerCase().trim().replace(/[^a-z0-9-_]/g, '-');
-
-    // Retrieve organization
-    let org = await prisma.organization.findFirst();
+    const org = await prisma.organization.findFirst();
     if (!org) {
-      org = await prisma.organization.create({
-        data: {
-          name: 'ZamZam Properties',
-          slug: 'zamzam-properties',
-        },
-      });
+      return NextResponse.json({ error: 'Organization not found' }, { status: 500 });
     }
 
-    // Generate prefilled text
-    let projectName: string | undefined;
-    if (targetProjectId) {
-      const proj = await prisma.developerProject.findUnique({ where: { id: targetProjectId } });
-      if (proj) projectName = proj.projectName;
-    }
-
-    const deepLinkData = generateWhatsAppDeepLink({
-      brokerPhoneE164: brokerPhone,
-      campaignSlug: slugClean,
-      channelType: channelType as any,
-      projectName,
-      contentCode: contentId,
-    });
+    const cleanCode = (sourceCode || customSlug || `CAMPAIGN-${Date.now()}`).toUpperCase();
+    const slug = (customSlug || sourceCode || `camp-${Date.now()}`).toLowerCase().replace(/[^a-z0-9-]/g, '-');
 
     const campaign = await prisma.inboundCampaign.create({
       data: {
@@ -91,30 +80,25 @@ export async function POST(req: Request) {
         campaignName,
         channelType,
         contentId,
+        sourceCode: cleanCode,
         targetProjectId,
         targetPropertyUnitId,
-        customSlug: slugClean,
-        waPrefilledText: deepLinkData.prefilledText,
+        assignedBrokerId,
+        customSlug: slug,
+        waPrefilledText: waPrefilledText || `Inquiry for ${cleanCode}`,
+        isActive: true,
       },
       include: {
         targetProject: true,
-        targetPropertyUnit: true,
+        assignedBroker: true,
       },
     });
 
     return NextResponse.json({
       success: true,
-      message: 'Campaign created successfully',
-      data: {
-        ...campaign,
-        waDirectUrl: deepLinkData.waUrl,
-        trackingUrl: `/api/v1/track/${campaign.customSlug}`,
-      },
+      data: campaign,
     }, { status: 201 });
   } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error.message || 'Failed to create campaign' },
-      { status: 400 }
-    );
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

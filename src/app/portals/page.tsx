@@ -20,8 +20,14 @@ import {
   Layers,
   PhoneCall,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  MessageSquare,
+  Activity,
+  Globe
 } from 'lucide-react';
+import { HallmarkStamp } from '@/components/ui/HallmarkStamp';
+import { AccessibleDialog } from '@/components/ui/AccessibleDialog';
+import { buildPublicPortalUrl } from '@/lib/navigation';
 
 export default function ClientPortalsConsolePage() {
   const [portals, setPortals] = useState<any[]>([]);
@@ -29,17 +35,23 @@ export default function ClientPortalsConsolePage() {
   const [selectedTier, setSelectedTier] = useState('ALL');
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [inspectedPortal, setInspectedPortal] = useState<any | null>(null);
+  const [requestError, setRequestError] = useState<string | null>(null);
+  const [copyError, setCopyError] = useState<string | null>(null);
 
   const fetchPortals = async () => {
     setLoading(true);
+    setRequestError(null);
     try {
       const res = await fetch('/api/v1/portals');
       const data = await res.json();
-      if (data.success) {
+      if (res.ok && data.success) {
         setPortals(data.data);
+      } else {
+        throw new Error(data.error || 'Client portals could not be loaded.');
       }
-    } catch (err) {
-      console.error('Error fetching portals:', err);
+    } catch (err: any) {
+      setRequestError(err.message || 'Client portals could not be loaded. Check your connection, then try again.');
     } finally {
       setLoading(false);
     }
@@ -49,11 +61,17 @@ export default function ClientPortalsConsolePage() {
     fetchPortals();
   }, []);
 
-  const handleCopyLink = (token: string) => {
-    const url = `http://localhost:3000/p/${token}`;
-    navigator.clipboard.writeText(url);
-    setCopiedToken(token);
-    setTimeout(() => setCopiedToken(null), 2000);
+  const handleCopyLink = async (token: string) => {
+    const url = buildPublicPortalUrl(window.location.origin, token);
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopyError(null);
+      setCopiedToken(token);
+      setTimeout(() => setCopiedToken(null), 2000);
+    } catch {
+      setCopiedToken(null);
+      setCopyError('The portal link could not be copied. Open the portal and copy its address from the browser.');
+    }
   };
 
   const filteredPortals = portals.filter((p) => {
@@ -64,296 +82,326 @@ export default function ClientPortalsConsolePage() {
       const q = searchQuery.toLowerCase();
       const matchLead = (p.lead?.fullName || '').toLowerCase().includes(q);
       const matchPhone = (p.lead?.phoneE164 || '').includes(q);
-      const matchToken = p.token.toLowerCase().includes(q);
+      const matchToken = (p.token || '').toLowerCase().includes(q);
       if (!matchLead && !matchPhone && !matchToken) return false;
     }
     return true;
   });
 
-  const totalPortals = portals.length;
-  const hotLeadsCount = portals.filter((p) => p.engagement.engagementTier === 'HOT_PROSPECT').length;
-  const warmLeadsCount = portals.filter((p) => p.engagement.engagementTier === 'WARM_INTEREST').length;
+  const hotCount = portals.filter((p) => p.engagement?.engagementTier === 'HOT_PROSPECT').length;
+  const warmCount = portals.filter((p) => p.engagement?.engagementTier === 'WARM_INTEREST').length;
   const totalViews = portals.reduce((acc, p) => acc + (p.totalViews || 0), 0);
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#b59658]/20">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-[#b59658]/20">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#1b202c] border border-[#b59658]/40 text-[#ccb67b] text-xs font-semibold mb-2">
-            <Sparkles className="w-3.5 h-3.5 text-[#b59658]" />
-            Live Client Engagement &amp; Real-Time Telemetry Matrix
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#1b202c] text-amber-300 border border-amber-500/40 uppercase tracking-wider flex items-center gap-1">
+              <Flame className="w-3.5 h-3.5 text-amber-400" /> REAL-TIME DWELL TELEMETRY
+            </span>
+            <HallmarkStamp type="rera" label="Private Client Sessions" />
           </div>
-          <h1 className="text-2xl font-extrabold tracking-tight text-white font-display">
-            Tokenized Private Client Portals
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white font-display">
+            Client Portals &amp; Live Telemetry
           </h1>
-          <p className="text-slate-400 text-xs mt-0.5 font-sans">
-            Track client views, dwell times, photo swipes, and trigger instant WhatsApp follow-ups for hot prospects.
+          <p className="text-slate-400 text-xs mt-0.5 font-mono">
+            Track real-time dwell time on floor plans, photo gallery swipes, and automatic HOT PROSPECT alerts.
           </p>
         </div>
 
         <div className="flex items-center gap-2.5">
           <button
+            type="button"
             onClick={fetchPortals}
-            className="p-2.5 rounded-xl bg-[#1b202c] hover:bg-[#2a3040] text-slate-300 hover:text-white border border-[#b59658]/30 transition-all flex items-center gap-2 text-xs font-semibold shadow-sm"
+            disabled={loading}
+            aria-label="Refresh client portal telemetry"
+            className="min-h-11 min-w-11 px-3 py-2 rounded-lg bg-[#12151f] hover:bg-[#1b202c] text-slate-300 border border-[#b59658]/20 text-xs font-medium"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-            Refresh Telemetry
           </button>
-          <a
-            href="/matching"
-            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#8a6f3c] via-[#b59658] to-[#ccb67b] hover:opacity-95 text-[#12151f] text-xs font-extrabold transition-all flex items-center gap-1.5 shadow-lg shadow-[#b59658]/20 border border-[#ccb67b]/60"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-[#12151f]" />
-            Generate New Portal
-          </a>
         </div>
       </div>
 
-      {/* KPI Stats Bar */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <div className="glass-panel p-4 rounded-2xl">
-          <span className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider block">Active Shared Portals</span>
-          <div className="text-2xl font-bold text-white mt-1">{totalPortals}</div>
-          <span className="text-[10px] text-slate-500">{totalViews} Total Client Visits</span>
-        </div>
-
-        <div className="glass-panel p-4 rounded-2xl border-[#b59658]/30">
-          <span className="text-[11px] text-[#ccb67b] font-bold uppercase tracking-wider block flex items-center gap-1">
-            <Flame className="w-3.5 h-3.5 text-amber-400" />
-            Hot Leads (Visit / WhatsApp)
-          </span>
-          <div className="text-2xl font-bold text-[#ccb67b] mt-1 font-display">{hotLeadsCount}</div>
-          <span className="text-[10px] text-[#ccb67b]/80">Ready for instant call / booking</span>
-        </div>
-
-        <div className="glass-panel p-4 rounded-2xl border-blue-900/50">
-          <span className="text-[11px] text-blue-400 font-bold uppercase tracking-wider block flex items-center gap-1">
-            <Zap className="w-3.5 h-3.5" />
-            Warm Prospects
-          </span>
-          <div className="text-2xl font-bold text-blue-400 mt-1 font-display">{warmLeadsCount}</div>
-          <span className="text-[10px] text-blue-300/80">Browsed photos & spent &gt;45s</span>
-        </div>
-
-        <div className="glass-panel p-4 rounded-2xl">
-          <span className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider block">Inventory Included</span>
-          <div className="text-2xl font-bold text-white mt-1 font-display">100%</div>
-          <span className="text-[10px] text-[#ccb67b] font-semibold">MahaRERA &amp; $C_{'{'}all-in{'}'}$ Verified</span>
-        </div>
-      </div>
-
-      {/* Filters Bar */}
-      <div className="glass-panel p-4 rounded-2xl space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="relative flex-1 min-w-[240px]">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder="Search by client name, phone (+91...), or portal token..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl pl-10 pr-4 py-2 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-[#ccb67b]"
-            />
+      {/* KPI Overview Row */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="p-3.5 rounded-xl bg-[#1b202c]/90 border border-amber-500/40 shadow-sm">
+          <div className="text-[10px] font-mono uppercase text-amber-300 font-bold flex justify-between items-center">
+            <span>Hot Prospects</span>
+            <Flame className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
           </div>
+          <div className="text-2xl font-bold font-mono text-amber-300 mt-1">{hotCount}</div>
+          <div className="text-[10px] text-slate-400 mt-0.5">&gt;60s floorplan dwell time</div>
+        </div>
 
-          <div className="flex items-center gap-1.5 overflow-x-auto text-xs">
-            {[
-              { id: 'ALL', label: 'All Portals' },
-              { id: 'HOT_PROSPECT', label: '🔥 Hot Leads' },
-              { id: 'WARM_INTEREST', label: '⚡ Warm Interest' },
-              { id: 'INITIAL_VIEW', label: '👁️ Initial View' },
-              { id: 'NO_ACTIVITY', label: '⏳ Unopened' },
-            ].map((tier) => (
-              <button
-                key={tier.id}
-                onClick={() => setSelectedTier(tier.id)}
-                className={`px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-all ${
-                  selectedTier === tier.id
-                    ? 'bg-[#1b202c] text-[#ccb67b] border border-[#b59658]/50 shadow-sm font-bold'
-                    : 'bg-slate-900/60 text-slate-400 hover:text-slate-200 border border-slate-800'
-                }`}
-              >
-                {tier.label}
-              </button>
-            ))}
+        <div className="p-3.5 rounded-xl bg-[#1b202c]/90 border border-blue-500/30 shadow-sm">
+          <div className="text-[10px] font-mono uppercase text-blue-300 font-bold flex justify-between items-center">
+            <span>Warm Interest</span>
+            <Zap className="w-3.5 h-3.5 text-blue-400" />
           </div>
+          <div className="text-2xl font-bold font-mono text-blue-300 mt-1">{warmCount}</div>
+          <div className="text-[10px] text-slate-400 mt-0.5">Active photo viewing</div>
+        </div>
+
+        <div className="p-3.5 rounded-xl bg-[#1b202c]/90 border border-[#b59658]/30 shadow-sm">
+          <div className="text-[10px] font-mono uppercase text-slate-300 font-bold flex justify-between items-center">
+            <span>Total Portal Views</span>
+            <Eye className="w-3.5 h-3.5 text-[#ccb67b]" />
+          </div>
+          <div className="text-2xl font-bold font-mono text-white mt-1">{totalViews}</div>
+          <div className="text-[10px] text-slate-400 mt-0.5">Across {portals.length} portals</div>
+        </div>
+
+        <div className="p-3.5 rounded-xl bg-[#1b202c]/90 border border-emerald-500/30 shadow-sm">
+          <div className="text-[10px] font-mono uppercase text-emerald-300 font-bold flex justify-between items-center">
+            <span>Active Portals</span>
+            <Globe className="w-3.5 h-3.5 text-emerald-400" />
+          </div>
+          <div className="text-2xl font-bold font-mono text-emerald-300 mt-1">{portals.length}</div>
+          <div className="text-[10px] text-slate-400 mt-0.5">Tokenized portfolios</div>
         </div>
       </div>
 
-      {/* Portals Stream */}
-      {loading ? (
-        <div className="glass-panel p-12 text-center text-slate-400 text-sm flex flex-col items-center gap-3">
-          <RefreshCw className="w-6 h-6 animate-spin text-[#ccb67b]" />
-          <span>Refreshing client telemetry matrix...</span>
+      {/* Filter and Search Bar */}
+      <div className="p-3 rounded-xl bg-[#1b202c]/90 border border-[#b59658]/30 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono">
+        <div className="relative flex-1 w-full">
+          <label htmlFor="portal-search" className="sr-only">Search client portals</label>
+          <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <input
+            id="portal-search"
+            name="portalSearch"
+            type="text"
+            placeholder="Search by buyer name, phone, or token…"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-[#12151f] border border-[#b59658]/20 rounded-lg pl-9 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#ccb67b]"
+          />
         </div>
-      ) : filteredPortals.length === 0 ? (
-        <div className="glass-panel p-12 text-center text-slate-400 text-sm space-y-2">
-          <AlertCircle className="w-8 h-8 text-amber-400 mx-auto" />
-          <p className="text-white font-semibold">No client portals found.</p>
-          <p className="text-xs text-slate-400">
-            Select properties from the Property Matchmaker console to generate and dispatch your first client portal.
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {filteredPortals.map((portal) => {
-            const portalUrl = `http://localhost:3000/p/${portal.token}`;
-            const isHot = portal.engagement.engagementTier === 'HOT_PROSPECT';
-            const isWarm = portal.engagement.engagementTier === 'WARM_INTEREST';
-            const leadPhone = (portal.lead?.phoneE164 || '').replace(/\+/g, '');
 
-            const followUpText = isHot
-              ? `Hello ${portal.lead?.fullName || ''}! I saw you were reviewing the options on your private ZamZam portal. Would you like to confirm the Saturday site visit with cab pickup?`
-              : `Hello ${portal.lead?.fullName || ''}! Just checking if you had a chance to look over the curated property options on your private portal: ${portalUrl}`;
+        <fieldset className="flex min-w-0 max-w-full items-center gap-1.5 overflow-x-auto w-full sm:w-auto">
+          <legend className="sr-only">Filter portals by engagement tier</legend>
+          {[
+            { id: 'ALL', label: 'All Tiers' },
+            { id: 'HOT_PROSPECT', label: '🔥 Hot Prospect' },
+            { id: 'WARM_INTEREST', label: '⚡ Warm Interest' },
+            { id: 'CASUAL_VIEWER', label: 'Casual' },
+          ].map((tier) => (
+            <button
+              type="button"
+              key={tier.id}
+              onClick={() => setSelectedTier(tier.id)}
+              aria-pressed={selectedTier === tier.id}
+              className={`min-h-11 px-2.5 py-1.5 rounded text-[11px] whitespace-nowrap ${
+                selectedTier === tier.id
+                  ? 'bg-gradient-to-r from-[#8a6f3c] to-[#ccb67b] text-[#12151f] font-bold shadow-sm'
+                  : 'bg-[#12151f] text-slate-400 hover:text-white border border-[#b59658]/20'
+              }`}
+            >
+              {tier.label}
+            </button>
+          ))}
+        </fieldset>
+      </div>
 
-            const waChatUrl = `https://wa.me/${leadPhone}?text=${encodeURIComponent(followUpText)}`;
+      <div aria-live="polite" className="space-y-2">
+        {requestError && (
+          <div role="alert" className="rounded-lg border border-red-500/40 bg-red-950/50 p-3 text-xs text-red-200">
+            <p>{requestError}</p>
+            <button type="button" onClick={fetchPortals} className="mt-1 min-h-11 font-bold text-white underline underline-offset-2">
+              Retry client portals
+            </button>
+          </div>
+        )}
+        {copyError && <p role="alert" className="rounded-lg border border-red-500/40 bg-red-950/50 p-3 text-xs text-red-200">{copyError}</p>}
+        {copiedToken && <p className="text-xs text-emerald-300">Portal link copied.</p>}
+      </div>
 
-            return (
-              <div
-                key={portal.id}
-                className={`glass-panel p-5 rounded-2xl border transition-all flex flex-col justify-between space-y-4 ${
-                  isHot
-                    ? 'border-[#b59658]/80 bg-[#1b202c]/60'
-                    : isWarm
-                    ? 'border-blue-700/60 bg-blue-950/10'
-                    : 'border-slate-800 hover:border-[#b59658]/30'
-                }`}
-              >
-                {/* Header Row */}
-                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                  <div className="space-y-1">
-                    <div className="flex flex-wrap items-center gap-2.5">
-                      <span className="p-2 rounded-xl bg-slate-900 border border-slate-800">
-                        <Users className="w-4 h-4 text-[#ccb67b]" />
-                      </span>
-                      <h3 className="font-bold text-white text-base font-display">
-                        {portal.lead?.fullName || 'Client'}
-                      </h3>
-                      <span className="text-xs font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-semibold">
-                        {portal.lead?.phoneE164}
-                      </span>
-                      <span className="text-xs font-mono text-slate-400">
-                        /{portal.token}
-                      </span>
-                    </div>
+      {/* High-Density Portals & Telemetry Table */}
+      <div className="rounded-xl bg-[#1b202c]/90 border border-[#b59658]/30 shadow-xl overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs font-mono">
+            <thead className="bg-[#12151f]/90 text-slate-400 uppercase text-[10px] border-b border-[#b59658]/20">
+              <tr>
+                <th className="p-3 pl-4">Client Profile</th>
+                <th className="p-3">Portal Token</th>
+                <th className="p-3">Units Curated</th>
+                <th className="p-3 text-center">Engagement Tier</th>
+                <th className="p-3 text-center">Views &amp; Dwell</th>
+                <th className="p-3">Last Telemetry Event</th>
+                <th className="p-3 pr-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#b59658]/10 text-slate-300">
+              {filteredPortals.map((portal) => {
+                const isHot = portal.engagement?.engagementTier === 'HOT_PROSPECT';
+                const isWarm = portal.engagement?.engagementTier === 'WARM_INTEREST';
+                const unitCount = portal.portalUnits?.length || 0;
+                const logs = portal.telemetryLogs || [];
+                const lastLog = logs[logs.length - 1];
 
-                    <p className="text-xs text-slate-300 pt-1">
-                      📁 Includes <strong>{portal.propertyCount} Verified Properties</strong>:{' '}
-                      {portal.projects.map((p: any) => `${p.bhk} BHK in ${p.projectName}`).join(' • ')}
-                    </p>
-                  </div>
+                return (
+                  <tr key={portal.id} className={`hover:bg-[#12151f]/70 transition-colors ${isHot ? 'bg-amber-950/20' : ''}`}>
+                    <td className="p-3 pl-4">
+                      <div className="font-bold text-white font-sans text-sm">{portal.lead?.fullName || 'Prospective Buyer'}</div>
+                      <div className="text-[11px] text-[#ccb67b]">{portal.lead?.phoneE164}</div>
+                    </td>
 
-                  {/* Engagement Tier Badge */}
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span
-                      className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 border ${
+                    <td className="p-3">
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-mono text-slate-300 text-xs">{portal.token}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleCopyLink(portal.token)}
+                          aria-label={`Copy portal link for ${portal.lead?.fullName || 'prospective buyer'}`}
+                          className="min-h-11 min-w-11 grid place-items-center rounded hover:bg-[#2a3040] text-slate-400 hover:text-white"
+                        >
+                          {copiedToken === portal.token ? (
+                            <Check className="w-3.5 h-3.5 text-emerald-400" />
+                          ) : (
+                            <Copy className="w-3.5 h-3.5" />
+                          )}
+                        </button>
+                      </div>
+                    </td>
+
+                    <td className="p-3">
+                      <span className="font-bold text-white">{unitCount} Units</span>
+                      <span className="text-[10px] text-slate-400 block">Curated basket</span>
+                    </td>
+
+                    <td className="p-3 text-center">
+                      <span className={`inline-block px-2.5 py-0.5 rounded text-[10px] font-bold ${
                         isHot
-                          ? 'bg-[#1b202c] text-[#ccb67b] border-[#b59658]/50 shadow-md'
+                          ? 'bg-amber-950/70 text-amber-300 border border-amber-500/40 animate-pulse'
                           : isWarm
-                          ? 'bg-blue-950 text-blue-300 border-blue-700'
-                          : portal.totalViews > 0
-                          ? 'bg-slate-800 text-slate-300 border-slate-700'
-                          : 'bg-slate-900 text-slate-500 border-slate-800'
-                      }`}
-                    >
-                      {isHot && <Flame className="w-3.5 h-3.5 text-amber-400" />}
-                      {isWarm && <Zap className="w-3.5 h-3.5 text-blue-400" />}
-                      {portal.engagement.engagementTier.replace('_', ' ')}
+                          ? 'bg-blue-950/70 text-blue-300 border border-blue-500/40'
+                          : 'bg-[#12151f] text-slate-400 border border-slate-700'
+                      }`}>
+                        {portal.engagement?.engagementTier.replace('_', ' ')}
+                      </span>
+                    </td>
+
+                    <td className="p-3 text-center">
+                      <div className="font-bold text-white">{portal.totalViews || 0} Views</div>
+                      <div className="text-[10px] text-slate-400">{portal.engagement?.totalDwellSeconds || 0}s dwell</div>
+                    </td>
+
+                    <td className="p-3 text-xs">
+                      {lastLog ? (
+                        <div>
+                          <span className="text-emerald-400 font-semibold">{lastLog.eventType}</span>
+                          <span className="text-[10px] text-slate-500 block">
+                            {new Date(lastLog.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-slate-500">No events yet</span>
+                      )}
+                    </td>
+
+                    <td className="p-3 pr-4 text-right">
+                      <div className="flex items-center justify-end gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => setInspectedPortal(portal)}
+                          className="min-h-11 px-2.5 py-1 rounded bg-[#12151f] hover:bg-[#2a3040] text-[#ccb67b] border border-[#b59658]/30 text-[11px] font-semibold flex items-center gap-1 shadow-sm"
+                        >
+                          <Activity className="w-3 h-3" /> Logs
+                        </button>
+                        <a
+                          href={`https://wa.me/${(portal.lead?.phoneE164 || '').replace(/\+/g, '')}?text=${encodeURIComponent(`Hi ${portal.lead?.fullName || 'Client'}, I noticed you were exploring your property selection on ZamZam Properties. Would you like to schedule an escorted sample flat visit this weekend?`)}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          aria-label={`Follow up with ${portal.lead?.fullName || 'prospective buyer'} on WhatsApp`}
+                          className="min-h-11 min-w-11 grid place-items-center rounded bg-emerald-600 hover:bg-emerald-500 text-white"
+                        >
+                          <MessageSquare className="w-3.5 h-3.5" />
+                        </a>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+
+              {loading && (
+                <tr>
+                  <td colSpan={7} className="p-8 text-center text-slate-400 text-xs">
+                    Loading client portals…
+                  </td>
+                </tr>
+              )}
+
+              {!loading && !requestError && filteredPortals.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="p-8 text-center text-slate-400 text-xs">
+                    No client portals found matching current filter.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* MODAL: Granular Telemetry Log Inspector */}
+      <AccessibleDialog
+        open={Boolean(inspectedPortal)}
+        onClose={() => setInspectedPortal(null)}
+        titleId="portal-telemetry-title"
+        descriptionId="portal-telemetry-description"
+        panelClassName="max-w-lg bg-[#1b202c] border border-[#b59658]/40 rounded-2xl p-6 space-y-4 shadow-2xl font-mono text-xs"
+      >
+        {inspectedPortal && (
+          <>
+            <div className="flex items-center justify-between pb-3 border-b border-[#b59658]/20">
+              <div>
+                <h2 id="portal-telemetry-title" className="font-bold text-white text-base font-display flex items-center gap-2">
+                  <Activity className="w-4 h-4 text-[#b59658]" />
+                  Portal telemetry: {inspectedPortal.lead?.fullName || 'Prospective buyer'}
+                </h2>
+                <p id="portal-telemetry-description" className="mt-1 text-[11px] text-slate-400">Review engagement events recorded for this portal token.</p>
+              </div>
+              <button type="button" data-dialog-close aria-label="Close portal telemetry" onClick={() => setInspectedPortal(null)} className="min-h-11 min-w-11 text-slate-400 hover:text-white">✕</button>
+            </div>
+
+            <div className="space-y-2">
+              <div className="text-slate-400 text-[11px] uppercase tracking-wider font-bold">
+                Logged Event Stream ({inspectedPortal.telemetryLogs?.length || 0} events):
+              </div>
+              <div className="space-y-1.5 max-h-60 overflow-y-auto p-2 rounded-lg bg-[#12151f] border border-[#b59658]/20">
+                {(inspectedPortal.telemetryLogs || []).map((log: any, idx: number) => (
+                  <div key={idx} className="p-2 rounded bg-[#1b202c] flex justify-between items-center text-xs">
+                    <div>
+                      <strong className="text-emerald-400">{log.eventType}</strong>
+                      {log.targetUnitId && <span className="text-[10px] text-slate-400 block">Target Unit: {log.targetUnitId}</span>}
+                    </div>
+                    <span className="text-[10px] text-slate-400">
+                      {new Date(log.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                     </span>
                   </div>
-                </div>
-
-                {/* Hot Alert Callout */}
-                {portal.engagement.brokerAlertMessage && (
-                  <div className="p-3 rounded-xl bg-[#1b202c] border border-[#b59658]/40 text-xs text-[#ccb67b] flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-[#b59658] shrink-0" />
-                    <strong>{portal.engagement.brokerAlertMessage}</strong>
+                ))}
+                {(inspectedPortal.telemetryLogs || []).length === 0 && (
+                  <div className="p-4 text-center text-slate-500 text-xs">
+                    No granular telemetry events logged yet for this token.
                   </div>
                 )}
-
-                {/* Telemetry Metrics Grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 p-3 rounded-xl bg-slate-900/80 border border-slate-800 text-xs">
-                  <div>
-                    <span className="text-[10px] text-slate-400 block uppercase">Portal Views</span>
-                    <strong className="text-white text-sm font-mono">{portal.totalViews} Views</strong>
-                  </div>
-
-                  <div>
-                    <span className="text-[10px] text-slate-400 block uppercase">Total Dwell Time</span>
-                    <strong className="text-slate-200 text-sm font-mono">
-                      {portal.engagement.dwellTimeSeconds}s
-                    </strong>
-                  </div>
-
-                  <div>
-                    <span className="text-[10px] text-slate-400 block uppercase">Photo Swipes</span>
-                    <strong className="text-slate-200 text-sm font-mono">
-                      {portal.engagement.photoSwipes} Swipes
-                    </strong>
-                  </div>
-
-                  <div>
-                    <span className="text-[10px] text-slate-400 block uppercase">Brochure Clicks</span>
-                    <strong className="text-slate-200 text-sm font-mono">
-                      {portal.engagement.brochureDownloads} Downloads
-                    </strong>
-                  </div>
-
-                  <div>
-                    <span className="text-[10px] text-slate-400 block uppercase">Site Visit Clicks</span>
-                    <strong className="text-[#ccb67b] text-sm font-mono font-bold">
-                      {portal.engagement.visitBookingsRequested} Requests
-                    </strong>
-                  </div>
-                </div>
-
-                {/* Action Footer */}
-                <div className="pt-2 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-3 text-xs">
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => handleCopyLink(portal.token)}
-                      className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold border border-slate-700 flex items-center gap-1.5"
-                    >
-                      {copiedToken === portal.token ? (
-                        <>
-                          <Check className="w-3.5 h-3.5 text-[#ccb67b]" />
-                          Copied Link!
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="w-3.5 h-3.5 text-slate-400" />
-                          Copy Link
-                        </>
-                      )}
-                    </button>
-
-                    <a
-                      href={portalUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold border border-slate-700 flex items-center gap-1.5"
-                    >
-                      <ExternalLink className="w-3.5 h-3.5" />
-                      View Live Portal
-                    </a>
-                  </div>
-
-                  <a
-                    href={waChatUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#8a6f3c] via-[#b59658] to-[#ccb67b] hover:opacity-95 text-[#12151f] font-extrabold shadow-md shadow-[#b59658]/20 flex items-center gap-1.5 transition-all"
-                  >
-                    <Send className="w-3.5 h-3.5" />
-                    Context WhatsApp Follow-Up
-                  </a>
-                </div>
               </div>
-            );
-          })}
-        </div>
-      )}
+            </div>
+
+            <div className="pt-2 flex justify-end">
+              <button
+                type="button"
+                data-dialog-autofocus
+                onClick={() => setInspectedPortal(null)}
+                className="min-h-11 px-4 py-1.5 rounded-lg bg-[#12151f] hover:bg-[#2a3040] text-slate-200 border border-[#b59658]/30"
+              >
+                Close Inspector
+              </button>
+            </div>
+          </>
+        )}
+      </AccessibleDialog>
     </div>
   );
 }

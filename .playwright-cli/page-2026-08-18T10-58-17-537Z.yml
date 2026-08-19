@@ -1,0 +1,227 @@
+- generic [ref=f1e3]:
+  - complementary [ref=f1e4]:
+    - link "ZamZam CRM dashboard" [ref=f1e6] [cursor=pointer]:
+      - /url: /
+      - generic [ref=f1e12]:
+        - strong [ref=f1e13]: ZamZam CRM
+        - generic [ref=f1e14]: Real-estate operations
+    - generic [ref=f1e16]:
+      - button "Gold & Ink" [pressed] [ref=f1e17] [cursor=pointer]
+      - button "B&W Mono" [ref=f1e22] [cursor=pointer]
+    - navigation "Primary navigation" [ref=f1e27]:
+      - generic [ref=f1e28]: Lead-to-closing workflow
+      - link "Dashboard" [ref=f1e29] [cursor=pointer]:
+        - /url: /
+      - link "Leads" [ref=f1e35] [cursor=pointer]:
+        - /url: /leads
+      - link "Inventory" [ref=f1e42] [cursor=pointer]:
+        - /url: /inventory
+      - link "Matchmaker" [ref=f1e47] [cursor=pointer]:
+        - /url: /matching
+      - link "Client portals" [ref=f1e52] [cursor=pointer]:
+        - /url: /portals
+      - link "Site visits" [ref=f1e57] [cursor=pointer]:
+        - /url: /visits
+      - link "Deals" [ref=f1e61] [cursor=pointer]:
+        - /url: /deals
+      - link "Attribution" [ref=f1e65] [cursor=pointer]:
+        - /url: /attribution
+      - link "Analytics" [ref=f1e73] [cursor=pointer]:
+        - /url: /analytics
+      - link "Cost calculator" [ref=f1e77] [cursor=pointer]:
+        - /url: /calculator
+    - paragraph [ref=f1e81]: Workspace ready
+  - main [ref=f1e83]:
+    - generic [ref=f1e85]:
+      - generic [ref=f1e86]:
+        - generic [ref=f1e87]:
+          - generic [ref=f1e88]:
+            - generic [ref=f1e89]: LIVE STREAM
+            - generic "Lead source recorded" [ref=f1e91]
+          - heading "Inbound Leads & Speed-to-Lead Matrix" [level=1] [ref=f1e96]
+          - paragraph [ref=f1e97]: High-density lead ingestion across YouTube Shorts, Instagram Reels, and direct WhatsApp webhooks.
+        - generic [ref=f1e98]:
+          - button "Simulate Webhook" [ref=f1e99] [cursor=pointer]
+          - button "Refresh leads" [ref=f1e101] [cursor=pointer]
+      - generic [ref=f1e107]:
+        - generic [ref=f1e108]:
+          - generic [ref=f1e109]: New Uncontacted (<5m Due)
+          - generic [ref=f1e114]: "0"
+          - generic [ref=f1e115]: Speed-to-Lead active SLA
+        - generic [ref=f1e116]:
+          - generic [ref=f1e117]: Discovery & Portals
+          - generic [ref=f1e122]: "2"
+          - generic [ref=f1e123]: Curated property baskets
+        - generic [ref=f1e124]:
+          - generic [ref=f1e125]: Site Visits Scheduled
+          - generic [ref=f1e129]: "1"
+          - generic [ref=f1e130]: Physical tour pipeline
+        - generic [ref=f1e131]:
+          - generic [ref=f1e132]: Closed Won
+          - generic [ref=f1e137]: "1"
+          - generic [ref=f1e138]: Brokerage converted
+      - generic [ref=f1e139]:
+        - textbox "Search leads" [ref=f1e144]:
+          - /placeholder: Name, phone, campaign, or keyword…
+        - generic [ref=f1e145]:
+          - button "All Sources" [pressed] [ref=f1e146] [cursor=pointer]
+          - button "YouTube" [ref=f1e147] [cursor=pointer]
+          - button "Instagram" [ref=f1e148] [cursor=pointer]
+          - button "Facebook" [ref=f1e149] [cursor=pointer]
+          - button "WhatsApp" [ref=f1e150] [cursor=pointer]
+      - table [ref=f1e153]:
+        - rowgroup [ref=f1e154]:
+          - row [ref=f1e155]:
+            - columnheader "Buyer & Contact" [ref=f1e156]
+            - columnheader "Source & Ref Tag" [ref=f1e157]
+            - columnheader "Inquiry Time" [ref=f1e158]
+            - columnheader "Requirements" [ref=f1e159]
+            - columnheader "Assigned Broker" [ref=f1e160]
+            - columnheader "Pipeline Stage" [ref=f1e161]
+            - columnheader "Instant Action" [ref=f1e162]
+        - rowgroup [ref=f1e163]:
+          - row [ref=f1e164]:
+            - cell "Vikram Mehta +919820566778" [ref=f1e165]:
+              - generic [ref=f1e166]: Vikram Mehta
+              - generic [ref=f1e167]: "+919820566778"
+            - cell "youtube video yt-crown-sec35" [ref=f1e168]:
+              - generic [ref=f1e169]: youtube video
+              - generic [ref=f1e173]: yt-crown-sec35
+            - cell "18 Aug 11:57 am" [ref=f1e174]:
+              - generic [ref=f1e175]: 18 Aug
+              - generic [ref=f1e176]: 11:57 am
+            - cell "2 BHK • Max ₹75.0L Kharghar" [ref=f1e177]:
+              - generic [ref=f1e178]: 2 BHK • Max ₹75.0L
+              - generic [ref=f1e179]: Kharghar
+            - cell "Farhan Shaikh" [ref=f1e180]
+            - cell "Portal Shared" [ref=f1e181]:
+              - combobox "Pipeline stage for Vikram Mehta" [ref=f1e182] [cursor=pointer]:
+                - option "New Uncontacted"
+                - option "Discovery Done"
+                - option "Portal Shared" [selected]
+                - option "Visit Scheduled"
+                - option "Visit Done"
+                - option "Closed Won"
+                - option "Closed Lost"
+            - cell [ref=f1e183]:
+              - generic [ref=f1e184]:
+                - link "Reply" [ref=f1e185] [cursor=pointer]:
+                  - /url: https://wa.me/919820566778?text=Hi%20Vikram%20Mehta%2C%20thank%20you%20for%20connecting%20with%20ZamZam%20Properties%20regarding%20Navi%20Mumbai%20property%20options.
+                - link "Match properties" [ref=f1e188] [cursor=pointer]:
+                  - /url: /matching?leadId=279815d6-603c-4a1e-9539-a45f9d9cc52a
+          - row [ref=f1e192]:
+            - cell "Dr. Sameer Deshpande +919820455667" [ref=f1e193]:
+              - generic [ref=f1e194]: Dr. Sameer Deshpande
+              - generic [ref=f1e195]: "+919820455667"
+            - cell "fb group fb-kharghar-investors" [ref=f1e196]:
+              - generic [ref=f1e197]: fb group
+              - generic [ref=f1e203]: fb-kharghar-investors
+            - cell "18 Aug 11:57 am" [ref=f1e204]:
+              - generic [ref=f1e205]: 18 Aug
+              - generic [ref=f1e206]: 11:57 am
+            - cell "2 BHK • Max ₹75.0L Kharghar" [ref=f1e207]:
+              - generic [ref=f1e208]: 2 BHK • Max ₹75.0L
+              - generic [ref=f1e209]: Kharghar
+            - cell "Salman Khan" [ref=f1e210]
+            - cell "Closed Lost" [ref=f1e211]:
+              - combobox "Pipeline stage for Dr. Sameer Deshpande" [ref=f1e212] [cursor=pointer]:
+                - option "New Uncontacted"
+                - option "Discovery Done"
+                - option "Portal Shared"
+                - option "Visit Scheduled"
+                - option "Visit Done"
+                - option "Closed Won"
+                - option "Closed Lost" [selected]
+            - cell [ref=f1e213]:
+              - generic [ref=f1e214]:
+                - link "Reply" [ref=f1e215] [cursor=pointer]:
+                  - /url: https://wa.me/919820455667?text=Hi%20Dr.%20Sameer%20Deshpande%2C%20thank%20you%20for%20connecting%20with%20ZamZam%20Properties%20regarding%20Navi%20Mumbai%20property%20options.
+                - link "Match properties" [ref=f1e218] [cursor=pointer]:
+                  - /url: /matching?leadId=9b6d1ce9-36d7-47e2-9727-90c8ad228ea2
+          - row [ref=f1e222]:
+            - cell "Amitabh Sen +919820344556" [ref=f1e223]:
+              - generic [ref=f1e224]: Amitabh Sen
+              - generic [ref=f1e225]: "+919820344556"
+            - cell "instagram reel ig-sai-marvel" [ref=f1e226]:
+              - generic [ref=f1e227]: instagram reel
+              - generic [ref=f1e232]: ig-sai-marvel
+            - cell "18 Aug 11:57 am" [ref=f1e233]:
+              - generic [ref=f1e234]: 18 Aug
+              - generic [ref=f1e235]: 11:57 am
+            - cell "2 BHK • Max ₹65.0L Kharghar Sector 35, Taloja Phase 1" [ref=f1e236]:
+              - generic [ref=f1e237]: 2 BHK • Max ₹65.0L
+              - generic [ref=f1e238]: Kharghar Sector 35, Taloja Phase 1
+            - cell "Salman Khan" [ref=f1e239]
+            - cell "Portal Shared" [ref=f1e240]:
+              - combobox "Pipeline stage for Amitabh Sen" [ref=f1e241] [cursor=pointer]:
+                - option "New Uncontacted"
+                - option "Discovery Done"
+                - option "Portal Shared" [selected]
+                - option "Visit Scheduled"
+                - option "Visit Done"
+                - option "Closed Won"
+                - option "Closed Lost"
+            - cell [ref=f1e242]:
+              - generic [ref=f1e243]:
+                - link "Reply" [ref=f1e244] [cursor=pointer]:
+                  - /url: https://wa.me/919820344556?text=Hi%20Amitabh%20Sen%2C%20thank%20you%20for%20connecting%20with%20ZamZam%20Properties%20regarding%20Navi%20Mumbai%20property%20options.
+                - link "Match properties" [ref=f1e247] [cursor=pointer]:
+                  - /url: /matching?leadId=9e1a7980-5386-4b08-a890-9bc885cf1c8a
+          - row [ref=f1e251]:
+            - cell "Priya Iyer +919820233445" [ref=f1e252]:
+              - generic [ref=f1e253]: Priya Iyer
+              - generic [ref=f1e254]: "+919820233445"
+            - cell "youtube video yt-crown-sec35" [ref=f1e255]:
+              - generic [ref=f1e256]: youtube video
+              - generic [ref=f1e260]: yt-crown-sec35
+            - cell "18 Aug 11:57 am" [ref=f1e261]:
+              - generic [ref=f1e262]: 18 Aug
+              - generic [ref=f1e263]: 11:57 am
+            - cell "2, 3 BHK • Max ₹85.0L Kharghar Sector 35, Kharghar Sector 20" [ref=f1e264]:
+              - generic [ref=f1e265]: 2, 3 BHK • Max ₹85.0L
+              - generic [ref=f1e266]: Kharghar Sector 35, Kharghar Sector 20
+            - cell "Farhan Shaikh" [ref=f1e267]
+            - cell "Visit Done" [ref=f1e268]:
+              - combobox "Pipeline stage for Priya Iyer" [ref=f1e269] [cursor=pointer]:
+                - option "New Uncontacted"
+                - option "Discovery Done"
+                - option "Portal Shared"
+                - option "Visit Scheduled"
+                - option "Visit Done" [selected]
+                - option "Closed Won"
+                - option "Closed Lost"
+            - cell [ref=f1e270]:
+              - generic [ref=f1e271]:
+                - link "Reply" [ref=f1e272] [cursor=pointer]:
+                  - /url: https://wa.me/919820233445?text=Hi%20Priya%20Iyer%2C%20thank%20you%20for%20connecting%20with%20ZamZam%20Properties%20regarding%20Navi%20Mumbai%20property%20options.
+                - link "Match properties" [ref=f1e275] [cursor=pointer]:
+                  - /url: /matching?leadId=eb7de2a6-b0f0-4827-b4b9-b12b5558a5a7
+          - row [ref=f1e279]:
+            - cell "Rahul Sharma +919820199887" [ref=f1e280]:
+              - generic [ref=f1e281]: Rahul Sharma
+              - generic [ref=f1e282]: "+919820199887"
+            - cell "youtube short yt-taloja-affordable" [ref=f1e283]:
+              - generic [ref=f1e284]: youtube short
+              - generic [ref=f1e288]: yt-taloja-affordable
+            - cell "18 Aug 11:57 am" [ref=f1e289]:
+              - generic [ref=f1e290]: 18 Aug
+              - generic [ref=f1e291]: 11:57 am
+            - cell "2 BHK • Max ₹70.0L Kharghar Sector 35, Kharghar Sector 36" [ref=f1e292]:
+              - generic [ref=f1e293]: 2 BHK • Max ₹70.0L
+              - generic [ref=f1e294]: Kharghar Sector 35, Kharghar Sector 36
+            - cell "Farhan Shaikh" [ref=f1e295]
+            - cell "Closed Won" [ref=f1e296]:
+              - combobox "Pipeline stage for Rahul Sharma" [ref=f1e297] [cursor=pointer]:
+                - option "New Uncontacted"
+                - option "Discovery Done"
+                - option "Portal Shared"
+                - option "Visit Scheduled"
+                - option "Visit Done"
+                - option "Closed Won" [selected]
+                - option "Closed Lost"
+            - cell [ref=f1e298]:
+              - generic [ref=f1e299]:
+                - link "Reply" [ref=f1e300] [cursor=pointer]:
+                  - /url: https://wa.me/919820199887?text=Hi%20Rahul%20Sharma%2C%20thank%20you%20for%20connecting%20with%20ZamZam%20Properties%20regarding%20Navi%20Mumbai%20property%20options.
+                - link "Match properties" [ref=f1e303] [cursor=pointer]:
+                  - /url: /matching?leadId=0ef0a79f-179d-4daa-83b8-b83069357b79

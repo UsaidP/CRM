@@ -1,5 +1,24 @@
 import { z } from 'zod';
 
+const optionalUrl = z.string().url().optional().or(z.literal(''));
+
+export const inventoryMediaAssetSchema = z.object({
+  id: z.string().min(1),
+  url: z.string().min(1),
+  kind: z.enum(['image', 'video']),
+  title: z.string().max(120).optional(),
+  alt: z.string().max(240).optional(),
+  caption: z.string().max(240).optional(),
+  mimeType: z.string().max(80).optional(),
+  bytes: z.number().int().nonnegative().optional(),
+  width: z.number().int().positive().optional(),
+  height: z.number().int().positive().optional(),
+  durationSeconds: z.number().nonnegative().optional(),
+});
+
+const mediaGallery = z.array(inventoryMediaAssetSchema).max(40).default([]);
+const highlights = z.array(z.string().trim().min(2).max(120)).max(12).default([]);
+
 export const createProjectSchema = z.object({
   organizationId: z.string().uuid().optional(),
   developerName: z.string().min(2, 'Developer name must be at least 2 characters'),
@@ -7,6 +26,12 @@ export const createProjectSchema = z.object({
   reraNumber: z.string().min(8, 'Valid MahaRERA registration number is required'),
   microMarket: z.string().min(2, 'Micro market locality is required'),
   subLocality: z.string().optional(),
+  shortDescription: z.string().trim().max(240).optional(),
+  description: z.string().trim().max(4000).optional(),
+  locationDescription: z.string().trim().max(1000).optional(),
+  keyHighlights: highlights,
+  mediaGallery,
+  coverImageUrl: optionalUrl,
   latitude: z.number().optional(),
   longitude: z.number().optional(),
   distanceToMetroKm: z.number().min(0).optional(),
@@ -16,9 +41,9 @@ export const createProjectSchema = z.object({
   totalTowers: z.number().int().min(1).default(1),
   totalFloors: z.number().int().min(1).default(15),
   basePricePerSqft: z.number().positive('Base price per sqft must be positive'),
-  brochureUrl: z.string().url().optional().or(z.literal('')),
-  youtubeWalkthroughUrl: z.string().url().optional().or(z.literal('')),
-  masterPlanUrl: z.string().url().optional().or(z.literal('')),
+  brochureUrl: optionalUrl,
+  youtubeWalkthroughUrl: optionalUrl,
+  masterPlanUrl: optionalUrl,
   amenities: z.array(z.string()).default([]),
   developerSalesPocName: z.string().optional(),
   developerSalesPocPhone: z.string().optional(),
@@ -37,6 +62,10 @@ export const createUnitSchema = z.object({
   facing: z.enum(['EAST', 'WEST', 'NORTH', 'SOUTH', 'NORTH_EAST', 'NORTH_WEST', 'SOUTH_EAST', 'SOUTH_WEST']).default('EAST'),
   possessionStatus: z.enum(['READY_TO_MOVE', 'UNDER_CONSTRUCTION']),
   possessionDate: z.string().optional().nullable(),
+  description: z.string().trim().max(4000).optional(),
+  featureHighlights: highlights,
+  floorPlanUrl: optionalUrl,
+  mediaGallery,
   
   // Custom Overrides (optional, otherwise computed via project defaults)
   agreementValue: z.number().positive('Agreement value must be positive'),
@@ -50,10 +79,13 @@ export const createUnitSchema = z.object({
   verificationStatus: z.enum(['DRAFT', 'RERA_VERIFIED', 'PHYSICALLY_AUDITED', 'ACTIVE_MARKETABLE', 'STALE_EXPIRED', 'ARCHIVED_SOLD']).default('DRAFT'),
   verificationNotes: z.string().optional(),
   photoGallery: z.array(z.string()).default([]),
-  videoReelUrl: z.string().url().optional().or(z.literal('')),
+  videoReelUrl: optionalUrl,
   isHotDeal: z.boolean().default(false),
   isExclusive: z.boolean().default(false),
 });
+
+export const updateProjectSchema = createProjectSchema.partial();
+export const updateUnitSchema = createUnitSchema.partial();
 
 export const verifyUnitSchema = z.object({
   targetStatus: z.enum(['DRAFT', 'RERA_VERIFIED', 'PHYSICALLY_AUDITED', 'ACTIVE_MARKETABLE', 'STALE_EXPIRED', 'ARCHIVED_SOLD']),

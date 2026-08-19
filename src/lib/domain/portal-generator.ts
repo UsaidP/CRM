@@ -37,7 +37,7 @@ export function buildWhatsAppPortalShareText(params: {
   const { leadName, portalUrl, propertyCount, microMarkets } = params;
   const marketList = microMarkets.join(' & ');
 
-  return `Hello ${leadName}! 😊\n\nBased on our conversation, we have curated *${propertyCount} verified property options* in *${marketList}* matching your budget & timeline.\n\n📱 View your private, verified options here:\n👉 ${portalUrl}\n\nKey Highlights:\n✅ 100% MahaRERA Verified\n✅ Full All-In Statutory Cost Sheets Included\n✅ Verified Photos & Walkthrough Videos\n\nFeel free to tap *Ask on WhatsApp* or *Book Site Visit* directly on any property!`;
+  return `Hello ${leadName}!\n\nBased on our conversation, we selected *${propertyCount} property options* in *${marketList}* from our current broker records.\n\nView your private options here:\n${portalUrl}\n\nIncluded where recorded:\n- RERA registration IDs\n- Calculated all-in cost breakdowns\n- Listing photos, brochures, and walkthrough links\n\nPlease ask us to reconfirm price and availability before making a decision.`;
 }
 
 export type EngagementTier = 'HOT_PROSPECT' | 'WARM_INTEREST' | 'INITIAL_VIEW' | 'NO_ACTIVITY';

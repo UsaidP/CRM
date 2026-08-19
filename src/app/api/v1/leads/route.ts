@@ -2,11 +2,16 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { normalizeIndianPhone } from '@/lib/domain/phone-normalizer';
 import { createLeadSchema } from '@/lib/validators/lead-schemas';
+import { evaluate24HourMessagingWindow, findOrCreateContact } from '@/lib/domain/contact-manager';
+import { resolveBrokerByInboundIdentifier, OFFICIAL_BROKER_NUMBERS } from '@/lib/domain/broker-resolver';
+import { analyzeInboundAttribution } from '@/lib/domain/campaign-attribution';
 
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const leadSource = searchParams.get('leadSource');
+    const sourceConfidence = searchParams.get('sourceConfidence');
+    const brokerId = searchParams.get('brokerId');
     const currentStage = searchParams.get('currentStage');
     const search = searchParams.get('search');
     
@@ -19,6 +24,12 @@ export async function GET(req: Request) {
     if (leadSource && leadSource !== 'ALL') {
       where.leadSource = leadSource;
     }
+    if (sourceConfidence && sourceConfidence !== 'ALL') {
+      where.sourceConfidence = sourceConfidence;
+    }
+    if (brokerId && brokerId !== 'ALL') {
+      where.assignedBrokerId = brokerId;
+    }
     if (currentStage && currentStage !== 'ALL') {
       where.currentStage = currentStage;
     }
@@ -27,6 +38,8 @@ export async function GET(req: Request) {
         { fullName: { contains: search } },
         { phoneE164: { contains: search } },
         { notes: { contains: search } },
+        { sourceCode: { contains: search } },
+        { contact: { primaryName: { contains: search } } },
       ];
     }
 
@@ -37,34 +50,48 @@ export async function GET(req: Request) {
         skip,
         take: limit,
         include: {
+          contact: {
+            include: {
+              identities: true,
+            },
+          },
           campaign: {
             select: {
               id: true,
               campaignName: true,
               channelType: true,
               customSlug: true,
+              sourceCode: true,
             },
           },
           assignedBroker: {
-            select: { id: true, fullName: true, email: true },
+            select: { id: true, fullName: true, email: true, phoneE164: true },
           },
           requirements: true,
           communications: {
             orderBy: { createdAt: 'desc' },
-            take: 3,
+            take: 5,
           },
         },
         orderBy: { createdAt: 'desc' },
       }),
     ]);
 
+    const enriched = leads.map((l) => {
+      const windowInfo = evaluate24HourMessagingWindow(l.lastInboundMessageAt || l.createdAt);
+      return {
+        ...l,
+        messagingWindow: windowInfo,
+      };
+    });
+
     return NextResponse.json({
       success: true,
-      count: leads.length,
+      count: enriched.length,
       total,
       page,
       totalPages: Math.ceil(total / limit),
-      data: leads,
+      data: enriched,
     });
   } catch (error: any) {
     return NextResponse.json(
@@ -77,92 +104,91 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const parsed = createLeadSchema.safeParse(body);
-
-    if (!parsed.success) {
-      return NextResponse.json(
-        { success: false, error: 'Validation error', details: parsed.error.format() },
-        { status: 422 }
-      );
-    }
-
     const {
       fullName,
       phone,
       email,
-      leadSource = 'direct_call',
+      leadSource = 'MANUAL_ENTRY',
+      sourceCode,
+      contactedBrokerNumber = OFFICIAL_BROKER_NUMBERS.SAFWAN.e164,
+      assignedBrokerId: requestedBrokerId,
       campaignId,
       notes,
-    } = parsed.data;
-
-    const phoneResult = normalizeIndianPhone(phone);
-    if (!phoneResult.isValid) {
-      return NextResponse.json({ success: false, error: phoneResult.error }, { status: 400 });
-    }
+    } = body;
 
     const org = await prisma.organization.findFirst();
     if (!org) {
-      return NextResponse.json({ success: false, error: 'Organization not found' }, { status: 500 });
+      return NextResponse.json({ error: 'Organization not found' }, { status: 500 });
     }
 
-    // Check for existing lead with same phone
-    const existingLead = await prisma.lead.findUnique({
-      where: { phoneE164: phoneResult.e164 },
+    let phoneE164: string | null = null;
+    if (phone && phone.trim() !== '') {
+      const phoneResult = normalizeIndianPhone(phone);
+      if (!phoneResult.isValid) {
+        return NextResponse.json({ success: false, error: phoneResult.error }, { status: 400 });
+      }
+      phoneE164 = phoneResult.e164;
+    }
+
+    // Resolve Broker Assignment
+    let assignedBrokerId = requestedBrokerId;
+    let inboundNumber = contactedBrokerNumber;
+
+    if (!assignedBrokerId && contactedBrokerNumber) {
+      const brokerRes = await resolveBrokerByInboundIdentifier(contactedBrokerNumber, org.id);
+      assignedBrokerId = brokerRes.brokerId;
+      inboundNumber = brokerRes.brokerPhoneE164 || contactedBrokerNumber;
+    }
+
+    // Attribution
+    const attribution = analyzeInboundAttribution(
+      sourceCode ? `Code: ${sourceCode} ${notes || ''}` : (notes || ''),
+      'CALL'
+    );
+
+    const contact = await findOrCreateContact({
+      organizationId: org.id,
+      fullName: fullName || 'Direct Manual Lead',
+      phoneE164: phoneE164 || undefined,
+      email: email || undefined,
+      assignedBrokerId,
+      notes: notes ? `Manual entry: ${notes}` : undefined,
     });
-
-    if (existingLead) {
-      // Update existing lead notes and return
-      const updated = await prisma.lead.update({
-        where: { id: existingLead.id },
-        data: {
-          fullName: fullName || existingLead.fullName,
-          notes: notes ? `${existingLead.notes || ''}\n[Update]: ${notes}` : existingLead.notes,
-        },
-        include: { requirements: true, campaign: true },
-      });
-
-      return NextResponse.json({
-        success: true,
-        message: 'Existing lead profile updated',
-        data: updated,
-      });
-    }
 
     const lead = await prisma.lead.create({
       data: {
         organizationId: org.id,
-        fullName: fullName || 'New Buyer',
-        phoneE164: phoneResult.e164,
-        email: email || null,
-        leadSource,
-        campaignId: campaignId || null,
+        contactId: contact?.id,
+        fullName: fullName || 'Direct Manual Lead',
+        phoneE164,
+        email,
+        leadSource: sourceCode ? attribution.leadSource : (leadSource || 'MANUAL_ENTRY'),
+        sourceConfidence: sourceCode ? 'EXACT' : 'UNKNOWN',
+        sourceCode: sourceCode?.toUpperCase(),
+        inboundNumber,
+        campaignId,
+        assignedBrokerId,
         currentStage: 'new_uncontacted',
-        notes: notes || 'Captured via broker desk',
-        requirements: body.budgetMax
-          ? {
-              create: {
-                budgetMax: Number(body.budgetMax),
-                bhkPreferencesJson: JSON.stringify(body.bhkPreferences || [2]),
-                targetLocationsJson: JSON.stringify(['Kharghar Sector 35', 'Taloja Phase 1']),
-              },
-            }
-          : undefined,
+        firstResponseSlaMinutes: 0,
+        lastInboundMessageAt: new Date(),
+        notes,
       },
       include: {
-        requirements: true,
+        contact: { include: { identities: true } },
+        assignedBroker: true,
         campaign: true,
       },
     });
 
     return NextResponse.json({
       success: true,
-      message: 'Lead profile created successfully',
+      message: 'Lead created successfully',
       data: lead,
     }, { status: 201 });
   } catch (error: any) {
     return NextResponse.json(
       { success: false, error: error.message || 'Failed to create lead' },
-      { status: 400 }
+      { status: 500 }
     );
   }
 }

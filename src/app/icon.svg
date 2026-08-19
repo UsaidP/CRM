@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title>ZamZam Properties</title>
+  <rect width="64" height="64" rx="10" fill="#0a0d14" />
+  <path d="M14 49V27l18-12 18 12v22h-8V32H22v17z" fill="#ccb67b" />
+  <path d="M27 49V36h10v13" fill="#0a0d14" />
+</svg>

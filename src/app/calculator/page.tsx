@@ -13,8 +13,10 @@ import {
   Layers,
   ArrowRight,
   ShieldCheck,
-  Zap
+  Zap,
+  DollarSign
 } from 'lucide-react';
+import { HallmarkStamp } from '@/components/ui/HallmarkStamp';
 
 export default function CostCalculatorPage() {
   const [agreementValue, setAgreementValue] = useState<number>(5500000);
@@ -54,251 +56,215 @@ export default function CostCalculatorPage() {
     setCarpetAreaSqft(carpet);
   };
 
+  const formatINR = (val: number) => {
+    if (!val && val !== 0) return '₹0';
+    if (val >= 10000000) return `₹${(val / 10000000).toFixed(2)} Cr`;
+    if (val >= 100000) return `₹${(val / 100000).toFixed(2)} Lakh`;
+    return `₹${Number(val).toLocaleString('en-IN')}`;
+  };
+
   return (
-    <div className="space-y-6 max-w-6xl mx-auto">
+    <div className="space-y-6 max-w-6xl mx-auto font-mono">
       {/* Header */}
-      <div className="pb-4 border-b border-[#b59658]/20">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#1b202c] border border-[#b59658]/40 text-[#ccb67b] text-xs font-semibold mb-2">
-          <Calculator className="w-3.5 h-3.5 text-[#b59658]" />
-          Statutory Capitalized Acquisition Cost Simulator
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-[#b59658]/20">
+        <div>
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#1b202c] text-[#ccb67b] border border-[#b59658]/40 uppercase tracking-wider flex items-center gap-1">
+              <Calculator className="w-3.5 h-3.5 text-[#b59658]" /> STATUTORY COST ENGINE
+            </span>
+            <HallmarkStamp type="ledger" label="Calculated from entered values" />
+          </div>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white font-display">
+            Capitalized Cost Engine ($C_{'{'}all-in{'}'}$)
+          </h1>
+          <p className="text-slate-400 text-xs mt-0.5">
+            Estimate itemized acquisition costs from the values and certificate status you enter.
+          </p>
         </div>
-        <h1 className="text-2xl font-extrabold tracking-tight text-white font-display">
-          Maharashtra Real Estate All-In Cost Engine ($C_{'{'}all-in{'}'}$)
-        </h1>
-        <p className="text-slate-400 text-xs mt-0.5 font-sans">
-          Bridge the 14%–22% gap between advertised agreement values and actual buyer out-of-pocket budget.
-        </p>
       </div>
 
       {/* Preset Quick Chips */}
-      <div className="glass-panel p-3.5 rounded-2xl flex flex-wrap items-center gap-2 text-xs">
+      <div className="p-3 rounded-xl bg-[#1b202c]/90 border border-[#b59658]/30 flex flex-wrap items-center gap-2 text-xs">
         <span className="text-slate-400 font-semibold text-[11px] flex items-center gap-1">
           <Zap className="w-3.5 h-3.5 text-amber-400" />
-          Quick Micro-Market Presets:
+          Micro-Market Presets:
         </span>
         {Object.keys(NAVI_MUMBAI_MICRO_MARKETS).map((key) => (
           <button
+            type="button"
             key={key}
             onClick={() => applyPreset(key, 2)}
-            className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
+            aria-pressed={selectedPresetMarket === key}
+            className={`px-2.5 py-1 rounded text-[11px] font-medium transition-all ${
               selectedPresetMarket === key
-                ? 'bg-amber-600 text-white shadow-sm'
-                : 'bg-slate-900 text-slate-300 border border-slate-800 hover:text-white'
+                ? 'bg-gradient-to-r from-[#8a6f3c] to-[#ccb67b] text-[#12151f] font-bold shadow-sm'
+                : 'bg-[#12151f] text-slate-400 hover:text-white border border-[#b59658]/20'
             }`}
           >
-            {key} (2 BHK)
+            {key}
           </button>
         ))}
       </div>
 
-      {/* Interactive 2-Column Calculator Grid */}
+      {/* Two-Column Working Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Column: Input Sliders & Options (7 cols) */}
-        <div className="lg:col-span-7 glass-panel p-6 rounded-2xl space-y-5">
-          <h2 className="text-sm font-bold text-white uppercase tracking-wider text-slate-300 flex items-center gap-2 font-display">
-            <Layers className="w-4 h-4 text-[#b59658]" />
-            1. Property & Buyer Parameters
-          </h2>
+        {/* Left Pane: Parameter Inputs (5 cols) */}
+        <div className="lg:col-span-5 space-y-4">
+          <div className="p-5 rounded-2xl bg-[#1b202c]/90 border border-[#b59658]/30 shadow-xl space-y-4 text-xs">
+            <h3 className="font-bold text-white text-sm font-display border-b border-[#b59658]/20 pb-2">
+              Property Parameters
+            </h3>
 
-          {/* Agreement Value Slider */}
-          <div className="space-y-2">
-            <div className="flex justify-between items-center text-xs">
-              <label className="font-semibold text-slate-200">
-                Base Agreement Value (V_agreement)
-              </label>
-              <span className="font-mono text-[#ccb67b] font-bold text-sm">
-                ₹{(agreementValue / 100000).toFixed(2)} Lakhs (₹{agreementValue.toLocaleString('en-IN')})
+            <div>
+              <label className="text-slate-300 block mb-1">Agreement Base Value (₹):</label>
+              <input
+                aria-label="Agreement base value"
+                type="number"
+                step="50000"
+                value={agreementValue}
+                onChange={(e) => setAgreementValue(Number(e.target.value))}
+                className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2 text-white font-bold"
+              />
+              <span className="text-[#ccb67b] text-[11px] block mt-1">
+                {formatINR(agreementValue)}
               </span>
             </div>
-            <input
-              type="range"
-              min={2000000}
-              max={25000000}
-              step={50000}
-              value={agreementValue}
-              onChange={(e) => setAgreementValue(Number(e.target.value))}
-              className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-[#b59658]"
-            />
-            <div className="flex justify-between text-[10px] text-slate-500 font-mono">
-              <span>₹20L</span>
-              <span>₹80L</span>
-              <span>₹1.5Cr</span>
-              <span>₹2.5Cr</span>
-            </div>
-          </div>
 
-          {/* Toggles (OC Status & Female Buyer) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-            {/* OC Certificate Toggle */}
-            <div 
-              onClick={() => setHasOC(!hasOC)}
-              className={`p-3.5 rounded-xl border cursor-pointer transition-all ${
-                hasOC 
-                  ? 'bg-[#1b202c] border-[#b59658]/50 text-[#ccb67b]' 
-                  : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:border-slate-700'
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold">Occupancy Cert (OC)</span>
-                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded font-mono ${hasOC ? 'bg-[#12151f] text-[#ccb67b] border border-[#b59658]/40' : 'bg-slate-800 text-slate-400'}`}>
-                  {hasOC ? '0% GST' : '5% GST'}
-                </span>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-slate-300 block mb-1">Carpet Area (sq.ft):</label>
+                <input
+                  aria-label="Carpet area in square feet"
+                  type="number"
+                  value={carpetAreaSqft}
+                  onChange={(e) => setCarpetAreaSqft(Number(e.target.value))}
+                  className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2 text-white"
+                />
               </div>
-              <p className="text-[11px] mt-1 text-slate-400">
-                {hasOC ? 'Ready-to-Move with OC: 0% GST exempt' : 'Under-construction: 5% GST applicable'}
-              </p>
-            </div>
 
-            {/* Female Buyer Concession Toggle */}
-            <div 
-              onClick={() => setIsFemaleBuyer(!isFemaleBuyer)}
-              className={`p-3.5 rounded-xl border cursor-pointer transition-all ${
-                isFemaleBuyer 
-                  ? 'bg-purple-950/60 border-purple-700 text-purple-200' 
-                  : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:border-slate-700'
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold">Female Buyer Concession</span>
-                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded font-mono ${isFemaleBuyer ? 'bg-purple-900 text-purple-300' : 'bg-slate-800 text-slate-400'}`}>
-                  {isFemaleBuyer ? '5% Stamp' : '6% Stamp'}
-                </span>
+              <div>
+                <label className="text-slate-300 block mb-1">Floor Number:</label>
+                <input
+                  aria-label="Floor number"
+                  type="number"
+                  value={floorNumber}
+                  onChange={(e) => setFloorNumber(Number(e.target.value))}
+                  className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2 text-white"
+                />
               </div>
-              <p className="text-[11px] mt-1 text-slate-400">
-                {isFemaleBuyer ? '1% Concession applied (5% Stamp Duty)' : 'Standard Maharashtra Rate (6% Stamp Duty)'}
-              </p>
             </div>
-          </div>
 
-          {/* Carpet Area & Floor Sliders */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-            <div className="space-y-1.5">
-              <div className="flex justify-between text-xs">
-                <label className="font-semibold text-slate-300">Carpet Area</label>
-                <span className="font-mono text-slate-200 font-bold">{carpetAreaSqft} sq.ft</span>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-slate-300 block mb-1">Covered Parking (₹):</label>
+                <input
+                  aria-label="Covered parking charges"
+                  type="number"
+                  step="25000"
+                  value={parkingCharges}
+                  onChange={(e) => setParkingCharges(Number(e.target.value))}
+                  className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2 text-white"
+                />
               </div>
-              <input
-                type="range"
-                min={300}
-                max={2000}
-                step={25}
-                value={carpetAreaSqft}
-                onChange={(e) => setCarpetAreaSqft(Number(e.target.value))}
-                className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-[#b59658]"
-              />
-            </div>
 
-            <div className="space-y-1.5">
-              <div className="flex justify-between text-xs">
-                <label className="font-semibold text-slate-300">Floor Level</label>
-                <span className="font-mono text-slate-200 font-bold">Floor {floorNumber} {floorNumber > 4 ? `(+₹${((floorNumber - 4) * 50 * carpetAreaSqft).toLocaleString('en-IN')})` : '(No Rise)'}</span>
+              <div>
+                <label className="text-slate-300 block mb-1">Society &amp; Club (₹):</label>
+                <input
+                  aria-label="Society and club charges"
+                  type="number"
+                  step="25000"
+                  value={societyDevCharges}
+                  onChange={(e) => setSocietyDevCharges(Number(e.target.value))}
+                  className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2 text-white"
+                />
               </div>
-              <input
-                type="range"
-                min={1}
-                max={30}
-                value={floorNumber}
-                onChange={(e) => setFloorNumber(Number(e.target.value))}
-                className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-amber-500"
-              />
             </div>
-          </div>
 
-          {/* Parking & Society Development Inputs */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-            <div>
-              <label className="text-xs font-semibold text-slate-300 block mb-1">
-                Parking Charges (₹)
+            <div className="pt-2 border-t border-[#b59658]/10 space-y-2">
+              <label className="flex items-center gap-2 cursor-pointer text-slate-300">
+                <input
+                  aria-label="Occupancy certificate received"
+                  type="checkbox"
+                  checked={hasOC}
+                  onChange={(e) => setHasOC(e.target.checked)}
+                  className="accent-[#b59658]"
+                />
+                <span>Occupancy Certificate (OC) Received (0% GST)</span>
               </label>
-              <input
-                type="number"
-                step={25000}
-                value={parkingCharges}
-                onChange={(e) => setParkingCharges(Number(e.target.value))}
-                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white"
-              />
-            </div>
 
-            <div>
-              <label className="text-xs font-semibold text-slate-300 block mb-1">
-                Society & Club Development (₹)
+              <label className="flex items-center gap-2 cursor-pointer text-slate-300">
+                <input
+                  aria-label="Female sole purchaser"
+                  type="checkbox"
+                  checked={isFemaleBuyer}
+                  onChange={(e) => setIsFemaleBuyer(e.target.checked)}
+                  className="accent-[#b59658]"
+                />
+                <span>Female Sole Purchaser (1% Stamp Duty Concession)</span>
               </label>
-              <input
-                type="number"
-                step={25000}
-                value={societyDevCharges}
-                onChange={(e) => setSocietyDevCharges(Number(e.target.value))}
-                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white"
-              />
             </div>
           </div>
         </div>
 
-        {/* Right Column: Dynamic Breakdown Results & Out-of-Pocket Card (5 cols) */}
-        <div className="lg:col-span-5 space-y-4">
-          {/* Main Total Card */}
-          <div className="glass-panel p-6 rounded-2xl border-[#b59658]/40 bg-gradient-to-b from-[#12151f] to-[#1b202c] space-y-4 shadow-xl">
-            <div>
-              <span className="text-[11px] font-bold uppercase tracking-wider text-[#ccb67b]">
-                Total Capitalized Out-of-Pocket Cost
+        {/* Right Pane: Itemized Statutory Breakdown (7 cols) */}
+        <div className="lg:col-span-7 space-y-4">
+          <div className="p-5 rounded-2xl bg-[#1b202c]/90 border border-[#b59658]/30 shadow-xl space-y-4 text-xs">
+            <div className="flex justify-between items-center border-b border-[#b59658]/20 pb-3">
+              <h3 className="font-bold text-white text-base font-display">
+                Itemized Statutory Out-of-Pocket Ledger
+              </h3>
+              <span className="text-[10px] text-emerald-400 font-bold bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-500/30">
+                Estimate only
               </span>
-              <div className="text-3xl font-extrabold text-white font-mono mt-1">
-                ₹{costBreakdown.totalAllInCost.toLocaleString('en-IN')}
-              </div>
-              <div className="inline-flex items-center gap-1 text-xs text-[#ccb67b] font-semibold mt-1">
-                <span>₹{(costBreakdown.totalAllInCost / 100000).toFixed(2)} Lakhs</span>
-                <span className="text-slate-400 font-normal">
-                  (+{costBreakdown.percentageOverAgreement}% over agreement)
-                </span>
-              </div>
             </div>
 
-            {/* Itemized Line Items */}
-            <div className="space-y-2 pt-3 border-t border-slate-800 text-xs">
-              <div className="flex justify-between py-1 text-slate-300">
-                <span>1. Agreement Value (V_agr):</span>
-                <strong className="text-white font-mono">₹{costBreakdown.agreementValue.toLocaleString('en-IN')}</strong>
+            <div className="space-y-2 divide-y divide-[#b59658]/10 text-slate-300">
+              <div className="flex justify-between pt-1">
+                <span>1. Agreement Base Value:</span>
+                <strong className="text-white">{formatINR(agreementValue)}</strong>
               </div>
 
-              <div className="flex justify-between py-1 text-slate-300">
-                <span>2. Stamp Duty ({costBreakdown.stampDutyRate}%):</span>
-                <span className="text-amber-300 font-mono">+ ₹{costBreakdown.stampDutyAmount.toLocaleString('en-IN')}</span>
+              <div className="flex justify-between pt-1">
+                <span>2. Maharashtra Stamp Duty ({costBreakdown.stampDutyRate}%):</span>
+                <strong className="text-white">{formatINR(costBreakdown.stampDutyAmount)}</strong>
               </div>
 
-              <div className="flex justify-between py-1 text-slate-300">
-                <span>3. Registration (Capped at ₹30k):</span>
-                <span className="text-amber-300 font-mono">+ ₹{costBreakdown.registrationFee.toLocaleString('en-IN')}</span>
+              <div className="flex justify-between pt-1">
+                <span>3. Registration Fee (1% capped at ₹30,000):</span>
+                <strong className="text-white">{formatINR(costBreakdown.registrationFee)}</strong>
               </div>
 
-              <div className="flex justify-between py-1 text-slate-300">
-                <span>4. GST ({costBreakdown.gstRate}%):</span>
-                <span className="text-amber-300 font-mono">
-                  {costBreakdown.gstAmount === 0 ? '₹0 (OC Exempt)' : `+ ₹${costBreakdown.gstAmount.toLocaleString('en-IN')}`}
-                </span>
+              <div className="flex justify-between pt-1">
+                <span>4. GST ({costBreakdown.gstRate}% {hasOC ? '• OC Exempt' : '• Under-Construction'}):</span>
+                <strong className="text-white">{formatINR(costBreakdown.gstAmount)}</strong>
               </div>
 
-              <div className="flex justify-between py-1 text-slate-300">
-                <span>5. Floor Rise (Floor {floorNumber}):</span>
-                <span className="text-slate-300 font-mono">
-                  {costBreakdown.floorRiseCharges === 0 ? '₹0' : `+ ₹${costBreakdown.floorRiseCharges.toLocaleString('en-IN')}`}
-                </span>
+              <div className="flex justify-between pt-1">
+                <span>5. Floor Rise Charges (Fl {floorNumber}):</span>
+                <strong className="text-white">{formatINR(costBreakdown.floorRiseCharges)}</strong>
               </div>
 
-              <div className="flex justify-between py-1 text-slate-300">
-                <span>6. Parking + Society Dev:</span>
-                <span className="text-slate-300 font-mono">+ ₹{(costBreakdown.parkingCharges + costBreakdown.societyDevCharges).toLocaleString('en-IN')}</span>
+              <div className="flex justify-between pt-1">
+                <span>6. Covered Parking Allotment:</span>
+                <strong className="text-white">{formatINR(parkingCharges)}</strong>
               </div>
-            </div>
 
-            {/* Buyer Advice Note */}
-            <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-[11px] text-slate-400 space-y-1">
-              <strong className="text-slate-200 block flex items-center gap-1">
-                <ShieldCheck className="w-3.5 h-3.5 text-[#b59658]" />
-                Broker Consultation Rule
-              </strong>
-              <p>
-                Never quote ₹{(costBreakdown.agreementValue / 100000).toFixed(1)}L to a buyer with a ₹55L budget without disclosing the additional ₹{((costBreakdown.totalAllInCost - costBreakdown.agreementValue) / 100000).toFixed(2)}L in government taxes and society fees.
-              </p>
+              <div className="flex justify-between pt-1">
+                <span>7. Society Development &amp; Club Charges:</span>
+                <strong className="text-white">{formatINR(societyDevCharges)}</strong>
+              </div>
+
+              <div className="pt-3 border-t border-[#b59658]/30 flex justify-between items-center text-sm font-bold text-[#ccb67b]">
+                <div>
+                  <span className="block">Total Capitalized Cost ($C_{'{'}all-in{'}'}$):</span>
+                  <span className="text-[10px] text-slate-400 font-normal">
+                    Adds +{((costBreakdown.totalAllInCost - agreementValue) / agreementValue * 100).toFixed(1)}% above base
+                  </span>
+                </div>
+                <div className="text-right">
+                  <div className="text-xl text-white font-mono">{formatINR(costBreakdown.totalAllInCost)}</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

@@ -1,0 +1,86 @@
+- generic [ref=e3]:
+  - complementary [ref=e4]:
+    - link "ZamZam CRM dashboard" [ref=e6] [cursor=pointer]:
+      - /url: /
+      - generic [ref=e12]:
+        - strong [ref=e13]: ZamZam CRM
+        - generic [ref=e14]: Real-estate operations
+    - generic [ref=e16]:
+      - button "Gold & Ink" [pressed] [ref=e17] [cursor=pointer]
+      - button "B&W Mono" [ref=e22] [cursor=pointer]
+    - navigation "Primary navigation" [ref=e27]:
+      - generic [ref=e28]: Lead-to-closing workflow
+      - link "Dashboard" [ref=e29] [cursor=pointer]:
+        - /url: /
+      - link "Leads" [ref=e35] [cursor=pointer]:
+        - /url: /leads
+      - link "Inventory" [ref=e42] [cursor=pointer]:
+        - /url: /inventory
+      - link "Matchmaker" [ref=e47] [cursor=pointer]:
+        - /url: /matching
+      - link "Client portals" [ref=e52] [cursor=pointer]:
+        - /url: /portals
+      - link "Site visits" [ref=e57] [cursor=pointer]:
+        - /url: /visits
+      - link "Deals" [ref=e61] [cursor=pointer]:
+        - /url: /deals
+      - link "Attribution" [ref=e65] [cursor=pointer]:
+        - /url: /attribution
+      - link "Analytics" [ref=e73] [cursor=pointer]:
+        - /url: /analytics
+      - link "Cost calculator" [ref=e77] [cursor=pointer]:
+        - /url: /calculator
+    - paragraph [ref=e81]: Workspace ready
+  - main [ref=e83]:
+    - generic [ref=e85]:
+      - generic [ref=e86]:
+        - generic [ref=e87]:
+          - generic [ref=e88]:
+            - generic [ref=e89]: 5-FACTOR WEIGHTED SCORING
+            - generic "RERA ID + budget checks" [ref=e93]
+          - heading "Property Matchmaker AI Console" [level=1] [ref=e98]
+          - paragraph [ref=e99]: Weighted matching against current Kharghar & Taloja broker records with a +5% budget ceiling.
+        - generic [ref=e101]:
+          - generic [ref=e102]:
+            - generic [ref=e106]: "Basket:"
+            - strong [ref=e107]: 0 Units
+          - button "Generate client portal" [disabled] [ref=e108]
+      - generic [ref=e115]:
+        - generic [ref=e117]:
+          - heading "Client Matching Parameters" [level=3] [ref=e119]
+          - generic [ref=e121]:
+            - generic [ref=e122]: "Target lead profile:"
+            - combobox "Target lead profile:" [ref=e123]:
+              - option "Custom search parameters" [selected]
+          - generic [ref=e124]:
+            - generic [ref=e125]:
+              - generic [ref=e126]: "Maximum budget ceiling:"
+              - status [ref=e127]: ₹75.00 Lakh
+            - slider "Maximum budget ceiling:" [ref=e128] [cursor=pointer]: "7500000"
+            - generic [ref=e129]:
+              - generic [ref=e130]: ₹30L
+              - generic [ref=e131]: ₹1.25 Cr
+              - generic [ref=e132]: ₹2.5 Cr
+          - group "BHK preferences:" [ref=e133]:
+            - generic [ref=e135]:
+              - button "1 BHK" [ref=e136] [cursor=pointer]
+              - button "2 BHK" [pressed] [ref=e137] [cursor=pointer]
+              - button "3 BHK" [ref=e138] [cursor=pointer]
+              - button "4 BHK" [ref=e139] [cursor=pointer]
+          - generic [ref=e140]:
+            - generic [ref=e141]:
+              - generic [ref=e142]: "Minimum carpet area:"
+              - status [ref=e143]: 600 sq.ft
+            - slider "Minimum carpet area:" [ref=e144] [cursor=pointer]: "600"
+          - group "Possession timeline:" [ref=e145]:
+            - generic [ref=e147]:
+              - button "Any Stage" [pressed] [ref=e148] [cursor=pointer]
+              - button "Ready (OC)" [ref=e149] [cursor=pointer]
+              - button "< 1 Year" [ref=e150] [cursor=pointer]
+        - generic [ref=e152]:
+          - generic [ref=e153]:
+            - generic [ref=e154]: Ranked Inventory Matches (0)
+            - generic [ref=e159]: 0% matches auto-collapsed
+          - generic [ref=e160]:
+            - paragraph [ref=e163]: No current inventory records match your strict criteria.
+            - paragraph [ref=e164]: Try expanding the maximum budget ceiling or adding adjacent BHK configurations.

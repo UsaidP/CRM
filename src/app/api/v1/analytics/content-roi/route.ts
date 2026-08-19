@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
-import { computeContentRoi } from '@/lib/domain/analytics-engine';
+import { computeContentRoi, summarizeContentRoi } from '@/lib/domain/analytics-engine';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,6 +19,7 @@ export async function GET() {
     ]);
 
     const report = computeContentRoi(campaigns, deals, leads);
+    const attributionSummary = summarizeContentRoi(report);
 
     const totalClicks = report.reduce((acc, r) => acc + r.totalClicks, 0);
     const totalLeads = report.reduce((acc, r) => acc + r.totalLeads, 0);
@@ -29,6 +30,7 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       summary: {
+        ...attributionSummary,
         totalClicks,
         totalLeads,
         totalDeals,

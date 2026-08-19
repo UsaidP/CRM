@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db/prisma';
 import { createUnitSchema } from '@/lib/validators/inventory-schemas';
 import { calculateAllInCost } from '@/lib/domain/cost-calculator';
 import { assessUnitFreshness, validateReraNumber } from '@/lib/domain/verification-engine';
+import { parseInventoryContent } from '@/lib/inventory-media';
 
 export async function GET(req: Request) {
   try {
@@ -68,8 +69,8 @@ export async function GET(req: Request) {
     const enrichedUnits = units.map((u) => {
       const freshness = assessUnitFreshness(u.verificationStatus, u.lastVerifiedAt);
       return {
-        ...u,
-        photoGallery: JSON.parse(u.photoGalleryJson || '[]'),
+        ...parseInventoryContent(u),
+        photoGallery: parseInventoryContent(u).mediaGallery.map((asset) => asset.url),
         freshness,
       };
     });
@@ -137,6 +138,10 @@ export async function POST(req: Request) {
         facing: validated.facing,
         possessionStatus: validated.possessionStatus,
         possessionDate: validated.possessionDate ? new Date(validated.possessionDate) : null,
+        description: validated.description,
+        featureHighlightsJson: JSON.stringify(validated.featureHighlights || []),
+        floorPlanUrl: validated.floorPlanUrl || null,
+        mediaGalleryJson: JSON.stringify(validated.mediaGallery || []),
         
         agreementValue: costResult.agreementValue,
         stampDutyRate: costResult.stampDutyRate,
@@ -165,7 +170,8 @@ export async function POST(req: Request) {
       message: 'Property unit listed successfully',
       data: {
         ...unit,
-        photoGallery: JSON.parse(unit.photoGalleryJson || '[]'),
+        ...parseInventoryContent(unit),
+        photoGallery: parseInventoryContent(unit).mediaGallery.map((asset) => asset.url),
       },
     }, { status: 201 });
   } catch (error: any) {

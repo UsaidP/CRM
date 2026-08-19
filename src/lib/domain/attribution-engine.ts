@@ -38,7 +38,7 @@ export function generateWhatsAppDeepLink(options: WhatsAppDeepLinkOptions): {
   const projText = options.projectName ? ` for ${options.projectName}` : '';
   const bhkText = options.bhk ? ` (${options.bhk} BHK)` : '';
 
-  const prefilledText = `Hi ZamZam Properties, I saw your ${options.channelType.replace('_', ' ')} post${projText}${bhkText} [Ref: ${codeTag}]. Please share verified pricing & brochure.`;
+  const prefilledText = `Hi ZamZam Properties, I saw your ${options.channelType.replace('_', ' ')} post${projText}${bhkText} [Ref: ${codeTag}]. Please share the current price and brochure.`;
 
   const encodedText = encodeURIComponent(prefilledText);
   const waUrl = `https://wa.me/${cleanPhone}?text=${encodedText}`;
@@ -111,5 +111,5 @@ export function generateSpeedToLeadResponse(
   const proj = projectName ? ` regarding ${projectName}` : '';
   const loc = microMarket ? ` in ${microMarket}` : '';
 
-  return `Hello${name}! Thank you for connecting with ZamZam Properties${proj}${loc}. All our inventory is 100% MahaRERA verified with confirmed all-inclusive cost sheets. A senior Navi Mumbai advisor will share your curated property options shortly.`;
+  return `Hello${name}! Thank you for connecting with ZamZam Properties${proj}${loc}. An advisor will share current property records, available RERA IDs, and calculated all-in cost sheets for your review. Please reconfirm price and availability before making a decision.`;
 }

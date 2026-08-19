@@ -12,10 +12,20 @@ export interface ContentRoiReport {
   totalLeads: number;
   totalVisits: number;
   totalDeals: number;
+  attributedAgreementValue: number;
   grossBrokerageRupees: number;
   firmNetRupees: number;
   conversionRatePercent: number;
   revenuePerClick: number;
+}
+
+export interface ContentRoiSummary {
+  totalAttributedGmv: number;
+  totalAttributedBrokerage: number;
+  youtubePipeline: number;
+  instagramPipeline: number;
+  youtubeSharePercent: number | null;
+  instagramSharePercent: number | null;
 }
 
 export interface AgentLeaderboardEntry {
@@ -77,6 +87,11 @@ export function computeContentRoi(
       0
     );
 
+    const attributedAgreementValue = campaignDeals.reduce(
+      (acc, d) => acc + (Number(d.agreementValue) || 0),
+      0
+    );
+
     const firmNetRupees = campaignDeals.reduce(
       (acc, d) => acc + (Number(d.firmNetBrokerageAmount) || 0),
       0
@@ -109,12 +124,40 @@ export function computeContentRoi(
       totalLeads,
       totalVisits,
       totalDeals,
+      attributedAgreementValue,
       grossBrokerageRupees,
       firmNetRupees,
       conversionRatePercent,
       revenuePerClick,
     };
   }).sort((a, b) => b.grossBrokerageRupees - a.grossBrokerageRupees);
+}
+
+export function summarizeContentRoi(report: ContentRoiReport[]): ContentRoiSummary {
+  const channelTotal = (channelMatchers: string[]) => report
+    .filter((item) => {
+      const channel = item.channelType.toUpperCase();
+      return channelMatchers.some((matcher) => channel.includes(matcher));
+    })
+    .reduce((sum, item) => sum + item.grossBrokerageRupees, 0);
+
+  const totalAttributedGmv = report.reduce((sum, item) => sum + item.attributedAgreementValue, 0);
+  const totalAttributedBrokerage = report.reduce((sum, item) => sum + item.grossBrokerageRupees, 0);
+  const youtubePipeline = channelTotal(['YOUTUBE']);
+  const instagramPipeline = channelTotal(['INSTAGRAM', 'REEL']);
+
+  return {
+    totalAttributedGmv,
+    totalAttributedBrokerage,
+    youtubePipeline,
+    instagramPipeline,
+    youtubeSharePercent: totalAttributedBrokerage > 0
+      ? Number(((youtubePipeline / totalAttributedBrokerage) * 100).toFixed(1))
+      : null,
+    instagramSharePercent: totalAttributedBrokerage > 0
+      ? Number(((instagramPipeline / totalAttributedBrokerage) * 100).toFixed(1))
+      : null,
+  };
 }
 
 /**

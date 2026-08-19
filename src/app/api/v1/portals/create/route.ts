@@ -8,7 +8,7 @@ export async function POST(req: Request) {
     const {
       leadId,
       selectedUnitIds = [],
-      customMessage = 'Here are verified property options personally curated for your requirements.',
+      customMessage = 'Here are property options selected from current broker records for your requirements.',
       createdById,
     } = body;
 

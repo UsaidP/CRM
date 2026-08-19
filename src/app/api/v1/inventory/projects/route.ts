@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { createProjectSchema } from '@/lib/validators/inventory-schemas';
 import { validateReraNumber } from '@/lib/domain/verification-engine';
+import { parseInventoryContent } from '@/lib/inventory-media';
 
 export async function GET(req: Request) {
   try {
@@ -39,8 +40,7 @@ export async function GET(req: Request) {
     });
 
     const enriched = projects.map((p) => ({
-      ...p,
-      amenities: JSON.parse(p.amenitiesJson || '[]'),
+      ...parseInventoryContent(p),
       unitCount: p.units.length,
       activeUnitCount: p.units.filter((u) => u.verificationStatus === 'ACTIVE_MARKETABLE').length,
     }));
@@ -88,6 +88,12 @@ export async function POST(req: Request) {
         reraNumber: reraValidation.normalized || validated.reraNumber,
         microMarket: validated.microMarket,
         subLocality: validated.subLocality,
+        shortDescription: validated.shortDescription,
+        description: validated.description,
+        locationDescription: validated.locationDescription,
+        keyHighlightsJson: JSON.stringify(validated.keyHighlights || []),
+        mediaGalleryJson: JSON.stringify(validated.mediaGallery || []),
+        coverImageUrl: validated.coverImageUrl || null,
         latitude: validated.latitude,
         longitude: validated.longitude,
         distanceToMetroKm: validated.distanceToMetroKm,
@@ -112,7 +118,7 @@ export async function POST(req: Request) {
       message: 'Developer project cataloged successfully',
       data: {
         ...project,
-        amenities: JSON.parse(project.amenitiesJson || '[]'),
+        ...parseInventoryContent(project),
       },
     }, { status: 201 });
   } catch (error: any) {

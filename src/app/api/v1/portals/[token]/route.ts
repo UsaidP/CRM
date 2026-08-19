@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
+import { parseInventoryContent } from '@/lib/inventory-media';
 
 export async function GET(req: Request, { params }: { params: Promise<{ token: string }> }) {
   try {
@@ -59,14 +60,19 @@ export async function GET(req: Request, { params }: { params: Promise<{ token: s
     });
 
     // Format units photoGallery JSON
-    const formattedUnits = portal.portalUnits.map((pu) => ({
+    const formattedUnits = portal.portalUnits.map((pu) => {
+      const project = parseInventoryContent(pu.propertyUnit.project);
+      const propertyUnit = parseInventoryContent(pu.propertyUnit);
+      return {
       ...pu,
-      propertyUnit: {
-        ...pu.propertyUnit,
-        photoGallery: JSON.parse(pu.propertyUnit.photoGalleryJson || '[]'),
-        amenities: JSON.parse(pu.propertyUnit.project.amenitiesJson || '[]'),
+        propertyUnit: {
+        ...propertyUnit,
+        project,
+        amenities: project.amenities,
+        photoGallery: propertyUnit.mediaGallery.filter((asset) => asset.kind === 'image').map((asset) => asset.url),
       },
-    }));
+      };
+    });
 
     return NextResponse.json({
       success: true,

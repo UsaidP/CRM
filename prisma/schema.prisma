@@ -8,20 +8,23 @@ datasource db {
 }
 
 model Organization {
-  id                      String             @id @default(uuid())
+  id                      String              @id @default(uuid())
   name                    String
-  slug                    String             @unique
+  slug                    String              @unique
   reraBrokerRegistration  String?
-  settingsJson            String             @default("{\"currency\":\"INR\",\"state\":\"Maharashtra\"}")
+  settingsJson            String              @default("{\"currency\":\"INR\",\"state\":\"Maharashtra\"}")
   users                   User[]
+  brokerPhoneNumbers      BrokerPhoneNumber[]
+  contacts                Contact[]
+  mergeAudits             ContactMergeAudit[]
   projects                DeveloperProject[]
   leads                   Lead[]
   campaigns               InboundCampaign[]
   portals                 ClientPortal[]
   visits                  SiteVisit[]
   deals                   DealTransaction[]
-  createdAt               DateTime           @default(now())
-  updatedAt               DateTime           @updatedAt
+  createdAt               DateTime            @default(now())
+  updatedAt               DateTime            @updatedAt
 }
 
 model User {
@@ -33,9 +36,13 @@ model User {
   phoneE164         String
   role              String               @default("SALES_EXECUTIVE") // SUPER_ADMIN, BROKER_MANAGER, SALES_EXECUTIVE, TELECALLER
   isActive          Boolean              @default(true)
+  phoneNumbers      BrokerPhoneNumber[]  @relation("BrokerNumbers")
+  assignedContacts  Contact[]            @relation("AssignedContactBroker")
+  assignedLeads     Lead[]               @relation("AssignedBroker")
+  campaignsAssigned InboundCampaign[]    @relation("BrokerCampaigns")
+  mergeAudits       ContactMergeAudit[]  @relation("MergeAuditor")
   verifiedUnits     PropertyUnit[]       @relation("UnitVerifier")
   auditLogs         InventoryAuditLog[]  @relation("AuditUser")
-  assignedLeads     Lead[]               @relation("AssignedBroker")
   portalsCreated    ClientPortal[]       @relation("PortalCreator")
   siteVisitsHosted  SiteVisit[]          @relation("VisitHost")
   dealsClosed       DealTransaction[]    @relation("ClosingBroker")
@@ -43,6 +50,75 @@ model User {
   updatedAt         DateTime             @updatedAt
 
   @@index([organizationId, role])
+}
+
+model BrokerPhoneNumber {
+  id                    String       @id @default(uuid())
+  organizationId        String
+  organization          Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  brokerId              String
+  broker                User         @relation("BrokerNumbers", fields: [brokerId], references: [id], onDelete: Cascade)
+  e164                  String       @unique // e.g. +917977552011, +919967731071
+  displayName           String       // e.g. "Safwan Diwan (Senior Broker)"
+  whatsappPhoneNumberId String?      // Meta Cloud API WhatsApp Phone Number ID
+  active                Boolean      @default(true)
+  createdAt             DateTime     @default(now())
+  updatedAt             DateTime     @updatedAt
+
+  @@index([e164])
+  @@index([whatsappPhoneNumberId])
+  @@index([organizationId, active])
+}
+
+model Contact {
+  id                 String              @id @default(uuid())
+  organizationId     String
+  organization       Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  primaryName        String?
+  companyName        String?
+  assignedBrokerId   String?
+  assignedBroker     User?               @relation("AssignedContactBroker", fields: [assignedBrokerId], references: [id])
+  lifecycleStage     String              @default("PROSPECT") // PROSPECT, ACTIVE_BUYER, VISITOR, NEGOTIATING, CLOSED_CLIENT, INACTIVE
+  notes              String?
+  firstSeenAt        DateTime            @default(now())
+  lastActivityAt     DateTime            @default(now())
+  identities         ContactIdentity[]
+  leads              Lead[]
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  @@index([organizationId, assignedBrokerId])
+  @@index([lifecycleStage])
+}
+
+model ContactIdentity {
+  id            String    @id @default(uuid())
+  contactId     String
+  contact       Contact   @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  identityType  String    // PHONE_E164, WHATSAPP_WAID, INSTAGRAM_IGID, YOUTUBE_USER, EMAIL
+  identityValue String    // +917977552011, 7977552011, ig_178414..., user@example.com
+  isPrimary     Boolean   @default(false)
+  verifiedAt    DateTime?
+  createdAt     DateTime  @default(now())
+
+  @@index([identityType, identityValue])
+  @@index([contactId])
+}
+
+model ContactMergeAudit {
+  id              String       @id @default(uuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  sourceContactId String
+  targetContactId String
+  mergedByUserId  String?
+  mergedByUser    User?        @relation("MergeAuditor", fields: [mergedByUserId], references: [id])
+  mergedReason    String?
+  snapshotJson    String       @default("{}")
+  createdAt       DateTime     @default(now())
+
+  @@index([organizationId])
+  @@index([targetContactId])
 }
 
 model DeveloperProject {
@@ -54,6 +130,12 @@ model DeveloperProject {
   reraNumber                  String
   microMarket                 String             // e.g. "Kharghar Sector 35", "Taloja Phase 1", "Kharghar Sector 20"
   subLocality                 String?
+  shortDescription             String?
+  description                 String?
+  locationDescription         String?
+  keyHighlightsJson            String             @default("[]")
+  mediaGalleryJson             String             @default("[]")
+  coverImageUrl                String?
   latitude                    Float?
   longitude                   Float?
   distanceToMetroKm           Float?
@@ -94,6 +176,10 @@ model PropertyUnit {
   facing                      String              @default("EAST")
   possessionStatus            String              // READY_TO_MOVE, UNDER_CONSTRUCTION
   possessionDate              DateTime?
+  description                 String?
+  featureHighlightsJson       String              @default("[]")
+  floorPlanUrl                String?
+  mediaGalleryJson            String              @default("[]")
 
   // Financial Breakdown (INR)
   agreementValue              Float
@@ -149,10 +235,13 @@ model InboundCampaign {
   campaignName         String
   channelType          String            // YOUTUBE_SHORT, YOUTUBE_VIDEO, INSTAGRAM_REEL, INSTAGRAM_DM, FB_GROUP, WHATSAPP_GROUP, DIRECT_CALL
   contentId            String?           // e.g. Reel ID, Video ID, FB Group Name
+  sourceCode           String?           // e.g. TALOJA21, MARVEL35, CROWN12
   targetProjectId      String?
   targetProject        DeveloperProject? @relation(fields: [targetProjectId], references: [id])
   targetPropertyUnitId String?
   targetPropertyUnit   PropertyUnit?     @relation(fields: [targetPropertyUnitId], references: [id])
+  assignedBrokerId     String?
+  assignedBroker       User?             @relation("BrokerCampaigns", fields: [assignedBrokerId], references: [id])
   customSlug           String            @unique // e.g. 'yt-sec35-sobha', 'fb-kharghar-investors'
   waPrefilledText      String
   totalClicks          Int               @default(0)
@@ -163,48 +252,67 @@ model InboundCampaign {
   updatedAt            DateTime          @updatedAt
 
   @@index([customSlug])
+  @@index([sourceCode])
   @@index([channelType])
 }
 
 model WebhookEventInbox {
-  id             String    @id @default(uuid())
-  eventSource    String    // INSTAGRAM_GRAPH, WHATSAPP_CLOUD, TELEPHONY_EXOTEL, WEB_FORM
-  idempotencyKey String    @unique
-  payloadJson    String    // Raw JSON string
-  status         String    @default("PROCESSED") // PENDING, PROCESSED, FAILED
-  processedAt    DateTime? @default(now())
-  errorMessage   String?
-  createdAt      DateTime  @default(now())
+  id              String    @id @default(uuid())
+  eventSource     String    // INSTAGRAM_GRAPH, WHATSAPP_CLOUD, TELEPHONY_EXOTEL, ANDROID_COMPANION, WEB_FORM
+  idempotencyKey  String    @unique
+  providerEventId String?
+  payloadJson     String    // Raw JSON string
+  status          String    @default("PROCESSED") // PENDING, PROCESSED, FAILED
+  signatureValid  Boolean   @default(true)
+  retryCount      Int       @default(0)
+  lastError       String?
+  processedAt     DateTime? @default(now())
+  errorMessage    String?
+  createdAt       DateTime  @default(now())
 
   @@index([idempotencyKey])
+  @@index([eventSource, status])
 }
 
 model Lead {
-  id                 String             @id @default(uuid())
-  organizationId     String
-  organization       Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  fullName           String?
-  phoneE164          String             @unique
-  email              String?
-  city               String             @default("Navi Mumbai")
-  leadSource         String             // instagram_reel, youtube_short, whatsapp_group, fb_group, direct_call
-  campaignId         String?
-  campaign           InboundCampaign?   @relation(fields: [campaignId], references: [id])
-  sourceRefUrl       String?
-  assignedBrokerId   String?
-  assignedBroker     User?              @relation("AssignedBroker", fields: [assignedBrokerId], references: [id])
-  currentStage       String             @default("new_uncontacted") // new_uncontacted, discovery_call, portal_shared, visit_scheduled, visit_done, closed_won, closed_lost
-  notes              String?
-  requirements       BuyerRequirement[]
-  communications     CommunicationLog[]
-  portals            ClientPortal[]
-  siteVisits         SiteVisit[]
-  deals              DealTransaction[]
-  createdAt          DateTime           @default(now())
-  updatedAt          DateTime           @updatedAt
+  id                     String             @id @default(uuid())
+  organizationId         String
+  organization           Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  contactId              String?
+  contact                Contact?           @relation(fields: [contactId], references: [id])
+  fullName               String?
+  phoneE164              String?            // Nullable for social-only inquiries
+  email                  String?
+  city                   String             @default("Navi Mumbai")
+  leadSource             String             // WHATSAPP_EXACT, INSTAGRAM_EXACT, YOUTUBE_EXACT, PHONE_ORGANIC_UNKNOWN, WHATSAPP_ORGANIC_UNKNOWN, MANUAL_ENTRY, etc.
+  sourceConfidence       String             @default("UNKNOWN") // EXACT, INFERRED, UNKNOWN
+  sourceContentId        String?            // e.g. Video ID, Reel ID
+  sourceContentUrl       String?
+  sourceCode             String?            // e.g. TALOJA21
+  inboundNumber          String?            // e.g. +917977552011 (contacted broker line)
+  campaignId             String?
+  campaign               InboundCampaign?   @relation(fields: [campaignId], references: [id])
+  sourceRefUrl           String?
+  assignedBrokerId       String?
+  assignedBroker         User?              @relation("AssignedBroker", fields: [assignedBrokerId], references: [id])
+  currentStage           String             @default("new_uncontacted") // new_uncontacted, discovery_call, portal_shared, visit_scheduled, visit_done, closed_won, closed_lost
+  notes                  String?
+  firstResponseSlaMinutes Int?
+  firstResponseAt        DateTime?
+  lastInboundMessageAt   DateTime?          @default(now())
+  requirements           BuyerRequirement[]
+  communications         CommunicationLog[]
+  portals                ClientPortal[]
+  siteVisits             SiteVisit[]
+  deals                  DealTransaction[]
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
 
   @@index([currentStage])
   @@index([leadSource])
+  @@index([sourceConfidence])
+  @@index([assignedBrokerId])
+  @@index([contactId])
 }
 
 model CommunicationLog {
@@ -220,6 +328,7 @@ model CommunicationLog {
   createdAt           DateTime @default(now())
 
   @@index([leadId])
+  @@index([channel, direction])
 }
 
 model BuyerRequirement {

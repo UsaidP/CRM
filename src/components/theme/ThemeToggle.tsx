@@ -2,38 +2,52 @@
 
 import React from 'react';
 import { useTheme } from './ThemeProvider';
-import { Sparkles, CircleDot } from 'lucide-react';
+import { Sparkles, CircleDot, Zap } from 'lucide-react';
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
 
   return (
-    <div className="p-1 rounded-xl bg-black/60 border border-[#b59658]/25 backdrop-blur-md flex items-center justify-between gap-1 text-[11px] font-semibold w-full">
+    <div className="theme-toggle flex items-center justify-between gap-1 text-[11px] font-semibold w-full">
       <button
+        type="button"
         onClick={() => setTheme('gold-ink')}
+        aria-pressed={theme === 'gold-ink'}
         title="Signature Gold on Dark Ink"
-        className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
-          theme === 'gold-ink'
-            ? 'bg-[#1b202c] text-[#ccb67b] border border-[#b59658]/50 shadow-sm font-bold'
-            : 'text-slate-400 hover:text-slate-200'
+        className={`theme-toggle__button flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg ${
+          theme === 'gold-ink' ? 'is-selected' : ''
         }`}
       >
-        <Sparkles className="w-3.5 h-3.5 text-[#b59658]" />
-        <span>Gold &amp; Ink</span>
+        <Sparkles className="w-3 h-3 flex-shrink-0" />
+        <span className="truncate">Gold</span>
       </button>
 
       <button
+        type="button"
         onClick={() => setTheme('monochrome')}
+        aria-pressed={theme === 'monochrome'}
         title="High-Contrast Black & White"
-        className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
-          theme === 'monochrome'
-            ? 'bg-white text-black border border-white font-extrabold shadow-sm'
-            : 'text-slate-400 hover:text-slate-200'
+        className={`theme-toggle__button flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg ${
+          theme === 'monochrome' ? 'is-selected' : ''
         }`}
       >
-        <CircleDot className="w-3.5 h-3.5 text-white" />
-        <span>B&amp;W Mono</span>
+        <CircleDot className="w-3 h-3 flex-shrink-0" />
+        <span className="truncate">Mono</span>
+      </button>
+
+      <button
+        type="button"
+        onClick={() => setTheme('cobalt')}
+        aria-pressed={theme === 'cobalt'}
+        title="Electric Cobalt Modern Minimal"
+        className={`theme-toggle__button flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg ${
+          theme === 'cobalt' ? 'is-selected' : ''
+        }`}
+      >
+        <Zap className="w-3 h-3 flex-shrink-0" />
+        <span className="truncate">Cobalt</span>
       </button>
     </div>
   );
 }
+
