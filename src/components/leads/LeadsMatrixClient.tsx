@@ -34,7 +34,11 @@ import {
   ArrowUpDown,
   ListOrdered,
   AlertCircle,
-  X
+  X,
+  LayoutGrid,
+  Table as TableIcon,
+  FileText,
+  Edit3
 } from 'lucide-react';
 import { YoutubeIcon, InstagramIcon } from '@/components/icons/SocialIcons';
 import { HallmarkStamp } from '@/components/ui/HallmarkStamp';
@@ -48,13 +52,13 @@ import { CompleteReminderPrompt } from '@/components/reminders/CompleteReminderP
 import { QuickLogModal } from '@/components/leads/QuickLogModal';
 import { AccessibleDialog } from '@/components/ui/AccessibleDialog';
 import { evaluateLeadConnectPriority, rankFirmLeadsForNextConnect, PrioritizedLeadScore } from '@/lib/domain/prioritization-engine';
-import { LayoutGrid, Table as TableIcon, FileText, Edit3 } from 'lucide-react';
+import { TelecallerConsoleView } from '@/components/leads/TelecallerConsoleView';
 
 export function LeadsMatrixClient({ initialLeads = [] }: { initialLeads?: any[] }) {
   const [leads, setLeads] = useState<any[]>(initialLeads);
   const [loading, setLoading] = useState(false);
   const [syncingFallbacks, setSyncingFallbacks] = useState(false);
-  const [viewMode, setViewMode] = useState<'table' | 'kanban'>('kanban');
+  const [viewMode, setViewMode] = useState<'table' | 'kanban' | 'console'>('kanban');
   const [selectedConfidence, setSelectedConfidence] = useState<string>('ALL');
   const [selectedSource, setSelectedSource] = useState('ALL');
   const [selectedStage, setSelectedStage] = useState('ALL');
@@ -295,6 +299,18 @@ export function LeadsMatrixClient({ initialLeads = [] }: { initialLeads?: any[] 
             >
               <TableIcon className="w-3.5 h-3.5" />
               <span>Table</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('console')}
+              aria-pressed={viewMode === 'console'}
+              className={`h-8 px-3 rounded-lg flex items-center gap-1.5 text-xs font-semibold transition-all cursor-pointer ${
+                viewMode === 'console' ? 'bg-accent text-white font-bold shadow-xs' : 'text-content-secondary hover:text-content'
+              }`}
+              title="Telecaller 40px Speed Calling Console with Brixi AI"
+            >
+              <Zap className="w-3.5 h-3.5" />
+              <span>Console ⚡</span>
             </button>
           </div>
 
@@ -576,8 +592,16 @@ export function LeadsMatrixClient({ initialLeads = [] }: { initialLeads?: any[] 
         </div>
       </div>
 
-      {/* Main Content Area: Kanban Board vs Table View */}
-      {viewMode === 'kanban' ? (
+      {/* Main Content Area: Console vs Kanban Board vs Table View */}
+      {viewMode === 'console' ? (
+        <TelecallerConsoleView
+          leads={leads}
+          onStageChange={handleStageChange}
+          onRefresh={fetchLeads}
+          onLogCall={(lead) => setQuickLogLead(lead)}
+          onSetReminder={(lead) => setQuickReminderLead(lead)}
+        />
+      ) : viewMode === 'kanban' ? (
         <LeadsKanbanBoard
           leads={filteredAndSortedLeads}
           scoredLeadsMap={scoredLeadsMap}

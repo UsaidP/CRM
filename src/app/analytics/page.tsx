@@ -18,24 +18,27 @@ export default async function AnalyticsPage() {
     const [campaigns, deals, leads, users, visits, portals] = await Promise.all([
       prisma.inboundCampaign.findMany({
         orderBy: { totalClicks: 'desc' },
-      }),
+      }).catch(() => []),
       prisma.dealTransaction.findMany({
         where: { dealStatus: { not: 'CANCELLED' } },
-      }),
+      }).catch(() => []),
       prisma.lead.findMany({
         include: { siteVisits: true },
-      }),
+      }).catch(() => []),
       prisma.user.findMany({
         where: { isActive: true },
-      }),
-      prisma.siteVisit.findMany(),
-      prisma.clientPortal.findMany(),
+      }).catch(() => []),
+      prisma.siteVisit.findMany().catch(() => []),
+      prisma.clientPortal.findMany().catch(() => []),
     ]);
 
-    initialRoi = computeContentRoi(campaigns, deals, leads);
-    initialLeaderboard = computeAgentLeaderboard(users, deals, visits, portals, leads);
-
-    roiSummary = summarizeContentRoi(initialRoi);
+    if (campaigns && deals && leads) {
+      initialRoi = computeContentRoi(campaigns, deals, leads);
+      roiSummary = summarizeContentRoi(initialRoi);
+    }
+    if (users && deals && visits && portals && leads) {
+      initialLeaderboard = computeAgentLeaderboard(users, deals, visits, portals, leads);
+    }
   } catch (err) {
     console.error('Error preloading analytics:', err);
   }

@@ -12,22 +12,28 @@ interface PageProps {
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { token } = await params;
-  const portal = await prisma.clientPortal.findUnique({
-    where: { token },
-    select: { title: true, customMessage: true },
-  });
+  try {
+    const { token } = await params;
+    const portal = await prisma.clientPortal.findUnique({
+      where: { token },
+      select: { title: true, customMessage: true },
+    });
 
-  if (!portal) {
+    if (!portal) {
+      return {
+        title: 'Portal Not Found | ZamZam Properties',
+      };
+    }
+
     return {
-      title: 'Portal Not Found | ZamZam Properties',
+      title: `${portal.title} | ZamZam Properties Advisory`,
+      description: portal.customMessage || 'Curated verified Navi Mumbai property portfolio.',
+    };
+  } catch {
+    return {
+      title: 'Client Property Portal | ZamZam Properties',
     };
   }
-
-  return {
-    title: `${portal.title} | ZamZam Properties Advisory`,
-    description: portal.customMessage || 'Curated verified Navi Mumbai property portfolio.',
-  };
 }
 
 export default async function ClientPortalPage({ params }: PageProps) {

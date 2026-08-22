@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import React, { useState, useMemo } from 'react';
 import { calculateAllInCost } from '@/lib/domain/cost-calculator';
 import { NAVI_MUMBAI_MICRO_MARKETS } from '@/lib/domain/market-definitions';
