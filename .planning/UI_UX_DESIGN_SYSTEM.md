@@ -1,105 +1,205 @@
-# ZamZam CRM UI/UX Design System
+# Architectural Botanical Ledger: Master UI/UX Design System
+**Project**: ZamZam Real Estate Brokerage CRM & Advisory Platform  
+**Version**: 2.0.0 (Fresh Build — Anti-AI-Slop Hallmark Architectural Baseline)  
+**Methodologies Applied**: `/agency-ux-architect`, `/agency-ui-designer`, `/hallmark`, `/agent-reach`  
+**Operational Benchmarks**: Leadrat (Speed & Disposition), Brixi AI (4-Pillar Qualification Scorecard), CRMThread (Pipeline Visibility & Speed-to-Lead)
 
-Status: implemented as the shared visual baseline for the CRM.
+---
 
-Audience: individual real-estate brokers and brokerage teams.
+## 1. Design Philosophy & Mental Model
 
-Primary job: move a lead from attribution through requirements, matching, client delivery, visits, negotiation, and closing without losing context or evidence.
+### 1.1 The "Spreadsheet-Speed" Interaction Model
+Real estate telecallers and sales brokers handle high volume (80–150 touches/day). Traditional bloated SaaS CRMs fail because modal dialogs, multi-step forms, and slow transitions force brokers back into Excel sheets.
 
-## Design Direction
+Our UX architecture establishes the **Spreadsheet-Speed Hybrid Console**:
+1. **Fixed 40px Row Density**: View 20+ leads at a glance without scrolling.
+2. **Persistent Dual-Pane Action Drawer**: Clicking a lead instantly reveals the Brixi AI qualification scorecard, call log, and requirement profiler on the right without closing the grid or reloading the page.
+3. **1-Click Color-Coded Disposition Bar**: Immediate single-keystroke or single-click dispositioning (*Connected - High Intent*, *Visit Booked*, *WhatsApp Shared*, *No Answer*, *Busy*, *Price Objection*, *Drop*).
+4. **Speed-to-Lead SLA Countdown**: Prominent live badge (< 5 mins target) for fresh inbound leads from YouTube, Instagram, and WhatsApp.
 
-- Tone: quiet, utilitarian, trustworthy, and optimized for repeated operational use.
-- Structure: a workbench layout with a persistent desktop side rail and a compact mobile navigation drawer.
-- Hierarchy: spacing, type, grouping, and table structure carry meaning before color or animation.
-- Evidence: only recorded data is shown as fact. Missing values use an explicit unavailable or pending state.
-- Primary action: one gold action per working context. Gold is never used as a claim of verification.
+---
 
-## Color Palette
+## 2. Hallmark-Grade Design Tokens (`css/design-system.css`)
 
-### Gold and Ink Theme
+```css
+:root {
+  /* ==========================================================================
+     1. COLOR SYSTEM (Architectural Botanical Ledger)
+     ========================================================================== */
+  
+  /* Primary Brand: Deep Cypress Forest Green (Authority, Wealth, Land) */
+  --color-primary: #1B4332;
+  --color-primary-light: #2D6A4F;
+  --color-primary-dark: #081C15;
+  --color-primary-surface: #E8F5E9;
+  --color-primary-border: #A3D9B1;
 
-| Token | Hex | Use |
-| --- | --- | --- |
-| `--color-surface-canvas` | `#0A0D14` | App background and page canvas |
-| `--color-surface-raised` | `#12151F` | Sidebar, mobile header, controls, table headers |
-| `--color-surface-subtle` | `#1B202C` | Cards, active navigation, raised panels |
-| `--color-surface-inset` | `#0D1018` | Inputs, inner sections, dense data areas |
-| `--color-text-primary` | `#F8FAFC` | Headings, key values, primary labels |
-| `--color-text-secondary` | `#CBD5E1` | Supporting labels and readable body text |
-| `--color-text-muted` | `#94A3B8` | Metadata, helper copy, unavailable states |
-| `--color-text-inverse` | `#12151F` | Text on the gold action |
-| `--color-action-primary` | `#B59658` | Primary action, selected state, brand accent |
-| `--color-action-primary-hover` | `#CCB67B` | Hover, active icon, emphasis on dark surfaces |
-| `--color-focus-ring` | `#F4D98B` | Keyboard focus ring |
-| `--color-border-default` | `rgba(181,150,88,.28)` | Standard panel and control border |
-| `--color-border-subtle` | `rgba(181,150,88,.16)` | Dividers and low-emphasis borders |
-| `--color-border-strong` | `rgba(204,182,123,.62)` | Focused or selected border |
+  /* Accent: Warm Terracotta & Amber Ochre (High-Intent, Callbacks, Action Prompts) */
+  --color-accent: #D97706;
+  --color-accent-hover: #B45309;
+  --color-accent-subtle: #FEF3C7;
+  --color-accent-border: #FCD34D;
 
-### Monochrome Theme
+  /* Neutral Backgrounds: Tactile Alabaster & Warm Linen */
+  --color-bg-canvas: #FBFBF9;
+  --color-bg-surface: #FFFFFF;
+  --color-bg-muted: #F3EFEA;
+  --color-bg-subtle: #EFEAE1;
+  --color-bg-inset: #F8F6F0;
 
-| Token | Hex | Use |
-| --- | --- | --- |
-| `--color-surface-canvas` | `#000000` | App background and page canvas |
-| `--color-surface-raised` | `#09090B` | Sidebar, mobile header, controls |
-| `--color-surface-subtle` | `#121212` | Cards and active navigation |
-| `--color-surface-inset` | `#0A0A0A` | Inputs and inner sections |
-| `--color-text-primary` | `#FFFFFF` | Headings and key values |
-| `--color-text-secondary` | `#E4E4E7` | Supporting labels and body text |
-| `--color-text-muted` | `#A1A1AA` | Metadata and helper copy |
-| `--color-text-inverse` | `#09090B` | Text on the white action |
-| `--color-action-primary` | `#FFFFFF` | Primary action and selected state |
-| `--color-action-primary-hover` | `#E4E4E7` | Hover and emphasis |
-| `--color-focus-ring` | `#FFFFFF` | Keyboard focus ring |
-| `--color-border-default` | `rgba(255,255,255,.28)` | Standard border |
-| `--color-border-subtle` | `rgba(255,255,255,.14)` | Low-emphasis divider |
-| `--color-border-strong` | `rgba(255,255,255,.72)` | Focused or selected border |
+  /* High-Contrast Typography */
+  --color-text-primary: #111827;
+  --color-text-secondary: #4B5563;
+  --color-text-muted: #6B7280;
+  --color-text-inverse: #FFFFFF;
 
-### Semantic Status Colors
+  /* Architectural Hairlines */
+  --color-border: #E5E0D8;
+  --color-border-subtle: #F0EBE1;
+  --color-border-strong: #D1C7B7;
 
-Status colors are intentionally separate from brand gold.
+  /* Semantic Status Palette */
+  --color-status-success: #15803D; /* Verified MahaRERA, Deal Won, Connected */
+  --color-status-success-bg: #DCFCE7;
+  --color-status-warning: #B45309; /* SLA Expiring, Pending Follow-up */
+  --color-status-warning-bg: #FEF3C7;
+  --color-status-danger: #B91C1C;  /* Stale Inventory (>14d), Lost Lead */
+  --color-status-danger-bg: #FEE2E2;
+  --color-status-info: #1D4ED8;    /* Telemetry Trigger, Client Portal Active */
+  --color-status-info-bg: #DBEAFE;
 
-| State | Foreground | Surface | Use |
-| --- | --- | --- | --- |
-| Success | `#4ADE80` | `#123323` | Saved, current, payment received |
-| Warning | `#FBBF24` | `#33280E` | Aging, pending, needs attention |
-| Danger | `#F87171` | `#3A171A` | Request failure, rejected, stale |
-| Information | `#60A5FA` | `#132A46` | Recorded context, warm interest, informational copy |
+  /* ==========================================================================
+     2. TYPOGRAPHY HIERARCHY
+     ========================================================================== */
+  --font-family-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-family-mono: 'JetBrains Mono', 'Space Grotesk', ui-monospace, SFMono-Regular, monospace;
 
-Do not use status colors to imply regulatory certification, guaranteed availability, or a conversion result.
+  --text-xs: 0.6875rem; /* 11px - Micro labels, uppercase tags */
+  --text-sm: 0.8125rem; /* 13px - Dense table rows, secondary metadata */
+  --text-base: 0.875rem;/* 14px - Primary UI text, buttons, form inputs */
+  --text-md: 1rem;      /* 16px - Section cards, key data headers */
+  --text-lg: 1.125rem;  /* 18px - Subheaders, drawer titles */
+  --text-xl: 1.375rem;  /* 22px - Section headings */
+  --text-2xl: 1.75rem;  /* 28px - Dashboard stat displays */
 
-## Type and Spacing
+  /* ==========================================================================
+     3. SPACING & LAYOUT (4px Rhythm)
+     ========================================================================== */
+  --space-1: 0.25rem;  /* 4px */
+  --space-2: 0.5rem;   /* 8px */
+  --space-3: 0.75rem;  /* 12px */
+  --space-4: 1rem;     /* 16px */
+  --space-5: 1.25rem;  /* 20px */
+  --space-6: 1.5rem;   /* 24px */
+  --space-8: 2rem;     /* 32px */
+  --space-12: 3rem;    /* 48px */
 
-- Display: Marcellus, roman only, for page and section headings.
-- Body: Plus Jakarta Sans for readable UI labels and actions.
-- Data: Geist Mono for IDs, timestamps, money values, and dense operational metadata.
-- Base spacing follows a 4px rhythm: 4, 8, 12, 16, 20, and 24px.
-- Control minimum target: 44px height and 44px width for icon-only controls.
-- Control radius: 6px. Panel radius: 12px. Repeated cards should not exceed 12px.
-- Focus uses a 2px visible ring with 2px offset and is never animated.
+  /* ==========================================================================
+     4. ELEVATIONS, BORDERS & SHADOWS
+     ========================================================================== */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-pill: 9999px;
 
-## Workflow UX Rules
+  --shadow-sm: 0 1px 2px 0 rgba(27, 67, 50, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(27, 67, 50, 0.08), 0 2px 4px -2px rgba(27, 67, 50, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(27, 67, 50, 0.1), 0 4px 6px -4px rgba(27, 67, 50, 0.05);
 
-1. Attribution records the source and normalizes contact details before assignment.
-2. Leads expose stage, owner, next follow-up, and requirements without requiring a detail-page detour.
-3. Matching shows the requirement inputs and the inventory evidence used for each result.
-4. Portal creation produces `/p/{token}` links only; the public view contains no internal CRM navigation.
-5. Visits preserve buyer, itinerary, logistics, and post-visit outcome in one working context.
-6. Deals use reversible stage movement. A rejected update restores the previous stage and announces the error.
-7. Analytics uses recorded values or an explicit unavailable state. It never substitutes a fabricated percentage.
+  --transition-fast: 120ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+```
 
-## Motion and Responsiveness
+---
 
-- Motion is limited to `transform` and `opacity` for interaction feedback.
-- Shared hover states use a 150ms to 180ms ease-out transition.
-- No decorative pulse, lift, or gradient is required to understand a workflow state.
-- `prefers-reduced-motion: reduce` collapses transitions and animations to near-zero duration.
-- Internal routes are verified at 320, 375, 414, 768, and 1440px.
-- Tables and filter strips may scroll inside their own bounded containers; the document itself must not scroll horizontally.
+## 3. The 8 Core Screen Architectures
 
-## Accessibility Contract
+### Screen 1: Telecaller Lead Calling Console (`/leads/caller-console`)
+- **Persona**: `TELECALLER`
+- **Layout**: Dual-pane grid (60% lead queue table, 40% persistent caller drawer).
+- **Key Modules**:
+  - Top SLA speed-to-lead status banner (e.g. `🔥 3 Fresh Social Inbounds (< 5m SLA)`).
+  - 40px row table with keyboard navigation (Up/Down arrows, Space to call, Enter to save).
+  - Brixi AI 4-Pillar Scorecard:
+    - `01 INTENT`: [Exploring] [Comparing] [Ready to Buy (Hot)]
+    - `02 BUDGET`: [₹40L-₹65L (Taloja)] [₹85L-₹1.75Cr (Kharghar)] [Stretch] [Mismatch]
+    - `03 LOCATION`: [Kharghar 1-20] [Kharghar 34-36] [Taloja P1/P2]
+    - `04 TIMELINE`: [0-30 Days (Assign Broker)] [31-90 Days (Nurture)] [90+ Days]
+  - 1-Click Call Disposition bar:
+    - Green: `Connected - High Intent`
+    - Amber: `Visit Booked`, `WhatsApp Shared`
+    - Slate: `No Answer`, `Busy`, `Callback Scheduled`
+    - Red: `Price Objection`, `Lost / Drop`
 
-- Every form control has a programmatic label.
-- Dialogs use native `dialog` semantics, labelled titles/descriptions, initial focus, Escape handling, focus containment, and focus restoration.
-- Icon-only actions have an accessible name.
-- Failures use a visible `role="alert"` message and a retry or recovery action where applicable.
-- Active navigation exposes `aria-current="page"` and remains visibly distinct without relying on color alone.
+### Screen 2: Master CRM Pipeline & Leads Board (`/leads`)
+- **Persona**: `SALES_EXECUTIVE`, `BROKER_MANAGER`
+- **Layout**: 7-Stage Kanban Board with instant Table-View toggle.
+- **Stages**:
+  1. `NEW_INBOUND` (Attribution source badge: YouTube Review, Instagram Reel, WA QR)
+  2. `CONTACTED_QUALIFIED` (Brixi Score >= 75%)
+  3. `REQUIREMENT_MATCHED` (Matched with >= 2 RERA properties)
+  4. `PORTAL_ACTIVE` (Client Portal viewed, live telemetry pulse)
+  5. `SITE_VISIT_SCHEDULED` (Cab & driver assigned)
+  6. `NEGOTIATION_TOKEN` (Token amount logged)
+  7. `DEAL_CLOSED_WON` (Commission milestone active)
+
+### Screen 3: MahaRERA Verified Inventory & Statutory Cost Engine (`/inventory`)
+- **Persona**: `SALES_EXECUTIVE`, `SUPER_ADMIN`
+- **Layout**: Micro-market tab switcher (Kharghar Sectors 1–20, Sectors 34–36, Taloja Phase 1 & 2) + Live Cost Calculator side-card.
+- **Key Modules**:
+  - 14-Day Anti-Staleness Verification Badge (`✅ Verified 3d ago` vs `⚠️ Stale - Verification Required`).
+  - Statutory Cost Engine ($C_{\text{all-in}}$):
+    - Base Agreement Value
+    - Maharashtra Stamp Duty (6%)
+    - Fixed Registration Charges (₹30,000)
+    - Statutory GST (5% Under Construction / 0% Ready OC)
+    - Floor Rise & Covered Parking
+    - Society Development / Corpus Fund
+    - Instant Net All-In Capitalized Total in `JetBrains Mono`
+
+### Screen 4: Consultative Requirement Matchmaker (`/matching`)
+- **Persona**: `SALES_EXECUTIVE`
+- **Layout**: Split comparison screen — Left: Buyer Wishlist Profiler, Right: 5-Factor Weighted Ranked Matches.
+- **Scoring Weight Breakdown**:
+  - Budget Tolerance (30%) — Disqualify if > +5%
+  - Location & Sector Fit (25%)
+  - Transit & Metro Distance (20%) — Kharghar Metro / Highway accessibility
+  - Possession & OC Status (15%)
+  - Configuration & Carpet Area (10%)
+- **Action**: 1-Click "Generate Client Portal" or "Share WhatsApp Comparison Card".
+
+### Screen 5: Client Property Presentation Portal & Broker Telemetry (`/p/[token]`)
+- **Persona**: `BUYER` (Client view) & `SALES_EXECUTIVE` (Telemetry console)
+- **Buyer View**: Clean, branded presentation with verified floor plans, 3D walkthrough video embeds, MahaRERA QR code, and interactive statutory cost breakdown.
+- **Broker Live Telemetry Drawer**:
+  - Real-time event notifications (`"Client opened Floor Plan B"`, `"Dwell time: 4m 12s on Cost Sheet"`).
+  - Intent classification (`HOT_PROSPECT` triggered after 3+ interactions).
+
+### Screen 6: Escorted Site Visit Itinerary Planner (`/visits`)
+- **Persona**: `SALES_EXECUTIVE`, `BROKER_MANAGER`
+- **Layout**: Interactive day itinerary builder with Google Maps route optimization.
+- **Key Modules**:
+  - Multi-project stop sequencing (e.g. Stop 1: Sector 35 Project A $\rightarrow$ Stop 2: Sector 20 Project B).
+  - Logistics dispatcher (Driver assignment, Station pickup point, AC Cab details).
+  - 1-Click "Send WhatsApp Tour Card" with live Google Maps navigation links.
+  - Post-visit 5-star rating & objection logger (Price, Layout, Distance, Vastu).
+
+### Screen 7: Deal Closing Commission Ledger & GST Invoicing (`/deals`)
+- **Persona**: `SUPER_ADMIN`, `BROKER_MANAGER`
+- **Layout**: 4-Stage deal milestone tracker + Developer Invoicing Generator.
+- **Key Modules**:
+  - Milestone progression: Token (₹1 Lakh) $\rightarrow$ Agreement 10% $\rightarrow$ Bank Loan Sanction $\rightarrow$ Full Brokerage Disbursed.
+  - 2.5% Gross Commission Split Matrix:
+    - Developer Gross Payout (e.g. ₹2,50,000 on ₹1 Cr deal)
+    - Firm Net Retention vs Sales Rep Share (e.g. 60% / 40%)
+    - Referral / Co-Broker split deduction
+  - MahaRERA & 18% GST Compliant Tax Invoice Generator with downloadable PDF preview.
+
+### Screen 8: Super Admin RBAC & Phone Line Manager (`/admin/roles-permissions`)
+- **Persona**: `SUPER_ADMIN`
+- **Layout**: Multi-tenant RBAC permissions grid + Cloud Telephony pool management.
+- **Key Modules**:
+  - Granular RBAC Matrix: Super Admin, Broker Manager, Sales Executive, Telecaller.
+  - WhatsApp Cloud API & Exotel Phone Pool mapping (assign virtual numbers to caller queues).
+  - Real-time audit logs of lead exports, phone number unmasking, and commission edits.

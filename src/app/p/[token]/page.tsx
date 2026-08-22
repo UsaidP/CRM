@@ -5,6 +5,8 @@ import { parseInventoryContent } from '@/lib/inventory-media';
 import { ClientPortalView } from '@/components/portal/ClientPortalView';
 import { Metadata } from 'next';
 
+export const dynamic = 'force-dynamic';
+
 interface PageProps {
   params: Promise<{ token: string }>;
 }

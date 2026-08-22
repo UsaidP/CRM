@@ -63,8 +63,8 @@ module.exports = {
         },
       },
       fontFamily: {
-        display: ['Space Grotesk', 'Avenir Next', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        sans: ['Inter', 'Space Grotesk', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        display: ['Plus Jakarta Sans', 'Manrope', 'Space Grotesk', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        sans: ['Plus Jakarta Sans', 'Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'Geist Mono', 'SFMono-Regular', 'Consolas', 'monospace'],
       },
       borderRadius: {

@@ -21,7 +21,7 @@ export async function GET() {
       data: forecast,
       dealsBreakdown: deals.map((d) => ({
         id: d.id,
-        projectName: d.developerProject.projectName,
+        projectName: d.developerProject?.projectName || 'Direct / Unassigned',
         brokerName: d.closingBroker?.fullName || 'Unassigned',
         agreementValue: d.agreementValue,
         grossBrokerage: d.grossBrokerageAmount,
