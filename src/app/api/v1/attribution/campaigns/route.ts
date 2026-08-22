@@ -3,6 +3,8 @@ import { prisma } from '@/lib/db/prisma';
 import { generateCampaignDeepLink } from '@/lib/domain/campaign-attribution';
 import { OFFICIAL_BROKER_NUMBERS } from '@/lib/domain/broker-resolver';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const campaigns = await prisma.inboundCampaign.findMany({

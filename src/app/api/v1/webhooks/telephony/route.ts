@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { normalizeIndianPhone } from '@/lib/domain/phone-normalizer';
+import { ensureLeadFallbackReminder } from '@/lib/services/lead-reminder-service';
+
+export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   try {
@@ -34,7 +37,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: 'Organization not found' }, { status: 500 });
     }
 
-    let lead = await prisma.lead.findUnique({
+    let lead = await prisma.lead.findFirst({
       where: { phoneE164: phoneResult.e164 },
     });
 
@@ -68,6 +71,13 @@ export async function POST(req: Request) {
         messageContent: `Call logged: ${callType} (Virtual DID: ${virtualNumber || 'Main Line'})`,
         metadataJson: JSON.stringify(body),
       },
+    });
+
+    // Auto-seed callback reminder for inbound/missed call
+    await ensureLeadFallbackReminder(lead.id, {
+      organizationId: org.id,
+      preferredTitle: `Return Missed Inbound Call (${phoneResult.nationalFormat})`,
+      preferredType: 'CALL',
     });
 
     return NextResponse.json({

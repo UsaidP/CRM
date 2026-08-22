@@ -12,25 +12,8 @@ export interface BrokerResolutionResult {
   error?: string;
 }
 
-// Configured Static Defaults for Fast Lookup and Seed Invariants
-export const OFFICIAL_BROKER_NUMBERS = {
-  SAFWAN: {
-    fullName: 'Safwan Diwan',
-    email: 'safwan@zamzamproperties.in',
-    e164: '+917977552011',
-    cleanDigits: '7977552011',
-    whatsappPhoneNumberId: process.env.WHATSAPP_SAFWAN_PHONE_NUMBER_ID || 'phone_num_id_safwan_7977552011',
-    displayName: 'Safwan Diwan (Senior Broker & Commercial Specialist)',
-  },
-  SUHEL: {
-    fullName: 'Suhel Patel',
-    email: 'suhel@zamzamproperties.in',
-    e164: '+919967731071',
-    cleanDigits: '9967731071',
-    whatsappPhoneNumberId: process.env.WHATSAPP_SUHEL_PHONE_NUMBER_ID || 'phone_num_id_suhel_9967731071',
-    displayName: 'Suhel Patel (Senior Broker & Residential Lead)',
-  },
-} as const;
+import { OFFICIAL_BROKER_NUMBERS } from '@/lib/constants/broker-constants';
+export { OFFICIAL_BROKER_NUMBERS };
 
 /**
  * Resolves broker ownership strictly from contacted inbound number or Meta WhatsApp Phone Number ID.

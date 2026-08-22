@@ -1,0 +1,77 @@
+{
+  "slug": "pendhar-metro-heights-taloja-phase-1-sec16",
+  "projectName": "Pendhar Metro Heights",
+  "developerName": "Today Global Developers",
+  "node": "TALOJA_PHASE_1",
+  "sector": "Sector 16",
+  "microMarket": "Taloja Phase 1 Sector 16",
+  "subLocality": "Pendhar Metro Station Hub",
+  "address": "Plot 4, Sector 16, Pendhar Metro Hub, Taloja Phase 1, Navi Mumbai 410208",
+  "reraNumber": "P52000027650",
+  "reraApprovedDate": "2021-07-15",
+  "promoterLegalEntity": "Today Metro Buildcon LLP",
+  "latitude": 19.0972,
+  "longitude": 73.0878,
+  "distanceToMetroKm": 0.1,
+  "nearestMetroStation": "Pendhar Metro Terminal",
+  "hasOccupancyCertificate": true,
+  "ocCertificateNumber": "CIDCO/BP/2024/OC-098",
+  "commencementCertificateDate": "2020-08-10",
+  "expectedPossessionDate": "2024-06-30",
+  "totalTowers": 1,
+  "totalFloors": 18,
+  "basePricePerSqft": 8500,
+  "standardCommissionPercent": 2,
+  "developerSalesPocName": "Bhavin Patel",
+  "developerSalesPocPhone": "+919820234544",
+  "shortDescription": "G+18 luxury tower 100 meters from Pendhar Metro Station Terminal.",
+  "description": "Pendhar Metro Heights offers ultimate transit convenience situated directly at the terminus of Navi Mumbai Metro Line 1, bridging Taloja with Kharghar and Belapur in minutes.",
+  "locationDescription": "Zero distance to Pendhar Metro Station, 2 minutes from Kharghar Sector 34.",
+  "keyHighlights": [
+    "100 Meters to Pendhar Metro Terminal",
+    "Unmatched Rental Demand & Capital Appreciation",
+    "Grand Double Height Entrance Lobby",
+    "Full OC Received"
+  ],
+  "amenities": [
+    "Skyline Fitness Studio",
+    "Rooftop Lounge",
+    "Automated Parking Stack",
+    "24/7 Power Backup",
+    "Smart Card Access Control"
+  ],
+  "coverImagePath": "/images/projects/pendhar-metro-heights-taloja-phase-1-sec16/cover.jpg",
+  "masterPlanPath": "/images/projects/pendhar-metro-heights-taloja-phase-1-sec16/masterplan.jpg",
+  "elevationImages": [
+    "/images/projects/pendhar-metro-heights-taloja-phase-1-sec16/elevation-1.jpg"
+  ],
+  "floorPlanImages": [
+    "/images/projects/pendhar-metro-heights-taloja-phase-1-sec16/floorplan-1bhk.jpg",
+    "/images/projects/pendhar-metro-heights-taloja-phase-1-sec16/floorplan-2bhk.jpg"
+  ],
+  "brochureUrl": "https://zamzamproperties.in/brochures/pendhar-metro-heights-sec16.pdf",
+  "youtubeWalkthroughUrl": "https://youtube.com/watch?v=taloja-sec16-pendhar-metro-heights",
+  "units": [
+    {
+      "unitNumber": "1102",
+      "bhk": 2,
+      "bathrooms": 2,
+      "balconies": 2,
+      "floorNumber": 11,
+      "totalFloors": 18,
+      "carpetAreaSqft": 670,
+      "carpetAreaSqm": 62.24,
+      "facing": "EAST",
+      "possessionStatus": "READY_TO_MOVE",
+      "possessionDate": "2024-06-30",
+      "agreementValue": 5695000,
+      "floorRiseCharges": 150000,
+      "parkingCharges": 250000,
+      "societyDevelopmentCharges": 160000,
+      "description": "Metro-facing 2 BHK on 11th floor with immediate OC possession and high rental yield.",
+      "floorPlanPath": "/images/projects/pendhar-metro-heights-taloja-phase-1-sec16/floorplan-2bhk.jpg",
+      "elevationPath": "/images/projects/pendhar-metro-heights-taloja-phase-1-sec16/elevation-1.jpg",
+      "isHotDeal": true
+    }
+  ]
+}

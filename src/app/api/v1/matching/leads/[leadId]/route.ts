@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { rankMatchingProperties, BuyerRequirementInput } from '@/lib/domain/matching-engine';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: Request, { params }: { params: Promise<{ leadId: string }> }) {
   try {
     const { leadId } = await params;

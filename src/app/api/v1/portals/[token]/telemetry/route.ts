@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { evaluateEngagementTier } from '@/lib/domain/portal-generator';
+import { triggerTelemetryIntentReminder } from '@/lib/services/lead-reminder-service';
+
+export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request, { params }: { params: Promise<{ token: string }> }) {
   try {
@@ -43,6 +46,14 @@ export async function POST(req: Request, { params }: { params: Promise<{ token: 
         },
       });
     }
+
+    // Trigger instant callback reminder if user demonstrates high engagement intent
+    await triggerTelemetryIntentReminder({
+      portalId: portal.id,
+      unitId: unitId || undefined,
+      actionType: actionType || 'PORTAL_OPEN',
+      dwellTimeSec: Number(dwellTimeSec),
+    });
 
     return NextResponse.json({ success: true, loggedId: telemetryLog.id }, { status: 201 });
   } catch (error: any) {

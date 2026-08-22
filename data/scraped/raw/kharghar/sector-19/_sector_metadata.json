@@ -1,0 +1,19 @@
+{
+  "node": "KHARGHAR",
+  "sector": "Sector 19",
+  "zone": "ISKCON Temple & Central Park North",
+  "landmarks": [
+    "ISKCON Glory of Maharashtra Temple",
+    "Central Park Gate 2",
+    "Hyde Park"
+  ],
+  "nearestMetroStation": "Central Park Metro",
+  "distanceToMetroKm": 0.3,
+  "averageRatePerSqft": 16500,
+  "centerCoordinates": {
+    "lat": 19.0645,
+    "lng": 73.0805
+  },
+  "scrapedAt": "2026-08-19T11:46:45.262Z",
+  "projectsCount": 1
+}

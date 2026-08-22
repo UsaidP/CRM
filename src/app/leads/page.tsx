@@ -26,6 +26,9 @@ export default async function LeadsPage() {
             telemetryLogs: true,
           },
         },
+        reminders: {
+          orderBy: { dueAt: 'asc' },
+        },
       },
       orderBy: { createdAt: 'desc' },
     });

@@ -29,11 +29,16 @@ import {
   Table,
   LayoutGrid,
   X,
-  Pencil
+  Pencil,
+  FileSpreadsheet,
+  Globe
 } from 'lucide-react';
 import { HallmarkStamp } from '@/components/ui/HallmarkStamp';
 import { AccessibleDialog } from '@/components/ui/AccessibleDialog';
 import { MediaUploader, type MediaAsset } from '@/components/inventory/MediaUploader';
+import { ProjectDetailsModal } from '@/components/inventory/ProjectDetailsModal';
+import { ScraperControlModal } from '@/components/inventory/ScraperControlModal';
+import { CsvImportModal } from '@/components/inventory/CsvImportModal';
 
 export function InventoryClient({
   initialUnits = [],
@@ -59,6 +64,11 @@ export function InventoryClient({
   const [targetStatus, setTargetStatus] = useState('ACTIVE_MARKETABLE');
   const [submittingAudit, setSubmittingAudit] = useState(false);
   const [auditSuccessMsg, setAuditSuccessMsg] = useState('');
+
+  // Project Details Inspector
+  const [inspectProject, setInspectProject] = useState<any | null>(null);
+  const [showScraperModal, setShowScraperModal] = useState(false);
+  const [showCsvImportModal, setShowCsvImportModal] = useState(false);
 
   // Quick Calculator Preview Modal
   const [calcModalUnit, setCalcModalUnit] = useState<any | null>(null);
@@ -298,15 +308,30 @@ export function InventoryClient({
       expectedPossessionDate: project.expectedPossessionDate ? String(project.expectedPossessionDate).slice(0, 10) : '',
       amenities: Array.isArray(project.amenities) ? project.amenities : [],
       keyHighlights: Array.isArray(project.keyHighlights) ? project.keyHighlights : [],
-      mediaGallery: Array.isArray(project.mediaGallery) ? project.mediaGallery : [],
+      mediaGallery: Array.isArray(project.mediaGallery)
+        ? project.mediaGallery.map((asset: any, idx: number) => ({
+            id: asset.id || `proj-asset-${idx}-${asset.url || Math.random().toString(36).slice(2, 7)}`,
+            url: asset.url || '',
+            kind: asset.kind || (asset.type === 'VIDEO' ? 'video' : 'image'),
+            title: asset.title || '',
+            alt: asset.alt || '',
+            caption: asset.caption || '',
+          }))
+        : [],
       coverImageUrl: project.coverImageUrl || '',
     }));
     setShowAddProjectModal(true);
   };
 
-  const openNewUnit = () => {
+  const openNewUnit = (targetProjectId?: string) => {
     setActionError(null);
     setEditingUnitId(null);
+    if (targetProjectId) {
+      setUnitForm((prev) => ({
+        ...prev,
+        projectId: targetProjectId,
+      }));
+    }
     setShowAddModal(true);
   };
 
@@ -323,7 +348,16 @@ export function InventoryClient({
       verificationNotes: unit.verificationNotes || '',
       featureHighlights: Array.isArray(unit.featureHighlights) ? unit.featureHighlights : [],
       floorPlanUrl: unit.floorPlanUrl || '',
-      mediaGallery: Array.isArray(unit.mediaGallery) ? unit.mediaGallery : [],
+      mediaGallery: Array.isArray(unit.mediaGallery)
+        ? unit.mediaGallery.map((asset: any, idx: number) => ({
+            id: asset.id || `unit-asset-${idx}-${asset.url || Math.random().toString(36).slice(2, 7)}`,
+            url: asset.url || '',
+            kind: asset.kind || (asset.type === 'VIDEO' ? 'video' : 'image'),
+            title: asset.title || '',
+            alt: asset.alt || '',
+            caption: asset.caption || '',
+          }))
+        : [],
       photoUrls: Array.isArray(unit.photoGallery) ? unit.photoGallery : [],
       videoReelUrl: unit.videoReelUrl || '',
     }));
@@ -351,33 +385,33 @@ export function InventoryClient({
   });
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div className="space-y-6 max-w-7xl mx-auto pb-16 text-content font-sans">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-[#b59658]/20">
-        <div>
-          <div className="flex items-center gap-2 mb-1.5">
-            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#1b202c] text-[#ccb67b] border border-[#b59658]/40 uppercase tracking-wider flex items-center gap-1">
-              <ShieldCheck className="w-3.5 h-3.5 text-[#b59658]" /> RERA IDS RECORDED
+      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-5 p-6 rounded-2xl bg-surface border border-border shadow-xs">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-accent-soft text-accent-text border border-accent/20 uppercase tracking-wider flex items-center gap-1">
+              <ShieldCheck className="w-3.5 h-3.5 text-accent" /> RERA IDS RECORDED
             </span>
             <HallmarkStamp type="audit" label="14-day freshness rule" />
           </div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white font-display">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-content font-display">
             Inventory Records &amp; Freshness
           </h1>
-          <p className="text-slate-400 text-xs mt-0.5 font-mono">
+          <p className="text-content-secondary text-xs">
             RERA ID format checks, broker update history, 14-day freshness status, and calculated all-in costs.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          {/* View Mode Toggle */}
-          <div className="flex items-center p-1 rounded-lg bg-[#12151f] border border-[#b59658]/20 mr-1">
+        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+          {/* Utility Group: View Toggle + Refresh */}
+          <div className="flex items-center gap-1.5 p-1 rounded-xl bg-surface-subtle border border-border h-9">
             <button
               type="button"
               onClick={() => setViewMode('table')}
               aria-label="Show inventory table"
               aria-pressed={viewMode === 'table'}
-              className={`p-1.5 rounded ${viewMode === 'table' ? 'bg-[#1b202c] text-[#ccb67b] font-bold' : 'text-slate-400 hover:text-white'}`}
+              className={`h-7 px-2.5 rounded-lg flex items-center justify-center transition-all ${viewMode === 'table' ? 'bg-accent text-white font-bold shadow-xs' : 'text-content-secondary hover:text-content'}`}
               title="Dense Table View"
             >
               <Table className="w-3.5 h-3.5" />
@@ -387,52 +421,73 @@ export function InventoryClient({
               onClick={() => setViewMode('cards')}
               aria-label="Show inventory cards"
               aria-pressed={viewMode === 'cards'}
-              className={`p-1.5 rounded ${viewMode === 'cards' ? 'bg-[#1b202c] text-[#ccb67b] font-bold' : 'text-slate-400 hover:text-white'}`}
+              className={`h-7 px-2.5 rounded-lg flex items-center justify-center transition-all ${viewMode === 'cards' ? 'bg-accent text-white font-bold shadow-xs' : 'text-content-secondary hover:text-content'}`}
               title="Card Grid View"
             >
               <LayoutGrid className="w-3.5 h-3.5" />
             </button>
+            <div className="w-px h-4 bg-border mx-0.5" />
+            <button
+              type="button"
+              onClick={fetchInventory}
+              disabled={loading}
+              aria-label="Refresh inventory"
+              className="h-7 w-7 grid place-items-center rounded-lg text-content-secondary hover:text-content transition-all"
+              title="Refresh Records"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-accent' : ''}`} />
+            </button>
           </div>
 
+          {/* Action Buttons */}
+          <button
+            type="button"
+            onClick={() => setShowScraperModal(true)}
+            className="h-9 px-3.5 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-semibold transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer shrink-0"
+            title="Scrape MahaRERA & Portals"
+          >
+            <Globe className="w-4 h-4 text-status-success" />
+            Web Scraper &amp; RERA
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowCsvImportModal(true)}
+            className="h-9 px-3.5 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-semibold transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer shrink-0"
+            title="Import 99acres / MahaRERA Project Shells CSV"
+          >
+            <FileSpreadsheet className="w-4 h-4 text-accent" />
+            Import CSV
+          </button>
           <button
             type="button"
             onClick={openNewProject}
-            className="px-3.5 py-2 rounded-lg bg-[#1b202c] hover:bg-[#2a3040] text-[#ccb67b] border border-[#b59658]/40 text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm cursor-pointer"
+            className="h-9 px-3.5 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-semibold transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer shrink-0"
           >
-            <Building2 className="w-3.5 h-3.5 text-[#ccb67b]" />
+            <Building2 className="w-4 h-4 text-accent" />
             Add Project
           </button>
           <button
             type="button"
-            onClick={openNewUnit}
-            className="px-3.5 py-2 rounded-lg bg-gradient-to-r from-[#8a6f3c] via-[#b59658] to-[#ccb67b] text-[#12151f] text-xs font-bold transition-all flex items-center gap-1.5 shadow-md shadow-[#b59658]/20 border border-[#ccb67b]/60 cursor-pointer"
+            onClick={() => openNewUnit()}
+            className="h-9 px-4 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold transition-all flex items-center gap-2 shadow-xs cursor-pointer shrink-0"
           >
-            <Plus className="w-3.5 h-3.5" />
+            <Plus className="w-4 h-4" />
             Add Unit
-          </button>
-          <button
-            type="button"
-            onClick={fetchInventory}
-            disabled={loading}
-            aria-label="Refresh inventory"
-            className="min-h-11 min-w-11 px-3 py-2 rounded-lg bg-[#12151f] hover:bg-[#1b202c] text-slate-300 border border-[#b59658]/20 text-xs font-medium"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
           </button>
         </div>
       </div>
 
       {requestError && (
-        <div role="alert" className="rounded-lg border border-red-500/40 bg-red-950/50 p-3 text-xs text-red-200">
+        <div role="alert" className="rounded-xl border border-status-danger/40 bg-status-danger-surface p-3.5 text-xs text-status-danger font-semibold shadow-xs">
           <p>{requestError}</p>
-          <button type="button" onClick={fetchInventory} className="mt-1 min-h-11 font-bold text-white underline underline-offset-2">Retry inventory</button>
+          <button type="button" onClick={fetchInventory} className="mt-1 font-bold text-status-danger underline underline-offset-2">Retry inventory</button>
         </div>
       )}
 
       {/* Filter and Search Bar */}
-      <div className="p-3 rounded-xl bg-[#1b202c]/90 border border-[#b59658]/30 flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
-        <div className="relative flex-1 min-w-[220px]">
-          <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+      <div className="p-4 rounded-2xl bg-surface border border-border shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs font-sans">
+        <div className="relative flex-1 min-w-[240px]">
+          <Search className="w-4 h-4 text-content-muted absolute left-3.5 top-1/2 -translate-y-1/2" />
           <label htmlFor="inventory-search" className="sr-only">Search inventory records</label>
           <input
             id="inventory-search"
@@ -441,24 +496,35 @@ export function InventoryClient({
             placeholder="Search by project, unit number, RERA ID, or micro-market…"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-[#12151f] border border-[#b59658]/20 rounded-lg pl-9 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#ccb67b]"
+            className="w-full bg-surface-inset border border-border rounded-xl pl-10 pr-4 py-2.5 text-xs text-content placeholder:text-content-muted focus:outline-none focus:border-accent"
           />
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2.5">
           <select
             id="inventory-market"
             name="market"
             aria-label="Filter by micro-market"
             value={selectedMarket}
             onChange={(e) => setSelectedMarket(e.target.value)}
-            className="bg-[#12151f] border border-[#b59658]/20 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-[#ccb67b]"
+            className="bg-surface border border-border rounded-xl px-3 py-2 text-xs font-medium text-content focus:outline-none focus:ring-2 focus:ring-accent/20 cursor-pointer"
           >
-            <option value="ALL">All Micro-Markets</option>
-            <option value="Kharghar Sector 35">Kharghar Sector 35</option>
-            <option value="Kharghar Sector 36">Kharghar Sector 36</option>
-            <option value="Kharghar Sector 20">Kharghar Sector 20</option>
-            <option value="Taloja Phase 1">Taloja Phase 1</option>
+            <option value="ALL">All Sectors &amp; Micro-Markets</option>
+            <optgroup label="── Kharghar Sectors ──">
+              {Array.from(new Set(projects.filter(p => p.microMarket?.toLowerCase().includes('kharghar')).map(p => p.microMarket))).sort().map(market => (
+                <option key={market} value={market}>{market}</option>
+              ))}
+            </optgroup>
+            <optgroup label="── Taloja Phase 1 Sectors ──">
+              {Array.from(new Set(projects.filter(p => p.microMarket?.toLowerCase().includes('taloja phase 1')).map(p => p.microMarket))).sort().map(market => (
+                <option key={market} value={market}>{market}</option>
+              ))}
+            </optgroup>
+            <optgroup label="── Taloja Phase 2 Sectors ──">
+              {Array.from(new Set(projects.filter(p => p.microMarket?.toLowerCase().includes('taloja phase 2')).map(p => p.microMarket))).sort().map(market => (
+                <option key={market} value={market}>{market}</option>
+              ))}
+            </optgroup>
           </select>
 
           <select
@@ -467,7 +533,7 @@ export function InventoryClient({
             aria-label="Filter by configuration"
             value={selectedBhk}
             onChange={(e) => setSelectedBhk(e.target.value)}
-            className="bg-[#12151f] border border-[#b59658]/20 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-[#ccb67b]"
+            className="bg-surface border border-border rounded-xl px-3 py-2 text-xs font-medium text-content focus:outline-none focus:ring-2 focus:ring-accent/20 cursor-pointer"
           >
             <option value="ALL">All Configurations</option>
             <option value="1">1 BHK</option>
@@ -481,7 +547,7 @@ export function InventoryClient({
             aria-label="Filter by audit status"
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
-            className="bg-[#12151f] border border-[#b59658]/20 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-[#ccb67b]"
+            className="bg-surface border border-border rounded-xl px-3 py-2 text-xs font-medium text-content focus:outline-none focus:ring-2 focus:ring-accent/20 cursor-pointer"
           >
             <option value="ALL">All Audit Statuses</option>
             <option value="ACTIVE_MARKETABLE">Active Marketable (&lt;14d)</option>
@@ -493,97 +559,142 @@ export function InventoryClient({
       <section aria-labelledby="project-catalogue-title" className="space-y-3">
         <div className="flex items-center justify-between gap-3 px-1">
           <div>
-            <h2 id="project-catalogue-title" className="font-display text-sm font-bold uppercase tracking-wider text-slate-300">Project catalogue</h2>
-            <p className="mt-1 text-[11px] text-slate-500">Maintain the story, location context, media, and RERA profile clients will see.</p>
+            <h2 id="project-catalogue-title" className="font-display text-sm font-bold uppercase tracking-wider text-content">Project Catalogue</h2>
+            <p className="mt-0.5 text-xs text-content-secondary">Maintain the story, location context, media, and RERA profile clients will see.</p>
           </div>
-          <span className="font-mono text-[10px] text-[#ccb67b]">{projects.length} projects</span>
+          <span className="font-mono text-xs font-bold text-accent-text">{projects.length} projects</span>
         </div>
         {projects.length > 0 ? (
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             {projects.map((project) => {
               const cover = project.coverImageUrl || project.mediaGallery?.find((asset: MediaAsset) => asset.kind === 'image')?.url;
               return (
-                <article key={project.id} className="overflow-hidden rounded-xl border border-[#b59658]/25 bg-[#1b202c]/90">
-                  <div className="flex min-h-24 items-center gap-3 border-b border-[#b59658]/15 bg-[#12151f] p-3">
-                    {cover ? <img src={cover} alt="" className="h-16 w-20 rounded-md object-cover" /> : <div className="grid h-16 w-20 place-items-center rounded-md border border-dashed border-[#b59658]/30 text-slate-500"><Building2 className="h-5 w-5" /></div>}
-                    <div className="min-w-0 flex-1">
-                      <h3 className="truncate font-display text-sm font-bold text-white">{project.projectName}</h3>
-                      <p className="truncate text-[10px] text-slate-400">{project.developerName} • {project.microMarket}</p>
-                      <p className="mt-1 font-mono text-[10px] text-[#ccb67b]">{project.unitCount || 0} units • {project.activeUnitCount || 0} marketable</p>
+                <article key={project.id} className="overflow-hidden rounded-2xl border border-border bg-surface shadow-xs hover:border-accent/40 transition-all flex flex-col justify-between">
+                  <div>
+                    <div className="flex min-h-24 items-center gap-3 border-b border-border bg-surface-subtle p-3.5">
+                      {cover ? (
+                        <img
+                          src={cover}
+                          alt=""
+                          className="h-16 w-20 rounded-xl object-cover border border-border shrink-0"
+                          onError={(e) => {
+                            (e.target as HTMLElement).style.display = 'none';
+                            const fallback = (e.target as HTMLElement).nextElementSibling;
+                            if (fallback) (fallback as HTMLElement).classList.remove('hidden');
+                          }}
+                        />
+                      ) : null}
+                      <div className={`h-16 w-20 rounded-xl bg-surface border border-border text-accent flex items-center justify-center shrink-0 ${cover ? 'hidden' : 'flex'}`}>
+                        <Building2 className="h-6 w-6 text-accent" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="truncate font-display text-sm font-bold text-content">{project.projectName}</h3>
+                        <p className="truncate text-xs text-content-muted mt-0.5">{project.developerName} • {project.microMarket}</p>
+                        <p className="mt-1 font-mono text-xs text-accent-text font-bold">{project.unitCount || 0} units • {project.activeUnitCount || 0} marketable</p>
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => setInspectProject(project)}
+                          aria-label={`Inspect ${project.projectName} Specifications`}
+                          title="Inspect Full Building & RERA Specs"
+                          className="grid h-8 w-8 place-items-center rounded-lg border border-border bg-surface text-content-secondary hover:text-accent hover:border-accent/40 transition-all shadow-2xs"
+                        >
+                          <Eye className="h-3.5 w-3.5" />
+                        </button>
+                        <button 
+                          type="button" 
+                          onClick={() => openNewUnit(project.id)} 
+                          aria-label={`Add unit under ${project.projectName}`} 
+                          title="Add child unit under this project" 
+                          className="grid h-8 w-8 place-items-center rounded-lg border border-accent/20 bg-accent-soft text-accent-text hover:bg-accent hover:text-white transition-all shadow-2xs"
+                        >
+                          <Plus className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => openEditProject(project)}
+                          aria-label={`Edit ${project.projectName}`}
+                          title="Edit project"
+                          className="grid h-8 w-8 place-items-center rounded-lg border border-border bg-surface text-content-secondary hover:text-content transition-all shadow-2xs"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
                     </div>
-                    <button type="button" onClick={() => openEditProject(project)} aria-label={`Edit ${project.projectName}`} title="Edit project" className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-[#b59658]/30 text-[#ccb67b] hover:bg-[#2a3040]"><Pencil className="h-3.5 w-3.5" /></button>
-                  </div>
-                  <div className="space-y-2 p-3 text-[10px] text-slate-400">
-                    <p className="line-clamp-2 min-h-8">{project.shortDescription || 'Description pending broker update.'}</p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {(project.keyHighlights || []).slice(0, 3).map((highlight: string) => <span key={highlight} className="rounded border border-[#b59658]/20 px-1.5 py-1 text-[#ccb67b]">{highlight}</span>)}
-                      {!(project.keyHighlights || []).length && <span className="text-slate-500">Add highlights and media for a client-ready presentation.</span>}
+                    <div className="space-y-2 p-4 text-xs text-content-secondary">
+                      <p className="line-clamp-2 min-h-8 text-content-secondary leading-relaxed">{project.shortDescription || 'Description pending broker update.'}</p>
+                      <p className="line-clamp-1 text-[11px] text-content-muted">
+                        {project.keyHighlights && project.keyHighlights.length > 0 ? (
+                          <span className="inline-flex items-center gap-1 text-accent-text bg-accent-soft px-2 py-0.5 rounded-md font-semibold border border-accent/20">
+                            ★ {project.keyHighlights[0]}
+                          </span>
+                        ) : 'Add highlights and media for a client-ready presentation.'}
+                      </p>
                     </div>
                   </div>
                 </article>
               );
             })}
           </div>
-        ) : (
-          <div className="rounded-xl border border-dashed border-[#b59658]/25 bg-[#12151f] p-6 text-center text-xs text-slate-400">No projects yet. Add a project to start building a polished client catalogue.</div>
-        )}
+        ) : null}
       </section>
 
-      {/* DENSE TABLE VIEW */}
+      {/* TABLE VIEW */}
       {viewMode === 'table' && (
-        <div className="rounded-xl bg-[#1b202c]/90 border border-[#b59658]/30 shadow-xl overflow-hidden">
+        <div className="rounded-2xl bg-surface border border-border shadow-xs overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs font-mono">
-              <thead className="bg-[#12151f]/90 text-slate-400 uppercase text-[10px] border-b border-[#b59658]/20">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-surface-subtle text-content-secondary uppercase text-[10px] font-bold border-b border-border">
                 <tr>
-                  <th className="p-3 pl-4">Project &amp; Developer</th>
-                  <th className="p-3">Unit / Floor</th>
-                  <th className="p-3">Config &amp; Carpet</th>
-                  <th className="p-3 text-right">Agreement Value</th>
-                  <th className="p-3 text-right">All-In Cost (C_all-in)</th>
-                  <th className="p-3">RERA ID</th>
-                  <th className="p-3 text-center">Broker Update</th>
-                  <th className="p-3 pr-4 text-right">Actions</th>
+                  <th className="p-3.5 pl-4">Project &amp; Developer</th>
+                  <th className="p-3.5">Unit / Floor</th>
+                  <th className="p-3.5">Config &amp; Carpet</th>
+                  <th className="p-3.5 text-right">Agreement Value</th>
+                  <th className="p-3.5 text-right">All-In Cost (C_all-in)</th>
+                  <th className="p-3.5">RERA ID</th>
+                  <th className="p-3.5 text-center">Broker Update</th>
+                  <th className="p-3.5 pr-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#b59658]/10 text-slate-300">
+              <tbody className="divide-y divide-border text-content-secondary">
                 {filteredUnits.map((unit) => {
                   const isFresh = unit.freshness?.effectiveMarketableStatus === 'ACTIVE_MARKETABLE';
                   const isStale = unit.freshness?.effectiveMarketableStatus === 'STALE_EXPIRED';
                   const daysAgo = unit.freshness?.daysSinceVerification ?? 0;
 
                   return (
-                    <tr key={unit.id} className={`hover:bg-[#12151f]/70 transition-colors ${isStale ? 'bg-red-950/20' : ''}`}>
-                      <td className="p-3 pl-4">
-                        <div className="font-bold text-white font-sans text-sm">{unit.project?.projectName}</div>
-                        <div className="text-[10px] text-slate-400">{unit.project?.developerName} • {unit.project?.microMarket}</div>
+                    <tr key={unit.id} className={`hover:bg-surface-subtle/80 transition-colors ${isStale ? 'bg-status-danger-surface/30' : ''}`}>
+                      <td className="p-3.5 pl-4">
+                        <div className="font-bold text-content font-sans text-sm">{unit.project?.projectName}</div>
+                        <div className="text-[11px] text-content-muted mt-0.5">{unit.project?.developerName} • {unit.project?.microMarket}</div>
                       </td>
 
-                      <td className="p-3">
-                        <div className="font-semibold text-slate-200">Unit {unit.unitNumber || 'N/A'}</div>
-                        <div className="text-[10px] text-slate-400">Floor {unit.floorNumber} of {unit.totalFloors}</div>
+                      <td className="p-3.5">
+                        <div className="font-semibold text-content">Unit {unit.unitNumber || 'N/A'}</div>
+                        <div className="text-[11px] text-content-muted mt-0.5">Floor {unit.floorNumber} of {unit.totalFloors}</div>
                       </td>
 
-                      <td className="p-3">
-                        <div className="text-amber-300 font-bold">{unit.bhk} BHK • {unit.facing}</div>
-                        <div className="text-[10px] text-slate-400">{unit.carpetAreaSqft} sq.ft carpet</div>
+                      <td className="p-3.5">
+                        <div className="text-accent-text font-bold">{unit.bhk} BHK • {unit.facing}</div>
+                        <div className="text-[11px] text-content-muted mt-0.5 font-mono">{unit.carpetAreaSqft} sq.ft carpet</div>
                       </td>
 
-                      <td className="p-3 text-right font-bold text-slate-200">
+                      <td className="p-3.5 text-right font-bold text-content font-mono">
                         {formatINR(unit.agreementValue)}
                       </td>
 
-                      <td className="p-3 text-right">
-                        <div className="font-bold text-[#ccb67b]">{formatINR(unit.allInTotalCost)}</div>
+                      <td className="p-3.5 text-right">
+                        <div className="font-bold text-accent-text font-mono">{formatINR(unit.allInTotalCost)}</div>
                         <button
                           onClick={() => setCalcModalUnit(unit)}
-                          className="text-[10px] text-slate-400 hover:text-[#ccb67b] underline cursor-pointer"
+                          className="text-[11px] text-content-muted hover:text-accent underline cursor-pointer"
                         >
                           View Breakdown
                         </button>
                       </td>
 
-                      <td className="p-3">
+                      <td className="p-3.5">
                         <HallmarkStamp
                           type="rera"
                           code={unit.project?.reraNumber}
@@ -592,19 +703,36 @@ export function InventoryClient({
                         />
                       </td>
 
-                      <td className="p-3 text-center">
-                        <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${
+                      <td className="p-3.5 text-center">
+                        <span className={`inline-block px-2.5 py-0.5 rounded-lg text-[10px] font-bold border ${
                           isFresh
-                            ? 'bg-emerald-950/70 text-emerald-300 border border-emerald-500/40'
-                            : 'bg-red-950/70 text-red-300 border border-red-500/40 animate-pulse'
+                            ? 'bg-status-success-surface text-status-success border-status-success/30'
+                            : 'bg-status-danger-surface text-status-danger border-status-danger/30 animate-pulse'
                         }`}>
                           {isFresh ? `Updated ${daysAgo}d ago` : `Stale: ${daysAgo}d old`}
                         </span>
                       </td>
 
-                      <td className="p-3 pr-4 text-right">
+                      <td className="p-3.5 pr-4 text-right">
                         <div className="flex items-center justify-end gap-1.5">
-                          <button type="button" onClick={() => openEditUnit(unit)} aria-label={`Edit unit ${unit.unitNumber || 'record'}`} title="Edit unit" className="grid h-9 w-9 place-items-center rounded-lg border border-[#b59658]/30 text-[#ccb67b] hover:bg-[#2a3040]"><Pencil className="h-3.5 w-3.5" /></button>
+                          <button
+                            type="button"
+                            onClick={() => setInspectProject(unit.project)}
+                            aria-label={`Inspect ${unit.project?.projectName} specifications`}
+                            title="Inspect Full Building &amp; RERA Specs"
+                            className="grid h-8 w-8 place-items-center rounded-lg border border-border bg-surface text-content-secondary hover:text-accent hover:border-accent/40 shadow-2xs transition-all"
+                          >
+                            <Eye className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => openEditUnit(unit)}
+                            aria-label={`Edit unit ${unit.unitNumber || 'record'}`}
+                            title="Edit unit"
+                            className="grid h-8 w-8 place-items-center rounded-lg border border-border bg-surface text-content-secondary hover:text-content shadow-2xs transition-all"
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                          </button>
                           <button
                             type="button"
                             onClick={() => {
@@ -612,7 +740,7 @@ export function InventoryClient({
                               setTargetStatus(unit.verificationStatus);
                               setAuditNotes(unit.verificationNotes || '');
                             }}
-                            className="min-h-9 rounded bg-[#12151f] px-2.5 py-1 text-[11px] font-semibold text-[#ccb67b] shadow-sm transition-all hover:bg-[#2a3040]"
+                            className="rounded-xl bg-surface hover:bg-surface-subtle px-3 py-1.5 text-xs font-bold text-accent-text border border-border hover:border-accent/40 shadow-2xs transition-all"
                           >
                             Record Update
                           </button>
@@ -624,7 +752,7 @@ export function InventoryClient({
 
                 {filteredUnits.length === 0 && (
                   <tr>
-                    <td colSpan={8} className="p-8 text-center text-slate-400 text-xs">
+                    <td colSpan={8} className="p-8 text-center text-content-muted text-xs">
                       No property records match the current criteria.
                     </td>
                   </tr>
@@ -640,39 +768,41 @@ export function InventoryClient({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {filteredUnits.map((unit) => {
             return (
-              <div key={unit.id} className="p-5 rounded-2xl bg-[#1b202c]/90 border border-[#b59658]/30 space-y-3 font-mono text-xs">
+              <div key={unit.id} className="p-5 rounded-2xl bg-surface border border-border shadow-xs space-y-3 font-sans text-xs hover:border-accent/40 transition-all">
                 <div className="flex justify-between items-start">
                   <div>
-                    <h3 className="font-bold text-white text-base font-sans font-display">{unit.project?.projectName}</h3>
-                    <p className="text-[11px] text-slate-400">Unit {unit.unitNumber} ({unit.bhk} BHK • {unit.carpetAreaSqft} sqft)</p>
+                    <h3 className="font-bold text-content text-base font-display">{unit.project?.projectName}</h3>
+                    <p className="text-xs text-content-muted mt-0.5">Unit {unit.unitNumber} ({unit.bhk} BHK • {unit.carpetAreaSqft} sqft)</p>
                   </div>
                   <HallmarkStamp type="rera" code={unit.project?.reraNumber} size="sm" />
                 </div>
-                <div className="pt-2 border-t border-[#b59658]/10 flex justify-between items-center">
+                <div className="pt-3 border-t border-border flex justify-between items-center">
                   <div>
-                    <span className="text-[10px] text-slate-400 block">Total All-In Cost:</span>
-                    <strong className="text-white text-sm font-bold">{formatINR(unit.allInTotalCost)}</strong>
+                    <span className="text-[10px] text-content-muted uppercase font-semibold block">Total All-In Cost</span>
+                    <strong className="text-content text-sm font-bold font-mono">{formatINR(unit.allInTotalCost)}</strong>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => openEditUnit(unit)}
-                    aria-label={`Edit unit ${unit.unitNumber || 'record'}`}
-                    title="Edit unit"
-                    className="grid h-9 w-9 place-items-center rounded border border-[#b59658]/30 bg-[#12151f] text-[#ccb67b] hover:bg-[#2a3040]"
-                  >
-                    <Pencil className="h-3.5 w-3.5" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setVerifyModalUnit(unit);
-                      setTargetStatus(unit.verificationStatus);
-                      setAuditNotes(unit.verificationNotes || '');
-                    }}
-                    className="px-3 py-1.5 rounded bg-[#12151f] hover:bg-[#2a3040] text-[#ccb67b] border border-[#b59658]/30 font-semibold text-xs cursor-pointer"
-                  >
-                    Record Update
-                  </button>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => openEditUnit(unit)}
+                      aria-label={`Edit unit ${unit.unitNumber || 'record'}`}
+                      title="Edit unit"
+                      className="grid h-8 w-8 place-items-center rounded-lg border border-border bg-surface text-content-secondary hover:text-content shadow-2xs transition-all"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setVerifyModalUnit(unit);
+                        setTargetStatus(unit.verificationStatus);
+                        setAuditNotes(unit.verificationNotes || '');
+                      }}
+                      className="px-3 py-1.5 rounded-xl bg-surface hover:bg-surface-subtle text-accent-text border border-border hover:border-accent/40 font-bold text-xs shadow-2xs transition-all cursor-pointer"
+                    >
+                      Record Update
+                    </button>
+                  </div>
                 </div>
               </div>
             );
@@ -688,7 +818,7 @@ export function InventoryClient({
         onClose={() => setShowAddProjectModal(false)}
         titleId="add-project-title"
         descriptionId="add-project-description"
-        panelClassName="max-w-xl bg-[#1b202c] border border-[#b59658]/40 rounded-2xl p-6 space-y-4 shadow-2xl font-mono text-xs"
+        size="xl"
       >
             <div className="flex items-center justify-between pb-3 border-b border-[#b59658]/20">
               <div className="flex items-center gap-2">
@@ -890,7 +1020,7 @@ export function InventoryClient({
         onClose={() => setShowAddModal(false)}
         titleId="add-unit-title"
         descriptionId="add-unit-description"
-        panelClassName="max-w-xl bg-[#1b202c] border border-[#b59658]/40 rounded-2xl p-6 space-y-4 shadow-2xl font-mono text-xs"
+        size="xl"
       >
             <div className="flex items-center justify-between pb-3 border-b border-[#b59658]/20">
               <div className="flex items-center gap-2">
@@ -1088,7 +1218,7 @@ export function InventoryClient({
         onClose={() => setVerifyModalUnit(null)}
         titleId="verify-unit-title"
         descriptionId="verify-unit-description"
-        panelClassName="max-w-md bg-[#1b202c] border border-[#b59658]/40 rounded-2xl p-6 space-y-4 shadow-2xl font-mono text-xs"
+        size="md"
       >
         {verifyModalUnit && (
           <>
@@ -1110,7 +1240,7 @@ export function InventoryClient({
             ) : (
               <>
               {actionError && <div role="alert" className="rounded-lg border border-red-500/40 bg-red-950/50 p-3 text-xs text-red-200">{actionError}</div>}
-              <form onSubmit={handleVerifyUnit} className="space-y-3.5">
+              <form onSubmit={handleVerifyUnit} className="space-y-3.5 pt-2">
                 <div>
                   <span className="text-slate-400 block">Target Unit:</span>
                   <strong className="text-white">
@@ -1124,7 +1254,7 @@ export function InventoryClient({
                     data-dialog-autofocus
                     value={targetStatus}
                     onChange={(e) => setTargetStatus(e.target.value)}
-                    className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2 text-white"
+                    className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2.5 text-white focus:outline-none focus:border-amber-500/60"
                   >
                     <option value="ACTIVE_MARKETABLE">ACTIVE_MARKETABLE (broker update &lt;14d)</option>
                     <option value="PHYSICALLY_AUDITED">PHYSICALLY_AUDITED (internal status)</option>
@@ -1140,23 +1270,23 @@ export function InventoryClient({
                     value={auditNotes}
                     onChange={(e) => setAuditNotes(e.target.value)}
                     placeholder="Record the source, price check, availability update, or site review…"
-                    className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2 text-white"
+                    className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2.5 text-white focus:outline-none focus:border-amber-500/60"
                     required
                   />
                 </div>
 
-                <div className="pt-2 flex justify-end gap-2">
+                <div className="pt-2 flex flex-col-reverse sm:flex-row justify-end gap-2">
                   <button
                     type="button"
                     onClick={() => setVerifyModalUnit(null)}
-                    className="min-h-11 px-3 py-1.5 rounded-lg bg-[#12151f] text-slate-300"
+                    className="min-h-11 px-4 py-2 rounded-lg bg-[#12151f] text-slate-300 hover:bg-slate-800 transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={submittingAudit}
-                    className="min-h-11 px-4 py-1.5 rounded-lg bg-gradient-to-r from-[#8a6f3c] via-[#b59658] to-[#ccb67b] text-[#12151f] font-bold shadow-md cursor-pointer"
+                    className="min-h-11 px-5 py-2 rounded-lg bg-gradient-to-r from-[#8a6f3c] via-[#b59658] to-[#ccb67b] text-[#12151f] font-bold shadow-md cursor-pointer hover:brightness-110 transition-all"
                   >
                     {submittingAudit ? 'Recording…' : 'Record update'}
                   </button>
@@ -1176,7 +1306,7 @@ export function InventoryClient({
         onClose={() => setCalcModalUnit(null)}
         titleId="cost-sheet-title"
         descriptionId="cost-sheet-description"
-        panelClassName="max-w-lg bg-[#1b202c] border border-[#b59658]/40 rounded-2xl p-6 space-y-4 shadow-2xl font-mono text-xs"
+        size="lg"
       >
         {calcModalUnit && (
           <>
@@ -1236,6 +1366,38 @@ export function InventoryClient({
           </>
         )}
       </AccessibleDialog>
+
+      {/* Project Specifications Inspector Modal */}
+      {inspectProject && (
+        <ProjectDetailsModal
+          project={inspectProject}
+          units={units}
+          onClose={() => setInspectProject(null)}
+          onSelectUnitForCalc={(unit) => setCalcModalUnit(unit)}
+        />
+      )}
+
+      {/* Scraper Control Modal */}
+      {showScraperModal && (
+        <ScraperControlModal
+          onClose={() => setShowScraperModal(false)}
+          onIngestSuccess={() => {
+            setShowScraperModal(false);
+            fetchInventory();
+          }}
+        />
+      )}
+
+      {/* CSV Bulk Importer Modal */}
+      {showCsvImportModal && (
+        <CsvImportModal
+          onClose={() => setShowCsvImportModal(false)}
+          onImportSuccess={() => {
+            setShowCsvImportModal(false);
+            fetchInventory();
+          }}
+        />
+      )}
     </div>
   );
 }

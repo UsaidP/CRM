@@ -8,6 +8,8 @@ import {
   Building2,
   Calculator,
   Calendar,
+  CalendarDays,
+  Car,
   DollarSign,
   Globe,
   Layers,
@@ -24,10 +26,11 @@ import { isPublicPortalPath } from '@/lib/navigation';
 const navigation = [
   { href: '/', label: 'Dashboard', title: 'Operations dashboard', icon: Layers },
   { href: '/leads', label: 'Leads', title: 'Leads and inquiries', icon: Users },
+  { href: '/calendar', label: 'Calendar', title: 'Firm calendar & reminders', icon: CalendarDays },
   { href: '/inventory', label: 'Inventory', title: 'Property inventory', icon: ShieldCheck },
   { href: '/matching', label: 'Matchmaker', title: 'Property matchmaker', icon: Sparkles },
   { href: '/portals', label: 'Client portals', title: 'Client portals', icon: Globe },
-  { href: '/visits', label: 'Site visits', title: 'Site visits and tours', icon: Calendar },
+  { href: '/visits', label: 'Site visits', title: 'Site visits and tours', icon: Car },
   { href: '/deals', label: 'Deals', title: 'Deals and commission', icon: DollarSign },
   { href: '/attribution', label: 'Attribution', title: 'Lead attribution', icon: Share2 },
   { href: '/analytics', label: 'Analytics', title: 'Analytics and ROI', icon: BarChart3 },
@@ -72,16 +75,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </span>
           <span className="app-mobile-title">{activeItem?.title ?? 'ZamZam CRM'}</span>
         </Link>
-        <button
-          type="button"
-          className="app-menu-button"
-          aria-label={isMenuOpen ? 'Close navigation' : 'Open navigation'}
-          aria-expanded={isMenuOpen}
-          aria-controls="app-navigation"
-          onClick={() => setIsMenuOpen((current) => !current)}
-        >
-          {isMenuOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
-        </button>
+        <div className="flex items-center gap-2">
+          <ThemeToggle variant="compact" />
+          <button
+            type="button"
+            className="app-menu-button"
+            aria-label={isMenuOpen ? 'Close navigation' : 'Open navigation'}
+            aria-expanded={isMenuOpen}
+            aria-controls="app-navigation"
+            onClick={() => setIsMenuOpen((current) => !current)}
+          >
+            {isMenuOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
+          </button>
+        </div>
       </header>
 
       {isMenuOpen && (
@@ -106,8 +112,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </Link>
         </div>
 
-        <div className="app-theme-control">
-          <ThemeToggle />
+        <div className="app-theme-control px-3 pt-3 pb-1">
+          <ThemeToggle variant="sidebar" />
         </div>
 
         <nav className="app-nav" aria-label="Primary navigation">

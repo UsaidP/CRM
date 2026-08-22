@@ -23,6 +23,7 @@ model Organization {
   portals                 ClientPortal[]
   visits                  SiteVisit[]
   deals                   DealTransaction[]
+  reminders               LeadReminder[]
   createdAt               DateTime            @default(now())
   updatedAt               DateTime            @updatedAt
 }
@@ -305,6 +306,7 @@ model Lead {
   portals                ClientPortal[]
   siteVisits             SiteVisit[]
   deals                  DealTransaction[]
+  reminders              LeadReminder[]
   createdAt              DateTime           @default(now())
   updatedAt              DateTime           @updatedAt
 
@@ -466,3 +468,33 @@ model DealTransaction {
   @@index([leadId])
   @@index([developerProjectId])
 }
+
+// ==========================================
+// PHASE 9: LEAD REMINDERS & UNIFIED CALENDAR
+// ==========================================
+
+model LeadReminder {
+  id               String       @id @default(uuid())
+  organizationId   String
+  organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  leadId           String
+  lead             Lead         @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  createdById      String?
+  
+  title            String       // e.g. "Follow up on Kharghar Sec 35 2BHK floor plans"
+  reminderType     String       @default("CALL") // CALL, WHATSAPP, SITE_VISIT_FOLLOWUP, REQUIREMENT_CHECK, TOKEN_FOLLOWUP, GENERAL
+  dueAt            DateTime     // Exact reminder trigger time
+  priority         String       @default("HIGH") // URGENT, HIGH, MEDIUM, LOW
+  status           String       @default("PENDING") // PENDING, COMPLETED, SNOOZED, CANCELLED
+  notes            String?
+  snoozedUntil     DateTime?
+  completedAt      DateTime?
+  
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@index([organizationId, status, dueAt])
+  @@index([leadId])
+  @@index([dueAt])
+}
+

@@ -1,12 +1,18 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 
+export const dynamic = 'force-dynamic';
+
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const body = await req.json();
     const {
       status, // CONFIRMED, COMPLETED, CANCELLED, NO_SHOW
+      scheduledDate,
+      timeSlot,
+      pickupLocation,
+      cabDetails,
       feedbackNotes,
       feedbackRating,
       feedbackOutcome, // TOKEN_SUBMITTED, HIGH_INTEREST, PRICE_OBJECTION, LAYOUT_OBJECTION, NEEDS_MORE_OPTIONS
@@ -22,6 +28,10 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         where: { id },
         data: {
           status: status || undefined,
+          scheduledDate: scheduledDate ? new Date(scheduledDate) : undefined,
+          timeSlot: timeSlot || undefined,
+          pickupLocation: pickupLocation || undefined,
+          cabDetails: cabDetails || undefined,
           feedbackNotes: feedbackNotes !== undefined ? feedbackNotes : undefined,
           feedbackRating: feedbackRating ? Number(feedbackRating) : undefined,
           feedbackOutcome: feedbackOutcome || undefined,

@@ -5,6 +5,8 @@ import { resolveBrokerByInboundIdentifier, OFFICIAL_BROKER_NUMBERS } from '@/lib
 import { analyzeInboundAttribution } from '@/lib/domain/campaign-attribution';
 import { findOrCreateContact } from '@/lib/domain/contact-manager';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();

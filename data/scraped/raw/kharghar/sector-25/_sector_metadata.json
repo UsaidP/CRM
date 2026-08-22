@@ -1,0 +1,19 @@
+{
+  "node": "KHARGHAR",
+  "sector": "Sector 25",
+  "zone": "Owe Hills & Valley Residences",
+  "landmarks": [
+    "Owe Hills Foothills",
+    "Sector 25 Garden",
+    "Balaji Symphony Phase 1"
+  ],
+  "nearestMetroStation": "Pethpada Metro",
+  "distanceToMetroKm": 1,
+  "averageRatePerSqft": 13200,
+  "centerCoordinates": {
+    "lat": 19.0642,
+    "lng": 73.0968
+  },
+  "scrapedAt": "2026-08-19T11:46:45.264Z",
+  "projectsCount": 0
+}

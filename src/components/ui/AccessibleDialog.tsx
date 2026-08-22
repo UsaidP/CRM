@@ -8,8 +8,18 @@ interface AccessibleDialogProps {
   titleId: string;
   descriptionId?: string;
   panelClassName?: string;
+  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full';
   children: React.ReactNode;
 }
+
+const sizeClasses: Record<string, string> = {
+  sm: 'max-w-md',
+  md: 'max-w-xl',
+  lg: 'max-w-2xl',
+  xl: 'max-w-4xl',
+  '2xl': 'max-w-6xl',
+  full: 'max-w-[95vw]',
+};
 
 export function AccessibleDialog({
   open,
@@ -17,6 +27,7 @@ export function AccessibleDialog({
   titleId,
   descriptionId,
   panelClassName = '',
+  size = 'md',
   children,
 }: AccessibleDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -70,6 +81,8 @@ export function AccessibleDialog({
     };
   }, []);
 
+  const sizeClass = sizeClasses[size] || 'max-w-xl';
+
   return (
     <dialog
       ref={dialogRef}
@@ -80,7 +93,7 @@ export function AccessibleDialog({
         if (event.target === dialogRef.current) onClose();
       }}
     >
-      <div className={`app-dialog__panel ${panelClassName}`}>{children}</div>
+      <div className={`app-dialog__panel w-full ${sizeClass} ${panelClassName}`}>{children}</div>
     </dialog>
   );
 }

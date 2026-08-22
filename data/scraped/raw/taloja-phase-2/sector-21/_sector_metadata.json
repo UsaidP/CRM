@@ -1,0 +1,18 @@
+{
+  "node": "TALOJA_PHASE_2",
+  "sector": "Sector 21",
+  "zone": "Phase 2 North Gateway & High-Rise Townships",
+  "landmarks": [
+    "Sector 21 High Street",
+    "Today Global Township Link"
+  ],
+  "nearestMetroStation": "Pendhar Metro",
+  "distanceToMetroKm": 1.6,
+  "averageRatePerSqft": 6500,
+  "centerCoordinates": {
+    "lat": 19.1125,
+    "lng": 73.1095
+  },
+  "scrapedAt": "2026-08-19T11:46:45.422Z",
+  "projectsCount": 1
+}

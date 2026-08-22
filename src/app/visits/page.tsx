@@ -171,20 +171,20 @@ export default function SiteVisitsPage() {
   });
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div className="space-y-6 max-w-7xl mx-auto pb-16 text-content font-sans">
       {/* Top Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-[#b59658]/20">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-surface border border-border shadow-xs">
         <div>
           <div className="flex items-center gap-2 mb-1.5">
-            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#1b202c] text-[#ccb67b] border border-[#b59658]/40 uppercase tracking-wider flex items-center gap-1">
-              <Calendar className="w-3 h-3 text-[#b59658]" /> ESCORTED LOGISTICS DISPATCHER
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-accent-soft text-accent-text border border-accent/20 uppercase tracking-wider flex items-center gap-1">
+              <Calendar className="w-3.5 h-3.5 text-accent" /> ESCORTED LOGISTICS DISPATCHER
             </span>
             <HallmarkStamp type="rera" label="Multi-Project Tour Protocol" />
           </div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white font-display">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-content font-display">
             Site Visit Tours &amp; Agenda
           </h1>
-          <p className="text-slate-400 text-xs mt-0.5 font-mono">
+          <p className="text-content-secondary text-xs mt-1">
             Timed Kharghar &amp; Taloja multi-stop routes, cab driver dispatch, Google Maps itineraries, and post-tour outcomes.
           </p>
         </div>
@@ -193,9 +193,9 @@ export default function SiteVisitsPage() {
           <button
             type="button"
             onClick={() => { setActionError(null); setShowScheduleModal(true); }}
-            className="min-h-11 px-4 py-2 rounded-lg bg-gradient-to-r from-[#8a6f3c] via-[#b59658] to-[#ccb67b] hover:opacity-95 text-[#12151f] text-xs font-bold flex items-center gap-1.5 shadow-lg shadow-[#b59658]/20 border border-[#ccb67b]/60"
+            className="px-4 py-2 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold flex items-center gap-2 shadow-xs transition-all cursor-pointer"
           >
-            <Plus className="w-3.5 h-3.5 text-[#12151f]" />
+            <Plus className="w-4 h-4" />
             Schedule Site Tour
           </button>
           <button
@@ -203,23 +203,23 @@ export default function SiteVisitsPage() {
             onClick={fetchVisitsAndData}
             disabled={loading}
             aria-label="Refresh site visits"
-            className="min-h-11 min-w-11 px-3 py-2 rounded-lg bg-[#12151f] hover:bg-[#1b202c] text-slate-300 border border-[#b59658]/20 text-xs font-medium"
+            className="p-2.5 rounded-xl bg-surface hover:bg-surface-subtle text-content-secondary hover:text-content border border-border text-xs font-semibold shadow-2xs transition-all cursor-pointer"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-accent' : ''}`} />
           </button>
         </div>
       </div>
 
       {requestError && (
-        <div role="alert" className="rounded-lg border border-red-500/40 bg-red-950/50 p-3 text-xs text-red-200">
+        <div role="alert" className="rounded-xl border border-status-danger/40 bg-status-danger-surface p-3.5 text-xs text-status-danger font-semibold shadow-xs">
           <p>{requestError}</p>
-          <button type="button" onClick={fetchVisitsAndData} className="mt-1 min-h-11 font-bold text-white underline underline-offset-2">Retry site visit data</button>
+          <button type="button" onClick={fetchVisitsAndData} className="mt-1 font-bold text-status-danger underline underline-offset-2">Retry site visit data</button>
         </div>
       )}
 
       {/* Filter and Status Bar */}
-      <div className="p-3 rounded-xl bg-[#1b202c]/90 border border-[#b59658]/30 flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
-        <fieldset className="flex min-w-0 max-w-full items-center gap-1.5 overflow-x-auto w-full sm:w-auto">
+      <div className="p-4 rounded-2xl bg-surface border border-border shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs font-sans">
+        <fieldset className="flex min-w-0 max-w-full items-center gap-2 overflow-x-auto w-full sm:w-auto">
           <legend className="sr-only">Filter site visits by status</legend>
           {[
             { id: 'ALL', label: 'All Tours' },
@@ -233,10 +233,10 @@ export default function SiteVisitsPage() {
               key={st.id}
               onClick={() => setSelectedStatus(st.id)}
               aria-pressed={selectedStatus === st.id}
-              className={`min-h-11 px-2.5 py-1.5 rounded text-[11px] whitespace-nowrap ${
+              className={`px-3 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                 selectedStatus === st.id
-                  ? 'bg-gradient-to-r from-[#8a6f3c] to-[#ccb67b] text-[#12151f] font-bold shadow-sm'
-                  : 'bg-[#12151f] text-slate-400 hover:text-white border border-[#b59658]/20'
+                  ? 'bg-accent text-white font-bold shadow-xs'
+                  : 'bg-surface text-content-secondary border border-border hover:bg-surface-subtle hover:text-content'
               }`}
             >
               {st.label}
@@ -244,21 +244,21 @@ export default function SiteVisitsPage() {
           ))}
         </fieldset>
 
-        <div className="text-slate-400 text-xs">
-          Showing <strong className="text-white">{filteredVisits.length}</strong> planned tours
+        <div className="text-content-secondary text-xs">
+          Showing <strong className="text-content font-mono font-bold">{filteredVisits.length}</strong> planned tours
         </div>
       </div>
 
       {/* Agenda & Tour Itineraries Stream */}
       {loading ? (
-        <div className="p-12 text-center text-slate-400 text-xs font-mono flex flex-col items-center gap-3">
-          <RefreshCw className="w-6 h-6 animate-spin text-[#ccb67b]" />
+        <div className="p-12 text-center text-content-muted text-xs flex flex-col items-center gap-3">
+          <RefreshCw className="w-6 h-6 animate-spin text-accent" />
           <span>Loading scheduled site visits...</span>
         </div>
       ) : !requestError && filteredVisits.length === 0 ? (
-        <div className="p-12 rounded-2xl bg-[#1b202c]/90 border border-[#b59658]/30 text-center text-slate-400 text-xs font-mono space-y-2">
-          <AlertCircle className="w-8 h-8 text-amber-400 mx-auto" />
-          <p className="text-white font-semibold">No scheduled site visit tours found.</p>
+        <div className="p-12 rounded-2xl bg-surface border border-border text-center text-content-muted text-xs space-y-2 shadow-xs">
+          <AlertCircle className="w-8 h-8 text-status-warning mx-auto" />
+          <p className="text-content font-semibold">No scheduled site visit tours found.</p>
           <p>Click &quot;Schedule Site Tour&quot; above to dispatch a multi-stop itinerary.</p>
         </div>
       ) : (
@@ -277,27 +277,27 @@ export default function SiteVisitsPage() {
             return (
               <div
                 key={visit.id}
-                className="p-5 rounded-2xl bg-[#1b202c]/90 border border-[#b59658]/30 shadow-xl space-y-4 font-mono text-xs"
+                className="p-5 rounded-2xl bg-surface border border-border shadow-xs space-y-4 text-xs font-sans hover:border-accent/40 transition-all"
               >
                 {/* Header Row */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#b59658]/10">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border">
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-bold text-white font-sans text-base">{visit.lead?.fullName}</span>
-                      <span className="text-[#ccb67b] font-bold">({visit.lead?.phoneE164})</span>
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                      <span className="font-bold text-content font-sans text-base">{visit.lead?.fullName}</span>
+                      <span className="text-accent-text font-mono font-bold">({visit.lead?.phoneE164})</span>
+                      <span className={`px-2.5 py-0.5 rounded-lg text-[10px] font-bold border font-mono ${
                         isCompleted
-                          ? 'bg-emerald-950/70 text-emerald-300 border border-emerald-500/40'
-                          : 'bg-amber-950/70 text-amber-300 border border-amber-500/40'
+                          ? 'bg-status-success-surface text-status-success border-status-success/40'
+                          : 'bg-status-warning-surface text-status-warning border-status-warning/40'
                       }`}>
                         {visit.status}
                       </span>
                     </div>
 
-                    <div className="text-slate-400 text-xs mt-1 flex flex-wrap items-center gap-3">
-                      <span className="text-white font-bold">{dateStr} • {visit.timeSlot}</span>
+                    <div className="text-content-muted text-xs mt-1 flex flex-wrap items-center gap-3">
+                      <span className="text-content font-bold font-mono">{dateStr} • {visit.timeSlot}</span>
                       <span>•</span>
-                      <span>Advisor: <strong className="text-slate-200">{visit.assignedBroker?.fullName || 'Assigned Broker'}</strong></span>
+                      <span>Advisor: <strong className="text-content">{visit.assignedBroker?.fullName || 'Assigned Broker'}</strong></span>
                     </div>
                   </div>
 
@@ -306,7 +306,7 @@ export default function SiteVisitsPage() {
                       href={`https://wa.me/${(visit.lead?.phoneE164 || '').replace(/\+/g, '')}?text=${encodeURIComponent(waShareText)}`}
                       target="_blank"
                       rel="noreferrer"
-                      className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1 shadow-sm"
+                      className="px-3.5 py-2 rounded-xl bg-status-success hover:opacity-90 text-zinc-950 font-bold text-xs flex items-center gap-1.5 shadow-2xs cursor-pointer"
                     >
                       <Share2 className="w-3.5 h-3.5" />
                       WhatsApp Itinerary
@@ -315,9 +315,9 @@ export default function SiteVisitsPage() {
                     {!isCompleted && (
                       <button
                         onClick={() => { setActionError(null); setFeedbackVisit(visit); }}
-                        className="min-h-11 px-3 py-1.5 rounded-lg bg-[#12151f] hover:bg-[#2a3040] text-[#ccb67b] border border-[#b59658]/30 font-semibold text-xs flex items-center gap-1"
+                        className="px-3.5 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-accent-text border border-border hover:border-accent/40 font-bold text-xs flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer"
                       >
-                        <Star className="w-3.5 h-3.5 text-[#b59658]" />
+                        <Star className="w-3.5 h-3.5 text-accent" />
                         Log Outcome
                       </button>
                     )}
@@ -325,31 +325,31 @@ export default function SiteVisitsPage() {
                 </div>
 
                 {/* Logistics Bar */}
-                <div className="flex flex-wrap items-center gap-4 text-xs text-slate-300 p-2.5 rounded-xl bg-[#12151f] border border-[#b59658]/20">
+                <div className="flex flex-wrap items-center gap-4 text-xs text-content-secondary p-3 rounded-xl bg-surface-subtle border border-border">
                   <div className="flex items-center gap-1.5">
-                    <Car className="w-3.5 h-3.5 text-[#ccb67b]" />
-                    <span>Pickup: <strong className="text-white">{visit.pickupLocation}</strong></span>
+                    <Car className="w-4 h-4 text-accent" />
+                    <span>Pickup: <strong className="text-content">{visit.pickupLocation}</strong></span>
                   </div>
                   <span>•</span>
                   <div>
-                    <span>Cab &amp; Driver: <strong className="text-slate-200">{visit.cabDetails || 'Not specified'}</strong></span>
+                    <span>Cab &amp; Driver: <strong className="text-content">{visit.cabDetails || 'Not specified'}</strong></span>
                   </div>
                 </div>
 
                 {/* Itinerary Stops */}
                 <div className="space-y-2">
-                  <div className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">
+                  <div className="text-[10px] text-content-muted uppercase tracking-wider font-bold">
                     Escorted Route Stops ({stops.length} Projects):
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                     {stops.map((stop: any, idx: number) => (
-                      <div key={idx} className="p-2.5 rounded-xl bg-[#12151f] border border-[#b59658]/20 space-y-1">
-                        <div className="flex justify-between items-center text-[10px] text-[#ccb67b] font-bold">
+                      <div key={idx} className="p-3 rounded-xl bg-surface-subtle border border-border space-y-1">
+                        <div className="flex justify-between items-center text-[10px] text-accent-text font-bold font-mono">
                           <span>Stop #{idx + 1}</span>
                           <span>{stop.expectedTime}</span>
                         </div>
-                        <strong className="text-white text-xs block font-sans">{stop.projectName}</strong>
-                        <div className="text-[10px] text-slate-400 flex justify-between">
+                        <strong className="text-content text-xs block font-sans">{stop.projectName}</strong>
+                        <div className="text-[11px] text-content-muted flex justify-between">
                           <span>{stop.bhk} BHK • {stop.microMarket}</span>
                           {stop.developerPocName && <span>POC: {stop.developerPocName}</span>}
                         </div>
@@ -360,17 +360,17 @@ export default function SiteVisitsPage() {
 
                 {/* Post-Visit Logged Outcome */}
                 {visit.feedbackNotes && (
-                  <div className="p-3 rounded-xl bg-[#12151f] border border-emerald-500/30 text-xs text-slate-300 space-y-1">
+                  <div className="p-3.5 rounded-xl bg-status-success-surface border border-status-success/30 text-xs text-content-secondary space-y-1">
                     <div className="flex justify-between items-center">
-                      <span className="font-bold text-emerald-400 flex items-center gap-1">
-                        <CheckCircle2 className="w-3.5 h-3.5" />
+                      <span className="font-bold text-status-success flex items-center gap-1">
+                        <CheckCircle2 className="w-4 h-4" />
                         Outcome: {visit.feedbackOutcome?.replace('_', ' ')}
                       </span>
-                      <span className="text-amber-400 font-bold">
+                      <span className="text-status-warning font-bold font-mono">
                         {'★'.repeat(visit.feedbackRating || 5)} ({visit.feedbackRating}/5)
                       </span>
                     </div>
-                    <p className="italic text-slate-400 text-[11px]">&quot;{visit.feedbackNotes}&quot;</p>
+                    <p className="italic text-content-secondary text-xs mt-1">&quot;{visit.feedbackNotes}&quot;</p>
                   </div>
                 )}
               </div>
@@ -385,138 +385,140 @@ export default function SiteVisitsPage() {
         onClose={() => setShowScheduleModal(false)}
         titleId="schedule-visit-title"
         descriptionId="schedule-visit-description"
-        panelClassName="max-w-lg bg-[#1b202c] border border-[#b59658]/40 rounded-2xl p-6 space-y-4 shadow-2xl font-mono text-xs"
+        size="lg"
       >
-            <div className="flex items-center justify-between pb-3 border-b border-[#b59658]/20">
-              <div>
-              <h2 id="schedule-visit-title" className="font-bold text-white text-base font-display flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-[#b59658]" />
-                Schedule multi-project site visit
+        <div className="space-y-4 text-content font-sans">
+          <div className="flex items-center justify-between pb-3 border-b border-border">
+            <div>
+              <h2 id="schedule-visit-title" className="font-bold text-content text-base font-display flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-accent" />
+                Schedule Multi-Project Site Visit
               </h2>
-              <p id="schedule-visit-description" className="mt-1 text-[11px] text-slate-400">Choose a buyer, stops, and dispatch details for the itinerary.</p>
-              </div>
-              <button type="button" data-dialog-close aria-label="Close schedule site visit" onClick={() => setShowScheduleModal(false)} className="min-h-11 min-w-11 text-slate-400 hover:text-white">✕</button>
+              <p id="schedule-visit-description" className="mt-1 text-xs text-content-secondary">Choose a buyer, stops, and dispatch details for the itinerary.</p>
+            </div>
+            <button type="button" data-dialog-close aria-label="Close schedule site visit" onClick={() => setShowScheduleModal(false)} className="p-1 rounded-lg text-content-muted hover:text-content">✕</button>
+          </div>
+
+          {actionError && <div role="alert" className="rounded-xl border border-status-danger/40 bg-status-danger-surface p-3 text-xs text-status-danger font-semibold">{actionError}</div>}
+
+          <form onSubmit={handleScheduleVisit} className="space-y-3.5 pt-2 text-xs">
+            <div>
+              <label htmlFor="visit-lead" className="text-content-secondary font-medium block mb-1">Purchaser Lead:</label>
+              <select
+                id="visit-lead"
+                name="leadId"
+                data-dialog-autofocus
+                value={selectedLeadId}
+                onChange={(e) => setSelectedLeadId(e.target.value)}
+                className="w-full bg-surface-inset border border-border rounded-xl p-2.5 text-xs text-content focus:outline-none focus:border-accent cursor-pointer"
+              >
+                {leads.map((l) => (
+                  <option key={l.id} value={l.id}>
+                    {l.fullName} ({l.phoneE164})
+                  </option>
+                ))}
+              </select>
             </div>
 
-            {actionError && <div role="alert" className="rounded-lg border border-red-500/40 bg-red-950/50 p-3 text-xs text-red-200">{actionError}</div>}
-
-            <form onSubmit={handleScheduleVisit} className="space-y-3.5">
-              <div>
-                <label htmlFor="visit-lead" className="text-slate-300 block mb-1">Purchaser lead:</label>
-                <select
-                  id="visit-lead"
-                  name="leadId"
-                  data-dialog-autofocus
-                  value={selectedLeadId}
-                  onChange={(e) => setSelectedLeadId(e.target.value)}
-                  className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2 text-white"
-                >
-                  {leads.map((l) => (
-                    <option key={l.id} value={l.id}>
-                      {l.fullName} ({l.phoneE164})
-                    </option>
-                  ))}
-                </select>
+            <fieldset>
+              <legend className="text-content-secondary font-medium block mb-1">
+                Select Units to Inspect ({selectedUnitIds.length} Selected):
+              </legend>
+              <div className="space-y-1 max-h-36 overflow-y-auto p-2 rounded-xl bg-surface-subtle border border-border">
+                {units.map((u) => {
+                  const isSelected = selectedUnitIds.includes(u.id);
+                  return (
+                    <button
+                      type="button"
+                      key={u.id}
+                      onClick={() => toggleUnitSelection(u.id)}
+                      aria-pressed={isSelected}
+                      className={`w-full text-left p-2 rounded-lg flex justify-between items-center transition-all cursor-pointer ${
+                        isSelected ? 'bg-surface border border-accent text-content font-bold shadow-2xs' : 'text-content-secondary hover:bg-surface'
+                      }`}
+                    >
+                      <div>
+                        <span>{u.project?.projectName}</span>
+                        <span className="text-[11px] text-content-muted block">{u.bhk} BHK • Unit {u.unitNumber}</span>
+                      </div>
+                      {isSelected && <Check className="w-3.5 h-3.5 text-accent" />}
+                    </button>
+                  );
+                })}
               </div>
+            </fieldset>
 
-              <fieldset>
-                <legend className="text-slate-300 block mb-1">
-                  Select Units to Inspect ({selectedUnitIds.length} Selected):
-                </legend>
-                <div className="space-y-1.5 max-h-36 overflow-y-auto p-2 rounded-lg bg-[#12151f] border border-[#b59658]/30">
-                  {units.map((u) => {
-                    const isSelected = selectedUnitIds.includes(u.id);
-                    return (
-                      <button
-                        type="button"
-                        key={u.id}
-                        onClick={() => toggleUnitSelection(u.id)}
-                        aria-pressed={isSelected}
-                        className={`w-full text-left min-h-11 p-2 rounded flex justify-between items-center ${
-                          isSelected ? 'bg-[#1b202c] border border-[#b59658]/50 text-white font-bold' : 'text-slate-400'
-                        }`}
-                      >
-                        <div>
-                          <span>{u.project?.projectName}</span>
-                          <span className="text-[10px] text-slate-400 block">{u.bhk} BHK • Unit {u.unitNumber}</span>
-                        </div>
-                        {isSelected && <Check className="w-3.5 h-3.5 text-[#ccb67b]" />}
-                      </button>
-                    );
-                  })}
-                </div>
-              </fieldset>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label htmlFor="visit-date" className="text-slate-300 block mb-1">Visit date:</label>
-                  <input
-                    id="visit-date"
-                    name="scheduledDate"
-                    required
-                    type="date"
-                    value={scheduledDate}
-                    onChange={(e) => setScheduledDate(e.target.value)}
-                    className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2 text-white"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="visit-time" className="text-slate-300 block mb-1">Time slot:</label>
-                  <input
-                    id="visit-time"
-                    name="timeSlot"
-                    required
-                    type="text"
-                    value={timeSlot}
-                    onChange={(e) => setTimeSlot(e.target.value)}
-                    className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2 text-white"
-                  />
-                </div>
-              </div>
-
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label htmlFor="visit-pickup" className="text-slate-300 block mb-1">Pickup location:</label>
+                <label htmlFor="visit-date" className="text-content-secondary font-medium block mb-1">Visit Date:</label>
                 <input
-                  id="visit-pickup"
-                  name="pickupLocation"
+                  id="visit-date"
+                  name="scheduledDate"
+                  required
+                  type="date"
+                  value={scheduledDate}
+                  onChange={(e) => setScheduledDate(e.target.value)}
+                  className="w-full bg-surface-inset border border-border rounded-xl p-2.5 text-xs text-content focus:outline-none focus:border-accent"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="visit-time" className="text-content-secondary font-medium block mb-1">Time Slot:</label>
+                <input
+                  id="visit-time"
+                  name="timeSlot"
                   required
                   type="text"
-                  value={pickupLocation}
-                  onChange={(e) => setPickupLocation(e.target.value)}
-                  className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2 text-white"
+                  value={timeSlot}
+                  onChange={(e) => setTimeSlot(e.target.value)}
+                  className="w-full bg-surface-inset border border-border rounded-xl p-2.5 text-xs text-content focus:outline-none focus:border-accent"
                 />
               </div>
+            </div>
 
-              <div>
-                <label htmlFor="visit-cab" className="text-slate-300 block mb-1">Cab and driver logistics:</label>
-                <input
-                  id="visit-cab"
-                  name="cabDetails"
-                  type="text"
-                  value={cabDetails}
-                  onChange={(e) => setCabDetails(e.target.value)}
-                  className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2 text-white"
-                />
-              </div>
+            <div>
+              <label htmlFor="visit-pickup" className="text-content-secondary font-medium block mb-1">Pickup Location:</label>
+              <input
+                id="visit-pickup"
+                name="pickupLocation"
+                required
+                type="text"
+                value={pickupLocation}
+                onChange={(e) => setPickupLocation(e.target.value)}
+                className="w-full bg-surface-inset border border-border rounded-xl p-2.5 text-xs text-content focus:outline-none focus:border-accent"
+              />
+            </div>
 
-              <div className="pt-2 flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setShowScheduleModal(false)}
-                  className="min-h-11 px-3 py-1.5 rounded-lg bg-[#12151f] text-slate-300"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="min-h-11 px-4 py-1.5 rounded-lg bg-gradient-to-r from-[#8a6f3c] via-[#b59658] to-[#ccb67b] text-[#12151f] font-bold shadow-md"
-                >
-                  {submitting ? 'Dispatching…' : 'Dispatch tour itinerary'}
-                </button>
-              </div>
-            </form>
+            <div>
+              <label htmlFor="visit-cab" className="text-content-secondary font-medium block mb-1">Cab and Driver Logistics:</label>
+              <input
+                id="visit-cab"
+                name="cabDetails"
+                type="text"
+                value={cabDetails}
+                onChange={(e) => setCabDetails(e.target.value)}
+                className="w-full bg-surface-inset border border-border rounded-xl p-2.5 text-xs text-content focus:outline-none focus:border-accent"
+              />
+            </div>
+
+            <div className="pt-3 flex flex-col-reverse sm:flex-row justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setShowScheduleModal(false)}
+                className="px-4 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-semibold shadow-2xs cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={submitting}
+                className="px-5 py-2 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold shadow-xs transition-all cursor-pointer"
+              >
+                {submitting ? 'Dispatching…' : 'Dispatch Tour Itinerary'}
+              </button>
+            </div>
+          </form>
+        </div>
       </AccessibleDialog>
 
       {/* MODAL: Post-Visit Feedback */}
@@ -525,30 +527,30 @@ export default function SiteVisitsPage() {
         onClose={() => setFeedbackVisit(null)}
         titleId="visit-feedback-title"
         descriptionId="visit-feedback-description"
-        panelClassName="max-w-md bg-[#1b202c] border border-[#b59658]/40 rounded-2xl p-6 space-y-4 shadow-2xl font-mono text-xs"
+        size="md"
       >
         {feedbackVisit && (
-          <>
-            <div className="flex items-center justify-between pb-3 border-b border-[#b59658]/20">
+          <div className="space-y-4 text-content font-sans">
+            <div className="flex items-center justify-between pb-3 border-b border-border">
               <div>
-                <h2 id="visit-feedback-title" className="font-bold text-white text-base font-display">Log post-tour outcome</h2>
-                <p id="visit-feedback-description" className="mt-1 text-[11px] text-slate-400">Record the buyer’s response and the next follow-up signal.</p>
+                <h2 id="visit-feedback-title" className="font-bold text-content text-base font-display">Log Post-Tour Outcome</h2>
+                <p id="visit-feedback-description" className="mt-1 text-xs text-content-secondary">Record the buyer’s response and the next follow-up signal.</p>
               </div>
-              <button type="button" data-dialog-close aria-label="Close post-tour outcome" onClick={() => setFeedbackVisit(null)} className="min-h-11 min-w-11 text-slate-400 hover:text-white">✕</button>
+              <button type="button" data-dialog-close aria-label="Close post-tour outcome" onClick={() => setFeedbackVisit(null)} className="p-1 rounded-lg text-content-muted hover:text-content">✕</button>
             </div>
 
-            {actionError && <div role="alert" className="rounded-lg border border-red-500/40 bg-red-950/50 p-3 text-xs text-red-200">{actionError}</div>}
+            {actionError && <div role="alert" className="rounded-xl border border-status-danger/40 bg-status-danger-surface p-3 text-xs text-status-danger font-semibold">{actionError}</div>}
 
-            <form onSubmit={handleSaveFeedback} className="space-y-3.5">
+            <form onSubmit={handleSaveFeedback} className="space-y-3.5 text-xs">
               <div>
-                <label htmlFor="feedback-outcome" className="text-slate-300 block mb-1">Outcome status:</label>
+                <label htmlFor="feedback-outcome" className="text-content-secondary font-medium block mb-1">Outcome Status:</label>
                 <select
                   id="feedback-outcome"
                   name="feedbackOutcome"
                   data-dialog-autofocus
                   value={feedbackOutcome}
                   onChange={(e) => setFeedbackOutcome(e.target.value)}
-                  className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2 text-white"
+                  className="w-full bg-surface-inset border border-border rounded-xl p-2.5 text-xs text-content focus:outline-none focus:border-accent cursor-pointer"
                 >
                   <option value="HIGH_INTEREST">HIGH_INTEREST (Moving to Token)</option>
                   <option value="OFFER_MADE">OFFER_MADE (Negotiating price)</option>
@@ -558,7 +560,7 @@ export default function SiteVisitsPage() {
               </div>
 
               <fieldset>
-                <legend className="text-slate-300 block mb-1">Client enthusiasm rating (1–5):</legend>
+                <legend className="text-content-secondary font-medium block mb-1">Client Enthusiasm Rating (1–5):</legend>
                 <div className="flex gap-2">
                   {[1, 2, 3, 4, 5].map((r) => (
                     <button
@@ -567,8 +569,8 @@ export default function SiteVisitsPage() {
                       onClick={() => setFeedbackRating(r)}
                       aria-pressed={feedbackRating === r}
                       aria-label={`Rate client enthusiasm ${r} out of 5`}
-                      className={`min-h-11 flex-1 py-1.5 rounded-lg border font-bold ${
-                        feedbackRating >= r ? 'bg-amber-500 text-black border-amber-400' : 'bg-[#12151f] text-slate-400 border-slate-700'
+                      className={`py-2 flex-1 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                        feedbackRating >= r ? 'bg-accent text-white border-accent shadow-xs' : 'bg-surface text-content-muted border-border hover:bg-surface-subtle'
                       }`}
                     >
                       ★ {r}
@@ -578,7 +580,7 @@ export default function SiteVisitsPage() {
               </fieldset>
 
               <div>
-                <label htmlFor="feedback-notes" className="text-slate-300 block mb-1">Broker inspection notes:</label>
+                <label htmlFor="feedback-notes" className="text-content-secondary font-medium block mb-1">Broker Inspection Notes:</label>
                 <textarea
                   id="feedback-notes"
                   name="feedbackNotes"
@@ -586,29 +588,29 @@ export default function SiteVisitsPage() {
                   value={feedbackNotes}
                   onChange={(e) => setFeedbackNotes(e.target.value)}
                   placeholder="e.g. Liked the 12th-floor unit and requested a revised payment schedule…"
-                  className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2 text-white"
+                  className="w-full bg-surface-inset border border-border rounded-xl p-2.5 text-xs text-content focus:outline-none focus:border-accent"
                   required
                 />
               </div>
 
-              <div className="pt-2 flex justify-end gap-2">
+              <div className="pt-3 flex justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setFeedbackVisit(null)}
-                  className="min-h-11 px-3 py-1.5 rounded-lg bg-[#12151f] text-slate-300"
+                  className="px-4 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-semibold shadow-2xs cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={savingFeedback}
-                  className="min-h-11 px-4 py-1.5 rounded-lg bg-gradient-to-r from-[#8a6f3c] via-[#b59658] to-[#ccb67b] text-[#12151f] font-bold shadow-md"
+                  className="px-5 py-2 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold shadow-xs transition-all cursor-pointer"
                 >
-                  {savingFeedback ? 'Saving…' : 'Save outcome'}
+                  {savingFeedback ? 'Saving…' : 'Save Outcome'}
                 </button>
               </div>
             </form>
-          </>
+          </div>
         )}
       </AccessibleDialog>
     </div>

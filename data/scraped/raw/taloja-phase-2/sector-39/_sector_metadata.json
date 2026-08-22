@@ -1,0 +1,18 @@
+{
+  "node": "TALOJA_PHASE_2",
+  "sector": "Sector 39",
+  "zone": "CIDCO Lottery Megaproject Node",
+  "landmarks": [
+    "CIDCO Sector 39 Lottery Housing",
+    "Koynavale East Park"
+  ],
+  "nearestMetroStation": "Pendhar Metro",
+  "distanceToMetroKm": 2.2,
+  "averageRatePerSqft": 6300,
+  "centerCoordinates": {
+    "lat": 19.1265,
+    "lng": 73.0945
+  },
+  "scrapedAt": "2026-08-19T11:46:45.428Z",
+  "projectsCount": 0
+}

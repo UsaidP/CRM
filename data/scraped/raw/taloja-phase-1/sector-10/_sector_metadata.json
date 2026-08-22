@@ -1,0 +1,18 @@
+{
+  "node": "TALOJA_PHASE_1",
+  "sector": "Sector 10",
+  "zone": "CIDCO Lottery & Affordable Housing Hub",
+  "landmarks": [
+    "CIDCO Mega Housing Scheme Sec 10",
+    "Sector 10 Sports Ground"
+  ],
+  "nearestMetroStation": "Pendhar Metro",
+  "distanceToMetroKm": 0.9,
+  "averageRatePerSqft": 7300,
+  "centerCoordinates": {
+    "lat": 19.1095,
+    "lng": 73.0985
+  },
+  "scrapedAt": "2026-08-19T11:46:45.421Z",
+  "projectsCount": 0
+}

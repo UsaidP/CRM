@@ -153,20 +153,20 @@ export function generateSvgQrCode(data: string): string {
   );
 
   return `
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" class="rounded-xl shadow-lg border border-amber-500/30 bg-white p-2">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" class="rounded-xl shadow-lg border border-accent/30 bg-white p-2">
       <!-- Outer Border / Finder Patterns -->
       <rect width="200" height="200" fill="#ffffff" />
-      <rect x="15" y="15" width="40" height="40" fill="#12151f" rx="4" />
+      <rect x="15" y="15" width="40" height="40" fill="#181e2b" rx="4" />
       <rect x="23" y="23" width="24" height="24" fill="#ffffff" />
-      <rect x="27" y="27" width="16" height="16" fill="#b59658" />
+      <rect x="27" y="27" width="16" height="16" fill="#2563eb" />
 
-      <rect x="145" y="15" width="40" height="40" fill="#12151f" rx="4" />
+      <rect x="145" y="15" width="40" height="40" fill="#181e2b" rx="4" />
       <rect x="153" y="23" width="24" height="24" fill="#ffffff" />
-      <rect x="157" y="27" width="16" height="16" fill="#b59658" />
+      <rect x="157" y="27" width="16" height="16" fill="#2563eb" />
 
-      <rect x="15" y="145" width="40" height="40" fill="#12151f" rx="4" />
+      <rect x="15" y="145" width="40" height="40" fill="#181e2b" rx="4" />
       <rect x="23" y="153" width="24" height="24" fill="#ffffff" />
-      <rect x="27" y="157" width="16" height="16" fill="#b59658" />
+      <rect x="27" y="157" width="16" height="16" fill="#2563eb" />
 
       <!-- Data Dots Hash Matrix -->
       ${Array.from({ length: 12 })
@@ -179,7 +179,7 @@ export function generateSvgQrCode(data: string): string {
                 (r > 7 && c < 4)
               )
                 return '';
-              const fill = (hash + r * 17 + c * 31) % 2 === 0 ? '#12151f' : 'transparent';
+              const fill = (hash + r * 17 + c * 31) % 2 === 0 ? '#181e2b' : 'transparent';
               return fill !== 'transparent'
                 ? `<rect x="${65 + c * 6}" y="${65 + r * 6}" width="5" height="5" fill="${fill}" rx="1" />`
                 : '';
@@ -189,8 +189,8 @@ export function generateSvgQrCode(data: string): string {
         .join('')}
 
       <!-- Center ZamZam Monogram Badge -->
-      <circle cx="100" cy="100" r="16" fill="#12151f" stroke="#b59658" stroke-width="2" />
-      <text x="100" y="104" font-family="sans-serif" font-size="10" font-weight="bold" fill="#ccb67b" text-anchor="middle">ZP</text>
+      <circle cx="100" cy="100" r="16" fill="#181e2b" stroke="#2563eb" stroke-width="2" />
+      <text x="100" y="104" font-family="sans-serif" font-size="10" font-weight="bold" fill="#93c5fd" text-anchor="middle">ZP</text>
     </svg>
   `.trim();
 }

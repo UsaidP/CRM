@@ -94,3 +94,16 @@ export function calculateAllInCost(input: CostCalculationInput): CostCalculation
     percentageOverAgreement,
   };
 }
+
+export function formatINR(val: number): string {
+  if (val === undefined || val === null || isNaN(val)) return '₹0';
+  if (val >= 10000000) {
+    const cr = val / 10000000;
+    return `₹${cr.toFixed(2)} Cr`;
+  }
+  if (val >= 100000) {
+    const lk = val / 100000;
+    return `₹${lk.toFixed(2)} L`;
+  }
+  return `₹${val.toLocaleString('en-IN')}`;
+}

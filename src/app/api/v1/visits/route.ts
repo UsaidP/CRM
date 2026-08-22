@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { buildWhatsAppSiteVisitItinerary, ItineraryStopInput } from '@/lib/domain/visit-dispatcher';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
@@ -126,7 +128,7 @@ export async function POST(req: Request) {
 
     const waItineraryText = buildWhatsAppSiteVisitItinerary({
       leadName: lead.fullName || 'Client',
-      leadPhone: lead.phoneE164,
+      leadPhone: lead.phoneE164 || '',
       scheduledDateFormatted: dateFormatted,
       timeSlot,
       pickupLocation,

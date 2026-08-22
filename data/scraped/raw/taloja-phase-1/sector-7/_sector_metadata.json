@@ -1,0 +1,18 @@
+{
+  "node": "TALOJA_PHASE_1",
+  "sector": "Sector 7",
+  "zone": "Phase 1 Market & Schools",
+  "landmarks": [
+    "Taloja International School",
+    "Sector 7 Community Centre"
+  ],
+  "nearestMetroStation": "Pendhar Metro",
+  "distanceToMetroKm": 1.2,
+  "averageRatePerSqft": 7300,
+  "centerCoordinates": {
+    "lat": 19.1045,
+    "lng": 73.1052
+  },
+  "scrapedAt": "2026-08-19T11:46:45.280Z",
+  "projectsCount": 0
+}

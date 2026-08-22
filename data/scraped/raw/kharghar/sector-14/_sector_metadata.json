@@ -1,0 +1,19 @@
+{
+  "node": "KHARGHAR",
+  "sector": "Sector 14",
+  "zone": "Jal Vayu Vihar Luxury Belt",
+  "landmarks": [
+    "Jal Vayu Vihar Complex",
+    "Sector 14 Metro Interchange",
+    "Medicity Hospital"
+  ],
+  "nearestMetroStation": "Sector 14 Metro",
+  "distanceToMetroKm": 0.2,
+  "averageRatePerSqft": 15500,
+  "centerCoordinates": {
+    "lat": 19.0572,
+    "lng": 73.0778
+  },
+  "scrapedAt": "2026-08-19T11:46:45.260Z",
+  "projectsCount": 1
+}

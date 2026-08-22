@@ -1,0 +1,19 @@
+{
+  "node": "KHARGHAR",
+  "sector": "Sector 15",
+  "zone": "Kharghar Lake & Prime Park Facing",
+  "landmarks": [
+    "Kharghar Central Lake",
+    "Sector 15 Promenade",
+    "Green Valley View"
+  ],
+  "nearestMetroStation": "Sector 14 Metro",
+  "distanceToMetroKm": 0.8,
+  "averageRatePerSqft": 14800,
+  "centerCoordinates": {
+    "lat": 19.0602,
+    "lng": 73.0745
+  },
+  "scrapedAt": "2026-08-19T11:46:45.261Z",
+  "projectsCount": 0
+}

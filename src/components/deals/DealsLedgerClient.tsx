@@ -279,28 +279,26 @@ export function DealsLedgerClient({
 
         <div className="flex items-center gap-2.5">
           {/* View Toggle: Pipeline (Kanban) vs Ledger (Table) */}
-          <div className="flex items-center p-1 rounded-lg bg-[#12151f] border border-[#b59658]/30 mr-1 shadow-sm">
+          <div className="flex items-center bg-surface-subtle border border-border rounded-xl p-1">
             <button
               type="button"
               onClick={() => setViewMode('pipeline')}
-              aria-pressed={viewMode === 'pipeline'}
-              className={`px-3 py-1.5 rounded-md flex items-center gap-1.5 text-xs transition-all ${
+              className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-xs font-semibold transition-all ${
                 viewMode === 'pipeline'
-                  ? 'bg-[#1b202c] text-[#ccb67b] font-bold border border-[#b59658]/50 shadow-sm'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-accent text-white font-bold shadow-xs'
+                  : 'text-content-secondary hover:text-content'
               }`}
             >
               <Kanban className="w-3.5 h-3.5" />
-              Pipeline (Board)
+              Pipeline (Kanban)
             </button>
             <button
               type="button"
               onClick={() => setViewMode('ledger')}
-              aria-pressed={viewMode === 'ledger'}
-              className={`px-3 py-1.5 rounded-md flex items-center gap-1.5 text-xs transition-all ${
+              className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-xs font-semibold transition-all ${
                 viewMode === 'ledger'
-                  ? 'bg-[#1b202c] text-[#ccb67b] font-bold border border-[#b59658]/50 shadow-sm'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-accent text-white font-bold shadow-xs'
+                  : 'text-content-secondary hover:text-content'
               }`}
             >
               <Table className="w-3.5 h-3.5" />
@@ -311,9 +309,9 @@ export function DealsLedgerClient({
           <button
             type="button"
             onClick={() => { setActionError(null); setShowRegisterModal(true); }}
-            className="min-h-11 px-4 py-2 rounded-lg bg-gradient-to-r from-[#8a6f3c] via-[#b59658] to-[#ccb67b] hover:opacity-95 text-[#12151f] text-xs font-bold flex items-center gap-1.5 shadow-lg shadow-[#b59658]/20 border border-[#ccb67b]/60"
+            className="min-h-10 px-4 py-2 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold flex items-center gap-2 shadow-xs transition-all"
           >
-            <Plus className="w-3.5 h-3.5" />
+            <Plus className="w-4 h-4" />
             Register Closed Deal
           </button>
           <button
@@ -321,66 +319,66 @@ export function DealsLedgerClient({
             onClick={fetchDealsAndData}
             disabled={loading}
             aria-label="Refresh deal records"
-            className="min-h-11 min-w-11 px-3 py-2 rounded-lg bg-[#12151f] hover:bg-[#1b202c] text-slate-300 border border-[#b59658]/20 text-xs font-medium"
+            className="min-h-10 min-w-10 px-3 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-semibold shadow-xs transition-all flex items-center justify-center"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-accent' : 'text-content-secondary'}`} />
           </button>
         </div>
       </div>
 
       {(requestError || actionError) && (
-        <div role="alert" className="rounded-lg border border-red-500/40 bg-red-950/50 p-3 text-xs text-red-200">
+        <div role="alert" className="rounded-xl border border-status-danger/40 bg-status-danger-surface p-3.5 text-xs text-status-danger font-semibold shadow-xs">
           <p>{requestError || actionError}</p>
-          {requestError && <button type="button" onClick={fetchDealsAndData} className="mt-1 min-h-11 font-bold text-white underline underline-offset-2">Retry deal records</button>}
+          {requestError && <button type="button" onClick={fetchDealsAndData} className="mt-1 font-bold text-status-danger underline underline-offset-2">Retry deal records</button>}
         </div>
       )}
 
       {/* Financial Overview Row */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="p-4 rounded-xl bg-[#1b202c]/90 border border-[#b59658]/30 shadow-md">
-          <div className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider flex justify-between items-center">
+        <div className="p-4 rounded-xl bg-surface border border-border shadow-xs hover:border-border-strong transition-all">
+          <div className="text-[11px] text-content-muted font-bold uppercase tracking-wider flex justify-between items-center">
             <span>Total Gross Brokerage Pipeline</span>
-            <DollarSign className="w-3.5 h-3.5 text-[#ccb67b]" />
+            <DollarSign className="w-4 h-4 text-accent" />
           </div>
-          <div className="text-2xl font-bold text-white mt-1.5">
+          <div className="text-2xl font-bold text-content mt-1.5">
             {formatINR(summary.totalGrossBrokerage)}
           </div>
-          <div className="text-[11px] text-slate-400 mt-1">
+          <div className="text-[11px] text-content-muted mt-1">
             {deals.length} Active Deals Across Pipeline
           </div>
         </div>
 
-        <div className="p-4 rounded-xl bg-[#1b202c]/90 border border-emerald-500/30 shadow-md">
-          <div className="text-[11px] text-emerald-400 font-semibold uppercase tracking-wider flex justify-between items-center">
+        <div className="p-4 rounded-xl bg-surface border border-status-success/30 shadow-xs hover:border-status-success/50 transition-all">
+          <div className="text-[11px] text-status-success font-bold uppercase tracking-wider flex justify-between items-center">
             <span>Bank Cleared &amp; Realized</span>
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+            <CheckCircle2 className="w-4 h-4 text-status-success" />
           </div>
-          <div className="text-2xl font-bold text-emerald-300 mt-1.5">
+          <div className="text-2xl font-bold text-status-success mt-1.5">
             {formatINR(summary.totalCollected)}
           </div>
-          <div className="text-[11px] text-slate-400 mt-1">
+          <div className="text-[11px] text-content-muted mt-1">
             RTGS &amp; Developer Disbursements In
           </div>
         </div>
 
-        <div className="p-4 rounded-xl bg-[#1b202c]/90 border border-amber-500/30 shadow-md">
-          <div className="text-[11px] text-amber-400 font-semibold uppercase tracking-wider flex justify-between items-center">
+        <div className="p-4 rounded-xl bg-surface border border-status-warning/30 shadow-xs hover:border-status-warning/50 transition-all">
+          <div className="text-[11px] text-status-warning font-bold uppercase tracking-wider flex justify-between items-center">
             <span>Pending Receivables / Invoiced</span>
-            <Clock className="w-3.5 h-3.5 text-amber-400" />
+            <Clock className="w-4 h-4 text-status-warning" />
           </div>
-          <div className="text-2xl font-bold text-amber-300 mt-1.5">
+          <div className="text-2xl font-bold text-status-warning mt-1.5">
             {formatINR(summary.totalPending)}
           </div>
-          <div className="text-[11px] text-slate-400 mt-1">
+          <div className="text-[11px] text-content-muted mt-1">
             Token / Registration / Invoicing stage
           </div>
         </div>
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="p-3 rounded-xl bg-[#1b202c]/90 border border-[#b59658]/30 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+      <div className="p-3 rounded-2xl bg-surface border border-border shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
         <div className="relative flex-1 w-full">
-          <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-content-muted absolute left-3.5 top-1/2 -translate-y-1/2" />
           <label htmlFor="deals-search" className="sr-only">Search deal records</label>
           <input
             id="deals-search"
@@ -389,7 +387,7 @@ export function DealsLedgerClient({
             placeholder="Search deals by project, purchaser, advisor, or unit…"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-[#12151f] border border-[#b59658]/20 rounded-lg pl-9 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#ccb67b]"
+            className="w-full bg-surface-inset border border-border rounded-xl pl-10 pr-4 py-2.5 text-xs text-content placeholder:text-content-muted focus:outline-none focus:border-accent"
           />
         </div>
 
@@ -407,10 +405,10 @@ export function DealsLedgerClient({
               key={st.id}
               onClick={() => setSelectedStatus(st.id)}
               aria-pressed={selectedStatus === st.id}
-              className={`min-h-11 px-2.5 py-1.5 rounded text-[11px] whitespace-nowrap ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
                 selectedStatus === st.id
-                  ? 'bg-gradient-to-r from-[#8a6f3c] to-[#ccb67b] text-[#12151f] font-bold shadow-sm'
-                  : 'bg-[#12151f] text-slate-400 hover:text-white border border-[#b59658]/20'
+                  ? 'bg-accent text-white font-bold shadow-xs'
+                  : 'bg-surface hover:bg-surface-subtle text-content-secondary hover:text-content border border-border'
               }`}
             >
               {st.label}
@@ -429,15 +427,15 @@ export function DealsLedgerClient({
             return (
               <div
                 key={col.id}
-                className="rounded-2xl bg-[#1b202c]/90 border border-[#b59658]/30 shadow-xl overflow-hidden flex flex-col min-h-[460px]"
+                className="rounded-2xl bg-surface border border-border shadow-xs overflow-hidden flex flex-col min-h-[460px]"
               >
                 {/* Column Header */}
-                <div className="p-3.5 bg-[#12151f]/90 border-b border-[#b59658]/20 space-y-1">
+                <div className="p-3.5 bg-surface-subtle border-b border-border space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-white uppercase text-[11px] tracking-wider">
+                    <span className="font-bold text-content uppercase text-[11px] tracking-wider">
                       {col.label}
                     </span>
-                    <span className="px-2 py-0.5 rounded-full bg-[#1b202c] text-[#ccb67b] border border-[#b59658]/40 text-[10px] font-bold">
+                    <span className="px-2 py-0.5 rounded-full bg-accent-soft text-accent-text border border-accent/20 text-[10px] font-bold">
                       {colDeals.length}
                     </span>
                   </div>
@@ -457,68 +455,68 @@ export function DealsLedgerClient({
                     return (
                       <div
                         key={deal.id}
-                        className="p-3.5 rounded-xl bg-[#12151f] border border-[#b59658]/20 hover:border-[#b59658]/60 transition-all space-y-2.5 shadow-md group"
+                        className="p-4 rounded-xl bg-surface border border-border hover:border-accent/50 transition-all space-y-3 shadow-xs group"
                       >
                         {/* Card Top: Buyer Name & Status Staleness Flag */}
-                        <div className="flex justify-between items-start">
+                        <div className="flex justify-between items-start gap-2">
                           <div>
-                            <h4 className="font-bold text-white font-sans text-sm">{deal.lead?.fullName}</h4>
-                            <p className="text-[10px] text-slate-400 font-mono">{deal.lead?.phoneE164}</p>
+                            <h4 className="font-bold text-content font-sans text-sm">{deal.lead?.fullName}</h4>
+                            <p className="text-[11px] text-content-muted font-mono">{deal.lead?.phoneE164}</p>
                           </div>
 
                           {/* Staleness Bottleneck Tag */}
                           <span
-                            className={`px-1.5 py-0.5 rounded text-[9px] font-bold flex items-center gap-1 ${
+                            className={`px-2 py-0.5 rounded-md text-[10px] font-bold flex items-center gap-1 border ${
                               isStale
-                                ? 'bg-red-950/80 text-red-300 border border-red-500/40 animate-pulse'
+                                ? 'bg-status-danger-surface text-status-danger border-status-danger/40 animate-pulse'
                                 : isWarning
-                                ? 'bg-amber-950/80 text-amber-300 border border-amber-500/40'
-                                : 'bg-emerald-950/80 text-emerald-300 border border-emerald-500/40'
+                                ? 'bg-status-warning-surface text-status-warning border-status-warning/40'
+                                : 'bg-status-success-surface text-status-success border-status-success/40'
                             }`}
                             title={`${daysInStatus} days in this stage`}
                           >
-                            <Clock className="w-2.5 h-2.5" />
+                            <Clock className="w-3 h-3" />
                             {daysInStatus}d
                           </span>
                         </div>
 
                         {/* Project & Unit Details */}
-                        <div className="text-xs text-slate-200">
-                          <strong className="text-white">{deal.developerProject?.projectName}</strong>
-                          <span className="text-[10px] text-slate-400 block">
+                        <div className="text-xs text-content-secondary">
+                          <strong className="text-content">{deal.developerProject?.projectName}</strong>
+                          <span className="text-[11px] text-content-muted block mt-0.5">
                             Unit {deal.propertyUnit?.unitNumber || 'N/A'} ({deal.propertyUnit?.bhk} BHK • {deal.developerProject?.microMarket})
                           </span>
                         </div>
 
                         {/* Financial Snapshot */}
-                        <div className="p-2 rounded-lg bg-[#1b202c] border border-[#b59658]/10 flex justify-between items-center text-[11px]">
+                        <div className="p-2.5 rounded-xl bg-surface-inset border border-border flex justify-between items-center text-xs">
                           <div>
-                            <span className="text-[9px] text-slate-400 block uppercase">Agreement</span>
-                            <strong className="text-slate-200">{formatINR(deal.agreementValue)}</strong>
+                            <span className="text-[10px] text-content-muted block uppercase font-semibold">Agreement</span>
+                            <strong className="text-content font-mono font-bold">{formatINR(deal.agreementValue)}</strong>
                           </div>
                           <div className="text-right">
-                            <span className="text-[9px] text-[#ccb67b] block uppercase">Gross ({deal.brokeragePercent}%)</span>
-                            <strong className="text-[#ccb67b]">{formatINR(deal.grossBrokerageAmount)}</strong>
+                            <span className="text-[10px] text-accent-text block uppercase font-bold">Gross ({deal.brokeragePercent}%)</span>
+                            <strong className="text-accent-text font-mono font-bold">{formatINR(deal.grossBrokerageAmount)}</strong>
                           </div>
                         </div>
 
                         {/* Card Footer: Advisor Tag & Fast Stage Advancement */}
-                        <div className="flex items-center justify-between pt-1 border-t border-[#b59658]/10 text-[10px]">
-                          <span className="text-slate-400 truncate max-w-[110px]">
+                        <div className="flex items-center justify-between pt-2 border-t border-border text-[11px]">
+                          <span className="text-content-muted truncate max-w-[110px]">
                             {deal.closingBroker?.fullName || 'Senior Broker'}
                           </span>
 
-                          <div className="flex items-center gap-1">
+                          <div className="flex items-center gap-1.5">
                             {col.nextStage && (
                               <button
                                 type="button"
                                 onClick={() => advanceDealStage(deal, col.nextStage!)}
                                 disabled={pendingStageIds.has(deal.id)}
                                 aria-label={`Advance ${deal.lead?.fullName || 'deal'} to ${col.nextLabel}`}
-                                className="min-h-11 px-2 py-1 rounded bg-[#1b202c] hover:bg-[#2a3040] text-[#ccb67b] border border-[#b59658]/30 font-bold flex items-center gap-0.5 disabled:opacity-50"
+                                className="px-2.5 py-1.5 rounded-lg bg-surface hover:bg-surface-subtle text-accent-text hover:text-accent border border-border hover:border-accent/40 font-bold text-xs flex items-center gap-1 transition-all shadow-2xs disabled:opacity-50"
                               >
                                 <span>{col.nextLabel}</span>
-                                <ChevronRight className="w-3 h-3" />
+                                <ChevronRight className="w-3.5 h-3.5" />
                               </button>
                             )}
 
@@ -529,8 +527,8 @@ export function DealsLedgerClient({
                                 setNewStatus(deal.dealStatus);
                                 setInvoiceNumber(deal.developerInvoiceNumber || 'ZP-INV-2026-08');
                               }}
-                              aria-label={`Edit milestone for ${deal.lead?.fullName || 'deal'}`}
-                              className="min-h-11 min-w-11 grid place-items-center rounded hover:bg-[#2a3040] text-slate-400 hover:text-white"
+                              className="p-1.5 rounded-lg hover:bg-surface-subtle text-content-muted hover:text-content transition-colors"
+                              title="Edit milestone or invoice details"
                             >
                               <FileText className="w-3.5 h-3.5" />
                             </button>
@@ -552,52 +550,52 @@ export function DealsLedgerClient({
         </div>
       )}
 
-      {/* VIEW 2: ACCOUNTING LEDGER TABLE */}
+      {/* VIEW 2: FULL LEDGER DATA TABLE */}
       {viewMode === 'ledger' && (
-        <div className="rounded-xl bg-[#1b202c]/90 border border-[#b59658]/30 shadow-xl overflow-hidden">
+        <div className="rounded-2xl bg-surface border border-border shadow-xs overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-[#12151f]/90 text-slate-400 uppercase text-[10px] border-b border-[#b59658]/20">
+              <thead className="bg-surface-subtle text-content-secondary uppercase text-[10px] font-bold border-b border-border">
                 <tr>
-                  <th className="p-3 pl-4">Project &amp; Unit</th>
-                  <th className="p-3">Purchaser</th>
-                  <th className="p-3">Registered By / Sourced At</th>
-                  <th className="p-3 text-right">Agreement Val</th>
-                  <th className="p-3 text-right">Gross Brokerage</th>
-                  <th className="p-3 text-right">Firm Net</th>
-                  <th className="p-3 text-right">Rep Share</th>
-                  <th className="p-3 text-center">Status / Days</th>
-                  <th className="p-3 pr-4 text-right">Action</th>
+                  <th className="p-3.5 pl-4">Project &amp; Unit</th>
+                  <th className="p-3.5">Purchaser Lead</th>
+                  <th className="p-3.5">Brokerage Lock / Rep</th>
+                  <th className="p-3.5 text-right">Agreement Value</th>
+                  <th className="p-3.5 text-right">Gross Commission</th>
+                  <th className="p-3.5 text-right">Firm Net Net</th>
+                  <th className="p-3.5 text-right">Agent Commission</th>
+                  <th className="p-3.5 text-center">Milestone Status</th>
+                  <th className="p-3.5 pr-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#b59658]/10 text-slate-300">
+              <tbody className="divide-y divide-border text-content-secondary">
                 {filteredDeals.map((deal) => {
                   const daysInStatus = calculateDaysInStatus(deal.updatedAt || deal.bookingDate);
                   const isPaid = deal.dealStatus === 'PAYMENT_RECEIVED';
 
                   return (
-                    <tr key={deal.id} className="hover:bg-[#12151f]/70 transition-colors">
-                      <td className="p-3 pl-4">
-                        <div className="font-bold text-white font-sans text-sm">
+                    <tr key={deal.id} className="hover:bg-surface-subtle/80 transition-colors">
+                      <td className="p-3.5 pl-4">
+                        <div className="font-bold text-content font-sans text-sm">
                           {deal.developerProject?.projectName}
                         </div>
-                        <div className="text-[10px] text-slate-400">
+                        <div className="text-[11px] text-content-muted mt-0.5">
                           Unit {deal.propertyUnit?.unitNumber || 'N/A'} ({deal.propertyUnit?.bhk} BHK • {deal.developerProject?.microMarket})
                         </div>
                       </td>
 
-                      <td className="p-3">
-                        <div className="font-semibold text-slate-200">{deal.lead?.fullName}</div>
-                        <div className="text-[10px] text-[#ccb67b]">{deal.lead?.phoneE164}</div>
+                      <td className="p-3.5">
+                        <div className="font-semibold text-content">{deal.lead?.fullName}</div>
+                        <div className="text-[11px] font-mono text-accent-text">{deal.lead?.phoneE164}</div>
                       </td>
 
                       {/* Dispute-Proof Timestamped Registration Field */}
-                      <td className="p-3">
-                        <div className="text-[11px] text-white font-semibold flex items-center gap-1">
+                      <td className="p-3.5">
+                        <div className="text-[11px] text-content font-semibold flex items-center gap-1">
                           <HallmarkStamp type="ledger" label="Recorded" size="sm" />
                           <span>{deal.closingBroker?.fullName || 'Senior Broker'}</span>
                         </div>
-                        <div className="text-[10px] text-slate-400 mt-0.5">
+                        <div suppressHydrationWarning className="text-[10px] text-content-muted mt-0.5 font-mono">
                           {new Date(deal.bookingDate).toLocaleDateString('en-IN', {
                             day: '2-digit',
                             month: 'short',
@@ -606,40 +604,40 @@ export function DealsLedgerClient({
                         </div>
                       </td>
 
-                      <td className="p-3 text-right font-bold text-white">
+                      <td className="p-3.5 text-right font-bold text-content font-mono">
                         {formatINR(deal.agreementValue)}
                       </td>
 
-                      <td className="p-3 text-right font-bold text-[#ccb67b]">
+                      <td className="p-3.5 text-right font-bold text-accent-text font-mono">
                         <div>{formatINR(deal.grossBrokerageAmount)}</div>
-                        <div className="text-[10px] text-slate-400">@{deal.brokeragePercent}%</div>
+                        <div className="text-[10px] text-content-muted">@{deal.brokeragePercent}%</div>
                       </td>
 
-                      <td className="p-3 text-right font-bold text-emerald-400">
+                      <td className="p-3.5 text-right font-bold text-status-success font-mono">
                         {formatINR(deal.firmNetBrokerageAmount)}
                       </td>
 
-                      <td className="p-3 text-right text-slate-300">
+                      <td className="p-3.5 text-right text-content font-mono">
                         <div>{formatINR(deal.repCommissionAmount)}</div>
-                        <div className="text-[10px] text-slate-500">Rep Incentive</div>
+                        <div className="text-[10px] text-content-muted">Rep Incentive</div>
                       </td>
 
-                      <td className="p-3 text-center">
-                        <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${
+                      <td className="p-3.5 text-center">
+                        <span className={`inline-block px-2.5 py-0.5 rounded-lg text-[10px] font-bold border ${
                           isPaid
-                            ? 'bg-emerald-950/70 text-emerald-300 border border-emerald-500/40'
+                            ? 'bg-status-success-surface text-status-success border-status-success/30'
                             : deal.dealStatus === 'INVOICE_SENT'
-                            ? 'bg-purple-950/70 text-purple-300 border border-purple-500/40'
-                            : 'bg-amber-950/70 text-amber-300 border border-amber-500/40'
+                            ? 'bg-accent-soft text-accent-text border-accent/20'
+                            : 'bg-status-warning-surface text-status-warning border-status-warning/30'
                         }`}>
                           {deal.dealStatus.replace('_', ' ')}
                         </span>
-                        <div className="text-[9px] text-slate-500 mt-0.5">
+                        <div className="text-[10px] text-content-muted mt-0.5 font-mono">
                           {daysInStatus}d in status
                         </div>
                       </td>
 
-                      <td className="p-3 pr-4 text-right">
+                      <td className="p-3.5 pr-4 text-right">
                         <button
                           type="button"
                           onClick={() => {
@@ -648,10 +646,10 @@ export function DealsLedgerClient({
                             setInvoiceNumber(deal.developerInvoiceNumber || 'ZP-INV-2026-08');
                           }}
                           aria-label={`Edit milestone for ${deal.lead?.fullName || 'deal'}`}
-                          className="min-h-11 px-2.5 py-1 rounded bg-[#12151f] hover:bg-[#2a3040] text-[#ccb67b] border border-[#b59658]/30 text-[11px] font-semibold flex items-center gap-1 ml-auto shadow-sm"
+                          className="px-3 py-1.5 rounded-xl bg-surface hover:bg-surface-subtle text-accent-text hover:text-accent border border-border hover:border-accent/40 text-xs font-bold flex items-center gap-1.5 ml-auto shadow-2xs transition-all"
                         >
-                          <FileText className="w-3 h-3" />
-                          Milestone
+                          <FileText className="w-3.5 h-3.5" />
+                          Update
                         </button>
                       </td>
                     </tr>
@@ -677,7 +675,7 @@ export function DealsLedgerClient({
         onClose={() => setShowRegisterModal(false)}
         titleId="register-deal-title"
         descriptionId="register-deal-description"
-        panelClassName="max-w-lg bg-[#1b202c] border border-[#b59658]/40 rounded-2xl p-6 space-y-4 shadow-2xl"
+        size="lg"
       >
             <div className="flex items-center justify-between pb-3 border-b border-[#b59658]/20">
               <div>
@@ -692,7 +690,7 @@ export function DealsLedgerClient({
 
             {actionError && <div role="alert" className="rounded-lg border border-red-500/40 bg-red-950/50 p-3 text-xs text-red-200">{actionError}</div>}
 
-            <form onSubmit={handleRegisterDeal} className="space-y-3.5">
+            <form onSubmit={handleRegisterDeal} className="space-y-3.5 pt-2">
               <div>
                 <label htmlFor="deal-lead" className="text-slate-300 block mb-1">Purchaser lead:</label>
                 <select
@@ -701,7 +699,7 @@ export function DealsLedgerClient({
                   data-dialog-autofocus
                   value={selectedLeadId}
                   onChange={(e) => setSelectedLeadId(e.target.value)}
-                  className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2 text-white"
+                  className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2.5 text-white focus:outline-none focus:border-amber-500/60"
                 >
                   {leads.map((l) => (
                     <option key={l.id} value={l.id}>
@@ -718,7 +716,7 @@ export function DealsLedgerClient({
                   name="propertyUnitId"
                   value={selectedUnitId}
                   onChange={(e) => setSelectedUnitId(e.target.value)}
-                  className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2 text-white"
+                  className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2.5 text-white focus:outline-none focus:border-amber-500/60"
                 >
                   {units.map((u) => (
                     <option key={u.id} value={u.id}>
@@ -728,7 +726,7 @@ export function DealsLedgerClient({
                 </select>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label htmlFor="deal-brokerage" className="text-slate-300 block mb-1">Developer brokerage percentage:</label>
                   <input
@@ -738,7 +736,7 @@ export function DealsLedgerClient({
                     step="0.1"
                     value={brokeragePercent}
                     onChange={(e) => setBrokeragePercent(Number(e.target.value))}
-                    className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2 text-white"
+                    className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2.5 text-white focus:outline-none focus:border-amber-500/60"
                   />
                 </div>
 
@@ -751,12 +749,12 @@ export function DealsLedgerClient({
                     step="1"
                     value={repSplitPercent}
                     onChange={(e) => setRepSplitPercent(Number(e.target.value))}
-                    className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2 text-white"
+                    className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2.5 text-white focus:outline-none focus:border-amber-500/60"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label htmlFor="deal-co-broker" className="text-slate-300 block mb-1">Co-broker firm (optional):</label>
                   <input
@@ -766,7 +764,7 @@ export function DealsLedgerClient({
                     placeholder="e.g. Shree Ganesh Properties"
                     value={coBrokerName}
                     onChange={(e) => setCoBrokerName(e.target.value)}
-                    className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2 text-white"
+                    className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2.5 text-white focus:outline-none focus:border-amber-500/60"
                   />
                 </div>
 
@@ -779,7 +777,7 @@ export function DealsLedgerClient({
                     step="1"
                     value={coBrokerSharePercent}
                     onChange={(e) => setCoBrokerSharePercent(Number(e.target.value))}
-                    className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2 text-white"
+                    className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2.5 text-white focus:outline-none focus:border-amber-500/60"
                   />
                 </div>
               </div>
@@ -792,22 +790,22 @@ export function DealsLedgerClient({
                   rows={2}
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2 text-white"
+                  className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2.5 text-white focus:outline-none focus:border-amber-500/60"
                 />
               </div>
 
-              <div className="pt-2 flex justify-end gap-2">
+              <div className="pt-2 flex flex-col-reverse sm:flex-row justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setShowRegisterModal(false)}
-                  className="min-h-11 px-3 py-1.5 rounded-lg bg-[#12151f] text-slate-300"
+                  className="min-h-11 px-4 py-2 rounded-lg bg-[#12151f] text-slate-300 hover:bg-slate-800 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="min-h-11 px-4 py-1.5 rounded-lg bg-gradient-to-r from-[#8a6f3c] via-[#b59658] to-[#ccb67b] text-[#12151f] font-bold shadow-md"
+                  className="min-h-11 px-5 py-2 rounded-lg bg-gradient-to-r from-[#8a6f3c] via-[#b59658] to-[#ccb67b] text-[#12151f] font-bold shadow-md hover:brightness-110 transition-all"
                 >
                   {submitting ? 'Recording…' : 'Register deal'}
                 </button>
@@ -821,7 +819,7 @@ export function DealsLedgerClient({
         onClose={() => setUpdateDeal(null)}
         titleId="update-milestone-title"
         descriptionId="update-milestone-description"
-        panelClassName="max-w-md bg-[#1b202c] border border-[#b59658]/40 rounded-2xl p-6 space-y-4 shadow-2xl"
+        size="md"
       >
         {updateDeal && (
           <>
@@ -835,7 +833,7 @@ export function DealsLedgerClient({
 
             {actionError && <div role="alert" className="rounded-lg border border-red-500/40 bg-red-950/50 p-3 text-xs text-red-200">{actionError}</div>}
 
-            <form onSubmit={handleUpdateStatus} className="space-y-3.5">
+            <form onSubmit={handleUpdateStatus} className="space-y-3.5 pt-2">
               <div>
                 <label htmlFor="milestone-status" className="text-slate-300 block mb-1">Target milestone status:</label>
                 <select
@@ -844,7 +842,7 @@ export function DealsLedgerClient({
                   data-dialog-autofocus
                   value={newStatus}
                   onChange={(e) => setNewStatus(e.target.value)}
-                  className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2 text-white"
+                  className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2.5 text-white focus:outline-none focus:border-amber-500/60"
                 >
                   <option value="TOKEN_RECEIVED">TOKEN_RECEIVED (Booking Advance)</option>
                   <option value="AGREEMENT_REGISTERED">AGREEMENT_REGISTERED (Sub-Registrar)</option>

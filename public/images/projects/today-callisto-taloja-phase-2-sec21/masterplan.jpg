@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" width="1200" height="800">
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1f293d" stroke-width="0.8" />
+    </pattern>
+  </defs>
+
+  <!-- Background Blueprint Paper -->
+  <rect width="1200" height="800" fill="#0b1329" />
+  <rect width="1200" height="800" fill="url(#grid)" />
+
+  <!-- Outer Boundary Site Plot -->
+  <rect x="80" y="80" width="1040" height="640" fill="#0f1c3f" stroke="#c6a869" stroke-width="2.5" rx="12" stroke-dasharray="10, 5" />
+  <text x="100" y="115" fill="#c6a869" font-family="Cinzel, Georgia, serif" font-size="16" font-weight="bold">MASTER SITE LAYOUT &amp; AMENITIES SCHEMATIC</text>
+
+  <!-- Internal 24M Access Roads -->
+  <path d="M80,400 L1120,400" stroke="#475569" stroke-width="40" />
+  <path d="M600,80 L600,720" stroke="#475569" stroke-width="40" />
+  
+  <!-- Road Center Lines -->
+  <line x1="80" y1="400" x2="1120" y2="400" stroke="#c6a869" stroke-width="2" stroke-dasharray="15, 10" />
+  <line x1="600" y1="80" x2="600" y2="720" stroke="#c6a869" stroke-width="2" stroke-dasharray="15, 10" />
+
+  <!-- Tower Footprints -->
+  <!-- Tower 1 -->
+  <g transform="translate(180, 160)">
+    <rect width="180" height="140" fill="#1e293b" stroke="#38bdf8" stroke-width="2" rx="6" />
+    <text x="90" y="70" fill="#38bdf8" font-family="Inter, sans-serif" font-size="16" font-weight="bold" text-anchor="middle">WING A</text>
+    <text x="90" y="95" fill="#94a3b8" font-family="Inter, sans-serif" font-size="12" text-anchor="middle">G + 14 STOREYS</text>
+  </g>
+
+  <!-- Tower 2 -->
+  <g transform="translate(380, 160)">
+    <rect width="180" height="140" fill="#1e293b" stroke="#38bdf8" stroke-width="2" rx="6" />
+    <text x="90" y="70" fill="#38bdf8" font-family="Inter, sans-serif" font-size="16" font-weight="bold" text-anchor="middle">WING B</text>
+    <text x="90" y="95" fill="#94a3b8" font-family="Inter, sans-serif" font-size="12" text-anchor="middle">G + 14 STOREYS</text>
+  </g>
+
+  <!-- Grand Clubhouse & Pool -->
+  <g transform="translate(680, 150)">
+    <rect width="360" height="160" fill="#1e3a8a" stroke="#60a5fa" stroke-width="2" rx="8" />
+    <text x="180" y="50" fill="#ffffff" font-family="Inter, sans-serif" font-size="16" font-weight="bold" text-anchor="middle">GRAND CLUBHOUSE &amp; FITNESS</text>
+    <!-- Pool inside club -->
+    <rect x="60" y="75" width="240" height="60" fill="#0284c7" stroke="#38bdf8" stroke-width="1.5" rx="6" />
+    <text x="180" y="112" fill="#e0f2fe" font-family="Inter, sans-serif" font-size="13" font-weight="bold" text-anchor="middle">RESORT SWIMMING POOL</text>
+  </g>
+
+  <!-- Central Landscaped Park -->
+  <g transform="translate(180, 480)">
+    <rect width="380" height="180" fill="#14532d" stroke="#22c55e" stroke-width="2" rx="8" />
+    <text x="190" y="70" fill="#86efac" font-family="Inter, sans-serif" font-size="16" font-weight="bold" text-anchor="middle">CENTRAL PODIUM PARK &amp; LAWNS</text>
+    <text x="190" y="100" fill="#dcfce7" font-family="Inter, sans-serif" font-size="12" text-anchor="middle">Jogging Track • Gazebo • Kids Play Park</text>
+  </g>
+
+  <!-- Sports Arena -->
+  <g transform="translate(680, 480)">
+    <rect width="360" height="180" fill="#3f2c14" stroke="#eab308" stroke-width="2" rx="8" />
+    <text x="180" y="70" fill="#fef08a" font-family="Inter, sans-serif" font-size="16" font-weight="bold" text-anchor="middle">MULTI-SPORTS ARENA</text>
+    <text x="180" y="100" fill="#fef9c3" font-family="Inter, sans-serif" font-size="12" text-anchor="middle">Tennis Court • Box Cricket • Skating Rink</text>
+  </g>
+
+  <!-- Project Header Legend -->
+  <g transform="translate(100, 680)">
+    <text x="0" y="24" fill="#e2e8f0" font-family="Inter, sans-serif" font-size="14" font-weight="bold">Project: Today Callisto (Taloja Phase 2 Sector 21)</text>
+    <text x="500" y="24" fill="#94a3b8" font-family="Inter, sans-serif" font-size="12">MahaRERA: P52000029810 | Land Parcel: Multi-Acre Integrated Development</text>
+  </g>
+</svg>

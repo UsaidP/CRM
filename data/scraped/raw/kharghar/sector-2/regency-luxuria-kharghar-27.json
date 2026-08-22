@@ -1,0 +1,75 @@
+{
+  "slug": "regency-luxuria-kharghar-27",
+  "projectName": "Regency Luxuria",
+  "developerName": "Regency Group",
+  "node": "KHARGHAR",
+  "sector": "Sector 27",
+  "microMarket": "Kharghar Sector 27",
+  "subLocality": "Upper Hills View Enclave",
+  "address": "Plot 18, Sector 27, Kharghar, Navi Mumbai 410210",
+  "reraNumber": "P52000025420",
+  "reraApprovedDate": "2020-11-20",
+  "promoterLegalEntity": "Regency Nirman Ltd",
+  "latitude": 19.0708,
+  "longitude": 73.0998,
+  "distanceToMetroKm": 1.3,
+  "nearestMetroStation": "Sector 34 Metro",
+  "hasOccupancyCertificate": true,
+  "ocCertificateNumber": "CIDCO/BP/2024/OC-311",
+  "commencementCertificateDate": "2019-09-15",
+  "expectedPossessionDate": "2024-03-31",
+  "totalTowers": 2,
+  "totalFloors": 16,
+  "basePricePerSqft": 12800,
+  "standardCommissionPercent": 2,
+  "developerSalesPocName": "Anil Agrawal",
+  "developerSalesPocPhone": "+919820234527",
+  "shortDescription": "G+16 hill-facing towers in Kharghar Sector 27 with OC received.",
+  "description": "Regency Luxuria offers premium 2 and 3 BHK homes tucked into the peaceful backdrop of Kharghar Hills in Sector 27.",
+  "locationDescription": "Peaceful sector overlooking upper valley trails, 4 minutes from Sector 34 Metro Station.",
+  "keyHighlights": [
+    "Unobstructed Kharghar Hill Scenery",
+    "OC Received Ready to Move",
+    "Spacious Room Dimensions",
+    "Low Pollution Green Belt"
+  ],
+  "amenities": [
+    "Clubhouse with Gymnasium",
+    "Indoor Games Arena",
+    "Children Park",
+    "Designer Stilt Parking",
+    "Rainwater Harvesting"
+  ],
+  "coverImagePath": "/images/projects/regency-luxuria-kharghar-27/cover.jpg",
+  "masterPlanPath": "/images/projects/regency-luxuria-kharghar-27/masterplan.jpg",
+  "elevationImages": [
+    "/images/projects/regency-luxuria-kharghar-27/elevation-1.jpg"
+  ],
+  "floorPlanImages": [
+    "/images/projects/regency-luxuria-kharghar-27/floorplan-2bhk.jpg"
+  ],
+  "brochureUrl": "https://zamzamproperties.in/brochures/regency-luxuria-sec27.pdf",
+  "youtubeWalkthroughUrl": "https://youtube.com/watch?v=sec27-regency-luxuria",
+  "units": [
+    {
+      "unitNumber": "A-703",
+      "bhk": 2,
+      "bathrooms": 2,
+      "balconies": 2,
+      "floorNumber": 7,
+      "totalFloors": 16,
+      "carpetAreaSqft": 720,
+      "carpetAreaSqm": 66.89,
+      "facing": "WEST",
+      "possessionStatus": "READY_TO_MOVE",
+      "possessionDate": "2024-03-31",
+      "agreementValue": 9216000,
+      "floorRiseCharges": 140000,
+      "parkingCharges": 300000,
+      "societyDevelopmentCharges": 175000,
+      "description": "Sunset hill-facing 2 BHK with full ceramic tiling and large dry balcony.",
+      "floorPlanPath": "/images/projects/regency-luxuria-kharghar-27/floorplan-2bhk.jpg",
+      "elevationPath": "/images/projects/regency-luxuria-kharghar-27/elevation-1.jpg"
+    }
+  ]
+}

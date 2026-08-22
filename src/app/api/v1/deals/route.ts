@@ -3,6 +3,8 @@ import { prisma } from '@/lib/db/prisma';
 import { calculateDealCommission } from '@/lib/domain/commission-calculator';
 import { createDealSchema } from '@/lib/validators/deal-schemas';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);

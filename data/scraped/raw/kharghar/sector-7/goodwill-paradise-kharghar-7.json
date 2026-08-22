@@ -1,0 +1,76 @@
+{
+  "slug": "goodwill-paradise-kharghar-7",
+  "projectName": "Goodwill Paradise",
+  "developerName": "Goodwill Developers",
+  "node": "KHARGHAR",
+  "sector": "Sector 7",
+  "microMarket": "Kharghar Sector 7",
+  "subLocality": "Utsav Chowk Iconic Gateway",
+  "address": "Plot 3, Sector 7, Kharghar, Navi Mumbai 410210",
+  "reraNumber": "P52000017840",
+  "reraApprovedDate": "2018-12-10",
+  "promoterLegalEntity": "Goodwill Infrastructure Ltd",
+  "latitude": 19.0468,
+  "longitude": 73.0705,
+  "distanceToMetroKm": 0.2,
+  "nearestMetroStation": "Utsav Chowk Metro",
+  "hasOccupancyCertificate": true,
+  "ocCertificateNumber": "CIDCO/BP/2021/OC-389",
+  "commencementCertificateDate": "2017-06-18",
+  "expectedPossessionDate": "2021-09-30",
+  "totalTowers": 3,
+  "totalFloors": 16,
+  "basePricePerSqft": 14500,
+  "standardCommissionPercent": 2,
+  "developerSalesPocName": "Pradeep Shah",
+  "developerSalesPocPhone": "+919820234507",
+  "shortDescription": "Flagship gated community right at Utsav Chowk and Metro Station.",
+  "description": "Goodwill Paradise is an architectural landmark in Kharghar Sector 7 situated directly next to Utsav Chowk, offering luxury high-rise residences with world-class clubhouse amenities.",
+  "locationDescription": "Situated at the entrance of Kharghar, 2 minutes from Utsav Chowk Metro Station and Balaji Temple.",
+  "keyHighlights": [
+    "Direct Utsav Chowk Metro Connectivity",
+    "Grand Resort-Style Clubhouse",
+    "Covered Dedicated 2-Level Parking",
+    "Spacious 2 and 3 BHK Master Layouts"
+  ],
+  "amenities": [
+    "Olympic Length Swimming Pool",
+    "Squash Court",
+    "Multi-Purpose Banquet Hall",
+    "Spa & Sauna",
+    "Children Amusement Zone"
+  ],
+  "coverImagePath": "/images/projects/goodwill-paradise-kharghar-7/cover.jpg",
+  "masterPlanPath": "/images/projects/goodwill-paradise-kharghar-7/masterplan.jpg",
+  "elevationImages": [
+    "/images/projects/goodwill-paradise-kharghar-7/elevation-1.jpg"
+  ],
+  "floorPlanImages": [
+    "/images/projects/goodwill-paradise-kharghar-7/floorplan-2bhk.jpg",
+    "/images/projects/goodwill-paradise-kharghar-7/floorplan-3bhk.jpg"
+  ],
+  "brochureUrl": "https://zamzamproperties.in/brochures/goodwill-paradise-sec7.pdf",
+  "youtubeWalkthroughUrl": "https://youtube.com/watch?v=sec7-goodwill-paradise",
+  "units": [
+    {
+      "unitNumber": "T1-804",
+      "bhk": 2,
+      "bathrooms": 2,
+      "balconies": 2,
+      "floorNumber": 8,
+      "totalFloors": 16,
+      "carpetAreaSqft": 740,
+      "carpetAreaSqm": 68.75,
+      "facing": "EAST",
+      "possessionStatus": "READY_TO_MOVE",
+      "possessionDate": "2021-09-30",
+      "agreementValue": 10730000,
+      "floorRiseCharges": 160000,
+      "parkingCharges": 350000,
+      "societyDevelopmentCharges": 190000,
+      "description": "Utsav Chowk facing 2 BHK on mid-floor with premium vitrified tiles and private foyer.",
+      "floorPlanPath": "/images/projects/goodwill-paradise-kharghar-7/floorplan-2bhk.jpg",
+      "elevationPath": "/images/projects/goodwill-paradise-kharghar-7/elevation-1.jpg"
+    }
+  ]
+}

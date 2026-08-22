@@ -941,7 +941,8 @@ export function ClientPortalView({ portal, token }: ClientPortalViewProps) {
         onClose={() => setActiveVideoModal(null)}
         titleId="video-modal-title"
         descriptionId="video-modal-description"
-        panelClassName="glass-panel max-w-3xl w-full p-0 rounded-3xl border border-[#b59658]/40 shadow-2xl overflow-hidden bg-slate-950"
+        size="xl"
+        panelClassName="glass-panel p-0 rounded-3xl border border-[#b59658]/40 shadow-2xl overflow-hidden bg-slate-950"
       >
         {activeVideoModal && (
           <div>
@@ -965,27 +966,27 @@ export function ClientPortalView({ portal, token }: ClientPortalViewProps) {
                 type="button"
                 onClick={() => setActiveVideoModal(null)}
                 className="w-9 h-9 rounded-full bg-slate-900 border border-slate-700 grid place-items-center text-slate-400 hover:text-white"
-                aria-label="Close video player"
+                aria-label="Close walkthrough video"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            {/* Video Iframe Container */}
+            {/* Video Player */}
             <div className="relative aspect-video w-full bg-black">
               <iframe
                 src={`${activeVideoModal.videoUrl}?autoplay=1&rel=0`}
                 title={activeVideoModal.title}
+                className="w-full h-full border-0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowFullScreen
-                className="w-full h-full border-0"
               />
             </div>
 
             {/* Modal Footer CTAs */}
             <div className="p-4 bg-[#12151f] border-t border-slate-800 flex flex-wrap items-center justify-between gap-3">
               <span className="text-xs text-slate-400 font-mono">
-                {activeVideoModal.unit?.project?.microMarket} • Verified Property Tour
+                {activeVideoModal.unit?.project?.microMarket || 'Navi Mumbai'} • Verified Property Tour
               </span>
 
               <div className="flex items-center gap-2">
@@ -996,19 +997,10 @@ export function ClientPortalView({ portal, token }: ClientPortalViewProps) {
                     setActiveVideoModal(null);
                     setBookingUnit(unit);
                   }}
-                  className="px-4 py-2 rounded-xl bg-slate-800 border border-slate-700 hover:bg-slate-700 text-xs font-bold text-white flex items-center gap-1.5"
+                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#8a6f3c] via-[#b59658] to-[#ccb67b] text-black font-bold text-xs shadow-lg flex items-center gap-1.5"
                 >
-                  <Calendar className="w-3.5 h-3.5 text-amber-400" />
-                  Schedule Saturday Tour
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleWhatsAppInquiry(activeVideoModal.unit)}
-                  className="px-4 py-2 rounded-xl bg-[#b59658] hover:bg-[#ccb67b] text-xs font-extrabold text-[#12151f] flex items-center gap-1.5 shadow-md"
-                >
-                  <Send className="w-3.5 h-3.5" />
-                  Ask Farhan on WhatsApp
+                  <Calendar className="w-3.5 h-3.5" />
+                  Schedule Visit
                 </button>
               </div>
             </div>
@@ -1022,7 +1014,8 @@ export function ClientPortalView({ portal, token }: ClientPortalViewProps) {
         onClose={() => setLightboxState(null)}
         titleId="lightbox-modal-title"
         descriptionId="lightbox-modal-description"
-        panelClassName="glass-panel max-w-4xl w-full p-0 rounded-3xl border border-slate-700 shadow-2xl overflow-hidden bg-slate-950"
+        size="xl"
+        panelClassName="glass-panel p-0 rounded-3xl border border-slate-700 shadow-2xl overflow-hidden bg-slate-950"
       >
         {lightboxState && (
           <div>
@@ -1097,7 +1090,8 @@ export function ClientPortalView({ portal, token }: ClientPortalViewProps) {
         onClose={() => setBookingUnit(null)}
         titleId="public-booking-title"
         descriptionId="public-booking-description"
-        panelClassName="glass-panel max-w-md p-6 rounded-3xl border border-slate-700 shadow-2xl space-y-4 bg-slate-950"
+        size="md"
+        panelClassName="glass-panel p-6 rounded-3xl border border-slate-700 shadow-2xl space-y-4 bg-slate-950"
       >
         {bookingUnit && (
           <>

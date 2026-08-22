@@ -114,7 +114,18 @@ export interface Lead {
   sourceRefUrl?: string | null;
   assignedBrokerId?: string | null;
   assignedBroker?: User | null;
-  currentStage: 'new_uncontacted' | 'discovery_call' | 'portal_shared' | 'visit_scheduled' | 'visit_done' | 'closed_won' | 'closed_lost';
+  currentStage: 
+    | 'new_uncontacted' 
+    | 'discovery_call' 
+    | 'portal_shared' 
+    | 'visit_scheduled' 
+    | 'visit_done' 
+    | 'revisit_scheduled'
+    | 'negotiation_token'
+    | 'under_registration'
+    | 'closed_won' 
+    | 'on_hold_nurture'
+    | 'closed_lost';
   notes?: string | null;
   requirements?: BuyerRequirement[];
   portals?: ClientPortal[];

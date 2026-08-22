@@ -1,0 +1,18 @@
+{
+  "node": "KHARGHAR",
+  "sector": "Sector 32",
+  "zone": "Upper Kharghar High-Rise Cluster",
+  "landmarks": [
+    "Sector 32 Garden",
+    "Grand Residency"
+  ],
+  "nearestMetroStation": "Sector 34 Metro",
+  "distanceToMetroKm": 0.7,
+  "averageRatePerSqft": 13400,
+  "centerCoordinates": {
+    "lat": 19.0665,
+    "lng": 73.0872
+  },
+  "scrapedAt": "2026-08-19T11:46:45.271Z",
+  "projectsCount": 0
+}

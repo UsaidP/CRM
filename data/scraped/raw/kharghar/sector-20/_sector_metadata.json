@@ -1,0 +1,19 @@
+{
+  "node": "KHARGHAR",
+  "sector": "Sector 20",
+  "zone": "Central Park & Golf View Luxury Avenue",
+  "landmarks": [
+    "Kharghar 18-Hole Golf Course",
+    "Central Park Amphitheatre",
+    "Paradise Sai Marvel"
+  ],
+  "nearestMetroStation": "Central Park Metro",
+  "distanceToMetroKm": 0.2,
+  "averageRatePerSqft": 16800,
+  "centerCoordinates": {
+    "lat": 19.0622,
+    "lng": 73.0835
+  },
+  "scrapedAt": "2026-08-19T11:46:45.262Z",
+  "projectsCount": 1
+}

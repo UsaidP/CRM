@@ -5,6 +5,9 @@ import { createLeadSchema } from '@/lib/validators/lead-schemas';
 import { evaluate24HourMessagingWindow, findOrCreateContact } from '@/lib/domain/contact-manager';
 import { resolveBrokerByInboundIdentifier, OFFICIAL_BROKER_NUMBERS } from '@/lib/domain/broker-resolver';
 import { analyzeInboundAttribution } from '@/lib/domain/campaign-attribution';
+import { ensureLeadFallbackReminder } from '@/lib/services/lead-reminder-service';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
   try {
@@ -71,6 +74,14 @@ export async function GET(req: Request) {
           communications: {
             orderBy: { createdAt: 'desc' },
             take: 5,
+          },
+          portals: {
+            include: {
+              telemetryLogs: true,
+            },
+          },
+          reminders: {
+            orderBy: { dueAt: 'asc' },
           },
         },
         orderBy: { createdAt: 'desc' },
@@ -178,6 +189,11 @@ export async function POST(req: Request) {
         assignedBroker: true,
         campaign: true,
       },
+    });
+
+    // Zero-Orphan Inbound Rule: Auto-seed 15-minute speed-to-lead reminder
+    await ensureLeadFallbackReminder(lead.id, {
+      organizationId: org.id,
     });
 
     return NextResponse.json({

@@ -1,0 +1,19 @@
+{
+  "node": "KHARGHAR",
+  "sector": "Sector 35",
+  "zone": "Arihant Clan & Luxury Skyscraper Corridor",
+  "landmarks": [
+    "Arihant Clan Aalishan",
+    "Juhi Serenity",
+    "Amandoot Metro Interchange"
+  ],
+  "nearestMetroStation": "Amandoot Metro",
+  "distanceToMetroKm": 0.3,
+  "averageRatePerSqft": 15800,
+  "centerCoordinates": {
+    "lat": 19.0735,
+    "lng": 73.0878
+  },
+  "scrapedAt": "2026-08-19T11:46:45.272Z",
+  "projectsCount": 1
+}

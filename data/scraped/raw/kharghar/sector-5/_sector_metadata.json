@@ -1,0 +1,19 @@
+{
+  "node": "KHARGHAR",
+  "sector": "Sector 5",
+  "zone": "Belpada Commercial & Transit Node",
+  "landmarks": [
+    "Belpada Village",
+    "CIDCO Water Office",
+    "Green Meadows"
+  ],
+  "nearestMetroStation": "Belpada / Sector 7 Metro",
+  "distanceToMetroKm": 0.4,
+  "averageRatePerSqft": 13200,
+  "centerCoordinates": {
+    "lat": 19.0418,
+    "lng": 73.0652
+  },
+  "scrapedAt": "2026-08-19T11:46:45.255Z",
+  "projectsCount": 0
+}

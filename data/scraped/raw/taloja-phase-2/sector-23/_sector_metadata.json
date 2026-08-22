@@ -1,0 +1,18 @@
+{
+  "node": "TALOJA_PHASE_2",
+  "sector": "Sector 23",
+  "zone": "Ghot Camp & Modern Townships",
+  "landmarks": [
+    "Ghot Camp Road",
+    "Arihant Anaika Phase 2 Link"
+  ],
+  "nearestMetroStation": "Pendhar Metro",
+  "distanceToMetroKm": 2,
+  "averageRatePerSqft": 6600,
+  "centerCoordinates": {
+    "lat": 19.1165,
+    "lng": 73.1055
+  },
+  "scrapedAt": "2026-08-19T11:46:45.425Z",
+  "projectsCount": 1
+}

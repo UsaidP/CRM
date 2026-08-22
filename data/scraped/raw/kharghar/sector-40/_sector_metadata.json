@@ -1,0 +1,18 @@
+{
+  "node": "KHARGHAR",
+  "sector": "Sector 40",
+  "zone": "Upper Kharghar Terminal Node",
+  "landmarks": [
+    "Upper Kharghar CIDCO Boundary",
+    "Nature Sanctuary Corridor"
+  ],
+  "nearestMetroStation": "Amandoot Metro",
+  "distanceToMetroKm": 1.5,
+  "averageRatePerSqft": 13600,
+  "centerCoordinates": {
+    "lat": 19.0862,
+    "lng": 73.0988
+  },
+  "scrapedAt": "2026-08-19T11:46:45.276Z",
+  "projectsCount": 0
+}

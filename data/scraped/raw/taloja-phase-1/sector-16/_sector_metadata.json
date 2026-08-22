@@ -1,0 +1,18 @@
+{
+  "node": "TALOJA_PHASE_1",
+  "sector": "Sector 16",
+  "zone": "Pendhar Metro Station Hub",
+  "landmarks": [
+    "Pendhar Metro Terminal Station",
+    "CIDCO Metro Depot Road"
+  ],
+  "nearestMetroStation": "Pendhar Metro",
+  "distanceToMetroKm": 0.1,
+  "averageRatePerSqft": 8500,
+  "centerCoordinates": {
+    "lat": 19.0968,
+    "lng": 73.0875
+  },
+  "scrapedAt": "2026-08-19T11:46:45.422Z",
+  "projectsCount": 1
+}

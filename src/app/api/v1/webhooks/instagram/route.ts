@@ -3,6 +3,9 @@ import crypto from 'crypto';
 import { prisma } from '@/lib/db/prisma';
 import { analyzeInboundAttribution } from '@/lib/domain/campaign-attribution';
 import { findOrCreateContact } from '@/lib/domain/contact-manager';
+import { ensureLeadFallbackReminder } from '@/lib/services/lead-reminder-service';
+
+export const dynamic = 'force-dynamic';
 
 /**
  * Meta Instagram GET Verification Handshake
@@ -183,6 +186,11 @@ export async function POST(req: Request) {
                 data: { totalLeadsGenerated: { increment: 1 } },
               });
             }
+
+            // Auto-seed speed-to-lead SLA reminder for fresh inbound
+            await ensureLeadFallbackReminder(lead.id, {
+              organizationId: org.id,
+            });
           }
 
           // Log Communication Event
@@ -294,6 +302,11 @@ export async function POST(req: Request) {
         messageContent: commentOrDmText,
         metadataJson: JSON.stringify({ igUsername, attribution }),
       },
+    });
+
+    // Auto-seed speed-to-lead SLA reminder
+    await ensureLeadFallbackReminder(lead.id, {
+      organizationId: org.id,
     });
 
     return NextResponse.json({

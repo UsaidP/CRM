@@ -6,6 +6,8 @@ import { calculateAllInCost } from '@/lib/domain/cost-calculator';
 import { validateReraNumber } from '@/lib/domain/verification-engine';
 import { parseInventoryContent } from '@/lib/inventory-media';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;

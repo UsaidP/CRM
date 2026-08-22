@@ -1,0 +1,18 @@
+{
+  "node": "TALOJA_PHASE_2",
+  "sector": "Sector 25",
+  "zone": "CIDCO Lottery Belt Phase 2",
+  "landmarks": [
+    "CIDCO Mega Mass Housing 25",
+    "Community Hall"
+  ],
+  "nearestMetroStation": "Pendhar Metro",
+  "distanceToMetroKm": 2.3,
+  "averageRatePerSqft": 6200,
+  "centerCoordinates": {
+    "lat": 19.1205,
+    "lng": 73.1015
+  },
+  "scrapedAt": "2026-08-19T11:46:45.426Z",
+  "projectsCount": 0
+}

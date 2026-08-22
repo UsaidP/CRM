@@ -1,0 +1,18 @@
+{
+  "node": "TALOJA_PHASE_1",
+  "sector": "Sector 5",
+  "zone": "Central Phase 1 Gated Townships",
+  "landmarks": [
+    "Sector 5 Play Arena",
+    "CIDCO Residential Layout"
+  ],
+  "nearestMetroStation": "Pendhar Metro",
+  "distanceToMetroKm": 1.5,
+  "averageRatePerSqft": 7200,
+  "centerCoordinates": {
+    "lat": 19.1005,
+    "lng": 73.1095
+  },
+  "scrapedAt": "2026-08-19T11:46:45.279Z",
+  "projectsCount": 0
+}

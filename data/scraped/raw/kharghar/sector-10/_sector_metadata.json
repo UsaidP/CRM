@@ -1,0 +1,19 @@
+{
+  "node": "KHARGHAR",
+  "sector": "Sector 10",
+  "zone": "Central Prime Residential Corridor",
+  "landmarks": [
+    "Kharghar Post Office",
+    "Sector 10 Market",
+    "Ryan International School"
+  ],
+  "nearestMetroStation": "Sector 11 Metro",
+  "distanceToMetroKm": 0.6,
+  "averageRatePerSqft": 14000,
+  "centerCoordinates": {
+    "lat": 19.0512,
+    "lng": 73.0725
+  },
+  "scrapedAt": "2026-08-19T11:46:45.258Z",
+  "projectsCount": 1
+}

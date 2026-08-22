@@ -1,0 +1,18 @@
+{
+  "node": "TALOJA_PHASE_2",
+  "sector": "Sector 30",
+  "zone": "Metro Extension Proposed Belt",
+  "landmarks": [
+    "Metro Line 12 Proposed Station",
+    "Sector 30 High Street"
+  ],
+  "nearestMetroStation": "Pendhar Metro",
+  "distanceToMetroKm": 1.5,
+  "averageRatePerSqft": 6800,
+  "centerCoordinates": {
+    "lat": 19.1165,
+    "lng": 73.0915
+  },
+  "scrapedAt": "2026-08-19T11:46:45.427Z",
+  "projectsCount": 0
+}

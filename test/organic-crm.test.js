@@ -190,5 +190,68 @@ describe('ZamZam Organic Lead Capture & CRM Program Tests', () => {
       expect(types).toContain('INSTAGRAM_IGID');
     });
   });
+
+  describe('Communication Log Lifecycle & Future Reference Updates', () => {
+    test('Broker can log conversation notes, outcome, and update notes for future reference', async () => {
+      const { prisma } = await import('../src/lib/db/prisma');
+      const org = await prisma.organization.findFirst();
+      if (!org) return;
+
+      // 1. Create a test lead
+      const testLead = await prisma.lead.create({
+        data: {
+          organizationId: org.id,
+          fullName: 'Vikram Sethi',
+          phoneE164: '+919820011223',
+          city: 'Navi Mumbai',
+          leadSource: 'direct_call',
+          currentStage: 'discovery_call',
+        },
+      });
+
+      // 2. Log initial communication
+      const initialLog = await prisma.communicationLog.create({
+        data: {
+          leadId: testLead.id,
+          channel: 'PHONE_CALL',
+          direction: 'OUTBOUND',
+          messageContent: 'Discussed 2 BHK requirement in Kharghar Sector 35. Budget ₹80 Lakhs.',
+          callDurationSeconds: 180,
+          metadataJson: JSON.stringify({
+            outcome: 'CONNECTED_INTERESTED',
+            callerName: 'Safwan Diwan',
+            followUpDate: '2026-08-25T11:00:00Z',
+            nextSteps: 'Share Sai World Empire brochure on WhatsApp',
+          }),
+        },
+      });
+
+      expect(initialLog.id).toBeDefined();
+      expect(initialLog.messageContent).toContain('₹80 Lakhs');
+
+      // 3. Update communication info for future reference (Caller edits log after receiving WhatsApp feedback)
+      const updatedLog = await prisma.communicationLog.update({
+        where: { id: initialLog.id },
+        data: {
+          messageContent: 'Discussed 2 BHK requirement in Kharghar Sector 35. Budget ₹80 Lakhs. Buyer reviewed brochure and requested Saturday 11 AM site visit.',
+          metadataJson: JSON.stringify({
+            outcome: 'VISIT_REQUESTED',
+            callerName: 'Safwan Diwan',
+            followUpDate: '2026-08-23T11:00:00Z',
+            nextSteps: 'Schedule cab for site visit tour on Saturday',
+            lastEditedAt: new Date().toISOString(),
+          }),
+        },
+      });
+
+      expect(updatedLog.messageContent).toContain('requested Saturday 11 AM site visit');
+      const parsedMeta = JSON.parse(updatedLog.metadataJson);
+      expect(parsedMeta.outcome).toBe('VISIT_REQUESTED');
+      expect(parsedMeta.nextSteps).toContain('Schedule cab');
+
+      // 4. Clean up test lead
+      await prisma.lead.delete({ where: { id: testLead.id } });
+    });
+  });
 });
 

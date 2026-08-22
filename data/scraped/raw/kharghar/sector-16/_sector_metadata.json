@@ -1,0 +1,19 @@
+{
+  "node": "KHARGHAR",
+  "sector": "Sector 16",
+  "zone": "National Institute of Fashion Technology (NIFT)",
+  "landmarks": [
+    "NIFT Campus",
+    "CIDCO Officers Enclave",
+    "Kharghar Hill Trails"
+  ],
+  "nearestMetroStation": "Sector 14 Metro",
+  "distanceToMetroKm": 1,
+  "averageRatePerSqft": 14500,
+  "centerCoordinates": {
+    "lat": 19.0632,
+    "lng": 73.0718
+  },
+  "scrapedAt": "2026-08-19T11:46:45.261Z",
+  "projectsCount": 0
+}

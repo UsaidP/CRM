@@ -1,0 +1,18 @@
+{
+  "node": "TALOJA_PHASE_2",
+  "sector": "Sector 24",
+  "zone": "Phase 2 Lake Environs",
+  "landmarks": [
+    "Taloja Phase 2 Lake",
+    "Sector 24 Promenade"
+  ],
+  "nearestMetroStation": "Pendhar Metro",
+  "distanceToMetroKm": 2.2,
+  "averageRatePerSqft": 6300,
+  "centerCoordinates": {
+    "lat": 19.1185,
+    "lng": 73.1035
+  },
+  "scrapedAt": "2026-08-19T11:46:45.425Z",
+  "projectsCount": 0
+}

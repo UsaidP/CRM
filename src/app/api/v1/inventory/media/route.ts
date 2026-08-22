@@ -4,6 +4,7 @@ import path from 'node:path';
 import { NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 const IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/avif']);
 const VIDEO_TYPES = new Set(['video/mp4', 'video/webm', 'video/quicktime']);

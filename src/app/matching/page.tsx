@@ -209,20 +209,20 @@ export default function MatchmakerConsolePage() {
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div className="space-y-6 max-w-7xl mx-auto pb-16 text-content font-sans">
       {/* Top Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-[#b59658]/20">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-surface border border-border shadow-xs">
         <div>
           <div className="flex items-center gap-2 mb-1.5">
-            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#1b202c] text-[#ccb67b] border border-[#b59658]/40 uppercase tracking-wider flex items-center gap-1">
-              <Sparkles className="w-3 h-3 text-[#b59658]" /> 5-FACTOR WEIGHTED SCORING
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-accent-soft text-accent-text border border-accent/20 uppercase tracking-wider flex items-center gap-1">
+              <Sparkles className="w-3 h-3 text-accent" /> 5-FACTOR WEIGHTED SCORING
             </span>
             <HallmarkStamp type="rera" label="RERA ID + budget checks" />
           </div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white font-display">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-content font-display">
             Property Matchmaker AI Console
           </h1>
-          <p className="text-slate-400 text-xs mt-0.5 font-mono">
+          <p className="text-content-secondary text-xs mt-1">
             Weighted matching against current Kharghar &amp; Taloja broker records with a +5% budget ceiling.
           </p>
         </div>
@@ -230,27 +230,27 @@ export default function MatchmakerConsolePage() {
         {/* Basket & Dispatch Toolbar */}
         <div className="flex flex-col items-stretch gap-2.5 sm:items-end">
           <div className="flex items-center gap-2.5">
-          <div className="px-3 py-2 rounded-lg bg-[#1b202c] border border-[#b59658]/30 text-xs font-mono flex items-center gap-2">
-            <ShoppingBag className="w-3.5 h-3.5 text-[#ccb67b]" />
-            <span className="text-slate-300">Basket:</span>
-            <strong className="text-[#ccb67b]">{selectedUnitIds.length} Units</strong>
-          </div>
+            <div className="px-3.5 py-2 rounded-xl bg-surface-subtle border border-border text-xs flex items-center gap-2 shadow-2xs">
+              <ShoppingBag className="w-4 h-4 text-accent" />
+              <span className="text-content-secondary font-medium">Basket:</span>
+              <strong className="text-accent-text font-bold font-mono">{selectedUnitIds.length} Units</strong>
+            </div>
 
-          <button
-            onClick={handleGeneratePortal}
-            disabled={selectedUnitIds.length === 0 || generatingPortal}
-            aria-describedby={portalError ? 'matching-portal-error' : undefined}
-            className="px-4 py-2 rounded-lg bg-gradient-to-r from-[#8a6f3c] via-[#b59658] to-[#ccb67b] text-[#12151f] text-xs font-bold flex items-center gap-1.5 shadow-md shadow-[#b59658]/20 border border-[#ccb67b]/60 disabled:opacity-50"
-          >
-            <Share2 className="w-3.5 h-3.5" />
-            {generatingPortal ? 'Generating portal…' : 'Generate client portal'}
-          </button>
+            <button
+              onClick={handleGeneratePortal}
+              disabled={selectedUnitIds.length === 0 || generatingPortal}
+              aria-describedby={portalError ? 'matching-portal-error' : undefined}
+              className="px-4 py-2 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold flex items-center gap-2 shadow-xs transition-all disabled:opacity-50 cursor-pointer"
+            >
+              <Share2 className="w-4 h-4" />
+              {generatingPortal ? 'Generating portal…' : 'Generate Client Portal'}
+            </button>
           </div>
           {portalError && (
-            <div id="matching-portal-error" role="alert" className="max-w-md rounded-lg border border-red-500/40 bg-red-950/50 px-3 py-2 text-xs text-red-200">
+            <div id="matching-portal-error" role="alert" className="max-w-md rounded-xl border border-status-danger/40 bg-status-danger-surface px-3.5 py-2 text-xs text-status-danger font-semibold shadow-xs">
               <p>{portalError}</p>
               {selectedUnitIds.length > 0 && leads.length > 0 && (
-                <button type="button" onClick={handleGeneratePortal} className="mt-1 min-h-11 font-bold text-white underline underline-offset-2">
+                <button type="button" onClick={handleGeneratePortal} className="mt-1 font-bold text-status-danger underline underline-offset-2">
                   Try generating again
                 </button>
               )}
@@ -263,23 +263,23 @@ export default function MatchmakerConsolePage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Column: Criteria Input Controls (4 Cols) */}
         <div className="lg:col-span-4 space-y-4">
-          <div className="p-5 rounded-2xl bg-[#1b202c]/90 border border-[#b59658]/30 shadow-xl space-y-4 font-mono text-xs">
-            <div className="flex items-center justify-between pb-3 border-b border-[#b59658]/20">
-              <h3 className="font-bold text-white text-sm font-display flex items-center gap-1.5">
-                <Sliders className="w-3.5 h-3.5 text-[#b59658]" />
+          <div className="p-5 rounded-2xl bg-surface border border-border shadow-xs space-y-4 text-xs font-sans">
+            <div className="flex items-center justify-between pb-3 border-b border-border">
+              <h3 className="font-bold text-content text-sm font-display flex items-center gap-2">
+                <Sliders className="w-4 h-4 text-accent" />
                 Client Matching Parameters
               </h3>
             </div>
 
             {/* Lead Selector */}
             <div>
-              <label htmlFor="matching-lead" className="text-slate-400 block mb-1">Target lead profile:</label>
+              <label htmlFor="matching-lead" className="text-content-secondary font-medium block mb-1.5">Target Lead Profile:</label>
               <select
                 id="matching-lead"
                 name="leadId"
                 value={selectedLeadId}
                 onChange={(e) => handleLeadSelect(e.target.value)}
-                className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2 text-white"
+                className="w-full bg-surface-inset border border-border rounded-xl p-2.5 text-xs text-content focus:outline-none focus:border-accent cursor-pointer"
               >
                 <option value="custom">Custom search parameters</option>
                 {leads.map((l) => (
@@ -289,9 +289,9 @@ export default function MatchmakerConsolePage() {
                 ))}
               </select>
               {leadsError && (
-                <div role="alert" className="mt-2 rounded-lg border border-red-500/40 bg-red-950/50 p-2 text-red-200">
+                <div role="alert" className="mt-2 rounded-xl border border-status-danger/40 bg-status-danger-surface p-2.5 text-xs text-status-danger font-semibold">
                   <p>{leadsError}</p>
-                  <button type="button" onClick={() => setLeadRequestKey((key) => key + 1)} className="mt-1 min-h-11 font-bold text-white underline underline-offset-2">
+                  <button type="button" onClick={() => setLeadRequestKey((key) => key + 1)} className="mt-1 font-bold text-status-danger underline underline-offset-2">
                     Retry lead profiles
                   </button>
                 </div>
@@ -299,10 +299,10 @@ export default function MatchmakerConsolePage() {
             </div>
 
             {/* Budget Range */}
-            <div className="space-y-1.5 pt-2 border-t border-[#b59658]/10">
-              <div className="flex justify-between">
-                <label htmlFor="matching-budget" className="text-slate-300">Maximum budget ceiling:</label>
-                <output htmlFor="matching-budget" className="font-bold text-[#ccb67b]">{formatINR(budgetMax)}</output>
+            <div className="space-y-2 pt-3 border-t border-border">
+              <div className="flex justify-between items-center">
+                <label htmlFor="matching-budget" className="text-content-secondary font-medium">Maximum Budget Ceiling:</label>
+                <output htmlFor="matching-budget" className="font-bold font-mono text-accent-text text-sm">{formatINR(budgetMax)}</output>
               </div>
               <input
                 id="matching-budget"
@@ -313,9 +313,9 @@ export default function MatchmakerConsolePage() {
                 step={250000}
                 value={budgetMax}
                 onChange={(e) => setBudgetMax(Number(e.target.value))}
-                className="w-full h-1.5 bg-[#12151f] rounded-lg appearance-none cursor-pointer accent-[#b59658]"
+                className="w-full h-2 bg-surface-subtle rounded-lg appearance-none cursor-pointer accent-accent"
               />
-              <div className="flex justify-between text-[10px] text-slate-500">
+              <div className="flex justify-between text-[11px] font-mono text-content-muted">
                 <span>₹30L</span>
                 <span>₹1.25 Cr</span>
                 <span>₹2.5 Cr</span>
@@ -323,8 +323,8 @@ export default function MatchmakerConsolePage() {
             </div>
 
             {/* BHK Configurations */}
-            <fieldset className="space-y-1.5 pt-2 border-t border-[#b59658]/10">
-              <legend className="text-slate-300 block">BHK preferences:</legend>
+            <fieldset className="space-y-2 pt-3 border-t border-border">
+              <legend className="text-content-secondary font-medium block">BHK Preferences:</legend>
               <div className="grid grid-cols-4 gap-2">
                 {[1, 2, 3, 4].map((b) => (
                   <button
@@ -332,10 +332,10 @@ export default function MatchmakerConsolePage() {
                     key={b}
                     onClick={() => toggleBhk(b)}
                     aria-pressed={bhkPreferences.includes(b)}
-                    className={`min-h-11 py-1.5 rounded-lg border font-bold text-center ${
+                    className={`py-2 rounded-xl border text-xs font-bold text-center transition-all cursor-pointer ${
                       bhkPreferences.includes(b)
-                        ? 'bg-gradient-to-r from-[#8a6f3c] to-[#ccb67b] text-[#12151f] border-transparent'
-                        : 'bg-[#12151f] text-slate-400 border-[#b59658]/20 hover:text-white'
+                        ? 'bg-accent text-white border-accent shadow-xs'
+                        : 'bg-surface text-content-secondary border-border hover:bg-surface-subtle hover:text-content'
                     }`}
                   >
                     {b} BHK
@@ -345,10 +345,10 @@ export default function MatchmakerConsolePage() {
             </fieldset>
 
             {/* Min Carpet Area */}
-            <div className="space-y-1.5 pt-2 border-t border-[#b59658]/10">
-              <div className="flex justify-between">
-                <label htmlFor="matching-carpet" className="text-slate-300">Minimum carpet area:</label>
-                <output htmlFor="matching-carpet" className="font-bold text-white">{minCarpetSqft} sq.ft</output>
+            <div className="space-y-2 pt-3 border-t border-border">
+              <div className="flex justify-between items-center">
+                <label htmlFor="matching-carpet" className="text-content-secondary font-medium">Minimum Carpet Area:</label>
+                <output htmlFor="matching-carpet" className="font-bold font-mono text-content">{minCarpetSqft} sq.ft</output>
               </div>
               <input
                 id="matching-carpet"
@@ -359,14 +359,14 @@ export default function MatchmakerConsolePage() {
                 step={25}
                 value={minCarpetSqft}
                 onChange={(e) => setMinCarpetSqft(Number(e.target.value))}
-                className="w-full h-1.5 bg-[#12151f] rounded-lg appearance-none cursor-pointer accent-[#b59658]"
+                className="w-full h-2 bg-surface-subtle rounded-lg appearance-none cursor-pointer accent-accent"
               />
             </div>
 
             {/* Possession Status */}
-            <fieldset className="space-y-1.5 pt-2 border-t border-[#b59658]/10">
-              <legend className="text-slate-300 block">Possession timeline:</legend>
-              <div className="grid grid-cols-3 gap-1.5 text-[10px]">
+            <fieldset className="space-y-2 pt-3 border-t border-border">
+              <legend className="text-content-secondary font-medium block">Possession Timeline:</legend>
+              <div className="grid grid-cols-3 gap-2 text-xs">
                 {[
                   { id: 'ANY', label: 'Any Stage' },
                   { id: 'READY', label: 'Ready (OC)' },
@@ -377,10 +377,10 @@ export default function MatchmakerConsolePage() {
                     key={pos.id}
                     onClick={() => setPossessionPreference(pos.id)}
                     aria-pressed={possessionPreference === pos.id}
-                    className={`min-h-11 py-1.5 px-2 rounded-lg border ${
+                    className={`py-2 px-2 rounded-xl border text-center font-semibold transition-all cursor-pointer ${
                       possessionPreference === pos.id
-                        ? 'bg-[#1b202c] text-[#ccb67b] border-[#b59658]/50 font-bold'
-                        : 'bg-[#12151f] text-slate-400 border-[#b59658]/20'
+                        ? 'bg-accent-soft text-accent-text border-accent/40 font-bold'
+                        : 'bg-surface text-content-secondary border-border hover:bg-surface-subtle'
                     }`}
                   >
                     {pos.label}
@@ -393,55 +393,55 @@ export default function MatchmakerConsolePage() {
 
         {/* Right Column: Ranked Matches Table (8 Cols) */}
         <div className="lg:col-span-8 space-y-4">
-          <div className="rounded-xl bg-[#1b202c]/90 border border-[#b59658]/30 shadow-xl overflow-hidden">
-            <div className="p-3.5 border-b border-[#b59658]/20 flex items-center justify-between font-mono text-xs">
+          <div className="rounded-2xl bg-surface border border-border shadow-xs overflow-hidden">
+            <div className="p-4 border-b border-border flex items-center justify-between text-xs">
               <div className="flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-[#ccb67b]" />
-                <span className="font-bold text-white uppercase tracking-wider">
+                <TrendingUp className="w-4 h-4 text-accent" />
+                <span className="font-bold text-content uppercase tracking-wider">
                   Ranked Inventory Matches ({matchedResults.length})
                 </span>
               </div>
-              <span className="text-[11px] text-slate-400">0% matches auto-collapsed</span>
+              <span className="text-xs font-mono text-content-muted">0% matches auto-collapsed</span>
             </div>
 
             {matchingError ? (
-              <div role="alert" className="p-12 text-center text-xs font-mono">
-                <AlertCircle className="mx-auto h-8 w-8 text-red-400" />
-                <p className="mt-3 font-semibold text-white">Inventory matches could not be evaluated.</p>
-                <p className="mt-1 text-slate-400">{matchingError}</p>
+              <div role="alert" className="p-12 text-center text-xs">
+                <AlertCircle className="mx-auto h-8 w-8 text-status-danger" />
+                <p className="mt-3 font-semibold text-content">Inventory matches could not be evaluated.</p>
+                <p className="mt-1 text-content-muted">{matchingError}</p>
                 <button
                   type="button"
                   onClick={() => setMatchingRequestKey((key) => key + 1)}
-                  className="mt-4 min-h-11 rounded-lg border border-[#b59658]/40 bg-[#12151f] px-4 font-bold text-[#ccb67b]"
+                  className="mt-4 rounded-xl border border-border bg-surface px-4 py-2 font-bold text-accent-text hover:bg-surface-subtle shadow-2xs"
                 >
                   Retry matching
                 </button>
               </div>
             ) : loading ? (
-              <div className="p-12 text-center text-slate-400 text-xs font-mono flex flex-col items-center gap-3">
-                <RefreshCw className="w-6 h-6 animate-spin text-[#ccb67b]" />
+              <div className="p-12 text-center text-content-muted text-xs flex flex-col items-center gap-3">
+                <RefreshCw className="w-6 h-6 animate-spin text-accent" />
                 <span>Evaluating multi-factor weighted scores...</span>
               </div>
             ) : matchedResults.length === 0 ? (
-              <div className="p-12 text-center text-slate-400 text-xs font-mono space-y-2">
-                <AlertCircle className="w-8 h-8 text-amber-400 mx-auto" />
-                <p className="text-white font-semibold">No current inventory records match your strict criteria.</p>
-                <p className="text-[11px]">Try expanding the maximum budget ceiling or adding adjacent BHK configurations.</p>
+              <div className="p-12 text-center text-content-muted text-xs space-y-2">
+                <AlertCircle className="w-8 h-8 text-status-warning mx-auto" />
+                <p className="text-content font-semibold">No current inventory records match your strict criteria.</p>
+                <p className="text-xs">Try expanding the maximum budget ceiling or adding adjacent BHK configurations.</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs font-mono">
-                  <thead className="bg-[#12151f]/90 text-slate-400 uppercase text-[10px] border-b border-[#b59658]/20">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-surface-subtle text-content-secondary uppercase text-[10px] font-bold border-b border-border">
                     <tr>
-                      <th className="p-3 pl-4">Rank / Score</th>
-                      <th className="p-3">Project &amp; Unit</th>
-                      <th className="p-3">Config &amp; Carpet</th>
-                      <th className="p-3 text-right">All-In Cost</th>
-                      <th className="p-3">Highlights &amp; Trade-Offs</th>
-                      <th className="p-3 pr-4 text-center">Basket Action</th>
+                      <th className="p-3.5 pl-4">Rank / Score</th>
+                      <th className="p-3.5">Project &amp; Unit</th>
+                      <th className="p-3.5">Config &amp; Carpet</th>
+                      <th className="p-3.5 text-right">All-In Cost</th>
+                      <th className="p-3.5">Highlights &amp; Trade-Offs</th>
+                      <th className="p-3.5 pr-4 text-center">Basket Action</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#b59658]/10 text-slate-300">
+                  <tbody className="divide-y divide-border text-content-secondary">
                     {matchedResults.map((match: any, index: number) => {
                       const { unit, score } = match;
                       const isSelected = selectedUnitIds.includes(unit.id);
@@ -451,23 +451,23 @@ export default function MatchmakerConsolePage() {
                       return (
                         <tr
                           key={unit.id}
-                          className={`hover:bg-[#12151f]/70 transition-colors ${
-                            isSelected ? 'bg-[#1b202c]/80' : ''
+                          className={`hover:bg-surface-subtle/80 transition-colors ${
+                            isSelected ? 'bg-accent-soft/40' : ''
                           }`}
                         >
-                          <td className="p-3 pl-4">
+                          <td className="p-3.5 pl-4">
                             <div className="flex items-center gap-2">
-                              <span className="font-bold text-slate-400 text-xs">#{index + 1}</span>
+                              <span className="font-bold text-content-muted text-xs font-mono">#{index + 1}</span>
                               <button
                                 type="button"
                                 onClick={() => setScoreModalData(match)}
                                 aria-label={`View scoring breakdown for ${unit.project?.projectName || 'property'} unit ${unit.unitNumber || 'not recorded'}, ${score.totalScore} percent match`}
-                                className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-all ${
+                                className={`px-2.5 py-0.5 rounded-lg text-[10px] font-bold border font-mono transition-all cursor-pointer ${
                                   isPrime
-                                    ? 'bg-emerald-950/70 text-emerald-300 border-emerald-500/40'
+                                    ? 'bg-status-success-surface text-status-success border-status-success/40'
                                     : isAlternative
-                                    ? 'bg-blue-950/70 text-blue-300 border-blue-500/40'
-                                    : 'bg-amber-950/70 text-amber-300 border-amber-500/40'
+                                    ? 'bg-accent-soft text-accent-text border-accent/40'
+                                    : 'bg-status-warning-surface text-status-warning border-status-warning/40'
                                 }`}
                                 title="Click to view full 5-factor breakdown"
                               >
@@ -476,50 +476,50 @@ export default function MatchmakerConsolePage() {
                             </div>
                           </td>
 
-                          <td className="p-3">
-                            <div className="font-bold text-white font-sans text-sm">{unit.project?.projectName}</div>
-                            <div className="text-[10px] text-slate-400">
+                          <td className="p-3.5">
+                            <div className="font-bold text-content font-sans text-sm">{unit.project?.projectName}</div>
+                            <div className="text-[11px] text-content-muted mt-0.5">
                               Unit {unit.unitNumber || 'N/A'} • {unit.project?.microMarket}
                             </div>
-                            <div className="mt-0.5">
+                            <div className="mt-1">
                               <HallmarkStamp type="rera" code={unit.project?.reraNumber} size="sm" />
                             </div>
                           </td>
 
-                          <td className="p-3">
-                            <div className="text-amber-300 font-bold">{unit.bhk} BHK • {unit.facing}</div>
-                            <div className="text-[10px] text-slate-400">{unit.carpetAreaSqft} sqft</div>
+                          <td className="p-3.5">
+                            <div className="text-accent-text font-bold">{unit.bhk} BHK • {unit.facing}</div>
+                            <div className="text-[11px] text-content-muted mt-0.5 font-mono">{unit.carpetAreaSqft} sqft</div>
                           </td>
 
-                          <td className="p-3 text-right">
-                            <div className="font-bold text-white">{formatINR(unit.allInTotalCost)}</div>
-                            <div className="text-[10px] text-slate-400">Ag: {formatINR(unit.agreementValue)}</div>
+                          <td className="p-3.5 text-right font-mono">
+                            <div className="font-bold text-content">{formatINR(unit.allInTotalCost)}</div>
+                            <div className="text-[11px] text-content-muted mt-0.5">Ag: {formatINR(unit.agreementValue)}</div>
                           </td>
 
-                          <td className="p-3">
-                            <div className="space-y-1 max-w-[200px]">
+                          <td className="p-3.5">
+                            <div className="space-y-1 max-w-[220px]">
                               {score.matchingHighlights.slice(0, 2).map((hl: string, i: number) => (
-                                <div key={i} className="text-[10px] text-emerald-400 flex items-center gap-1">
+                                <div key={i} className="text-[11px] text-status-success font-medium flex items-center gap-1">
                                   ✓ {hl}
                                 </div>
                               ))}
                               {score.tradeOffs.slice(0, 1).map((to: string, i: number) => (
-                                <div key={i} className="text-[10px] text-amber-400 flex items-center gap-1">
+                                <div key={i} className="text-[11px] text-status-warning font-medium flex items-center gap-1">
                                   ⚠️ {to}
                                 </div>
                               ))}
                             </div>
                           </td>
 
-                          <td className="p-3 pr-4 text-center">
+                          <td className="p-3.5 pr-4 text-center">
                             <button
                               type="button"
                               onClick={() => toggleBasketUnit(unit.id)}
                               aria-pressed={isSelected}
-                              className={`px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all shadow-sm ${
+                              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-2xs cursor-pointer ${
                                 isSelected
-                                  ? 'bg-emerald-600 hover:bg-emerald-500 text-white'
-                                  : 'bg-[#12151f] hover:bg-[#2a3040] text-[#ccb67b] border border-[#b59658]/30'
+                                  ? 'bg-status-success text-white'
+                                  : 'bg-surface hover:bg-surface-subtle text-accent-text border border-border hover:border-accent/40'
                               }`}
                             >
                               {isSelected ? '✓ In Basket' : '+ Add'}
@@ -542,51 +542,51 @@ export default function MatchmakerConsolePage() {
         onClose={() => setScoreModalData(null)}
         titleId="matching-score-title"
         descriptionId="matching-score-description"
-        panelClassName="max-w-md bg-[#1b202c] border border-[#b59658]/40 rounded-2xl p-6 space-y-4 shadow-2xl font-mono text-xs"
+        size="md"
       >
         {scoreModalData && (
-          <>
-            <div className="flex items-center justify-between pb-3 border-b border-[#b59658]/20">
+          <div className="space-y-4 text-content font-sans">
+            <div className="flex items-center justify-between pb-3 border-b border-border">
               <div>
-                <h2 id="matching-score-title" className="font-bold text-white text-sm font-display flex items-center gap-2">
-                  <Zap className="w-4 h-4 text-[#b59658]" />
+                <h2 id="matching-score-title" className="font-bold text-content text-base font-display flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-accent" />
                   5-Factor Scoring Inspector
                 </h2>
-                <p id="matching-score-description" className="mt-1 text-[11px] text-slate-400">Review the recorded factors behind this property rank.</p>
+                <p id="matching-score-description" className="mt-1 text-xs text-content-secondary">Review the recorded factors behind this property rank.</p>
               </div>
-              <button type="button" data-dialog-close aria-label="Close scoring inspector" onClick={() => setScoreModalData(null)} className="min-h-11 min-w-11 text-slate-400 hover:text-white">✕</button>
+              <button type="button" data-dialog-close aria-label="Close scoring inspector" onClick={() => setScoreModalData(null)} className="p-1 rounded-lg text-content-muted hover:text-content">✕</button>
             </div>
 
             <div className="space-y-3">
               <div>
-                <span className="text-slate-400 block">Evaluated Property:</span>
-                <strong className="text-white font-sans text-sm">
+                <span className="text-content-muted text-xs block">Evaluated Property:</span>
+                <strong className="text-content font-sans text-sm">
                   {scoreModalData.unit?.project?.projectName} - Unit {scoreModalData.unit?.unitNumber} ({scoreModalData.unit?.bhk} BHK)
                 </strong>
               </div>
 
-              <div className="p-3 rounded-xl bg-[#12151f] border border-[#b59658]/20 space-y-2">
+              <div className="p-3.5 rounded-xl bg-surface-subtle border border-border space-y-2 text-xs font-mono">
                 <div className="flex justify-between items-center">
-                  <span>1. Budget Proximity (35% weight):</span>
-                  <strong className="text-white">{Math.round((scoreModalData.score?.budgetScore ?? 0) * 100)}/100</strong>
+                  <span className="text-content-secondary">1. Budget Proximity (35% weight):</span>
+                  <strong className="text-content">{Math.round((scoreModalData.score?.budgetScore ?? 0) * 100)}/100</strong>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span>2. Carpet Area Fit (25% weight):</span>
-                  <strong className="text-white">{Math.round((scoreModalData.score?.carpetScore ?? 0) * 100)}/100</strong>
+                  <span className="text-content-secondary">2. Carpet Area Fit (25% weight):</span>
+                  <strong className="text-content">{Math.round((scoreModalData.score?.carpetScore ?? 0) * 100)}/100</strong>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span>3. Transit Fit (15% weight):</span>
-                  <strong className="text-white">{Math.round((scoreModalData.score?.transitScore ?? 0) * 100)}/100</strong>
+                  <span className="text-content-secondary">3. Transit Fit (15% weight):</span>
+                  <strong className="text-content">{Math.round((scoreModalData.score?.transitScore ?? 0) * 100)}/100</strong>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span>4. Possession Timeline (15% weight):</span>
-                  <strong className="text-white">{Math.round((scoreModalData.score?.possessionScore ?? 0) * 100)}/100</strong>
+                  <span className="text-content-secondary">4. Possession Timeline (15% weight):</span>
+                  <strong className="text-content">{Math.round((scoreModalData.score?.possessionScore ?? 0) * 100)}/100</strong>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span>5. Amenities Fit (10% weight):</span>
-                  <strong className="text-white">{Math.round((scoreModalData.score?.amenitiesScore ?? 0) * 100)}/100</strong>
+                  <span className="text-content-secondary">5. Amenities Fit (10% weight):</span>
+                  <strong className="text-content">{Math.round((scoreModalData.score?.amenitiesScore ?? 0) * 100)}/100</strong>
                 </div>
-                <div className="pt-2 border-t border-[#b59658]/20 flex justify-between items-center font-bold text-sm text-[#ccb67b]">
+                <div className="pt-2 border-t border-border flex justify-between items-center font-bold text-sm text-accent-text">
                   <span>Composite Match Score:</span>
                   <span>{scoreModalData.score?.totalScore}%</span>
                 </div>
@@ -598,12 +598,12 @@ export default function MatchmakerConsolePage() {
                 type="button"
                 data-dialog-autofocus
                 onClick={() => setScoreModalData(null)}
-                className="min-h-11 px-4 py-1.5 rounded-lg bg-[#12151f] hover:bg-[#2a3040] text-slate-200 border border-[#b59658]/30"
+                className="px-4 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-semibold shadow-2xs cursor-pointer"
               >
                 Close Inspector
               </button>
             </div>
-          </>
+          </div>
         )}
       </AccessibleDialog>
 
@@ -613,43 +613,43 @@ export default function MatchmakerConsolePage() {
         onClose={() => setGeneratedPortalData(null)}
         titleId="generated-portal-title"
         descriptionId="generated-portal-description"
-        panelClassName="max-w-md bg-[#1b202c] border border-[#b59658]/40 rounded-2xl p-6 space-y-4 shadow-2xl font-mono text-xs"
+        size="md"
       >
         {generatedPortalData && (
-          <>
-            <div className="flex items-center justify-between pb-3 border-b border-[#b59658]/20">
+          <div className="space-y-4 text-content font-sans">
+            <div className="flex items-center justify-between pb-3 border-b border-border">
               <div>
-                <h2 id="generated-portal-title" className="font-bold text-white text-base font-display flex items-center gap-2">
-                  <Share2 className="w-4 h-4 text-[#b59658]" />
+                <h2 id="generated-portal-title" className="font-bold text-content text-base font-display flex items-center gap-2">
+                  <Share2 className="w-4 h-4 text-accent" />
                   Client Portal Generated
                 </h2>
-                <p id="generated-portal-description" className="mt-1 text-[11px] text-slate-400">Open, copy, or share the private property shortlist.</p>
+                <p id="generated-portal-description" className="mt-1 text-xs text-content-secondary">Open, copy, or share the private property shortlist.</p>
               </div>
-              <button type="button" data-dialog-close aria-label="Close generated portal" onClick={() => setGeneratedPortalData(null)} className="min-h-11 min-w-11 text-slate-400 hover:text-white">✕</button>
+              <button type="button" data-dialog-close aria-label="Close generated portal" onClick={() => setGeneratedPortalData(null)} className="p-1 rounded-lg text-content-muted hover:text-content">✕</button>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-emerald-950/60 border border-emerald-500/40 text-emerald-300">
+            <div className="p-3.5 rounded-xl bg-status-success-surface border border-status-success/40 text-status-success text-xs font-semibold">
               Portal created with {selectedUnitIds.length} recorded units and engagement tracking.
             </div>
 
-            <div className="space-y-1">
-              <label htmlFor="generated-portal-url" className="text-slate-400 block">Shareable portal URL:</label>
-              <input id="generated-portal-url" name="portalUrl" readOnly value={generatedPortalData.shareableUrl} className="w-full p-2 rounded-lg bg-[#12151f] border border-[#b59658]/30 text-[#ccb67b] font-mono" />
-              <p aria-live="polite" className="min-h-4 text-[11px] text-emerald-300">{copiedPortalUrl ? 'Portal link copied.' : ''}</p>
+            <div className="space-y-1.5">
+              <label htmlFor="generated-portal-url" className="text-content-secondary font-medium text-xs block">Shareable Portal URL:</label>
+              <input id="generated-portal-url" name="portalUrl" readOnly value={generatedPortalData.shareableUrl} className="w-full p-2.5 rounded-xl bg-surface-inset border border-border text-accent-text font-mono text-xs" />
+              <p aria-live="polite" className="min-h-4 text-[11px] font-semibold text-status-success">{copiedPortalUrl ? 'Portal link copied.' : ''}</p>
             </div>
 
-            <div className="pt-2 flex flex-wrap justify-end gap-2">
+            <div className="pt-2 flex flex-wrap justify-end gap-2 text-xs">
               <a
                 data-dialog-autofocus
                 href={generatedPortalData.shareableUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="min-h-11 px-3 py-1.5 rounded-lg bg-[#12151f] hover:bg-[#2a3040] text-slate-200 border border-[#b59658]/30 flex items-center gap-1"
+                className="px-3.5 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border font-semibold flex items-center gap-1.5 shadow-2xs"
               >
                 <ExternalLink className="w-3.5 h-3.5" /> Preview Portal
               </a>
 
-              <button type="button" onClick={handleCopyPortalUrl} className="min-h-11 px-3 py-1.5 rounded-lg bg-[#12151f] hover:bg-[#2a3040] text-slate-200 border border-[#b59658]/30">
+              <button type="button" onClick={handleCopyPortalUrl} className="px-3.5 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border font-semibold shadow-2xs cursor-pointer">
                 Copy link
               </button>
 
@@ -657,12 +657,12 @@ export default function MatchmakerConsolePage() {
                 href={`https://wa.me/?text=${encodeURIComponent(generatedPortalData.waShareText)}`}
                 target="_blank"
                 rel="noreferrer"
-                className="min-h-11 px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center gap-1 shadow-md"
+                className="px-4 py-2 rounded-xl bg-status-success hover:opacity-90 text-zinc-950 font-bold flex items-center gap-1.5 shadow-xs"
               >
                 Share on WhatsApp
               </a>
             </div>
-          </>
+          </div>
         )}
       </AccessibleDialog>
     </div>

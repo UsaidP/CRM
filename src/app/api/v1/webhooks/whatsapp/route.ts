@@ -5,6 +5,9 @@ import { normalizeIndianPhone } from '@/lib/domain/phone-normalizer';
 import { resolveBrokerByInboundIdentifier, OFFICIAL_BROKER_NUMBERS } from '@/lib/domain/broker-resolver';
 import { analyzeInboundAttribution } from '@/lib/domain/campaign-attribution';
 import { findOrCreateContact } from '@/lib/domain/contact-manager';
+import { ensureLeadFallbackReminder } from '@/lib/services/lead-reminder-service';
+
+export const dynamic = 'force-dynamic';
 
 /**
  * Meta Webhook GET Verification Handshake
@@ -222,6 +225,11 @@ export async function POST(req: Request) {
                   data: { totalLeadsGenerated: { increment: 1 } },
                 });
               }
+
+              // Auto-seed speed-to-lead SLA reminder for fresh inbound
+              await ensureLeadFallbackReminder(lead.id, {
+                organizationId: org.id,
+              });
             }
 
             // Log Communication Event
@@ -297,7 +305,7 @@ export async function POST(req: Request) {
       organizationId: org.id,
       fullName: senderName,
       phoneE164: phoneResult.e164,
-      whatsappWaId: phoneResult.clean10,
+      whatsappWaId: phoneResult.e164 ? phoneResult.e164.replace('+', '') : fromPhone,
       assignedBrokerId,
       notes: `Direct WhatsApp test inbound: "${messageText}"`,
     });
@@ -327,6 +335,11 @@ export async function POST(req: Request) {
         messageContent: messageText,
         metadataJson: JSON.stringify({ attribution, brokerAssigned: brokerRes.brokerName }),
       },
+    });
+
+    // Auto-seed speed-to-lead SLA reminder
+    await ensureLeadFallbackReminder(lead.id, {
+      organizationId: org.id,
     });
 
     return NextResponse.json({

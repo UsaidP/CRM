@@ -1,0 +1,18 @@
+{
+  "node": "KHARGHAR",
+  "sector": "Sector 36",
+  "zone": "Sai World Empire & Mega Townships",
+  "landmarks": [
+    "Sai World Empire 18-Acre Township",
+    "Upper Kharghar Hills Ring Road"
+  ],
+  "nearestMetroStation": "Amandoot Metro",
+  "distanceToMetroKm": 0.4,
+  "averageRatePerSqft": 16200,
+  "centerCoordinates": {
+    "lat": 19.0762,
+    "lng": 73.0895
+  },
+  "scrapedAt": "2026-08-19T11:46:45.272Z",
+  "projectsCount": 1
+}

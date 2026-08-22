@@ -1,0 +1,19 @@
+{
+  "node": "KHARGHAR",
+  "sector": "Sector 4",
+  "zone": "Ramsheth Thakur College & School Belt",
+  "landmarks": [
+    "Ramsheth Thakur High School",
+    "Sector 4 Playground",
+    "Kharghar Medicity"
+  ],
+  "nearestMetroStation": "Sector 7 Metro",
+  "distanceToMetroKm": 1.3,
+  "averageRatePerSqft": 12500,
+  "centerCoordinates": {
+    "lat": 19.0392,
+    "lng": 73.0688
+  },
+  "scrapedAt": "2026-08-19T11:46:45.255Z",
+  "projectsCount": 0
+}

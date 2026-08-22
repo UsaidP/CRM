@@ -1,0 +1,18 @@
+{
+  "node": "TALOJA_PHASE_2",
+  "sector": "Sector 29",
+  "zone": "Phase 2 West Residential",
+  "landmarks": [
+    "Sector 29 Garden",
+    "Valley View Complex"
+  ],
+  "nearestMetroStation": "Pendhar Metro",
+  "distanceToMetroKm": 1.7,
+  "averageRatePerSqft": 6600,
+  "centerCoordinates": {
+    "lat": 19.1195,
+    "lng": 73.0935
+  },
+  "scrapedAt": "2026-08-19T11:46:45.427Z",
+  "projectsCount": 0
+}

@@ -1,0 +1,19 @@
+{
+  "node": "KHARGHAR",
+  "sector": "Sector 9",
+  "zone": "Tata Memorial Hospital & ACTREC Enclave",
+  "landmarks": [
+    "Tata Memorial ACTREC Centre",
+    "Kharghar Hills Reserve",
+    "Kendriya Vihar"
+  ],
+  "nearestMetroStation": "Sector 11 Metro",
+  "distanceToMetroKm": 1.2,
+  "averageRatePerSqft": 13200,
+  "centerCoordinates": {
+    "lat": 19.0525,
+    "lng": 73.0665
+  },
+  "scrapedAt": "2026-08-19T11:46:45.258Z",
+  "projectsCount": 0
+}

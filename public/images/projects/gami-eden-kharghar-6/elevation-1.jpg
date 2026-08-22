@@ -1,0 +1,354 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" width="1200" height="800">
+  <defs>
+    <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#090d16" />
+      <stop offset="100%" stop-color="#111827" />
+    </linearGradient>
+    <linearGradient id="podiumGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#111827" />
+      <stop offset="50%" stop-color="#1f2937" />
+      <stop offset="100%" stop-color="#111827" />
+    </linearGradient>
+    <filter id="goldGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Sky & Ambient Atmosphere -->
+  <rect width="1200" height="800" fill="url(#skyGrad)" />
+  
+  <!-- Subtle Horizon Stars/Glow -->
+  <circle cx="200" cy="180" r="1.5" fill="#ffffff" opacity="0.6" />
+  <circle cx="350" cy="120" r="2" fill="#ffffff" opacity="0.8" />
+  <circle cx="850" cy="140" r="1.5" fill="#ffffff" opacity="0.5" />
+  <circle cx="1020" cy="200" r="2" fill="#ffffff" opacity="0.7" />
+
+  <!-- Mountain Backdrop (Kharghar Hills) -->
+  <path d="M0,620 Q200,440 450,560 T900,460 T1200,600 L1200,800 L0,800 Z" fill="#0d1424" opacity="0.7" />
+  <path d="M0,640 Q300,520 600,600 T1100,510 T1200,620 L1200,800 L0,800 Z" fill="#131c30" opacity="0.85" />
+
+  <!-- Skyscraper Elevation Group -->
+  
+      <g id="tower-1">
+        <!-- Structural Core -->
+        <rect x="435" y="387.14285714285717" width="140" height="252.85714285714283" fill="#1b2234" stroke="#c6a869" stroke-width="1.5" rx="3" />
+        
+        <!-- Crown / Spire -->
+        <polygon points="435,387.14285714285717 505,347.14285714285717 575,387.14285714285717" fill="#242e47" stroke="#c6a869" stroke-width="1.5" />
+        <line x1="505" y1="347.14285714285717" x2="505" y2="322.14285714285717" stroke="#c6a869" stroke-width="2" />
+        <circle cx="505" cy="322.14285714285717" r="3" fill="#c6a869" />
+
+        <!-- Architectural Grid / Floors -->
+    
+          <rect x="447" y="402.14285714285717" width="32" height="10.09047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="447" y1="412.23333333333335" x2="479" y2="412.23333333333335" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="487" y="402.14285714285717" width="32" height="10.09047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="487" y1="412.23333333333335" x2="519" y2="412.23333333333335" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="527" y="402.14285714285717" width="32" height="10.09047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="527" y1="412.23333333333335" x2="559" y2="412.23333333333335" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="447" y="417.6666666666667" width="32" height="10.09047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="447" y1="427.75714285714287" x2="479" y2="427.75714285714287" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="487" y="417.6666666666667" width="32" height="10.09047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="487" y1="427.75714285714287" x2="519" y2="427.75714285714287" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="527" y="417.6666666666667" width="32" height="10.09047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="527" y1="427.75714285714287" x2="559" y2="427.75714285714287" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="447" y="433.1904761904762" width="32" height="10.09047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="447" y1="443.2809523809524" x2="479" y2="443.2809523809524" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="487" y="433.1904761904762" width="32" height="10.09047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="487" y1="443.2809523809524" x2="519" y2="443.2809523809524" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="527" y="433.1904761904762" width="32" height="10.09047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="527" y1="443.2809523809524" x2="559" y2="443.2809523809524" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="447" y="448.7142857142857" width="32" height="10.09047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="447" y1="458.8047619047619" x2="479" y2="458.8047619047619" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="487" y="448.7142857142857" width="32" height="10.09047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="487" y1="458.8047619047619" x2="519" y2="458.8047619047619" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="527" y="448.7142857142857" width="32" height="10.09047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="527" y1="458.8047619047619" x2="559" y2="458.8047619047619" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="447" y="464.23809523809524" width="32" height="10.09047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="447" y1="474.3285714285714" x2="479" y2="474.3285714285714" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="487" y="464.23809523809524" width="32" height="10.09047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="487" y1="474.3285714285714" x2="519" y2="474.3285714285714" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="527" y="464.23809523809524" width="32" height="10.09047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="527" y1="474.3285714285714" x2="559" y2="474.3285714285714" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="447" y="479.76190476190476" width="32" height="10.09047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="447" y1="489.85238095238094" x2="479" y2="489.85238095238094" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="487" y="479.76190476190476" width="32" height="10.09047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="487" y1="489.85238095238094" x2="519" y2="489.85238095238094" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="527" y="479.76190476190476" width="32" height="10.09047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="527" y1="489.85238095238094" x2="559" y2="489.85238095238094" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="447" y="495.28571428571433" width="32" height="10.09047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="447" y1="505.3761904761905" x2="479" y2="505.3761904761905" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="487" y="495.28571428571433" width="32" height="10.09047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="487" y1="505.3761904761905" x2="519" y2="505.3761904761905" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="527" y="495.28571428571433" width="32" height="10.09047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="527" y1="505.3761904761905" x2="559" y2="505.3761904761905" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="447" y="510.80952380952385" width="32" height="10.09047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="447" y1="520.9000000000001" x2="479" y2="520.9000000000001" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="487" y="510.80952380952385" width="32" height="10.09047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="487" y1="520.9000000000001" x2="519" y2="520.9000000000001" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="527" y="510.80952380952385" width="32" height="10.09047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="527" y1="520.9000000000001" x2="559" y2="520.9000000000001" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="447" y="526.3333333333334" width="32" height="10.09047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="447" y1="536.4238095238096" x2="479" y2="536.4238095238096" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="487" y="526.3333333333334" width="32" height="10.09047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="487" y1="536.4238095238096" x2="519" y2="536.4238095238096" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="527" y="526.3333333333334" width="32" height="10.09047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="527" y1="536.4238095238096" x2="559" y2="536.4238095238096" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="447" y="541.8571428571429" width="32" height="10.09047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="447" y1="551.9476190476191" x2="479" y2="551.9476190476191" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="487" y="541.8571428571429" width="32" height="10.09047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="487" y1="551.9476190476191" x2="519" y2="551.9476190476191" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="527" y="541.8571428571429" width="32" height="10.09047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="527" y1="551.9476190476191" x2="559" y2="551.9476190476191" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="447" y="557.3809523809524" width="32" height="10.09047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="447" y1="567.4714285714286" x2="479" y2="567.4714285714286" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="487" y="557.3809523809524" width="32" height="10.09047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="487" y1="567.4714285714286" x2="519" y2="567.4714285714286" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="527" y="557.3809523809524" width="32" height="10.09047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="527" y1="567.4714285714286" x2="559" y2="567.4714285714286" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="447" y="572.9047619047619" width="32" height="10.09047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="447" y1="582.9952380952382" x2="479" y2="582.9952380952382" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="487" y="572.9047619047619" width="32" height="10.09047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="487" y1="582.9952380952382" x2="519" y2="582.9952380952382" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="527" y="572.9047619047619" width="32" height="10.09047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="527" y1="582.9952380952382" x2="559" y2="582.9952380952382" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="447" y="588.4285714285714" width="32" height="10.09047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="447" y1="598.5190476190477" x2="479" y2="598.5190476190477" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="487" y="588.4285714285714" width="32" height="10.09047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="487" y1="598.5190476190477" x2="519" y2="598.5190476190477" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="527" y="588.4285714285714" width="32" height="10.09047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="527" y1="598.5190476190477" x2="559" y2="598.5190476190477" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="447" y="603.952380952381" width="32" height="10.09047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="447" y1="614.0428571428572" x2="479" y2="614.0428571428572" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="487" y="603.952380952381" width="32" height="10.09047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="487" y1="614.0428571428572" x2="519" y2="614.0428571428572" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="527" y="603.952380952381" width="32" height="10.09047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="527" y1="614.0428571428572" x2="559" y2="614.0428571428572" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="447" y="619.4761904761905" width="32" height="10.09047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="447" y1="629.5666666666667" x2="479" y2="629.5666666666667" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="487" y="619.4761904761905" width="32" height="10.09047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="487" y1="629.5666666666667" x2="519" y2="629.5666666666667" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="527" y="619.4761904761905" width="32" height="10.09047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="527" y1="629.5666666666667" x2="559" y2="629.5666666666667" stroke="#c6a869" stroke-width="1" />
+        
+      </g>
+    
+      <g id="tower-2">
+        <!-- Structural Core -->
+        <rect x="625" y="417.14285714285717" width="140" height="222.85714285714283" fill="#1b2234" stroke="#c6a869" stroke-width="1.5" rx="3" />
+        
+        <!-- Crown / Spire -->
+        <polygon points="625,417.14285714285717 695,377.14285714285717 765,417.14285714285717" fill="#242e47" stroke="#c6a869" stroke-width="1.5" />
+        <line x1="695" y1="377.14285714285717" x2="695" y2="352.14285714285717" stroke="#c6a869" stroke-width="2" />
+        <circle cx="695" cy="352.14285714285717" r="3" fill="#c6a869" />
+
+        <!-- Architectural Grid / Floors -->
+    
+          <rect x="637" y="432.14285714285717" width="32" height="8.79047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="637" y1="440.93333333333334" x2="669" y2="440.93333333333334" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="677" y="432.14285714285717" width="32" height="8.79047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="677" y1="440.93333333333334" x2="709" y2="440.93333333333334" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="717" y="432.14285714285717" width="32" height="8.79047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="717" y1="440.93333333333334" x2="749" y2="440.93333333333334" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="637" y="445.6666666666667" width="32" height="8.79047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="637" y1="454.45714285714286" x2="669" y2="454.45714285714286" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="677" y="445.6666666666667" width="32" height="8.79047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="677" y1="454.45714285714286" x2="709" y2="454.45714285714286" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="717" y="445.6666666666667" width="32" height="8.79047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="717" y1="454.45714285714286" x2="749" y2="454.45714285714286" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="637" y="459.1904761904762" width="32" height="8.79047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="637" y1="467.9809523809524" x2="669" y2="467.9809523809524" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="677" y="459.1904761904762" width="32" height="8.79047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="677" y1="467.9809523809524" x2="709" y2="467.9809523809524" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="717" y="459.1904761904762" width="32" height="8.79047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="717" y1="467.9809523809524" x2="749" y2="467.9809523809524" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="637" y="472.7142857142857" width="32" height="8.79047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="637" y1="481.5047619047619" x2="669" y2="481.5047619047619" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="677" y="472.7142857142857" width="32" height="8.79047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="677" y1="481.5047619047619" x2="709" y2="481.5047619047619" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="717" y="472.7142857142857" width="32" height="8.79047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="717" y1="481.5047619047619" x2="749" y2="481.5047619047619" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="637" y="486.23809523809524" width="32" height="8.79047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="637" y1="495.0285714285714" x2="669" y2="495.0285714285714" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="677" y="486.23809523809524" width="32" height="8.79047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="677" y1="495.0285714285714" x2="709" y2="495.0285714285714" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="717" y="486.23809523809524" width="32" height="8.79047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="717" y1="495.0285714285714" x2="749" y2="495.0285714285714" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="637" y="499.76190476190476" width="32" height="8.79047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="637" y1="508.55238095238093" x2="669" y2="508.55238095238093" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="677" y="499.76190476190476" width="32" height="8.79047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="677" y1="508.55238095238093" x2="709" y2="508.55238095238093" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="717" y="499.76190476190476" width="32" height="8.79047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="717" y1="508.55238095238093" x2="749" y2="508.55238095238093" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="637" y="513.2857142857143" width="32" height="8.79047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="637" y1="522.0761904761905" x2="669" y2="522.0761904761905" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="677" y="513.2857142857143" width="32" height="8.79047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="677" y1="522.0761904761905" x2="709" y2="522.0761904761905" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="717" y="513.2857142857143" width="32" height="8.79047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="717" y1="522.0761904761905" x2="749" y2="522.0761904761905" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="637" y="526.8095238095239" width="32" height="8.79047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="637" y1="535.6" x2="669" y2="535.6" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="677" y="526.8095238095239" width="32" height="8.79047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="677" y1="535.6" x2="709" y2="535.6" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="717" y="526.8095238095239" width="32" height="8.79047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="717" y1="535.6" x2="749" y2="535.6" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="637" y="540.3333333333334" width="32" height="8.79047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="637" y1="549.1238095238095" x2="669" y2="549.1238095238095" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="677" y="540.3333333333334" width="32" height="8.79047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="677" y1="549.1238095238095" x2="709" y2="549.1238095238095" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="717" y="540.3333333333334" width="32" height="8.79047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="717" y1="549.1238095238095" x2="749" y2="549.1238095238095" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="637" y="553.8571428571429" width="32" height="8.79047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="637" y1="562.6476190476191" x2="669" y2="562.6476190476191" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="677" y="553.8571428571429" width="32" height="8.79047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="677" y1="562.6476190476191" x2="709" y2="562.6476190476191" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="717" y="553.8571428571429" width="32" height="8.79047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="717" y1="562.6476190476191" x2="749" y2="562.6476190476191" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="637" y="567.3809523809524" width="32" height="8.79047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="637" y1="576.1714285714286" x2="669" y2="576.1714285714286" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="677" y="567.3809523809524" width="32" height="8.79047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="677" y1="576.1714285714286" x2="709" y2="576.1714285714286" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="717" y="567.3809523809524" width="32" height="8.79047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="717" y1="576.1714285714286" x2="749" y2="576.1714285714286" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="637" y="580.9047619047619" width="32" height="8.79047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="637" y1="589.6952380952381" x2="669" y2="589.6952380952381" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="677" y="580.9047619047619" width="32" height="8.79047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="677" y1="589.6952380952381" x2="709" y2="589.6952380952381" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="717" y="580.9047619047619" width="32" height="8.79047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="717" y1="589.6952380952381" x2="749" y2="589.6952380952381" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="637" y="594.4285714285714" width="32" height="8.79047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="637" y1="603.2190476190476" x2="669" y2="603.2190476190476" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="677" y="594.4285714285714" width="32" height="8.79047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="677" y1="603.2190476190476" x2="709" y2="603.2190476190476" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="717" y="594.4285714285714" width="32" height="8.79047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="717" y1="603.2190476190476" x2="749" y2="603.2190476190476" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="637" y="607.952380952381" width="32" height="8.79047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="637" y1="616.7428571428571" x2="669" y2="616.7428571428571" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="677" y="607.952380952381" width="32" height="8.79047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="677" y1="616.7428571428571" x2="709" y2="616.7428571428571" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="717" y="607.952380952381" width="32" height="8.79047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="717" y1="616.7428571428571" x2="749" y2="616.7428571428571" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="637" y="621.4761904761905" width="32" height="8.79047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="637" y1="630.2666666666667" x2="669" y2="630.2666666666667" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="677" y="621.4761904761905" width="32" height="8.79047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="677" y1="630.2666666666667" x2="709" y2="630.2666666666667" stroke="#c6a869" stroke-width="1" />
+        
+          <rect x="717" y="621.4761904761905" width="32" height="8.79047619047619" fill="rgba(147, 197, 253, 0.25)" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" rx="1.5" />
+          <line x1="717" y1="630.2666666666667" x2="749" y2="630.2666666666667" stroke="#c6a869" stroke-width="1" />
+        
+      </g>
+    
+
+  <!-- Grand Podium / Landscaped Deck -->
+  <rect x="100" y="640" width="1000" height="80" fill="url(#podiumGrad)" stroke="#c6a869" stroke-width="1.5" rx="4" />
+  
+  <!-- Podium Railings & Landscape -->
+  <line x1="100" y1="640" x2="1100" y2="640" stroke="#c6a869" stroke-width="3" />
+  
+  <!-- Ground Avenue Road & Trees -->
+  <rect x="0" y="720" width="1200" height="80" fill="#090d16" />
+  <line x1="0" y1="722" x2="1200" y2="722" stroke="#374151" stroke-width="2" />
+  <line x1="0" y1="760" x2="1200" y2="760" stroke="#b59658" stroke-width="2" stroke-dasharray="25, 20" opacity="0.6" />
+
+  <!-- Information Branding Watermark Badge -->
+  <g transform="translate(40, 40)">
+    <rect width="440" height="96" fill="#090d16" fill-opacity="0.9" stroke="#c6a869" stroke-width="1.2" rx="8" />
+    <text x="20" y="32" fill="#c6a869" font-family="Cinzel, Georgia, serif" font-size="20" font-weight="bold">GAMI EDEN</text>
+    <text x="20" y="58" fill="#e2e8f0" font-family="Inter, sans-serif" font-size="13" font-weight="600">Gami Group • Kharghar Sector 6</text>
+    <text x="20" y="80" fill="#94a3b8" font-family="Inter, sans-serif" font-size="11">MahaRERA: P52000024510 | 2 Towers (G+15)</text>
+  </g>
+
+  <!-- Architectural Tag -->
+  <g transform="translate(980, 40)">
+    <rect width="180" height="38" fill="#c6a869" rx="6" />
+    <text x="90" y="24" fill="#090d16" font-family="Inter, sans-serif" font-size="12" font-weight="bold" text-anchor="middle">3D ARCHITECTURAL ELEVATION</text>
+  </g>
+</svg>

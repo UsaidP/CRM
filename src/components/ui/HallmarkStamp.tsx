@@ -38,19 +38,19 @@ export function HallmarkStamp({
   return (
     <div
       title={`${displayLabel} ${code ? `[${code}]` : ''} ${formattedDate ? `• Recorded on ${formattedDate}` : ''}`}
-      className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md font-mono transition-all duration-300 select-none group cursor-help ${
+      className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md font-mono transition-all duration-200 select-none group cursor-help ${
         type === 'rera'
-          ? 'bg-[#1b202c] text-[#ccb67b] border border-[#b59658]/40 hover:border-[#b59658] shadow-[0_0_8px_rgba(181,150,88,0.15)]'
+          ? 'bg-surface-subtle text-accent-text border border-accent/40 hover:border-accent shadow-[0_0_8px_rgba(37,99,235,0.15)]'
           : type === 'audit'
-          ? 'bg-emerald-950/40 text-emerald-300 border border-emerald-500/40 hover:border-emerald-400'
+          ? 'bg-status-success-surface text-status-success border border-status-success/40 hover:border-status-success'
           : type === 'ledger'
-          ? 'bg-blue-950/40 text-blue-300 border border-blue-500/40 hover:border-blue-400'
-          : 'bg-[#1b202c] text-slate-300 border border-slate-700'
+          ? 'bg-status-info-surface text-status-info border border-status-info/40 hover:border-status-info'
+          : 'bg-surface-subtle text-content-secondary border border-border'
       } ${size === 'sm' ? 'text-[10px] leading-tight' : 'text-xs py-1 px-2.5'} ${className}`}
     >
       {/* Hallmark Assay Seal Glyph */}
       <span className="relative flex items-center justify-center">
-        <span className="w-3.5 h-3.5 rounded-sm border border-current flex items-center justify-center rotate-45 group-hover:rotate-0 transition-transform duration-300">
+        <span className="w-3.5 h-3.5 rounded-sm border border-current flex items-center justify-center rotate-45 group-hover:rotate-0 transition-transform duration-200">
           <span className="w-1.5 h-1.5 bg-current rounded-full" />
         </span>
       </span>

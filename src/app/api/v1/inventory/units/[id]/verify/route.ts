@@ -4,6 +4,8 @@ import { verifyUnitSchema } from '@/lib/validators/inventory-schemas';
 import { canTransitionStatus, validateReraNumber, VerificationStatus } from '@/lib/domain/verification-engine';
 import { calculateAllInCost } from '@/lib/domain/cost-calculator';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;

@@ -1,0 +1,19 @@
+{
+  "node": "KHARGHAR",
+  "sector": "Sector 27",
+  "zone": "Upper Hills View Enclave",
+  "landmarks": [
+    "Hilltop Viewpoint",
+    "Sector 27 Park",
+    "Regency Luxuria"
+  ],
+  "nearestMetroStation": "Sector 34 Metro",
+  "distanceToMetroKm": 1.3,
+  "averageRatePerSqft": 12800,
+  "centerCoordinates": {
+    "lat": 19.0705,
+    "lng": 73.0995
+  },
+  "scrapedAt": "2026-08-19T11:46:45.266Z",
+  "projectsCount": 1
+}

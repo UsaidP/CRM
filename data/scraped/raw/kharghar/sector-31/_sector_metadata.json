@@ -1,0 +1,18 @@
+{
+  "node": "KHARGHAR",
+  "sector": "Sector 31",
+  "zone": "Upper Kharghar Transit Node",
+  "landmarks": [
+    "Sector 31 Ring Road",
+    "Pethpada Connect"
+  ],
+  "nearestMetroStation": "Sector 34 Metro",
+  "distanceToMetroKm": 0.8,
+  "averageRatePerSqft": 13300,
+  "centerCoordinates": {
+    "lat": 19.0688,
+    "lng": 73.0895
+  },
+  "scrapedAt": "2026-08-19T11:46:45.271Z",
+  "projectsCount": 0
+}

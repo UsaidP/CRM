@@ -1,0 +1,19 @@
+{
+  "node": "KHARGHAR",
+  "sector": "Sector 26",
+  "zone": "Green Crest & High-Rise Cluster",
+  "landmarks": [
+    "Sector 26 CIDCO Complex",
+    "Valley Vista",
+    "Kharghar Hills Nature Park"
+  ],
+  "nearestMetroStation": "Sector 34 Metro",
+  "distanceToMetroKm": 1.2,
+  "averageRatePerSqft": 12900,
+  "centerCoordinates": {
+    "lat": 19.0675,
+    "lng": 73.0982
+  },
+  "scrapedAt": "2026-08-19T11:46:45.264Z",
+  "projectsCount": 0
+}

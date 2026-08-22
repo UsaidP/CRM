@@ -1,0 +1,18 @@
+{
+  "node": "KHARGHAR",
+  "sector": "Sector 37",
+  "zone": "Adhiraj Capital City Mega District",
+  "landmarks": [
+    "Adhiraj Capital City 40-Acre District",
+    "Rohinjan Metro Link"
+  ],
+  "nearestMetroStation": "Amandoot Metro",
+  "distanceToMetroKm": 0.6,
+  "averageRatePerSqft": 15400,
+  "centerCoordinates": {
+    "lat": 19.0788,
+    "lng": 73.0922
+  },
+  "scrapedAt": "2026-08-19T11:46:45.274Z",
+  "projectsCount": 1
+}

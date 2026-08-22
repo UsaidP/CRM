@@ -1,176 +1,29 @@
-@import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Marcellus&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* ============================================================================
-   DIRECTION CONTRACT — ZamZam Properties Visual World & Hallmark Engine
-   THESIS: The brokerage's own gold-on-ink emblem is the core authority.
-   PALETTE: Gold (#b59658, #ccb67b, #8a6f3c) on Deep Ink (#0a0d14, #12151f, #1b202c).
-   THEMES: 
-     1. Signature Gold on Dark Ink (Default)
-     2. Monochrome Black & White (High-Contrast Editorial Noir)
-     3. Electric Cobalt (Modern-Minimal Workbench)
+   COBALT MODERN-MINIMAL DESIGN SYSTEM — ZamZam Properties
+   GENRE: Modern-Minimal Developer Workbench
+   PALETTE: Pure Cobalt Signal Accent on Dark Graphite/Slate Canvas
+   ACCENT: Electric Cobalt (oklch(60% 0.18 256) / #2563eb / #3b82f6)
+   TYPOGRAPHY: Space Grotesk (Display) · Inter (Body) · JetBrains Mono (Data)
+   DISCIPLINE: 1px ruler hairlines, 6px control radius, <5% accent area
    ============================================================================ */
 
+/* ============================================================================
+   SHARED FOUNDATION TOKENS — Typography, Scale, Radii & Motion
+   ============================================================================ */
 :root {
-  /* Brand: Ink (Authority) */
-  --color-ink: #12151f;
-  --color-ink-800: #1b202c;
-  --color-ink-700: #2a3040;
-  --color-ink-600: #3c4356;
-
-  /* Brand: Gold (Precious Accent sampled from logo) */
-  --color-gold: #b59658;
-  --color-gold-bright: #ccb67b;
-  --color-gold-deep: #8a6f3c;
-  --color-gold-ink: #7a5f2e;
-
-  /* Functional Accents */
-  --color-youtube: #ff0033;
-  --color-whatsapp: #25d366;
-  --color-danger: #ef4444;
-
   /* Typography */
-  --font-display: 'Marcellus', 'Times New Roman', Georgia, serif;
-  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-  --font-mono: 'Geist Mono', monospace, monospace;
+  --font-display: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-sans: 'Inter', 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Geist Mono', 'SFMono-Regular', Consolas, monospace;
 
-  /* Default theme root variables: Gold & Ink */
-  --bg-primary: #0a0d14;
-  --bg-secondary: #12151f;
-  --bg-card: rgba(27, 32, 44, 0.85);
-  --bg-inner: rgba(18, 21, 31, 0.85);
-  --border-color: rgba(181, 150, 88, 0.25);
-  --border-subtle: rgba(181, 150, 88, 0.15);
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --accent-color: #b59658;
-  --accent-bright: #ccb67b;
-  --panel-backdrop: rgba(18, 21, 31, 0.9);
-
-  /* Semantic UI tokens shared by the shell, controls, panels, and dialogs. */
-  --color-surface-canvas: #0a0d14;
-  --color-surface-raised: #12151f;
-  --color-surface-subtle: #1b202c;
-  --color-surface-inset: #0d1018;
-  --color-text-primary: #f8fafc;
-  --color-text-secondary: #cbd5e1;
-  --color-text-muted: #94a3b8;
-  --color-text-inverse: #12151f;
-  --color-border-default: rgba(181, 150, 88, 0.28);
-  --color-border-subtle: rgba(181, 150, 88, 0.16);
-  --color-border-strong: rgba(204, 182, 123, 0.62);
-  --color-action-primary: #b59658;
-  --color-action-primary-hover: #ccb67b;
-  --color-action-on-primary: #12151f;
-  --color-focus-ring: #f4d98b;
-  --color-overlay: rgb(0 0 0 / 0.8);
-  --color-status-success: #4ade80;
-  --color-status-success-surface: #123323;
-  --color-status-warning: #fbbf24;
-  --color-status-warning-surface: #33280e;
-  --color-status-danger: #f87171;
-  --color-status-danger-surface: #3a171a;
-  --color-status-info: #60a5fa;
-  --color-status-info-surface: #132a46;
-  --radius-control: 0.375rem;
-  --radius-panel: 0.75rem;
-  --radius-card: 0.5rem;
-  --motion-fast: 150ms;
-  --motion-standard: 180ms;
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-
-  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-/* ----------------------------------------------------
-   THEME 1: Signature Gold on Dark Ink (Default)
-   ---------------------------------------------------- */
-html.theme-gold-ink,
-.theme-root.gold-ink {
-  --bg-primary: #0a0d14;
-  --bg-secondary: #12151f;
-  --bg-card: rgba(27, 32, 44, 0.85);
-  --bg-inner: rgba(18, 21, 31, 0.85);
-  --border-color: rgba(181, 150, 88, 0.25);
-  --border-subtle: rgba(181, 150, 88, 0.15);
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --accent-color: #b59658;
-  --accent-bright: #ccb67b;
-  --panel-backdrop: rgba(18, 21, 31, 0.9);
-  --color-surface-canvas: #0a0d14;
-  --color-surface-raised: #12151f;
-  --color-surface-subtle: #1b202c;
-  --color-surface-inset: #0d1018;
-  --color-text-primary: #f8fafc;
-  --color-text-secondary: #cbd5e1;
-  --color-text-muted: #94a3b8;
-  --color-text-inverse: #12151f;
-  --color-border-default: rgba(181, 150, 88, 0.28);
-  --color-border-subtle: rgba(181, 150, 88, 0.16);
-  --color-border-strong: rgba(204, 182, 123, 0.62);
-  --color-action-primary: #b59658;
-  --color-action-primary-hover: #ccb67b;
-  --color-action-on-primary: #12151f;
-  --color-focus-ring: #f4d98b;
-  --color-overlay: rgb(0 0 0 / 0.8);
-}
-
-/* ----------------------------------------------------
-   THEME 2: Monochrome Black & White (High-Contrast Noir)
-   ---------------------------------------------------- */
-html.theme-monochrome,
-.theme-root.monochrome {
-  --bg-primary: #000000;
-  --bg-secondary: #09090b;
-  --bg-card: rgba(18, 18, 18, 0.95);
-  --bg-inner: rgba(10, 10, 10, 0.9);
-  --border-color: rgba(255, 255, 255, 0.25);
-  --border-subtle: rgba(255, 255, 255, 0.12);
-  --text-primary: #ffffff;
-  --text-secondary: #a1a1aa;
-  --accent-color: #ffffff;
-  --accent-bright: #e4e4e7;
-  --panel-backdrop: rgba(10, 10, 10, 0.95);
-  --color-surface-canvas: #000000;
-  --color-surface-raised: #09090b;
-  --color-surface-subtle: #121212;
-  --color-surface-inset: #0a0a0a;
-  --color-text-primary: #ffffff;
-  --color-text-secondary: #e4e4e7;
-  --color-text-muted: #a1a1aa;
-  --color-text-inverse: #09090b;
-  --color-border-default: rgba(255, 255, 255, 0.28);
-  --color-border-subtle: rgba(255, 255, 255, 0.14);
-  --color-border-strong: rgba(255, 255, 255, 0.72);
-  --color-action-primary: #ffffff;
-  --color-action-primary-hover: #e4e4e7;
-  --color-action-on-primary: #09090b;
-  --color-focus-ring: #ffffff;
-  --color-overlay: rgb(0 0 0 / 0.86);
-}
-
-/* ----------------------------------------------------
-   THEME 3: Cobalt Modern-Minimal Workbench
-   Hallmark - pre-emit critique: P5 H5 E5 S5 R5 V4
-   Hallmark - macrostructure: Workbench - genre: modern-minimal - theme: Cobalt
-   tone: quiet utilitarian - anchor hue: electric cobalt - enrichment: none
-   contrast: pass (40-41) - tokens: pass (48) - responsive contract: pass (49-57)
-   ---------------------------------------------------- */
-html.theme-cobalt,
-.theme-root.cobalt,
-.theme-root[data-theme="cobalt"] {
-  color-scheme: dark;
-
-  /* Typography */
-  --font-display: "Space Grotesk", "Avenir Next", ui-sans-serif, system-ui, sans-serif;
-  --font-body: "Inter", "Avenir Next", ui-sans-serif, system-ui, sans-serif;
-  --font-sans: "Inter", "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
-
+  /* Typography Scale */
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
   --text-md: 1rem;
@@ -191,44 +44,215 @@ html.theme-cobalt,
   --space-12: 3rem;
   --space-16: 4rem;
 
-  /* Core neutral surfaces (Dark Workbench) */
-  --color-canvas: oklch(18% 0.014 258);
-  --color-surface: oklch(22% 0.016 258);
-  --color-surface-subtle: oklch(25% 0.017 258);
-  --color-surface-muted: oklch(29% 0.018 258);
-  --color-surface-raised: oklch(27% 0.018 258);
-  --color-ink: oklch(96% 0.006 250);
-  --color-text: oklch(87% 0.009 250);
-  --color-text-muted: oklch(70% 0.012 252);
-  --color-text-disabled: oklch(53% 0.012 254);
+  /* Shape, Radii & Rules */
+  --radius-control: 0.375rem;                      /* 6px */
+  --radius-panel: 0.75rem;                         /* 12px */
+  --radius-card: 0.625rem;                         /* 10px */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-round: 999px;
+
+  --rule-thin: 1px;
+  --rule-strong: 2px;
+
+  /* Motion */
+  --dur-instant: 80ms;
+  --dur-short: 140ms;
+  --dur-medium: 220ms;
+  --dur-long: 360ms;
+  --motion-fast: 150ms;
+  --motion-standard: 180ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ============================================================================
+   LIGHT THEME TOKENS — Modern Precision Broker Studio
+   WCAG AAA / AA Compliant High-Contrast Light Mode
+   ============================================================================ */
+:root,
+html.light,
+html[data-theme="light"],
+.theme-root.light,
+.theme-root[data-theme="light"] {
+  color-scheme: light;
+
+  /* Surfaces & Canvas (Crisp Light Workbench) */
+  --color-canvas: oklch(98.5% 0.005 250);           /* #f8fafc Crisp Cool Porcelain */
+  --color-surface: oklch(100% 0 0);                /* #ffffff Pure White Surface */
+  --color-surface-subtle: oklch(96.5% 0.006 250);   /* #f1f5f9 Subtle Tint Fill */
+  --color-surface-muted: oklch(93% 0.009 250);      /* #e2e8f0 Muted Fill */
+  --color-surface-raised: oklch(100% 0 0);          /* #ffffff Elevated Card Surface */
+  --color-surface-inset: oklch(96% 0.008 250);      /* #f1f5f9 Inset Well / Input */
+
+  /* Text & Foreground Hierarchy (WCAG AAA High Contrast) */
+  --color-ink: oklch(16% 0.022 258);               /* #0f172a Deep Obsidian Ink (14:1 contrast) */
+  --color-text: oklch(35% 0.024 258);              /* #334155 Polished Slate Body (8:1 contrast) */
+  --color-text-muted: oklch(52% 0.022 258);         /* #64748b Medium Slate (4.8:1 contrast, WCAG AA) */
+  --color-text-disabled: oklch(70% 0.015 258);      /* #94a3b8 Disabled Text */
+  --color-text-primary: oklch(16% 0.022 258);       /* #0f172a Primary Text */
+  --color-text-secondary: oklch(35% 0.024 258);     /* #334155 Secondary Text */
+  --color-text-inverse: oklch(98% 0.005 250);       /* #f8fafc Text on Dark/Accent */
+
+  /* Hairlines & Borders */
+  --color-border: oklch(88% 0.01 258);             /* #e2e8f0 Hairline 1px Border */
+  --color-border-default: oklch(88% 0.01 258);     /* #e2e8f0 Default Border */
+  --color-border-subtle: oklch(93% 0.008 258);     /* #f1f5f9 Subtle Subdivider */
+  --color-border-strong: oklch(78% 0.018 258);     /* #cbd5e1 Strong Perimeter */
+  --color-overlay: oklch(15% 0.02 258 / 0.45);     /* Backdrop Overlay */
+
+  /* Primary Signal Accent (Electric Cobalt Light) */
+  --color-accent: oklch(53% 0.22 256);              /* #1d4ed8 / #2563eb Electric Cobalt */
+  --color-accent-hover: oklch(48% 0.22 256);        /* #1e40af Cobalt Hover */
+  --color-accent-active: oklch(43% 0.2 256);        /* #1e3a8a Cobalt Active */
+  --color-accent-soft: oklch(96% 0.035 256);        /* #eff6ff Soft Cobalt Pill Fill */
+  --color-accent-text: oklch(46% 0.2 256);          /* #1d4ed8 Deep Legible Cobalt Text */
+  --color-on-accent: oklch(100% 0 0);               /* #ffffff Pure White on Cobalt */
+  --color-action-primary: oklch(53% 0.22 256);
+  --color-action-primary-hover: oklch(48% 0.22 256);
+  --color-action-on-primary: oklch(100% 0 0);
+  --color-focus-ring: oklch(53% 0.22 256);
+  --color-focus: oklch(53% 0.22 256);
+
+  /* Semantic Feedback & Statuses (Light Mode) */
+  --color-status-success: oklch(50% 0.16 150);      /* #059669 Emerald */
+  --color-status-success-surface: oklch(96% 0.035 150); /* #ecfdf5 Soft Emerald */
+  --color-status-warning: oklch(58% 0.17 72);       /* #d97706 Amber */
+  --color-status-warning-surface: oklch(97% 0.035 72);  /* #fffbeb Soft Amber */
+  --color-status-danger: oklch(53% 0.21 25);        /* #dc2626 Ruby */
+  --color-status-danger-surface: oklch(97% 0.035 25);   /* #fef2f2 Soft Ruby */
+  --color-status-info: oklch(52% 0.16 225);         /* #0284c7 Sky */
+  --color-status-info-surface: oklch(96% 0.035 225);    /* #f0f9ff Soft Sky */
+
+  --color-success: oklch(50% 0.16 150);
+  --color-success-soft: oklch(96% 0.035 150);
+  --color-success-text: oklch(38% 0.14 150);        /* #065f46 High Contrast */
+  --color-warning: oklch(58% 0.17 72);
+  --color-warning-soft: oklch(97% 0.035 72);
+  --color-warning-text: oklch(42% 0.15 72);         /* #92400e High Contrast */
+  --color-danger: oklch(53% 0.21 25);
+  --color-danger-soft: oklch(97% 0.035 25);
+  --color-danger-text: oklch(40% 0.19 25);          /* #991b1b High Contrast */
+  --color-info: oklch(52% 0.16 225);
+  --color-info-soft: oklch(96% 0.035 225);
+  --color-info-text: oklch(38% 0.14 225);          /* #0369a1 High Contrast */
+
+  /* Channel & Workflow Accents */
+  --color-stage-new: oklch(53% 0.22 256);
+  --color-stage-qualified: oklch(52% 0.16 292);
+  --color-stage-matched: oklch(50% 0.15 205);
+  --color-stage-visit: oklch(58% 0.17 72);
+  --color-stage-negotiation: oklch(55% 0.18 45);
+  --color-stage-won: oklch(50% 0.16 150);
+  --color-stage-lost: oklch(52% 0.03 255);
+  --color-whatsapp: oklch(50% 0.16 150);
+  --color-instagram: oklch(54% 0.2 345);
+  --color-youtube: oklch(52% 0.22 27);
+  --color-phone: oklch(52% 0.16 225);
+  --color-web: oklch(50% 0.17 270);
+
+  /* Data Visualization Series */
+  --color-chart-1: oklch(53% 0.22 256);
+  --color-chart-2: oklch(50% 0.15 205);
+  --color-chart-3: oklch(50% 0.16 150);
+  --color-chart-4: oklch(58% 0.17 72);
+  --color-chart-5: oklch(52% 0.16 292);
+  --color-chart-6: oklch(55% 0.18 45);
+
+  /* Elevation & Shadows (Light Mode) */
+  --shadow-raised: 0 1px 3px 0 rgb(15 23 42 / 0.07), 0 1px 2px -1px rgb(15 23 42 / 0.06);
+  --shadow-overlay: 0 20px 25px -5px rgb(15 23 42 / 0.12), 0 8px 10px -6px rgb(15 23 42 / 0.08);
+
+  /* App Semantic Token Compatibility Mappings */
+  --bg-primary: var(--color-canvas);
+  --bg-secondary: var(--color-surface);
+  --bg-card: var(--color-surface);
+  --bg-inner: var(--color-surface-inset);
+  --border-color: var(--color-border);
+  --accent-color: var(--color-accent);
+  --accent-bright: var(--color-accent-hover);
+  --panel-backdrop: var(--color-surface);
+
+  /* Legacy Brand Aliases */
+  --color-gold: var(--color-accent);
+  --color-gold-bright: var(--color-accent-hover);
+  --color-gold-deep: var(--color-accent-active);
+  --color-gold-ink: var(--color-accent-soft);
+}
+
+/* ============================================================================
+   DARK THEME TOKENS — Cobalt Modern-Minimal Workbench
+   ============================================================================ */
+html.dark,
+html[data-theme="dark"],
+.theme-root.dark,
+.theme-root[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* Core Neutral Surfaces (Dark Workbench) */
+  --color-canvas: oklch(18% 0.014 258);           /* #121722 */
+  --color-surface: oklch(22% 0.016 258);          /* #181e2b */
+  --color-surface-subtle: oklch(25% 0.017 258);   /* #1e2536 */
+  --color-surface-muted: oklch(29% 0.018 258);    /* #2b344a */
+  --color-surface-raised: oklch(27% 0.018 258);   /* #242c3f */
+  --color-surface-inset: oklch(15% 0.014 258);    /* #0c1017 */
+
+  /* Text & Foreground Hierarchy */
+  --color-ink: oklch(96% 0.006 250);             /* #f1f5f9 */
+  --color-text: oklch(87% 0.009 250);            /* #cbd5e1 */
+  --color-text-muted: oklch(70% 0.012 252);       /* #94a3b8 */
+  --color-text-disabled: oklch(53% 0.012 254);    /* #64748b */
+  --color-text-primary: oklch(96% 0.006 250);     /* Primary high-contrast text */
+  --color-text-secondary: oklch(87% 0.009 250);   /* Secondary body text */
+  --color-text-inverse: oklch(18% 0.025 258);     /* Inverse text on accent */
+
+  /* Hairlines & Borders */
   --color-border: oklch(34% 0.018 258);
+  --color-border-default: oklch(34% 0.018 258);
+  --color-border-subtle: oklch(34% 0.018 258 / 0.5);
   --color-border-strong: oklch(44% 0.02 258);
-  --color-overlay: oklch(8% 0.01 258 / 0.72);
+  --color-overlay: oklch(8% 0.01 258 / 0.82);
 
-  /* Primary action and selection */
-  --color-accent: oklch(60% 0.18 256);
-  --color-accent-hover: oklch(66% 0.16 256);
-  --color-accent-active: oklch(56% 0.17 256);
-  --color-accent-soft: oklch(29% 0.055 256);
-  --color-accent-text: oklch(82% 0.1 256);
-  --color-on-accent: oklch(18% 0.025 258);
-  --color-focus: oklch(96% 0.025 78);
+  /* Primary Action & Selection (Electric Cobalt Dark) */
+  --color-accent: oklch(60% 0.18 256);            /* Electric Cobalt */
+  --color-accent-hover: oklch(66% 0.16 256);      /* Cobalt Hover */
+  --color-accent-active: oklch(56% 0.17 256);     /* Cobalt Active */
+  --color-accent-soft: oklch(29% 0.055 256);      /* Cobalt Badge/Highlight */
+  --color-accent-text: oklch(82% 0.1 256);        /* Cobalt Text */
+  --color-on-accent: oklch(98% 0.005 250);        /* Crisp White on Cobalt Button */
+  --color-action-primary: oklch(60% 0.18 256);
+  --color-action-primary-hover: oklch(66% 0.16 256);
+  --color-action-on-primary: oklch(98% 0.005 250);
+  --color-focus-ring: oklch(60% 0.18 256);
+  --color-focus: oklch(60% 0.18 256);
 
-  /* Semantic feedback */
+  /* Semantic Feedback & Statuses */
+  --color-status-success: oklch(50% 0.13 150);
+  --color-status-success-surface: oklch(27% 0.045 150 / 0.35);
+  --color-status-warning: oklch(64% 0.15 72);
+  --color-status-warning-surface: oklch(29% 0.045 72 / 0.35);
+  --color-status-danger: oklch(54% 0.19 25);
+  --color-status-danger-surface: oklch(28% 0.05 25 / 0.35);
+  --color-status-info: oklch(58% 0.13 225);
+  --color-status-info-surface: oklch(28% 0.04 225 / 0.35);
+
   --color-success: oklch(50% 0.13 150);
-  --color-success-soft: oklch(27% 0.045 150);
+  --color-success-soft: oklch(27% 0.045 150 / 0.35);
   --color-success-text: oklch(82% 0.09 150);
   --color-warning: oklch(64% 0.15 72);
-  --color-warning-soft: oklch(29% 0.045 72);
+  --color-warning-soft: oklch(29% 0.045 72 / 0.35);
   --color-warning-text: oklch(86% 0.1 78);
   --color-danger: oklch(54% 0.19 25);
-  --color-danger-soft: oklch(28% 0.05 25);
+  --color-danger-soft: oklch(28% 0.05 25 / 0.35);
   --color-danger-text: oklch(84% 0.1 25);
   --color-info: oklch(58% 0.13 225);
-  --color-info-soft: oklch(28% 0.04 225);
+  --color-info-soft: oklch(28% 0.04 225 / 0.35);
   --color-info-text: oklch(82% 0.08 225);
 
-  /* Workflow and channel accents; never use as large fills */
+  /* Channel & Workflow Accents */
   --color-stage-new: oklch(58% 0.2 256);
   --color-stage-qualified: oklch(57% 0.14 292);
   --color-stage-matched: oklch(56% 0.13 205);
@@ -242,7 +266,7 @@ html.theme-cobalt,
   --color-phone: oklch(55% 0.12 225);
   --color-web: oklch(54% 0.14 270);
 
-  /* Data visualization series */
+  /* Data Visualization Series */
   --color-chart-1: oklch(58% 0.2 256);
   --color-chart-2: oklch(56% 0.13 205);
   --color-chart-3: oklch(50% 0.13 150);
@@ -250,106 +274,34 @@ html.theme-cobalt,
   --color-chart-5: oklch(57% 0.14 292);
   --color-chart-6: oklch(60% 0.16 45);
 
-  /* Shape, rules, and elevation */
-  --radius-sm: 0.25rem;
-  --radius-md: 0.375rem;
-  --radius-lg: 0.5rem;
-  --radius-round: 999px;
-  --rule-thin: 1px;
-  --rule-strong: 2px;
+  /* Elevation & Shadows (Dark Mode) */
   --shadow-raised: 0 1px 2px oklch(8% 0.01 258 / 0.3);
   --shadow-overlay: 0 16px 40px oklch(8% 0.01 258 / 0.48);
 
-  /* Motion */
-  --dur-instant: 80ms;
-  --dur-short: 140ms;
-  --dur-medium: 220ms;
-  --dur-long: 360ms;
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
-  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  /* App Semantic Token Compatibility Mappings */
+  --bg-primary: var(--color-canvas);
+  --bg-secondary: var(--color-surface);
+  --bg-card: var(--color-surface-subtle);
+  --bg-inner: var(--color-surface-inset);
+  --border-color: var(--color-border);
+  --accent-color: var(--color-accent);
+  --accent-bright: var(--color-accent-hover);
+  --panel-backdrop: var(--color-surface);
 
-  /* Shared App Semantic Token Mappings */
-  --bg-primary: oklch(18% 0.014 258);
-  --bg-secondary: oklch(22% 0.016 258);
-  --bg-card: oklch(25% 0.017 258 / 0.92);
-  --bg-inner: oklch(20% 0.015 258 / 0.9);
-  --border-color: oklch(34% 0.018 258);
-  --border-subtle: oklch(34% 0.018 258 / 0.5);
-  --text-primary: oklch(96% 0.006 250);
-  --text-secondary: oklch(70% 0.012 252);
-  --accent-color: oklch(60% 0.18 256);
-  --accent-bright: oklch(66% 0.16 256);
-  --panel-backdrop: oklch(22% 0.016 258 / 0.95);
-
-  --color-surface-canvas: oklch(18% 0.014 258);
-  --color-surface-raised: oklch(27% 0.018 258);
-  --color-surface-subtle: oklch(25% 0.017 258);
-  --color-surface-inset: oklch(15% 0.014 258);
-  --color-text-primary: oklch(96% 0.006 250);
-  --color-text-secondary: oklch(87% 0.009 250);
-  --color-text-muted: oklch(70% 0.012 252);
-  --color-text-inverse: oklch(18% 0.025 258);
-  --color-border-default: oklch(34% 0.018 258);
-  --color-border-subtle: oklch(34% 0.018 258 / 0.55);
-  --color-border-strong: oklch(44% 0.02 258);
-  --color-action-primary: oklch(60% 0.18 256);
-  --color-action-primary-hover: oklch(66% 0.16 256);
-  --color-action-on-primary: oklch(18% 0.025 258);
-  --color-focus-ring: oklch(60% 0.18 256);
-
-  --color-status-success: oklch(50% 0.13 150);
-  --color-status-success-surface: oklch(27% 0.045 150 / 0.35);
-  --color-status-warning: oklch(64% 0.15 72);
-  --color-status-warning-surface: oklch(29% 0.045 72 / 0.35);
-  --color-status-danger: oklch(54% 0.19 25);
-  --color-status-danger-surface: oklch(28% 0.05 25 / 0.35);
-  --color-status-info: oklch(58% 0.13 225);
-  --color-status-info-surface: oklch(28% 0.04 225 / 0.35);
+  /* Legacy Brand Aliases */
+  --color-gold: var(--color-accent);
+  --color-gold-bright: var(--color-accent-hover);
+  --color-gold-deep: var(--color-accent-active);
+  --color-gold-ink: var(--color-accent-soft);
 }
 
 body {
-  background-color: var(--color-surface-canvas);
+  background-color: var(--color-canvas);
   color: var(--color-text-primary);
-  font-family: var(--font-sans);
+  font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   min-height: 100vh;
-}
-
-.app-dialog {
-  position: fixed;
-  inset: 0;
-  width: 100%;
-  max-width: none;
-  height: 100%;
-  max-height: 100dvh;
-  margin: auto;
-  padding: 1rem;
-  border: 0;
-  background: transparent;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-}
-
-.app-dialog[open] {
-  display: grid;
-  place-items: center;
-}
-
-.app-dialog::backdrop {
-  background: var(--color-overlay);
-}
-
-.app-dialog__panel {
-  width: 100%;
-  max-height: calc(100dvh - 2rem);
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  color: var(--color-text-primary);
-  background: var(--color-surface-raised);
-  border: 1px solid var(--color-border-default);
-  border-radius: var(--radius-panel);
 }
 
 html,
@@ -357,13 +309,13 @@ body {
   overflow-x: clip;
 }
 
-/* Hallmark · genre: modern-minimal · macrostructure: Workbench · designed-as-app
- * audience: brokers and brokerage teams · use: lead-to-closing operations · tone: utilitarian
- * navigation: N3 side rail + compact mobile drawer · enrichment: none
- */
+/* ============================================================================
+   APP SHELL & WORKBENCH LAYOUT
+   ============================================================================ */
+
 .app-shell {
   min-height: 100dvh;
-  background: var(--color-surface-canvas);
+  background: var(--color-canvas);
   color: var(--color-text-primary);
 }
 
@@ -371,27 +323,24 @@ body {
   width: 100%;
   min-width: 0;
   min-height: 100dvh;
-  background: var(--color-surface-canvas);
+  background: var(--color-canvas);
 }
 
 .app-mobile-header {
   position: sticky;
-  inset-block-start: 0;
+  top: 0;
   z-index: 40;
   display: flex;
   min-height: 3.5rem;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
-  padding-inline: 0.75rem;
-  background: var(--color-surface-raised);
-  color: var(--color-text-primary);
-  border-block-end: 1px solid var(--color-border-default);
+  border-block-end: 1px solid var(--color-border-subtle);
+  background: var(--color-surface);
+  padding: 0 1rem;
 }
 
 .app-brand {
   display: flex;
-  min-width: 0;
   align-items: center;
   gap: 0.75rem;
   color: var(--color-text-primary);
@@ -400,88 +349,62 @@ body {
 
 .app-brand__mark {
   display: grid;
-  width: 2.25rem;
-  height: 2.25rem;
-  flex: 0 0 auto;
+  width: 2rem;
+  height: 2rem;
   place-items: center;
-  color: var(--color-action-on-primary);
-  background: var(--color-action-primary-hover);
-  border: 1px solid var(--color-action-primary);
   border-radius: var(--radius-control);
-}
-
-.app-brand__mark svg {
-  width: 1.125rem;
-  height: 1.125rem;
-}
-
-.app-brand__name,
-.app-brand__context {
-  display: block;
-  letter-spacing: 0;
+  background: var(--color-accent-soft);
+  border: 1px solid var(--color-border-strong);
+  color: var(--color-accent-hover);
 }
 
 .app-brand__name {
+  display: block;
+  font-family: var(--font-display);
   font-size: 0.9375rem;
-  line-height: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--color-text-primary);
 }
 
 .app-brand__context {
-  color: var(--color-text-muted);
+  display: block;
   font-size: 0.6875rem;
-  line-height: 1rem;
-}
-
-.app-mobile-title {
-  min-width: 0;
-  overflow: hidden;
-  color: var(--color-text-primary);
-  font-size: 0.8125rem;
-  font-weight: 700;
-  line-height: 1.25rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
 }
 
 .app-menu-button {
   display: grid;
   width: 2.75rem;
   height: 2.75rem;
-  flex: 0 0 auto;
   place-items: center;
-  color: var(--color-text-primary);
-  background: transparent;
   border: 1px solid var(--color-border-default);
   border-radius: var(--radius-control);
-}
-
-.app-menu-button svg {
-  width: 1.25rem;
-  height: 1.25rem;
+  background: var(--color-surface-raised);
+  color: var(--color-text-primary);
 }
 
 .app-nav-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 44;
-  width: 100%;
+  z-index: 45;
   background: var(--color-overlay);
-  border: 0;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
 .app-sidebar {
   position: fixed;
   inset-block: 0;
   inset-inline-start: 0;
-  z-index: 45;
+  z-index: 50;
   display: flex;
-  width: min(17rem, calc(100% - 3rem));
-  min-height: 100dvh;
+  width: 17rem;
   flex-direction: column;
-  color: var(--color-text-primary);
-  background: var(--color-surface-raised);
-  border-inline-end: 1px solid var(--color-border-default);
-  transform: translateX(-102%);
+  border-inline-end: 1px solid var(--color-border-subtle);
+  background: var(--color-surface);
+  transform: translateX(-100%);
   transition: transform var(--motion-standard) var(--ease-out);
 }
 
@@ -490,51 +413,30 @@ body {
 }
 
 .app-sidebar__header {
-  padding: 1rem;
+  display: flex;
+  min-height: 4rem;
+  align-items: center;
+  padding: 0 1rem;
   border-block-end: 1px solid var(--color-border-subtle);
 }
 
-.app-theme-control {
-  padding: 0.75rem 0.75rem 0;
+.app-sidebar__badge {
+  padding: 0.625rem 0.75rem 0;
 }
 
-.theme-toggle {
-  padding: var(--space-1);
-  border: 1px solid var(--color-border-subtle);
-  border-radius: var(--radius-panel);
-  background: var(--color-surface-inset);
-}
-
-.theme-toggle__button {
-  min-height: 2.5rem;
-  border: 1px solid transparent;
-  color: var(--color-text-muted);
-  background: transparent;
-  transition: background-color var(--motion-fast) var(--ease-out), color var(--motion-fast) var(--ease-out), border-color var(--motion-fast) var(--ease-out);
-}
-
-.theme-toggle__button:hover {
-  color: var(--color-text-primary);
-  background: var(--color-surface-subtle);
-}
-
-.theme-toggle__button.is-selected {
-  color: var(--color-action-primary-hover);
-  background: var(--color-surface-subtle);
-  border-color: var(--color-border-default);
-  font-weight: 700;
-}
-
-.theme-root.monochrome .theme-toggle__button.is-selected {
-  color: var(--color-action-on-primary);
-  background: var(--color-action-primary);
-  border-color: var(--color-action-primary);
-}
-
-.theme-root.cobalt .theme-toggle__button.is-selected {
-  color: var(--color-on-accent);
-  background: var(--color-accent);
-  border-color: var(--color-accent);
+.cobalt-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.375rem 0.625rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-control);
+  background: var(--color-accent-soft);
+  color: var(--color-accent-text);
+  font-size: 0.6875rem;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  letter-spacing: 0.03em;
 }
 
 .app-nav {
@@ -554,7 +456,7 @@ body {
   font-weight: 700;
   line-height: 1rem;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
 }
 
 .app-nav__link {
@@ -562,7 +464,7 @@ body {
   min-height: 2.75rem;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.625rem;
+  padding: 0.625rem 0.75rem;
   color: var(--color-text-muted);
   background: transparent;
   border: 1px solid transparent;
@@ -572,20 +474,27 @@ body {
   line-height: 1.25rem;
   text-decoration: none;
   white-space: nowrap;
+  transition: color var(--motion-fast) var(--ease-out), background-color var(--motion-fast) var(--ease-out), border-color var(--motion-fast) var(--ease-out);
 }
 
 .app-nav__link svg {
   width: 1rem;
   height: 1rem;
   flex: 0 0 auto;
-  color: var(--color-action-primary-hover);
+  color: var(--color-accent);
 }
 
 .app-nav__link.is-active {
   color: var(--color-text-primary);
   background: var(--color-surface-subtle);
-  border-color: var(--color-border-default);
-  box-shadow: inset 0.1875rem 0 0 var(--color-action-primary);
+  border-color: var(--color-border-strong);
+  box-shadow: inset 0.1875rem 0 0 var(--color-accent);
+}
+
+.app-nav__link:hover:not(.is-active) {
+  color: var(--color-text-primary);
+  background: var(--color-surface-raised);
+  border-color: var(--color-border-subtle);
 }
 
 .app-sidebar__status {
@@ -598,6 +507,7 @@ body {
   color: var(--color-text-muted);
   border-block-start: 1px solid var(--color-border-subtle);
   font-size: 0.75rem;
+  font-family: var(--font-mono);
 }
 
 .app-status-dot {
@@ -605,6 +515,7 @@ body {
   height: 0.5rem;
   background: var(--color-status-success);
   border-radius: 50%;
+  box-shadow: 0 0 6px var(--color-status-success);
 }
 
 .app-main {
@@ -618,23 +529,6 @@ body {
   padding: 1rem;
 }
 
-:where(a, button, input, select, textarea, [tabindex]):focus-visible {
-  outline: 2px solid var(--color-focus-ring);
-  outline-offset: 2px;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .app-nav__link:hover {
-    color: var(--color-text-primary);
-    background: var(--color-surface-subtle);
-    border-color: var(--color-border-subtle);
-  }
-
-  .app-menu-button:hover {
-    background: var(--color-surface-subtle);
-  }
-}
-
 @media (min-width: 60rem) {
   .app-mobile-header,
   .app-nav-backdrop {
@@ -642,13 +536,13 @@ body {
   }
 
   .app-sidebar {
-    width: 16rem;
+    width: 16.5rem;
     transform: none;
   }
 
   .app-main {
     min-height: 100dvh;
-    margin-inline-start: 16rem;
+    margin-inline-start: 16.5rem;
   }
 
   .app-main__inner {
@@ -662,54 +556,147 @@ body {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    scroll-behavior: auto !important;
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
+/* ============================================================================
+   ACCESSIBLE DIALOG & MODAL ARCHITECTURE
+   ============================================================================ */
+
+.app-dialog {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  max-width: 100vw;
+  height: 100vh;
+  max-height: 100dvh;
+  margin: 0;
+  padding: 1rem;
+  border: 0;
+  background: transparent;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
-::selection {
-  background: var(--color-action-primary);
-  color: var(--color-action-on-primary);
+.app-dialog[open] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* Display headings use the carved-Roman face */
-.font-display, h1, h2, h3 {
-  font-family: var(--font-display);
-  letter-spacing: -0.015em;
+.app-dialog::backdrop {
+  background: var(--color-overlay);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
-/* Signature Hairline Gold Divider Rule */
-.rule-gold {
-  height: 1px;
-  background: var(--color-border-strong);
-}
-
-.rule-mono {
-  height: 1px;
-  background: var(--color-border-strong);
-}
-
-/* Universal Theme Utility Classes */
-.glass-panel {
-  background: var(--color-surface-subtle);
-  border: 1px solid var(--color-border-default);
+.app-dialog__panel {
+  width: 100%;
+  max-width: 38rem;
+  max-height: calc(100dvh - 3rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   color: var(--color-text-primary);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-panel);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-overlay);
 }
 
-.glass-card {
-  background: var(--color-surface-subtle);
+/* ============================================================================
+   COBALT UI PRIMITIVES & DESIGN SYSTEM UTILITIES
+   ============================================================================ */
+
+/* Primary Action Button (Electric Cobalt) */
+.btn-cobalt {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  font-weight: 700;
+  font-size: 0.8125rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-control);
+  border: 1px solid var(--color-accent-hover);
+  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.25);
+  cursor: pointer;
+  transition: background-color var(--motion-fast) var(--ease-out), border-color var(--motion-fast) var(--ease-out), transform var(--motion-fast) var(--ease-out);
+}
+
+.btn-cobalt:hover {
+  background: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
+}
+
+.btn-cobalt:active {
+  background: var(--color-accent-active);
+  transform: translateY(1px);
+}
+
+.btn-cobalt:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Secondary Button */
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: var(--color-surface-raised);
+  color: var(--color-text-primary);
+  font-weight: 600;
+  font-size: 0.8125rem;
+  padding: 0.5rem 0.875rem;
+  border-radius: var(--radius-control);
   border: 1px solid var(--color-border-default);
+  cursor: pointer;
+  transition: background-color var(--motion-fast) var(--ease-out), border-color var(--motion-fast) var(--ease-out);
+}
+
+.btn-secondary:hover {
+  background: var(--color-surface-subtle);
+  border-color: var(--color-border-strong);
+}
+
+/* Cobalt Badge / Tag */
+.badge-cobalt {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.2rem 0.5rem;
+  background: var(--color-accent-soft);
+  color: var(--color-accent-text);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-control);
+  font-size: 0.6875rem;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* 1px Hairline Cobalt Divider */
+.rule-cobalt {
+  height: 1px;
+  background: var(--color-border-strong);
+}
+
+/* Surface Panels and Cards */
+.card-cobalt,
+.glass-panel,
+.glass-card,
+.ui-panel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-card);
+  color: var(--color-text-primary);
+  box-shadow: var(--shadow-raised);
   transition: border-color var(--motion-fast) var(--ease-out);
-  color: var(--color-text-primary);
 }
 
-.glass-card:hover {
+.glass-card:hover,
+.card-cobalt:hover {
   border-color: var(--color-border-strong);
 }
 
@@ -719,69 +706,36 @@ body {
   border-radius: var(--radius-card);
 }
 
-.btn-gold {
-  background: var(--color-action-primary);
-  color: var(--color-action-on-primary);
-  font-weight: 800;
-  border: 1px solid var(--color-border-strong);
-  transition: transform var(--motion-fast) var(--ease-out), opacity var(--motion-fast) var(--ease-out);
-}
-
-.btn-gold:hover {
-  background: var(--color-action-primary-hover);
-}
-
-.btn-secondary {
-  background: var(--color-surface-raised);
-  color: var(--color-text-primary);
-  border: 1px solid var(--color-border-default);
-  transition: background-color var(--motion-fast) var(--ease-out), border-color var(--motion-fast) var(--ease-out);
-}
-
-.btn-secondary:hover {
-  background: var(--color-surface-subtle);
-  border-color: var(--color-border-strong);
-}
-
-.badge-gold {
-  background: color-mix(in srgb, var(--color-action-primary) 15%, transparent);
-  color: var(--color-action-primary-hover);
-  border: 1px solid var(--color-border-default);
-}
-
-.input-theme {
+/* Input Fields */
+.input-theme,
+.input-cobalt {
   background-color: var(--color-surface-inset);
   border: 1px solid var(--color-border-default);
   color: var(--color-text-primary);
   border-radius: var(--radius-control);
+  font-size: 0.8125rem;
+  padding: 0.5rem 0.75rem;
+  transition: border-color var(--motion-fast) var(--ease-out), box-shadow var(--motion-fast) var(--ease-out);
 }
 
-.input-theme:focus {
+.input-theme:focus,
+.input-cobalt:focus {
   outline: none;
-  border-color: var(--color-border-strong);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-focus-ring) 22%, transparent);
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px var(--color-accent-soft);
 }
 
-.ui-panel {
-  background: var(--color-surface-subtle);
-  border: 1px solid var(--color-border-default);
-  border-radius: var(--radius-panel);
-  color: var(--color-text-primary);
-}
-
-.ui-control {
-  min-height: 2.75rem;
-  border: 1px solid var(--color-border-default);
-  border-radius: var(--radius-control);
-  color: var(--color-text-primary);
-  background: var(--color-surface-raised);
-}
-
+/* Semantic Status Badges */
 .ui-status-success,
 .ui-status-warning,
 .ui-status-danger,
 .ui-status-info {
   border: 1px solid currentColor;
+  border-radius: var(--radius-control);
+  font-size: 0.6875rem;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
 }
 
 .ui-status-success { color: var(--color-status-success); background: var(--color-status-success-surface); }
@@ -789,24 +743,47 @@ body {
 .ui-status-danger { color: var(--color-status-danger); background: var(--color-status-danger-surface); }
 .ui-status-info { color: var(--color-status-info); background: var(--color-status-info-surface); }
 
+/* Typography Helpers */
+.font-display, h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  letter-spacing: -0.015em;
+  font-style: normal;
+}
+
+.font-mono, code, pre, .tabular-nums {
+  font-family: var(--font-mono);
+  font-feature-settings: 'tnum' on, 'zero' on;
+}
+
+/* Selection & Focus */
+::selection {
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
 /* Custom Range Slider */
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
   height: 4px;
   border-radius: 9999px;
-  background: var(--color-surface-subtle);
+  background: var(--color-surface-muted);
   outline: none;
 }
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   border-radius: 9999px;
-  background: var(--color-action-primary);
-  border: 2px solid var(--color-text-primary);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  background: var(--color-accent);
+  border: 2px solid var(--color-surface);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
   cursor: pointer;
   transition: transform var(--motion-fast) var(--ease-out);
 }
@@ -820,135 +797,137 @@ input[type="range"]::-webkit-slider-thumb:hover {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--color-surface-raised);
+  background: var(--color-canvas);
 }
 ::-webkit-scrollbar-thumb {
   background: var(--color-border-strong);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-action-primary);
+  background: var(--color-accent);
 }
+
+/* Reduced Motion Discipline */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Legacy Alias Classes for backwards compatibility during migration */
+.btn-gold { @apply btn-cobalt; }
+.badge-gold { @apply badge-cobalt; }
+.rule-gold { @apply rule-cobalt; }
+.rule-mono { @apply rule-cobalt; }
 
 /* ============================================================================
-   GLOBAL FULL-APP THEME OVERRIDES (MONOCHROME & COBALT)
-   Ensures ALL pages, cards, tables, dialogs, badges, gradients, and buttons adapt across
-   the entire application instead of remaining locked to gold-ink hex colors.
+   GLOBAL COBALT COMPONENT OVERRIDES
+   Ensures ALL arbitrary hex classes in legacy components adapt seamlessly to Cobalt.
    ============================================================================ */
+[class*="bg-[#0a0d14]"] { background-color: var(--color-canvas) !important; }
+[class*="bg-[#12151f]"] { background-color: var(--color-surface) !important; }
+[class*="bg-[#1b202c]"] { background-color: var(--color-surface-subtle) !important; }
+[class*="bg-[#2a3040]"] { background-color: var(--color-surface-muted) !important; }
+[class*="bg-[#0c0e16]"] { background-color: var(--color-surface-inset) !important; }
+[class*="bg-[#0e1017]"] { background-color: var(--color-surface) !important; }
+[class*="bg-[#0d1017]"] { background-color: var(--color-canvas) !important; }
+[class*="bg-[#121622]"] { background-color: var(--color-surface) !important; }
+[class*="bg-[#171d2e]"] { background-color: var(--color-surface-subtle) !important; }
+[class*="bg-[#0e111a]"] { background-color: var(--color-surface) !important; }
+[class*="bg-[#121826]"] { background-color: var(--color-surface-subtle) !important; }
+[class*="bg-[#b59658]"] { background-color: var(--color-accent) !important; }
+[class*="bg-[#ccb67b]"] { background-color: var(--color-accent-hover) !important; }
+[class*="bg-[#8a6f3c]"] { background-color: var(--color-accent-active) !important; }
+[class*="bg-[#7a5f2e]"] { background-color: var(--color-accent-active) !important; }
 
-/* --- Full-App Monochrome Overrides --- */
-.theme-monochrome,
-html.theme-monochrome,
-body.theme-monochrome,
-.theme-root.monochrome,
-.theme-root[data-theme="monochrome"] {
-  /* Background overrides */
-  [class*="bg-[#0a0d14]"] { background-color: var(--color-surface-canvas) !important; }
-  [class*="bg-[#12151f]"] { background-color: var(--color-surface-raised) !important; }
-  [class*="bg-[#1b202c]"] { background-color: var(--color-surface-subtle) !important; }
-  [class*="bg-[#2a3040]"] { background-color: var(--color-surface-inset) !important; }
-  [class*="bg-[#b59658]"] { background-color: var(--color-action-primary) !important; }
-  [class*="bg-[#ccb67b]"] { background-color: var(--color-action-primary-hover) !important; }
-  [class*="bg-[#8a6f3c]"] { background-color: var(--color-action-primary) !important; }
-  [class*="bg-[#7a5f2e]"] { background-color: var(--color-action-primary) !important; }
+[class*="border-[#b59658]"] { border-color: var(--color-border) !important; }
+[class*="border-[#ccb67b]"] { border-color: var(--color-border-strong) !important; }
+[class*="border-[#1b202c]"] { border-color: var(--color-border-subtle) !important; }
+[class*="border-[#12151f]"] { border-color: var(--color-border-subtle) !important; }
+[class*="border-[#2a3040]"] { border-color: var(--color-border) !important; }
+[class*="divide-[#b59658]"] > :not([hidden]) ~ :not([hidden]) { border-color: var(--color-border-subtle) !important; }
 
-  /* Gradient overrides */
-  [class*="from-[#8a6f3c]"] { --tw-gradient-from: #52525b !important; --tw-gradient-to: rgb(82 82 91 / 0) !important; --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important; }
-  [class*="via-[#b59658]"] { --tw-gradient-to: rgb(228 228 231 / 0) !important; --tw-gradient-stops: var(--tw-gradient-from), #d4d4d8, var(--tw-gradient-to) !important; }
-  [class*="to-[#ccb67b]"] { --tw-gradient-to: #ffffff !important; }
-  [class*="from-[#12151f]"] { --tw-gradient-from: #09090b !important; }
-  [class*="via-[#1b202c]"] { --tw-gradient-stops: var(--tw-gradient-from), #121212, var(--tw-gradient-to) !important; }
-  [class*="to-[#12151f]"] { --tw-gradient-to: #09090b !important; }
+[class*="text-[#ccb67b]"] { color: var(--color-accent-text) !important; }
+[class*="text-[#b59658]"] { color: var(--color-accent) !important; }
+[class*="text-[#7a5f2e]"] { color: var(--color-accent-text) !important; }
+[class*="text-[#8a6f3c]"] { color: var(--color-accent) !important; }
 
-  /* Border overrides */
-  [class*="border-[#b59658]"] { border-color: var(--color-border-default) !important; }
-  [class*="border-[#ccb67b]"] { border-color: var(--color-border-strong) !important; }
-  [class*="border-[#1b202c]"] { border-color: var(--color-border-subtle) !important; }
-  [class*="border-[#12151f]"] { border-color: var(--color-border-subtle) !important; }
-  [class*="border-[#2a3040]"] { border-color: var(--color-border-subtle) !important; }
-  [class*="divide-[#b59658]"] > :not([hidden]) ~ :not([hidden]) { border-color: var(--color-border-subtle) !important; }
+[class*="hover:bg-[#12151f]"]:hover { background-color: var(--color-surface-subtle) !important; }
+[class*="hover:bg-[#1b202c]"]:hover { background-color: var(--color-surface-raised) !important; }
+[class*="hover:bg-[#2a3040]"]:hover { background-color: var(--color-surface-muted) !important; }
+[class*="hover:border-[#b59658]"]:hover { border-color: var(--color-accent-hover) !important; }
+[class*="hover:border-[#ccb67b]"]:hover { border-color: var(--color-accent-hover) !important; }
+[class*="hover:text-[#ccb67b]"]:hover { color: var(--color-accent-hover) !important; }
+[class*="hover:text-[#b59658]"]:hover { color: var(--color-accent) !important; }
+[class*="group"]:hover [class*="group-hover:text-[#ccb67b]"] { color: var(--color-accent-hover) !important; }
+[class*="group"]:hover [class*="group-hover:border-[#b59658]"] { border-color: var(--color-accent) !important; }
 
-  /* Text & Accent overrides */
-  [class*="text-[#ccb67b]"] { color: var(--color-text-primary) !important; }
-  [class*="text-[#b59658]"] { color: var(--color-text-secondary) !important; }
-  [class*="text-[#7a5f2e]"] { color: var(--color-text-muted) !important; }
-  [class*="text-[#8a6f3c]"] { color: var(--color-text-secondary) !important; }
-  [class*="text-[#12151f]"] { color: var(--color-action-on-primary) !important; }
-
-  /* Hover overrides */
-  [class*="hover:bg-[#12151f]"]:hover { background-color: var(--color-surface-subtle) !important; }
-  [class*="hover:bg-[#1b202c]"]:hover { background-color: var(--color-surface-raised) !important; }
-  [class*="hover:bg-[#2a3040]"]:hover { background-color: var(--color-surface-subtle) !important; }
-  [class*="hover:border-[#b59658]"]:hover { border-color: var(--color-border-strong) !important; }
-  [class*="hover:border-[#ccb67b]"]:hover { border-color: var(--color-border-strong) !important; }
-  [class*="hover:text-[#ccb67b]"]:hover { color: var(--color-text-primary) !important; }
-  [class*="hover:text-[#b59658]"]:hover { color: var(--color-text-primary) !important; }
-  [class*="group"]:hover [class*="group-hover:text-[#ccb67b]"] { color: var(--color-text-primary) !important; }
-  [class*="group"]:hover [class*="group-hover:border-[#b59658]"] { border-color: var(--color-border-strong) !important; }
-
-  /* Shadow & glow overrides */
-  [class*="shadow-[#b59658]"] { --tw-shadow-color: rgba(255, 255, 255, 0.12) !important; }
+/* ============================================================================
+   LIGHT THEME SPECIFIC ADAPTATIONS & HARMONY OVERRIDES
+   Ensures deep dark Tailwind utilities map to pristine light surfaces in Light Mode.
+   ============================================================================ */
+html:not(.dark) [class*="bg-zinc-900"],
+html:not(.dark) [class*="bg-zinc-950"],
+html:not(.dark) [class*="bg-slate-900"],
+html:not(.dark) [class*="bg-slate-950"] {
+  background-color: var(--color-surface) !important;
 }
 
-/* --- Full-App Cobalt Overrides --- */
-.theme-cobalt,
-html.theme-cobalt,
-body.theme-cobalt,
-.theme-root.cobalt,
-.theme-root[data-theme="cobalt"] {
-  /* Background overrides */
-  [class*="bg-[#0a0d14]"] { background-color: var(--color-canvas) !important; }
-  [class*="bg-[#12151f]"] { background-color: var(--color-surface) !important; }
-  [class*="bg-[#1b202c]"] { background-color: var(--color-surface-subtle) !important; }
-  [class*="bg-[#2a3040]"] { background-color: var(--color-surface-muted) !important; }
-  [class*="bg-[#b59658]"] { background-color: var(--color-accent) !important; }
-  [class*="bg-[#ccb67b]"] { background-color: var(--color-accent-hover) !important; }
-  [class*="bg-[#8a6f3c]"] { background-color: var(--color-accent-active) !important; }
-  [class*="bg-[#7a5f2e]"] { background-color: var(--color-accent-active) !important; }
+html:not(.dark) [class*="bg-zinc-800"],
+html:not(.dark) [class*="bg-slate-800"] {
+  background-color: var(--color-surface-subtle) !important;
+}
 
-  /* Gradient overrides */
-  [class*="from-[#8a6f3c]"] { --tw-gradient-from: oklch(46% 0.17 256) !important; --tw-gradient-to: rgb(70 100 240 / 0) !important; --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important; }
-  [class*="via-[#b59658]"] { --tw-gradient-to: rgb(90 130 255 / 0) !important; --tw-gradient-stops: var(--tw-gradient-from), oklch(58% 0.2 256), var(--tw-gradient-to) !important; }
-  [class*="to-[#ccb67b]"] { --tw-gradient-to: oklch(66% 0.16 256) !important; }
-  [class*="from-[#12151f]"] { --tw-gradient-from: var(--color-surface) !important; }
-  [class*="via-[#1b202c]"] { --tw-gradient-stops: var(--tw-gradient-from), var(--color-surface-subtle), var(--tw-gradient-to) !important; }
-  [class*="to-[#12151f]"] { --tw-gradient-to: var(--color-surface) !important; }
+html:not(.dark) [class*="border-zinc-800"],
+html:not(.dark) [class*="border-zinc-700"],
+html:not(.dark) [class*="border-slate-800"],
+html:not(.dark) [class*="border-slate-700"],
+html:not(.dark) [class*="border-amber-500/"] {
+  border-color: var(--color-border) !important;
+}
 
-  /* Border overrides */
-  [class*="border-[#b59658]"] { border-color: var(--color-border) !important; }
-  [class*="border-[#ccb67b]"] { border-color: var(--color-border-strong) !important; }
-  [class*="border-[#1b202c]"] { border-color: var(--color-border) !important; }
-  [class*="border-[#12151f]"] { border-color: var(--color-border) !important; }
-  [class*="border-[#2a3040]"] { border-color: var(--color-border) !important; }
-  [class*="divide-[#b59658]"] > :not([hidden]) ~ :not([hidden]) { border-color: var(--color-border-subtle) !important; }
+html:not(.dark) [class*="text-zinc-100"],
+html:not(.dark) [class*="text-zinc-200"],
+html:not(.dark) [class*="text-slate-100"],
+html:not(.dark) [class*="text-slate-200"] {
+  color: var(--color-text-primary) !important;
+}
 
-  /* Text & Accent overrides */
-  [class*="text-[#ccb67b]"] { color: var(--color-accent-text, oklch(82% 0.1 256)) !important; }
-  [class*="text-[#b59658]"] { color: var(--color-accent, oklch(60% 0.18 256)) !important; }
-  [class*="text-[#7a5f2e]"] { color: var(--color-accent-text, oklch(82% 0.1 256)) !important; }
-  [class*="text-[#8a6f3c]"] { color: var(--color-accent, oklch(60% 0.18 256)) !important; }
-  [class*="text-[#12151f]"] { color: var(--color-on-accent, oklch(18% 0.025 258)) !important; }
+html:not(.dark) [class*="text-zinc-300"],
+html:not(.dark) [class*="text-slate-300"] {
+  color: var(--color-text-secondary) !important;
+}
 
-  /* Hover overrides */
-  [class*="hover:bg-[#12151f]"]:hover { background-color: var(--color-surface-subtle) !important; }
-  [class*="hover:bg-[#1b202c]"]:hover { background-color: var(--color-surface-raised) !important; }
-  [class*="hover:bg-[#2a3040]"]:hover { background-color: var(--color-surface-muted) !important; }
-  [class*="hover:border-[#b59658]"]:hover { border-color: var(--color-accent-hover) !important; }
-  [class*="hover:border-[#ccb67b]"]:hover { border-color: var(--color-accent-hover) !important; }
-  [class*="hover:text-[#ccb67b]"]:hover { color: var(--color-accent-hover) !important; }
-  [class*="hover:text-[#b59658]"]:hover { color: var(--color-accent) !important; }
-  [class*="group"]:hover [class*="group-hover:text-[#ccb67b]"] { color: var(--color-accent-hover) !important; }
-  [class*="group"]:hover [class*="group-hover:border-[#b59658]"] { border-color: var(--color-accent) !important; }
+html:not(.dark) [class*="text-zinc-400"],
+html:not(.dark) [class*="text-slate-400"] {
+  color: var(--color-text-muted) !important;
+}
 
-  /* Selection & Shadow overrides */
-  ::selection { background-color: var(--color-accent); color: var(--color-on-accent); }
-  [class*="shadow-[#b59658]"] { --tw-shadow-color: oklch(60% 0.18 256 / 0.25) !important; }
-  [class*="hover:shadow-[#b59658]"]:hover { --tw-shadow-color: oklch(60% 0.18 256 / 0.3) !important; }
+html:not(.dark) [class*="text-amber-300"],
+html:not(.dark) [class*="text-amber-400"] {
+  color: var(--color-accent-text) !important;
+}
 
-  /* Typography */
-  h1, h2, h3, h4, h5, h6, .font-display { font-family: var(--font-display) !important; }
-  body, button, input, select, textarea { font-family: var(--font-sans) !important; }
-  code, pre, .font-mono { font-family: var(--font-mono) !important; }
+html:not(.dark) [class*="bg-amber-500/10"],
+html:not(.dark) [class*="bg-amber-500/20"] {
+  background-color: var(--color-accent-soft) !important;
+}
+
+html:not(.dark) [class*="from-[#0d1017]"],
+html:not(.dark) [class*="from-[#121826]"] {
+  --tw-gradient-from: var(--color-surface) var(--tw-gradient-from-position) !important;
+  --tw-gradient-to: var(--color-surface-subtle) var(--tw-gradient-to-position) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+}
+
+html:not(.dark) [class*="via-[#121622]"],
+html:not(.dark) [class*="via-[#171d2e]"] {
+  --tw-gradient-stops: var(--tw-gradient-from), var(--color-surface-subtle) var(--tw-gradient-via-position), var(--tw-gradient-to) !important;
 }
 
 /* Hallmark Pre-emit critique verification stamp */

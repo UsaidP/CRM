@@ -1,0 +1,19 @@
+{
+  "node": "KHARGHAR",
+  "sector": "Sector 1",
+  "zone": "Station & Sion-Panvel Highway Gateway",
+  "landmarks": [
+    "Kharghar Railway Station",
+    "Little World Mall",
+    "Belapur Creek"
+  ],
+  "nearestMetroStation": "Belapur Terminal / Sector 7",
+  "distanceToMetroKm": 0.8,
+  "averageRatePerSqft": 13500,
+  "centerCoordinates": {
+    "lat": 19.0305,
+    "lng": 73.0645
+  },
+  "scrapedAt": "2026-08-19T11:46:45.253Z",
+  "projectsCount": 1
+}

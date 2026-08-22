@@ -1,0 +1,18 @@
+{
+  "node": "TALOJA_PHASE_2",
+  "sector": "Sector 32",
+  "zone": "Phase 2 South Boundary Connected to Kharghar",
+  "landmarks": [
+    "Kharghar Link Expressway",
+    "Sector 32 Gated Colony"
+  ],
+  "nearestMetroStation": "Pendhar Metro",
+  "distanceToMetroKm": 1.1,
+  "averageRatePerSqft": 7100,
+  "centerCoordinates": {
+    "lat": 19.1105,
+    "lng": 73.0875
+  },
+  "scrapedAt": "2026-08-19T11:46:45.427Z",
+  "projectsCount": 0
+}

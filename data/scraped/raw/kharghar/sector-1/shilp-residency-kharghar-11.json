@@ -1,0 +1,76 @@
+{
+  "slug": "shilp-residency-kharghar-11",
+  "projectName": "Shilp Residency",
+  "developerName": "Kamdhenu Builders",
+  "node": "KHARGHAR",
+  "sector": "Sector 11",
+  "microMarket": "Kharghar Sector 11",
+  "subLocality": "Shilp Chowk Prime High Street",
+  "address": "Plot 8, Sector 11, Shilp Chowk, Kharghar, Navi Mumbai 410210",
+  "reraNumber": "P52000020112",
+  "reraApprovedDate": "2019-10-15",
+  "promoterLegalEntity": "Kamdhenu Real Estate LLP",
+  "latitude": 19.0542,
+  "longitude": 73.0755,
+  "distanceToMetroKm": 0.1,
+  "nearestMetroStation": "Sector 11 Metro",
+  "hasOccupancyCertificate": true,
+  "ocCertificateNumber": "CIDCO/BP/2022/OC-519",
+  "commencementCertificateDate": "2018-08-01",
+  "expectedPossessionDate": "2022-12-31",
+  "totalTowers": 1,
+  "totalFloors": 17,
+  "basePricePerSqft": 15200,
+  "standardCommissionPercent": 2,
+  "developerSalesPocName": "Kishore Aggarwal",
+  "developerSalesPocPhone": "+919820234511",
+  "shortDescription": "G+17 commercial & luxury residential tower 50 meters from Shilp Chowk Metro.",
+  "description": "Shilp Residency commands an ultra-prime address right on Shilp Chowk with immediate access to D-Mart, banks, Metro Station, and premium dining hubs.",
+  "locationDescription": "Zero distance to Shilp Chowk Metro Station and Kharghar Central Market promenade.",
+  "keyHighlights": [
+    "Direct Shilp Chowk Metro Gate Proximity",
+    "Ground & 1st Floor Premium High Street Retail",
+    "Full OC Received",
+    "Vitrified Large Slab Italian Look Tiles"
+  ],
+  "amenities": [
+    "Rooftop Infinity Terrace Garden",
+    "Modern Gymnasium",
+    "High-Speed Elevators with Automatic Rescue Device",
+    "Multi-Tier Security"
+  ],
+  "coverImagePath": "/images/projects/shilp-residency-kharghar-11/cover.jpg",
+  "masterPlanPath": "/images/projects/shilp-residency-kharghar-11/masterplan.jpg",
+  "elevationImages": [
+    "/images/projects/shilp-residency-kharghar-11/elevation-1.jpg"
+  ],
+  "floorPlanImages": [
+    "/images/projects/shilp-residency-kharghar-11/floorplan-2bhk.jpg",
+    "/images/projects/shilp-residency-kharghar-11/floorplan-3bhk.jpg"
+  ],
+  "brochureUrl": "https://zamzamproperties.in/brochures/shilp-residency-sec11.pdf",
+  "youtubeWalkthroughUrl": "https://youtube.com/watch?v=sec11-shilp-residency",
+  "units": [
+    {
+      "unitNumber": "901",
+      "bhk": 2,
+      "bathrooms": 2,
+      "balconies": 2,
+      "floorNumber": 9,
+      "totalFloors": 17,
+      "carpetAreaSqft": 750,
+      "carpetAreaSqm": 69.68,
+      "facing": "NORTH_EAST",
+      "possessionStatus": "READY_TO_MOVE",
+      "possessionDate": "2022-12-31",
+      "agreementValue": 11400000,
+      "floorRiseCharges": 180000,
+      "parkingCharges": 350000,
+      "societyDevelopmentCharges": 210000,
+      "description": "Prime Shilp Chowk avenue facing 2 BHK on 9th floor with high rental yield.",
+      "floorPlanPath": "/images/projects/shilp-residency-kharghar-11/floorplan-2bhk.jpg",
+      "elevationPath": "/images/projects/shilp-residency-kharghar-11/elevation-1.jpg",
+      "isHotDeal": true
+    }
+  ]
+}

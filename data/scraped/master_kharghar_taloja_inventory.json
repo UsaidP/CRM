@@ -1,0 +1,4876 @@
+{
+  "generatedAt": "2026-08-20T13:04:03.694Z",
+  "version": "2.0.0",
+  "summary": {
+    "totalProjects": 34,
+    "totalUnits": 81,
+    "khargharProjectsCount": 25,
+    "talojaProjectsCount": 9,
+    "avgPrice1BHK_Taloja": 3398044,
+    "avgPrice2BHK_Taloja": 5348567,
+    "avgPrice2BHK_Kharghar": 11759540,
+    "avgPrice3BHK_Kharghar": 22731287
+  },
+  "projects": [
+    {
+      "id": "proj_adhiraj_capital_city_sec36",
+      "name": "Adhiraj Capital City",
+      "developerName": "Adhiraj Constructions",
+      "reraRegistrationNumber": "P52000004031",
+      "proposedCompletionDate": "2026-12-31",
+      "node": "KHARGHAR",
+      "sector": "Sector 36",
+      "localityKey": "UPPER_KHARGHAR",
+      "address": "Adhiraj Capital City, Sector 36, Kharghar, Navi Mumbai - 410210",
+      "pincode": "410210",
+      "latitude": 19.0682,
+      "longitude": 73.0851,
+      "totalTowers": 7,
+      "totalSanctionedFloors": 55,
+      "totalUnits": 1540,
+      "possessionStatus": "UNDER_CONSTRUCTION",
+      "projectStatus": "Under Construction",
+      "amenities": [
+        "Club Elysium (75,000 sqft)",
+        "Olympic Swimming Pool",
+        "Tennis Court",
+        "High-Speed Elevators",
+        "Sky Lounge",
+        "Helipad",
+        "Cricket Pitch"
+      ],
+      "coverImage": "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200",
+      "images": [
+        "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200",
+        "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200",
+        "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200"
+      ],
+      "wings": [
+        {
+          "wingName": "Tower A",
+          "sanctionedFloors": 55
+        },
+        {
+          "wingName": "Tower B",
+          "sanctionedFloors": 55
+        }
+      ],
+      "units": [
+        {
+          "id": "unit_proj_adhiraj_capital_city_sec36_0702",
+          "unitNumber": "Unit 0702",
+          "bhkCount": 2,
+          "bhkType": "2 BHK Luxury",
+          "carpetAreaSqm": 60.39,
+          "carpetAreaSqft": 650,
+          "floor": 7,
+          "totalFloors": 55,
+          "facing": "North-East",
+          "possessionStatus": "UNDER_CONSTRUCTION",
+          "financials": {
+            "agreementValue": 11586250,
+            "carpetAreaSqft": 650,
+            "ratePerSqft": 17825,
+            "stampDuty": 695175,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 579313,
+            "gstRate": 0.05,
+            "floorRiseCharges": 65000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 13355738,
+            "allInRatePerSqft": 20547
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Adhiraj Sales Desk",
+            "phone": "+919820123456",
+            "whatsappLink": "https://wa.me/919820123456?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%222%20BHK%20Luxury%20in%20Adhiraj%20Capital%20City%20(Sector%2036)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Adhiraj Constructions",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200",
+            "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200",
+            "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "2 BHK Luxury apartment in Adhiraj Capital City, Sector 36, KHARGHAR. Verified carpet area: 650 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.691Z"
+        },
+        {
+          "id": "unit_proj_adhiraj_capital_city_sec36_1401",
+          "unitNumber": "Unit 1401",
+          "bhkCount": 3,
+          "bhkType": "3 BHK Grande",
+          "carpetAreaSqm": 91.05,
+          "carpetAreaSqft": 980,
+          "floor": 14,
+          "totalFloors": 55,
+          "facing": "North-East",
+          "possessionStatus": "UNDER_CONSTRUCTION",
+          "financials": {
+            "agreementValue": 18032000,
+            "carpetAreaSqft": 980,
+            "ratePerSqft": 18400,
+            "stampDuty": 1081920,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 901600,
+            "gstRate": 0.05,
+            "floorRiseCharges": 441000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 20886520,
+            "allInRatePerSqft": 21313
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Adhiraj Sales Desk",
+            "phone": "+919820123456",
+            "whatsappLink": "https://wa.me/919820123456?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%223%20BHK%20Grande%20in%20Adhiraj%20Capital%20City%20(Sector%2036)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Adhiraj Constructions",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200",
+            "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200",
+            "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "3 BHK Grande apartment in Adhiraj Capital City, Sector 36, KHARGHAR. Verified carpet area: 980 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.691Z"
+        }
+      ],
+      "lastAuditedAt": "2026-08-20T13:04:03.691Z"
+    },
+    {
+      "id": "proj_sai_world_empire_sec36",
+      "name": "Paradise Sai World Empire",
+      "developerName": "Paradise Group",
+      "reraRegistrationNumber": "P52000002410",
+      "proposedCompletionDate": "2026-06-30",
+      "node": "KHARGHAR",
+      "sector": "Sector 36",
+      "localityKey": "UPPER_KHARGHAR",
+      "address": "Sai World Empire, Opp. Golf Course, Sector 36, Kharghar - 410210",
+      "pincode": "410210",
+      "latitude": 19.0665,
+      "longitude": 73.0834,
+      "totalTowers": 6,
+      "totalSanctionedFloors": 38,
+      "totalUnits": 912,
+      "possessionStatus": "UNDER_CONSTRUCTION",
+      "projectStatus": "Under Construction",
+      "amenities": [
+        "Theme Royal Clubhouse",
+        "Amphitheatre",
+        "Infinity Pool",
+        "Spa & Wellness Center",
+        "Indoor Badminton Court",
+        "Banquet Hall"
+      ],
+      "coverImage": "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200",
+      "images": [
+        "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200",
+        "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1200"
+      ],
+      "wings": [
+        {
+          "wingName": "Tower A",
+          "sanctionedFloors": 38
+        },
+        {
+          "wingName": "Tower B",
+          "sanctionedFloors": 38
+        }
+      ],
+      "units": [
+        {
+          "id": "unit_proj_sai_world_empire_sec36_0702",
+          "unitNumber": "Unit 0702",
+          "bhkCount": 2,
+          "bhkType": "2 BHK Luxury",
+          "carpetAreaSqm": 60.39,
+          "carpetAreaSqft": 650,
+          "floor": 7,
+          "totalFloors": 38,
+          "facing": "North-East",
+          "possessionStatus": "UNDER_CONSTRUCTION",
+          "financials": {
+            "agreementValue": 12090000,
+            "carpetAreaSqft": 650,
+            "ratePerSqft": 18600,
+            "stampDuty": 725400,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 604500,
+            "gstRate": 0.05,
+            "floorRiseCharges": 65000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 13914900,
+            "allInRatePerSqft": 21408
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Paradise Experience Lounge",
+            "phone": "+919833456789",
+            "whatsappLink": "https://wa.me/919833456789?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%222%20BHK%20Luxury%20in%20Paradise%20Sai%20World%20Empire%20(Sector%2036)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Paradise Group",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200",
+            "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "2 BHK Luxury apartment in Paradise Sai World Empire, Sector 36, KHARGHAR. Verified carpet area: 650 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.691Z"
+        },
+        {
+          "id": "unit_proj_sai_world_empire_sec36_1401",
+          "unitNumber": "Unit 1401",
+          "bhkCount": 3,
+          "bhkType": "3 BHK Grande",
+          "carpetAreaSqm": 91.05,
+          "carpetAreaSqft": 980,
+          "floor": 14,
+          "totalFloors": 38,
+          "facing": "North-East",
+          "possessionStatus": "UNDER_CONSTRUCTION",
+          "financials": {
+            "agreementValue": 18816000,
+            "carpetAreaSqft": 980,
+            "ratePerSqft": 19200,
+            "stampDuty": 1128960,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 940800,
+            "gstRate": 0.05,
+            "floorRiseCharges": 441000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 21756760,
+            "allInRatePerSqft": 22201
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Paradise Experience Lounge",
+            "phone": "+919833456789",
+            "whatsappLink": "https://wa.me/919833456789?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%223%20BHK%20Grande%20in%20Paradise%20Sai%20World%20Empire%20(Sector%2036)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Paradise Group",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200",
+            "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "3 BHK Grande apartment in Paradise Sai World Empire, Sector 36, KHARGHAR. Verified carpet area: 980 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.691Z"
+        },
+        {
+          "id": "unit_proj_sai_world_empire_sec36_2104",
+          "unitNumber": "Unit 2104",
+          "bhkCount": 4,
+          "bhkType": "4 BHK Royal Suite",
+          "carpetAreaSqm": 134.71,
+          "carpetAreaSqft": 1450,
+          "floor": 21,
+          "totalFloors": 38,
+          "facing": "North-East",
+          "possessionStatus": "UNDER_CONSTRUCTION",
+          "financials": {
+            "agreementValue": 28710000,
+            "carpetAreaSqft": 1450,
+            "ratePerSqft": 19800,
+            "stampDuty": 1722600,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 1435500,
+            "gstRate": 0.05,
+            "floorRiseCharges": 1160000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 33458100,
+            "allInRatePerSqft": 23075
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Paradise Experience Lounge",
+            "phone": "+919833456789",
+            "whatsappLink": "https://wa.me/919833456789?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%224%20BHK%20Royal%20Suite%20in%20Paradise%20Sai%20World%20Empire%20(Sector%2036)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Paradise Group",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200",
+            "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "4 BHK Royal Suite apartment in Paradise Sai World Empire, Sector 36, KHARGHAR. Verified carpet area: 1450 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.691Z"
+        }
+      ],
+      "lastAuditedAt": "2026-08-20T13:04:03.691Z"
+    },
+    {
+      "id": "proj_today_anandam_sec36",
+      "name": "Today Global Anandam",
+      "developerName": "Today Global Developers",
+      "reraRegistrationNumber": "P52000021450",
+      "proposedCompletionDate": "2026-03-31",
+      "node": "KHARGHAR",
+      "sector": "Sector 36",
+      "localityKey": "UPPER_KHARGHAR",
+      "address": "Today Anandam, Sector 36, Kharghar, Navi Mumbai - 410210",
+      "pincode": "410210",
+      "latitude": 19.0691,
+      "longitude": 73.0862,
+      "totalTowers": 4,
+      "totalSanctionedFloors": 28,
+      "totalUnits": 448,
+      "possessionStatus": "UNDER_CONSTRUCTION",
+      "projectStatus": "Under Construction",
+      "amenities": [
+        "Grand Clubhouse",
+        "Swimming Pool",
+        "Kids Play Zone",
+        "Landscaped Podium",
+        "Jogging Track"
+      ],
+      "coverImage": "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200",
+      "images": [
+        "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200"
+      ],
+      "wings": [
+        {
+          "wingName": "Tower A",
+          "sanctionedFloors": 28
+        },
+        {
+          "wingName": "Tower B",
+          "sanctionedFloors": 28
+        }
+      ],
+      "units": [
+        {
+          "id": "unit_proj_today_anandam_sec36_0702",
+          "unitNumber": "Unit 0702",
+          "bhkCount": 2,
+          "bhkType": "2 BHK Luxury",
+          "carpetAreaSqm": 60.39,
+          "carpetAreaSqft": 650,
+          "floor": 7,
+          "totalFloors": 28,
+          "facing": "North-East",
+          "possessionStatus": "UNDER_CONSTRUCTION",
+          "financials": {
+            "agreementValue": 9873500,
+            "carpetAreaSqft": 650,
+            "ratePerSqft": 15190,
+            "stampDuty": 592410,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 493675,
+            "gstRate": 0.05,
+            "floorRiseCharges": 65000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 11454585,
+            "allInRatePerSqft": 17622
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Today Global Direct",
+            "phone": "+919820233445",
+            "whatsappLink": "https://wa.me/919820233445?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%222%20BHK%20Luxury%20in%20Today%20Global%20Anandam%20(Sector%2036)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Today Global Developers",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "2 BHK Luxury apartment in Today Global Anandam, Sector 36, KHARGHAR. Verified carpet area: 650 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.691Z"
+        },
+        {
+          "id": "unit_proj_today_anandam_sec36_1401",
+          "unitNumber": "Unit 1401",
+          "bhkCount": 3,
+          "bhkType": "3 BHK Grande",
+          "carpetAreaSqm": 91.05,
+          "carpetAreaSqft": 980,
+          "floor": 14,
+          "totalFloors": 28,
+          "facing": "North-East",
+          "possessionStatus": "UNDER_CONSTRUCTION",
+          "financials": {
+            "agreementValue": 15366400,
+            "carpetAreaSqft": 980,
+            "ratePerSqft": 15680,
+            "stampDuty": 921984,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 768320,
+            "gstRate": 0.05,
+            "floorRiseCharges": 441000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 17927704,
+            "allInRatePerSqft": 18294
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Today Global Direct",
+            "phone": "+919820233445",
+            "whatsappLink": "https://wa.me/919820233445?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%223%20BHK%20Grande%20in%20Today%20Global%20Anandam%20(Sector%2036)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Today Global Developers",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "3 BHK Grande apartment in Today Global Anandam, Sector 36, KHARGHAR. Verified carpet area: 980 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.692Z"
+        }
+      ],
+      "lastAuditedAt": "2026-08-20T13:04:03.692Z"
+    },
+    {
+      "id": "proj_kesar_harmony_sec36",
+      "name": "Kesar Harmony",
+      "developerName": "Kesar Group",
+      "reraRegistrationNumber": "P52000019230",
+      "proposedCompletionDate": "2025-12-31",
+      "node": "KHARGHAR",
+      "sector": "Sector 36",
+      "localityKey": "UPPER_KHARGHAR",
+      "address": "Kesar Harmony, Sector 36, Kharghar - 410210",
+      "pincode": "410210",
+      "latitude": 19.0674,
+      "longitude": 73.0845,
+      "totalTowers": 3,
+      "totalSanctionedFloors": 22,
+      "totalUnits": 264,
+      "possessionStatus": "UNDER_CONSTRUCTION",
+      "projectStatus": "Under Construction",
+      "amenities": [
+        "Gymnasium",
+        "Covered Car Parking",
+        "Security Surveillance",
+        "Intercom",
+        "Power Backup"
+      ],
+      "coverImage": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200",
+      "images": [
+        "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200"
+      ],
+      "wings": [
+        {
+          "wingName": "Tower A",
+          "sanctionedFloors": 22
+        },
+        {
+          "wingName": "Tower B",
+          "sanctionedFloors": 22
+        }
+      ],
+      "units": [
+        {
+          "id": "unit_proj_kesar_harmony_sec36_0702",
+          "unitNumber": "Unit 0702",
+          "bhkCount": 2,
+          "bhkType": "2 BHK Luxury",
+          "carpetAreaSqm": 60.39,
+          "carpetAreaSqft": 650,
+          "floor": 7,
+          "totalFloors": 22,
+          "facing": "North-East",
+          "possessionStatus": "UNDER_CONSTRUCTION",
+          "financials": {
+            "agreementValue": 9672000,
+            "carpetAreaSqft": 650,
+            "ratePerSqft": 14880,
+            "stampDuty": 580320,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 483600,
+            "gstRate": 0.05,
+            "floorRiseCharges": 65000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 11230920,
+            "allInRatePerSqft": 17278
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Kesar Sales Desk",
+            "phone": "+919821345678",
+            "whatsappLink": "https://wa.me/919821345678?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%222%20BHK%20Luxury%20in%20Kesar%20Harmony%20(Sector%2036)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Kesar Group",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "2 BHK Luxury apartment in Kesar Harmony, Sector 36, KHARGHAR. Verified carpet area: 650 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.692Z"
+        },
+        {
+          "id": "unit_proj_kesar_harmony_sec36_1401",
+          "unitNumber": "Unit 1401",
+          "bhkCount": 3,
+          "bhkType": "3 BHK Grande",
+          "carpetAreaSqm": 91.05,
+          "carpetAreaSqft": 980,
+          "floor": 14,
+          "totalFloors": 22,
+          "facing": "North-East",
+          "possessionStatus": "UNDER_CONSTRUCTION",
+          "financials": {
+            "agreementValue": 15052800,
+            "carpetAreaSqft": 980,
+            "ratePerSqft": 15360,
+            "stampDuty": 903168,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 752640,
+            "gstRate": 0.05,
+            "floorRiseCharges": 441000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 17579608,
+            "allInRatePerSqft": 17938
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Kesar Sales Desk",
+            "phone": "+919821345678",
+            "whatsappLink": "https://wa.me/919821345678?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%223%20BHK%20Grande%20in%20Kesar%20Harmony%20(Sector%2036)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Kesar Group",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "3 BHK Grande apartment in Kesar Harmony, Sector 36, KHARGHAR. Verified carpet area: 980 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.692Z"
+        }
+      ],
+      "lastAuditedAt": "2026-08-20T13:04:03.692Z"
+    },
+    {
+      "id": "proj_arihant_clan_aalishan_sec35",
+      "name": "Arihant Clan Aalishan",
+      "developerName": "Arihant Superstructures Ltd",
+      "reraRegistrationNumber": "P52000006391",
+      "proposedCompletionDate": "2026-06-30",
+      "node": "KHARGHAR",
+      "sector": "Sector 35",
+      "localityKey": "UPPER_KHARGHAR",
+      "address": "Arihant Aalishan, Sector 35, Kharghar - 410210",
+      "pincode": "410210",
+      "latitude": 19.0634,
+      "longitude": 73.0812,
+      "totalTowers": 4,
+      "totalSanctionedFloors": 53,
+      "totalUnits": 848,
+      "possessionStatus": "UNDER_CONSTRUCTION",
+      "projectStatus": "Under Construction",
+      "amenities": [
+        "Persian Theme Spa",
+        "The Kolosseum Club",
+        "Indoor Heated Pool",
+        "Mini Theatre",
+        "Squash Court",
+        "Rain Dance Zone"
+      ],
+      "coverImage": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200",
+      "images": [
+        "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200"
+      ],
+      "wings": [
+        {
+          "wingName": "Tower A",
+          "sanctionedFloors": 53
+        },
+        {
+          "wingName": "Tower B",
+          "sanctionedFloors": 53
+        }
+      ],
+      "units": [
+        {
+          "id": "unit_proj_arihant_clan_aalishan_sec35_0702",
+          "unitNumber": "Unit 0702",
+          "bhkCount": 2,
+          "bhkType": "2 BHK Luxury",
+          "carpetAreaSqm": 60.39,
+          "carpetAreaSqft": 650,
+          "floor": 7,
+          "totalFloors": 53,
+          "facing": "North-East",
+          "possessionStatus": "UNDER_CONSTRUCTION",
+          "financials": {
+            "agreementValue": 10578750,
+            "carpetAreaSqft": 650,
+            "ratePerSqft": 16275,
+            "stampDuty": 634725,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 528938,
+            "gstRate": 0.05,
+            "floorRiseCharges": 65000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 12237413,
+            "allInRatePerSqft": 18827
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Arihant Aalishan Desk",
+            "phone": "+919820890123",
+            "whatsappLink": "https://wa.me/919820890123?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%222%20BHK%20Luxury%20in%20Arihant%20Clan%20Aalishan%20(Sector%2035)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Arihant Superstructures Ltd",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "2 BHK Luxury apartment in Arihant Clan Aalishan, Sector 35, KHARGHAR. Verified carpet area: 650 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.692Z"
+        },
+        {
+          "id": "unit_proj_arihant_clan_aalishan_sec35_1401",
+          "unitNumber": "Unit 1401",
+          "bhkCount": 3,
+          "bhkType": "3 BHK Grande",
+          "carpetAreaSqm": 91.05,
+          "carpetAreaSqft": 980,
+          "floor": 14,
+          "totalFloors": 53,
+          "facing": "North-East",
+          "possessionStatus": "UNDER_CONSTRUCTION",
+          "financials": {
+            "agreementValue": 16464000,
+            "carpetAreaSqft": 980,
+            "ratePerSqft": 16800,
+            "stampDuty": 987840,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 823200,
+            "gstRate": 0.05,
+            "floorRiseCharges": 441000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 19146040,
+            "allInRatePerSqft": 19537
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Arihant Aalishan Desk",
+            "phone": "+919820890123",
+            "whatsappLink": "https://wa.me/919820890123?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%223%20BHK%20Grande%20in%20Arihant%20Clan%20Aalishan%20(Sector%2035)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Arihant Superstructures Ltd",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "3 BHK Grande apartment in Arihant Clan Aalishan, Sector 35, KHARGHAR. Verified carpet area: 980 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.692Z"
+        }
+      ],
+      "lastAuditedAt": "2026-08-20T13:04:03.692Z"
+    },
+    {
+      "id": "proj_geecee_vanguard_sec35",
+      "name": "Geecee Vanguard",
+      "developerName": "Geecee Ventures",
+      "reraRegistrationNumber": "P52000020890",
+      "proposedCompletionDate": "2025-12-31",
+      "node": "KHARGHAR",
+      "sector": "Sector 35",
+      "localityKey": "UPPER_KHARGHAR",
+      "address": "Plot 12, Sector 35, Kharghar - 410210",
+      "pincode": "410210",
+      "latitude": 19.0621,
+      "longitude": 73.0789,
+      "totalTowers": 2,
+      "totalSanctionedFloors": 31,
+      "totalUnits": 248,
+      "possessionStatus": "UNDER_CONSTRUCTION",
+      "projectStatus": "Under Construction",
+      "amenities": [
+        "Roof-top Infinity Pool",
+        "Sky Lounge",
+        "Yoga Deck",
+        "Automated Parking",
+        "EV Charging Stations"
+      ],
+      "coverImage": "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200",
+      "images": [
+        "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200"
+      ],
+      "wings": [
+        {
+          "wingName": "Tower A",
+          "sanctionedFloors": 31
+        },
+        {
+          "wingName": "Tower B",
+          "sanctionedFloors": 31
+        }
+      ],
+      "units": [
+        {
+          "id": "unit_proj_geecee_vanguard_sec35_0702",
+          "unitNumber": "Unit 0702",
+          "bhkCount": 2,
+          "bhkType": "2 BHK Luxury",
+          "carpetAreaSqm": 60.39,
+          "carpetAreaSqft": 650,
+          "floor": 7,
+          "totalFloors": 31,
+          "facing": "North-East",
+          "possessionStatus": "UNDER_CONSTRUCTION",
+          "financials": {
+            "agreementValue": 10276500,
+            "carpetAreaSqft": 650,
+            "ratePerSqft": 15810,
+            "stampDuty": 616590,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 513825,
+            "gstRate": 0.05,
+            "floorRiseCharges": 65000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 11901915,
+            "allInRatePerSqft": 18311
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Geecee Sales Office",
+            "phone": "+919819456780",
+            "whatsappLink": "https://wa.me/919819456780?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%222%20BHK%20Luxury%20in%20Geecee%20Vanguard%20(Sector%2035)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Geecee Ventures",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "2 BHK Luxury apartment in Geecee Vanguard, Sector 35, KHARGHAR. Verified carpet area: 650 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.692Z"
+        },
+        {
+          "id": "unit_proj_geecee_vanguard_sec35_1401",
+          "unitNumber": "Unit 1401",
+          "bhkCount": 3,
+          "bhkType": "3 BHK Grande",
+          "carpetAreaSqm": 91.05,
+          "carpetAreaSqft": 980,
+          "floor": 14,
+          "totalFloors": 31,
+          "facing": "North-East",
+          "possessionStatus": "UNDER_CONSTRUCTION",
+          "financials": {
+            "agreementValue": 15993600,
+            "carpetAreaSqft": 980,
+            "ratePerSqft": 16320,
+            "stampDuty": 959616,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 799680,
+            "gstRate": 0.05,
+            "floorRiseCharges": 441000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 18623896,
+            "allInRatePerSqft": 19004
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Geecee Sales Office",
+            "phone": "+919819456780",
+            "whatsappLink": "https://wa.me/919819456780?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%223%20BHK%20Grande%20in%20Geecee%20Vanguard%20(Sector%2035)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Geecee Ventures",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "3 BHK Grande apartment in Geecee Vanguard, Sector 35, KHARGHAR. Verified carpet area: 980 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.692Z"
+        }
+      ],
+      "lastAuditedAt": "2026-08-20T13:04:03.692Z"
+    },
+    {
+      "id": "proj_kamdhenu_vogue_sec35",
+      "name": "Kamdhenu Vogue",
+      "developerName": "Kamdhenu Realties",
+      "reraRegistrationNumber": "P52000022140",
+      "proposedCompletionDate": "2026-03-31",
+      "node": "KHARGHAR",
+      "sector": "Sector 35",
+      "localityKey": "UPPER_KHARGHAR",
+      "address": "Plot 25, Sector 35, Kharghar - 410210",
+      "pincode": "410210",
+      "latitude": 19.0615,
+      "longitude": 73.0795,
+      "totalTowers": 2,
+      "totalSanctionedFloors": 25,
+      "totalUnits": 200,
+      "possessionStatus": "UNDER_CONSTRUCTION",
+      "projectStatus": "Under Construction",
+      "amenities": [
+        "Grand Lobby",
+        "Podium Garden",
+        "Fitness Center",
+        "Senior Citizen Corner",
+        "High-Speed Elevators"
+      ],
+      "coverImage": "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200",
+      "images": [
+        "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200"
+      ],
+      "wings": [
+        {
+          "wingName": "Tower A",
+          "sanctionedFloors": 25
+        },
+        {
+          "wingName": "Tower B",
+          "sanctionedFloors": 25
+        }
+      ],
+      "units": [
+        {
+          "id": "unit_proj_kamdhenu_vogue_sec35_0702",
+          "unitNumber": "Unit 0702",
+          "bhkCount": 2,
+          "bhkType": "2 BHK Luxury",
+          "carpetAreaSqm": 60.39,
+          "carpetAreaSqft": 650,
+          "floor": 7,
+          "totalFloors": 25,
+          "facing": "North-East",
+          "possessionStatus": "UNDER_CONSTRUCTION",
+          "financials": {
+            "agreementValue": 9873500,
+            "carpetAreaSqft": 650,
+            "ratePerSqft": 15190,
+            "stampDuty": 592410,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 493675,
+            "gstRate": 0.05,
+            "floorRiseCharges": 65000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 11454585,
+            "allInRatePerSqft": 17622
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Kamdhenu Desk",
+            "phone": "+919820567891",
+            "whatsappLink": "https://wa.me/919820567891?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%222%20BHK%20Luxury%20in%20Kamdhenu%20Vogue%20(Sector%2035)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Kamdhenu Realties",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "2 BHK Luxury apartment in Kamdhenu Vogue, Sector 35, KHARGHAR. Verified carpet area: 650 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.692Z"
+        },
+        {
+          "id": "unit_proj_kamdhenu_vogue_sec35_1401",
+          "unitNumber": "Unit 1401",
+          "bhkCount": 3,
+          "bhkType": "3 BHK Grande",
+          "carpetAreaSqm": 91.05,
+          "carpetAreaSqft": 980,
+          "floor": 14,
+          "totalFloors": 25,
+          "facing": "North-East",
+          "possessionStatus": "UNDER_CONSTRUCTION",
+          "financials": {
+            "agreementValue": 15366400,
+            "carpetAreaSqft": 980,
+            "ratePerSqft": 15680,
+            "stampDuty": 921984,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 768320,
+            "gstRate": 0.05,
+            "floorRiseCharges": 441000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 17927704,
+            "allInRatePerSqft": 18294
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Kamdhenu Desk",
+            "phone": "+919820567891",
+            "whatsappLink": "https://wa.me/919820567891?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%223%20BHK%20Grande%20in%20Kamdhenu%20Vogue%20(Sector%2035)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Kamdhenu Realties",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "3 BHK Grande apartment in Kamdhenu Vogue, Sector 35, KHARGHAR. Verified carpet area: 980 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.692Z"
+        }
+      ],
+      "lastAuditedAt": "2026-08-20T13:04:03.692Z"
+    },
+    {
+      "id": "proj_niharika_absolute_sec35",
+      "name": "Niharika Absolute",
+      "developerName": "Juhi Developers",
+      "reraRegistrationNumber": "P52000021980",
+      "proposedCompletionDate": "2025-09-30",
+      "node": "KHARGHAR",
+      "sector": "Sector 35",
+      "localityKey": "UPPER_KHARGHAR",
+      "address": "Plot 19, Sector 35, Kharghar - 410210",
+      "pincode": "410210",
+      "latitude": 19.0608,
+      "longitude": 73.0778,
+      "totalTowers": 2,
+      "totalSanctionedFloors": 22,
+      "totalUnits": 176,
+      "possessionStatus": "UNDER_CONSTRUCTION",
+      "projectStatus": "Under Construction",
+      "amenities": [
+        "Sky Garden",
+        "Clubhouse",
+        "Children Play Area",
+        "24/7 Security",
+        "Power Backup"
+      ],
+      "coverImage": "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200",
+      "images": [
+        "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200"
+      ],
+      "wings": [
+        {
+          "wingName": "Tower A",
+          "sanctionedFloors": 22
+        },
+        {
+          "wingName": "Tower B",
+          "sanctionedFloors": 22
+        }
+      ],
+      "units": [
+        {
+          "id": "unit_proj_niharika_absolute_sec35_0702",
+          "unitNumber": "Unit 0702",
+          "bhkCount": 2,
+          "bhkType": "2 BHK Luxury",
+          "carpetAreaSqm": 60.39,
+          "carpetAreaSqft": 650,
+          "floor": 7,
+          "totalFloors": 22,
+          "facing": "North-East",
+          "possessionStatus": "UNDER_CONSTRUCTION",
+          "financials": {
+            "agreementValue": 9974250,
+            "carpetAreaSqft": 650,
+            "ratePerSqft": 15345,
+            "stampDuty": 598455,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 498713,
+            "gstRate": 0.05,
+            "floorRiseCharges": 65000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 11566418,
+            "allInRatePerSqft": 17794
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Juhi Sales Lounge",
+            "phone": "+919821678901",
+            "whatsappLink": "https://wa.me/919821678901?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%222%20BHK%20Luxury%20in%20Niharika%20Absolute%20(Sector%2035)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Juhi Developers",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "2 BHK Luxury apartment in Niharika Absolute, Sector 35, KHARGHAR. Verified carpet area: 650 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.692Z"
+        },
+        {
+          "id": "unit_proj_niharika_absolute_sec35_1401",
+          "unitNumber": "Unit 1401",
+          "bhkCount": 3,
+          "bhkType": "3 BHK Grande",
+          "carpetAreaSqm": 91.05,
+          "carpetAreaSqft": 980,
+          "floor": 14,
+          "totalFloors": 22,
+          "facing": "North-East",
+          "possessionStatus": "UNDER_CONSTRUCTION",
+          "financials": {
+            "agreementValue": 15523200,
+            "carpetAreaSqft": 980,
+            "ratePerSqft": 15840,
+            "stampDuty": 931392,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 776160,
+            "gstRate": 0.05,
+            "floorRiseCharges": 441000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 18101752,
+            "allInRatePerSqft": 18471
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Juhi Sales Lounge",
+            "phone": "+919821678901",
+            "whatsappLink": "https://wa.me/919821678901?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%223%20BHK%20Grande%20in%20Niharika%20Absolute%20(Sector%2035)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Juhi Developers",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "3 BHK Grande apartment in Niharika Absolute, Sector 35, KHARGHAR. Verified carpet area: 980 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.692Z"
+        }
+      ],
+      "lastAuditedAt": "2026-08-20T13:04:03.692Z"
+    },
+    {
+      "id": "proj_juhi_niharika_mirage_sec34",
+      "name": "Juhi Niharika Mirage",
+      "developerName": "Juhi Developers",
+      "reraRegistrationNumber": "P52000016422",
+      "node": "KHARGHAR",
+      "sector": "Sector 34",
+      "localityKey": "UPPER_KHARGHAR",
+      "address": "Plot 18, Sector 34, Kharghar, Navi Mumbai - 410210",
+      "pincode": "410210",
+      "latitude": 19.0573,
+      "longitude": 73.0722,
+      "totalTowers": 2,
+      "totalSanctionedFloors": 22,
+      "totalUnits": 176,
+      "possessionStatus": "READY_TO_MOVE",
+      "projectStatus": "Completed",
+      "amenities": [
+        "Sky Garden",
+        "Fitness Center",
+        "Children Play Zone",
+        "Banquet Hall",
+        "24/7 Security"
+      ],
+      "coverImage": "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200",
+      "images": [
+        "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200"
+      ],
+      "wings": [
+        {
+          "wingName": "Tower A",
+          "sanctionedFloors": 22
+        },
+        {
+          "wingName": "Tower B",
+          "sanctionedFloors": 22
+        }
+      ],
+      "units": [
+        {
+          "id": "unit_proj_juhi_niharika_mirage_sec34_0702",
+          "unitNumber": "Unit 0702",
+          "bhkCount": 2,
+          "bhkType": "2 BHK Luxury",
+          "carpetAreaSqm": 60.39,
+          "carpetAreaSqft": 650,
+          "floor": 7,
+          "totalFloors": 22,
+          "facing": "North-East",
+          "possessionStatus": "READY_TO_MOVE",
+          "financials": {
+            "agreementValue": 10578750,
+            "carpetAreaSqft": 650,
+            "ratePerSqft": 16275,
+            "stampDuty": 634725,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 0,
+            "gstRate": 0,
+            "floorRiseCharges": 65000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 11708475,
+            "allInRatePerSqft": 18013
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Juhi Direct Desk",
+            "phone": "+919821678901",
+            "whatsappLink": "https://wa.me/919821678901?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%222%20BHK%20Luxury%20in%20Juhi%20Niharika%20Mirage%20(Sector%2034)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Juhi Developers",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "2 BHK Luxury apartment in Juhi Niharika Mirage, Sector 34, KHARGHAR. Verified carpet area: 650 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.692Z"
+        },
+        {
+          "id": "unit_proj_juhi_niharika_mirage_sec34_1401",
+          "unitNumber": "Unit 1401",
+          "bhkCount": 3,
+          "bhkType": "3 BHK Grande",
+          "carpetAreaSqm": 91.05,
+          "carpetAreaSqft": 980,
+          "floor": 14,
+          "totalFloors": 22,
+          "facing": "North-East",
+          "possessionStatus": "READY_TO_MOVE",
+          "financials": {
+            "agreementValue": 16464000,
+            "carpetAreaSqft": 980,
+            "ratePerSqft": 16800,
+            "stampDuty": 987840,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 0,
+            "gstRate": 0,
+            "floorRiseCharges": 441000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 18322840,
+            "allInRatePerSqft": 18697
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Juhi Direct Desk",
+            "phone": "+919821678901",
+            "whatsappLink": "https://wa.me/919821678901?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%223%20BHK%20Grande%20in%20Juhi%20Niharika%20Mirage%20(Sector%2034)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Juhi Developers",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "3 BHK Grande apartment in Juhi Niharika Mirage, Sector 34, KHARGHAR. Verified carpet area: 980 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.692Z"
+        }
+      ],
+      "lastAuditedAt": "2026-08-20T13:04:03.692Z"
+    },
+    {
+      "id": "proj_shreeji_divine_sec34",
+      "name": "Shreeji Divine",
+      "developerName": "Shreeji Group",
+      "reraRegistrationNumber": "P52000021120",
+      "proposedCompletionDate": "2026-03-31",
+      "node": "KHARGHAR",
+      "sector": "Sector 34",
+      "localityKey": "UPPER_KHARGHAR",
+      "address": "Plot 28, Sector 34, Kharghar - 410210",
+      "pincode": "410210",
+      "latitude": 19.0582,
+      "longitude": 73.0735,
+      "totalTowers": 2,
+      "totalSanctionedFloors": 21,
+      "totalUnits": 168,
+      "possessionStatus": "UNDER_CONSTRUCTION",
+      "projectStatus": "Under Construction",
+      "amenities": [
+        "Clubhouse",
+        "Swimming Pool",
+        "Indoor Games Room",
+        "CCTV Surveillance",
+        "Solar Water Heating"
+      ],
+      "coverImage": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200",
+      "images": [
+        "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200"
+      ],
+      "wings": [
+        {
+          "wingName": "Tower A",
+          "sanctionedFloors": 21
+        },
+        {
+          "wingName": "Tower B",
+          "sanctionedFloors": 21
+        }
+      ],
+      "units": [
+        {
+          "id": "unit_proj_shreeji_divine_sec34_0702",
+          "unitNumber": "Unit 0702",
+          "bhkCount": 2,
+          "bhkType": "2 BHK Luxury",
+          "carpetAreaSqm": 60.39,
+          "carpetAreaSqft": 650,
+          "floor": 7,
+          "totalFloors": 21,
+          "facing": "North-East",
+          "possessionStatus": "UNDER_CONSTRUCTION",
+          "financials": {
+            "agreementValue": 9873500,
+            "carpetAreaSqft": 650,
+            "ratePerSqft": 15190,
+            "stampDuty": 592410,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 493675,
+            "gstRate": 0.05,
+            "floorRiseCharges": 65000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 11454585,
+            "allInRatePerSqft": 17622
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Shreeji Sales Team",
+            "phone": "+919820789012",
+            "whatsappLink": "https://wa.me/919820789012?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%222%20BHK%20Luxury%20in%20Shreeji%20Divine%20(Sector%2034)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Shreeji Group",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "2 BHK Luxury apartment in Shreeji Divine, Sector 34, KHARGHAR. Verified carpet area: 650 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.692Z"
+        },
+        {
+          "id": "unit_proj_shreeji_divine_sec34_1401",
+          "unitNumber": "Unit 1401",
+          "bhkCount": 3,
+          "bhkType": "3 BHK Grande",
+          "carpetAreaSqm": 91.05,
+          "carpetAreaSqft": 980,
+          "floor": 14,
+          "totalFloors": 21,
+          "facing": "North-East",
+          "possessionStatus": "UNDER_CONSTRUCTION",
+          "financials": {
+            "agreementValue": 15366400,
+            "carpetAreaSqft": 980,
+            "ratePerSqft": 15680,
+            "stampDuty": 921984,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 768320,
+            "gstRate": 0.05,
+            "floorRiseCharges": 441000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 17927704,
+            "allInRatePerSqft": 18294
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Shreeji Sales Team",
+            "phone": "+919820789012",
+            "whatsappLink": "https://wa.me/919820789012?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%223%20BHK%20Grande%20in%20Shreeji%20Divine%20(Sector%2034)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Shreeji Group",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "3 BHK Grande apartment in Shreeji Divine, Sector 34, KHARGHAR. Verified carpet area: 980 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.692Z"
+        }
+      ],
+      "lastAuditedAt": "2026-08-20T13:04:03.692Z"
+    },
+    {
+      "id": "proj_nisarg_hyde_park_sec34",
+      "name": "Nisarg Hyde Park",
+      "developerName": "Nisarg Group",
+      "reraRegistrationNumber": "P52000018900",
+      "proposedCompletionDate": "2025-12-31",
+      "node": "KHARGHAR",
+      "sector": "Sector 34",
+      "localityKey": "UPPER_KHARGHAR",
+      "address": "Plot 31, Sector 34, Kharghar - 410210",
+      "pincode": "410210",
+      "latitude": 19.0565,
+      "longitude": 73.0715,
+      "totalTowers": 3,
+      "totalSanctionedFloors": 24,
+      "totalUnits": 288,
+      "possessionStatus": "UNDER_CONSTRUCTION",
+      "projectStatus": "Under Construction",
+      "amenities": [
+        "Swimming Pool",
+        "Modern Gym",
+        "Landscape Garden",
+        "Jogging Track",
+        "Car Parking"
+      ],
+      "coverImage": "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200",
+      "images": [
+        "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200"
+      ],
+      "wings": [
+        {
+          "wingName": "Tower A",
+          "sanctionedFloors": 24
+        },
+        {
+          "wingName": "Tower B",
+          "sanctionedFloors": 24
+        }
+      ],
+      "units": [
+        {
+          "id": "unit_proj_nisarg_hyde_park_sec34_0702",
+          "unitNumber": "Unit 0702",
+          "bhkCount": 2,
+          "bhkType": "2 BHK Luxury",
+          "carpetAreaSqm": 60.39,
+          "carpetAreaSqft": 650,
+          "floor": 7,
+          "totalFloors": 24,
+          "facing": "North-East",
+          "possessionStatus": "UNDER_CONSTRUCTION",
+          "financials": {
+            "agreementValue": 9772750,
+            "carpetAreaSqft": 650,
+            "ratePerSqft": 15035,
+            "stampDuty": 586365,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 488638,
+            "gstRate": 0.05,
+            "floorRiseCharges": 65000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 11342753,
+            "allInRatePerSqft": 17450
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Nisarg Sales Office",
+            "phone": "+919819890123",
+            "whatsappLink": "https://wa.me/919819890123?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%222%20BHK%20Luxury%20in%20Nisarg%20Hyde%20Park%20(Sector%2034)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Nisarg Group",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "2 BHK Luxury apartment in Nisarg Hyde Park, Sector 34, KHARGHAR. Verified carpet area: 650 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.692Z"
+        },
+        {
+          "id": "unit_proj_nisarg_hyde_park_sec34_1401",
+          "unitNumber": "Unit 1401",
+          "bhkCount": 3,
+          "bhkType": "3 BHK Grande",
+          "carpetAreaSqm": 91.05,
+          "carpetAreaSqft": 980,
+          "floor": 14,
+          "totalFloors": 24,
+          "facing": "North-East",
+          "possessionStatus": "UNDER_CONSTRUCTION",
+          "financials": {
+            "agreementValue": 15209600,
+            "carpetAreaSqft": 980,
+            "ratePerSqft": 15520,
+            "stampDuty": 912576,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 760480,
+            "gstRate": 0.05,
+            "floorRiseCharges": 441000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 17753656,
+            "allInRatePerSqft": 18116
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Nisarg Sales Office",
+            "phone": "+919819890123",
+            "whatsappLink": "https://wa.me/919819890123?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%223%20BHK%20Grande%20in%20Nisarg%20Hyde%20Park%20(Sector%2034)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Nisarg Group",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "3 BHK Grande apartment in Nisarg Hyde Park, Sector 34, KHARGHAR. Verified carpet area: 980 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.692Z"
+        }
+      ],
+      "lastAuditedAt": "2026-08-20T13:04:03.692Z"
+    },
+    {
+      "id": "proj_cidco_valley_shilp_sec36",
+      "name": "CIDCO Valley Shilp",
+      "developerName": "CIDCO Housing",
+      "reraRegistrationNumber": "P52000012340",
+      "node": "KHARGHAR",
+      "sector": "Sector 36",
+      "localityKey": "UPPER_KHARGHAR",
+      "address": "Valley Shilp Complex, Sector 36, Kharghar - 410210",
+      "pincode": "410210",
+      "latitude": 19.0645,
+      "longitude": 73.0815,
+      "totalTowers": 10,
+      "totalSanctionedFloors": 14,
+      "totalUnits": 560,
+      "possessionStatus": "READY_TO_MOVE",
+      "projectStatus": "Completed",
+      "amenities": [
+        "Gated Township",
+        "Community Hall",
+        "Playgrounds",
+        "Ample Parking",
+        "Tree-Lined Avenues"
+      ],
+      "coverImage": "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200",
+      "images": [
+        "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200"
+      ],
+      "wings": [
+        {
+          "wingName": "Tower A",
+          "sanctionedFloors": 14
+        },
+        {
+          "wingName": "Tower B",
+          "sanctionedFloors": 14
+        }
+      ],
+      "units": [
+        {
+          "id": "unit_proj_cidco_valley_shilp_sec36_0702",
+          "unitNumber": "Unit 0702",
+          "bhkCount": 2,
+          "bhkType": "2 BHK Luxury",
+          "carpetAreaSqm": 60.39,
+          "carpetAreaSqft": 650,
+          "floor": 7,
+          "totalFloors": 14,
+          "facing": "North-East",
+          "possessionStatus": "READY_TO_MOVE",
+          "financials": {
+            "agreementValue": 8966750,
+            "carpetAreaSqft": 650,
+            "ratePerSqft": 13795,
+            "stampDuty": 538005,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 0,
+            "gstRate": 0,
+            "floorRiseCharges": 65000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 9999755,
+            "allInRatePerSqft": 15384
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "CIDCO Resale Alliance",
+            "phone": "+919820011223",
+            "whatsappLink": "https://wa.me/919820011223?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%222%20BHK%20Luxury%20in%20CIDCO%20Valley%20Shilp%20(Sector%2036)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "CIDCO Housing",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "2 BHK Luxury apartment in CIDCO Valley Shilp, Sector 36, KHARGHAR. Verified carpet area: 650 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.692Z"
+        },
+        {
+          "id": "unit_proj_cidco_valley_shilp_sec36_1401",
+          "unitNumber": "Unit 1401",
+          "bhkCount": 3,
+          "bhkType": "3 BHK Grande",
+          "carpetAreaSqm": 91.05,
+          "carpetAreaSqft": 980,
+          "floor": 14,
+          "totalFloors": 14,
+          "facing": "North-East",
+          "possessionStatus": "READY_TO_MOVE",
+          "financials": {
+            "agreementValue": 13955200,
+            "carpetAreaSqft": 980,
+            "ratePerSqft": 14240,
+            "stampDuty": 837312,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 0,
+            "gstRate": 0,
+            "floorRiseCharges": 441000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 15663512,
+            "allInRatePerSqft": 15983
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "CIDCO Resale Alliance",
+            "phone": "+919820011223",
+            "whatsappLink": "https://wa.me/919820011223?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%223%20BHK%20Grande%20in%20CIDCO%20Valley%20Shilp%20(Sector%2036)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "CIDCO Housing",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "3 BHK Grande apartment in CIDCO Valley Shilp, Sector 36, KHARGHAR. Verified carpet area: 980 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.692Z"
+        }
+      ],
+      "lastAuditedAt": "2026-08-20T13:04:03.692Z"
+    },
+    {
+      "id": "proj_golf_scape_sec30",
+      "name": "Golf Scape Kharghar",
+      "developerName": "Golf View Developers",
+      "reraRegistrationNumber": "P52000018940",
+      "proposedCompletionDate": "2026-06-30",
+      "node": "KHARGHAR",
+      "sector": "Sector 30",
+      "localityKey": "KHARGHAR_CORE",
+      "address": "Plot 4, Sector 30, Kharghar - 410210",
+      "pincode": "410210",
+      "latitude": 19.0489,
+      "longitude": 73.0645,
+      "totalTowers": 2,
+      "totalSanctionedFloors": 22,
+      "totalUnits": 176,
+      "possessionStatus": "UNDER_CONSTRUCTION",
+      "projectStatus": "Under Construction",
+      "amenities": [
+        "Golf Course Facing Balconies",
+        "Sky Lounge",
+        "Infinity Pool",
+        "Gymnasium",
+        "Concierge Desk"
+      ],
+      "coverImage": "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200",
+      "images": [
+        "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200"
+      ],
+      "wings": [
+        {
+          "wingName": "Tower A",
+          "sanctionedFloors": 22
+        },
+        {
+          "wingName": "Tower B",
+          "sanctionedFloors": 22
+        }
+      ],
+      "units": [
+        {
+          "id": "unit_proj_golf_scape_sec30_0702",
+          "unitNumber": "Unit 0702",
+          "bhkCount": 2,
+          "bhkType": "2 BHK Luxury",
+          "carpetAreaSqm": 60.39,
+          "carpetAreaSqft": 650,
+          "floor": 7,
+          "totalFloors": 22,
+          "facing": "North-East",
+          "possessionStatus": "UNDER_CONSTRUCTION",
+          "financials": {
+            "agreementValue": 12593750,
+            "carpetAreaSqft": 650,
+            "ratePerSqft": 19375,
+            "stampDuty": 755625,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 629688,
+            "gstRate": 0.05,
+            "floorRiseCharges": 65000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 14474063,
+            "allInRatePerSqft": 22268
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Golf Scape Exclusive Desk",
+            "phone": "+919820345678",
+            "whatsappLink": "https://wa.me/919820345678?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%222%20BHK%20Luxury%20in%20Golf%20Scape%20Kharghar%20(Sector%2030)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Golf View Developers",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "2 BHK Luxury apartment in Golf Scape Kharghar, Sector 30, KHARGHAR. Verified carpet area: 650 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.692Z"
+        },
+        {
+          "id": "unit_proj_golf_scape_sec30_1401",
+          "unitNumber": "Unit 1401",
+          "bhkCount": 3,
+          "bhkType": "3 BHK Grande",
+          "carpetAreaSqm": 91.05,
+          "carpetAreaSqft": 980,
+          "floor": 14,
+          "totalFloors": 22,
+          "facing": "North-East",
+          "possessionStatus": "UNDER_CONSTRUCTION",
+          "financials": {
+            "agreementValue": 19600000,
+            "carpetAreaSqft": 980,
+            "ratePerSqft": 20000,
+            "stampDuty": 1176000,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 980000,
+            "gstRate": 0.05,
+            "floorRiseCharges": 441000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 22627000,
+            "allInRatePerSqft": 23089
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Golf Scape Exclusive Desk",
+            "phone": "+919820345678",
+            "whatsappLink": "https://wa.me/919820345678?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%223%20BHK%20Grande%20in%20Golf%20Scape%20Kharghar%20(Sector%2030)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Golf View Developers",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "3 BHK Grande apartment in Golf Scape Kharghar, Sector 30, KHARGHAR. Verified carpet area: 980 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.692Z"
+        },
+        {
+          "id": "unit_proj_golf_scape_sec30_2104",
+          "unitNumber": "Unit 2104",
+          "bhkCount": 4,
+          "bhkType": "4 BHK Royal Suite",
+          "carpetAreaSqm": 134.71,
+          "carpetAreaSqft": 1450,
+          "floor": 21,
+          "totalFloors": 22,
+          "facing": "North-East",
+          "possessionStatus": "UNDER_CONSTRUCTION",
+          "financials": {
+            "agreementValue": 29906250,
+            "carpetAreaSqft": 1450,
+            "ratePerSqft": 20625,
+            "stampDuty": 1794375,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 1495313,
+            "gstRate": 0.05,
+            "floorRiseCharges": 1160000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 34785938,
+            "allInRatePerSqft": 23990
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Golf Scape Exclusive Desk",
+            "phone": "+919820345678",
+            "whatsappLink": "https://wa.me/919820345678?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%224%20BHK%20Royal%20Suite%20in%20Golf%20Scape%20Kharghar%20(Sector%2030)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Golf View Developers",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "4 BHK Royal Suite apartment in Golf Scape Kharghar, Sector 30, KHARGHAR. Verified carpet area: 1450 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.692Z"
+        }
+      ],
+      "lastAuditedAt": "2026-08-20T13:04:03.692Z"
+    },
+    {
+      "id": "proj_hiranandani_crystal_court_sec20",
+      "name": "Hiranandani Crystal Court",
+      "developerName": "Hiranandani Communities",
+      "reraRegistrationNumber": "P52000017890",
+      "node": "KHARGHAR",
+      "sector": "Sector 20",
+      "localityKey": "KHARGHAR_CORE",
+      "address": "Hiranandani Crystal Court, Sector 20, Kharghar - 410210",
+      "pincode": "410210",
+      "latitude": 19.0435,
+      "longitude": 73.0612,
+      "totalTowers": 3,
+      "totalSanctionedFloors": 24,
+      "totalUnits": 288,
+      "possessionStatus": "READY_TO_MOVE",
+      "projectStatus": "Completed",
+      "amenities": [
+        "Hiranandani Clubhouse",
+        "Swimming Pool",
+        "Tennis Court",
+        "Landscaped Lawns",
+        "Marble Lobbies"
+      ],
+      "coverImage": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200",
+      "images": [
+        "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200"
+      ],
+      "wings": [
+        {
+          "wingName": "Tower A",
+          "sanctionedFloors": 24
+        },
+        {
+          "wingName": "Tower B",
+          "sanctionedFloors": 24
+        }
+      ],
+      "units": [
+        {
+          "id": "unit_proj_hiranandani_crystal_court_sec20_0702",
+          "unitNumber": "Unit 0702",
+          "bhkCount": 2,
+          "bhkType": "2 BHK Luxury",
+          "carpetAreaSqm": 60.39,
+          "carpetAreaSqft": 650,
+          "floor": 7,
+          "totalFloors": 24,
+          "facing": "North-East",
+          "possessionStatus": "READY_TO_MOVE",
+          "financials": {
+            "agreementValue": 13601250,
+            "carpetAreaSqft": 650,
+            "ratePerSqft": 20925,
+            "stampDuty": 816075,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 0,
+            "gstRate": 0,
+            "floorRiseCharges": 65000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 14912325,
+            "allInRatePerSqft": 22942
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Hiranandani Sales Desk",
+            "phone": "+919820901234",
+            "whatsappLink": "https://wa.me/919820901234?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%222%20BHK%20Luxury%20in%20Hiranandani%20Crystal%20Court%20(Sector%2020)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Hiranandani Communities",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "2 BHK Luxury apartment in Hiranandani Crystal Court, Sector 20, KHARGHAR. Verified carpet area: 650 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.692Z"
+        },
+        {
+          "id": "unit_proj_hiranandani_crystal_court_sec20_1401",
+          "unitNumber": "Unit 1401",
+          "bhkCount": 3,
+          "bhkType": "3 BHK Grande",
+          "carpetAreaSqm": 91.05,
+          "carpetAreaSqft": 980,
+          "floor": 14,
+          "totalFloors": 24,
+          "facing": "North-East",
+          "possessionStatus": "READY_TO_MOVE",
+          "financials": {
+            "agreementValue": 21168000,
+            "carpetAreaSqft": 980,
+            "ratePerSqft": 21600,
+            "stampDuty": 1270080,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 0,
+            "gstRate": 0,
+            "floorRiseCharges": 441000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 23309080,
+            "allInRatePerSqft": 23785
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Hiranandani Sales Desk",
+            "phone": "+919820901234",
+            "whatsappLink": "https://wa.me/919820901234?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%223%20BHK%20Grande%20in%20Hiranandani%20Crystal%20Court%20(Sector%2020)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Hiranandani Communities",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "3 BHK Grande apartment in Hiranandani Crystal Court, Sector 20, KHARGHAR. Verified carpet area: 980 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.692Z"
+        },
+        {
+          "id": "unit_proj_hiranandani_crystal_court_sec20_2104",
+          "unitNumber": "Unit 2104",
+          "bhkCount": 4,
+          "bhkType": "4 BHK Royal Suite",
+          "carpetAreaSqm": 134.71,
+          "carpetAreaSqft": 1450,
+          "floor": 21,
+          "totalFloors": 24,
+          "facing": "North-East",
+          "possessionStatus": "READY_TO_MOVE",
+          "financials": {
+            "agreementValue": 32298750,
+            "carpetAreaSqft": 1450,
+            "ratePerSqft": 22275,
+            "stampDuty": 1937925,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 0,
+            "gstRate": 0,
+            "floorRiseCharges": 1160000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 35826675,
+            "allInRatePerSqft": 24708
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Hiranandani Sales Desk",
+            "phone": "+919820901234",
+            "whatsappLink": "https://wa.me/919820901234?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%224%20BHK%20Royal%20Suite%20in%20Hiranandani%20Crystal%20Court%20(Sector%2020)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Hiranandani Communities",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "4 BHK Royal Suite apartment in Hiranandani Crystal Court, Sector 20, KHARGHAR. Verified carpet area: 1450 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.692Z"
+        }
+      ],
+      "lastAuditedAt": "2026-08-20T13:04:03.692Z"
+    },
+    {
+      "id": "proj_paradise_sai_marvel_sec20",
+      "name": "Paradise Sai Marvel",
+      "developerName": "Paradise Group",
+      "reraRegistrationNumber": "P52000018892",
+      "node": "KHARGHAR",
+      "sector": "Sector 20",
+      "localityKey": "KHARGHAR_CORE",
+      "address": "Plot 15, Sector 20, Kharghar - 410210",
+      "pincode": "410210",
+      "latitude": 19.0448,
+      "longitude": 73.0625,
+      "totalTowers": 2,
+      "totalSanctionedFloors": 22,
+      "totalUnits": 176,
+      "possessionStatus": "READY_TO_MOVE",
+      "projectStatus": "Completed",
+      "amenities": [
+        "Clubhouse",
+        "Gymnasium",
+        "Podium Garden",
+        "Children Play Zone",
+        "Covered Parking"
+      ],
+      "coverImage": "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200",
+      "images": [
+        "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200"
+      ],
+      "wings": [
+        {
+          "wingName": "Tower A",
+          "sanctionedFloors": 22
+        },
+        {
+          "wingName": "Tower B",
+          "sanctionedFloors": 22
+        }
+      ],
+      "units": [
+        {
+          "id": "unit_proj_paradise_sai_marvel_sec20_0702",
+          "unitNumber": "Unit 0702",
+          "bhkCount": 2,
+          "bhkType": "2 BHK Luxury",
+          "carpetAreaSqm": 60.39,
+          "carpetAreaSqft": 650,
+          "floor": 7,
+          "totalFloors": 22,
+          "facing": "North-East",
+          "possessionStatus": "READY_TO_MOVE",
+          "financials": {
+            "agreementValue": 12896000,
+            "carpetAreaSqft": 650,
+            "ratePerSqft": 19840,
+            "stampDuty": 773760,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 0,
+            "gstRate": 0,
+            "floorRiseCharges": 65000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 14164760,
+            "allInRatePerSqft": 21792
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Sai Marvel Desk",
+            "phone": "+919833456789",
+            "whatsappLink": "https://wa.me/919833456789?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%222%20BHK%20Luxury%20in%20Paradise%20Sai%20Marvel%20(Sector%2020)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Paradise Group",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "2 BHK Luxury apartment in Paradise Sai Marvel, Sector 20, KHARGHAR. Verified carpet area: 650 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.692Z"
+        },
+        {
+          "id": "unit_proj_paradise_sai_marvel_sec20_1401",
+          "unitNumber": "Unit 1401",
+          "bhkCount": 3,
+          "bhkType": "3 BHK Grande",
+          "carpetAreaSqm": 91.05,
+          "carpetAreaSqft": 980,
+          "floor": 14,
+          "totalFloors": 22,
+          "facing": "North-East",
+          "possessionStatus": "READY_TO_MOVE",
+          "financials": {
+            "agreementValue": 20070400,
+            "carpetAreaSqft": 980,
+            "ratePerSqft": 20480,
+            "stampDuty": 1204224,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 0,
+            "gstRate": 0,
+            "floorRiseCharges": 441000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 22145624,
+            "allInRatePerSqft": 22598
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Sai Marvel Desk",
+            "phone": "+919833456789",
+            "whatsappLink": "https://wa.me/919833456789?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%223%20BHK%20Grande%20in%20Paradise%20Sai%20Marvel%20(Sector%2020)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Paradise Group",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "3 BHK Grande apartment in Paradise Sai Marvel, Sector 20, KHARGHAR. Verified carpet area: 980 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.692Z"
+        },
+        {
+          "id": "unit_proj_paradise_sai_marvel_sec20_2104",
+          "unitNumber": "Unit 2104",
+          "bhkCount": 4,
+          "bhkType": "4 BHK Royal Suite",
+          "carpetAreaSqm": 134.71,
+          "carpetAreaSqft": 1450,
+          "floor": 21,
+          "totalFloors": 22,
+          "facing": "North-East",
+          "possessionStatus": "READY_TO_MOVE",
+          "financials": {
+            "agreementValue": 30624000,
+            "carpetAreaSqft": 1450,
+            "ratePerSqft": 21120,
+            "stampDuty": 1837440,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 0,
+            "gstRate": 0,
+            "floorRiseCharges": 1160000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 34051440,
+            "allInRatePerSqft": 23484
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Sai Marvel Desk",
+            "phone": "+919833456789",
+            "whatsappLink": "https://wa.me/919833456789?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%224%20BHK%20Royal%20Suite%20in%20Paradise%20Sai%20Marvel%20(Sector%2020)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Paradise Group",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "4 BHK Royal Suite apartment in Paradise Sai Marvel, Sector 20, KHARGHAR. Verified carpet area: 1450 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.692Z"
+        }
+      ],
+      "lastAuditedAt": "2026-08-20T13:04:03.692Z"
+    },
+    {
+      "id": "proj_hyde_park_sec19",
+      "name": "Hyde Park Kharghar",
+      "developerName": "Hyde Park Developers",
+      "reraRegistrationNumber": "P52000016540",
+      "node": "KHARGHAR",
+      "sector": "Sector 19",
+      "localityKey": "KHARGHAR_CORE",
+      "address": "Plot 9, Sector 19, Kharghar - 410210",
+      "pincode": "410210",
+      "latitude": 19.0392,
+      "longitude": 73.0667,
+      "totalTowers": 4,
+      "totalSanctionedFloors": 24,
+      "totalUnits": 384,
+      "possessionStatus": "READY_TO_MOVE",
+      "projectStatus": "Completed",
+      "amenities": [
+        "Grand Swimming Pool",
+        "Squash Court",
+        "Mini Theatre",
+        "Steam & Sauna",
+        "Jogging Track"
+      ],
+      "coverImage": "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200",
+      "images": [
+        "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200"
+      ],
+      "wings": [
+        {
+          "wingName": "Tower A",
+          "sanctionedFloors": 24
+        },
+        {
+          "wingName": "Tower B",
+          "sanctionedFloors": 24
+        }
+      ],
+      "units": [
+        {
+          "id": "unit_proj_hyde_park_sec19_0702",
+          "unitNumber": "Unit 0702",
+          "bhkCount": 2,
+          "bhkType": "2 BHK Luxury",
+          "carpetAreaSqm": 60.39,
+          "carpetAreaSqft": 650,
+          "floor": 7,
+          "totalFloors": 24,
+          "facing": "North-East",
+          "possessionStatus": "READY_TO_MOVE",
+          "financials": {
+            "agreementValue": 13097500,
+            "carpetAreaSqft": 650,
+            "ratePerSqft": 20150,
+            "stampDuty": 785850,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 0,
+            "gstRate": 0,
+            "floorRiseCharges": 65000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 14378350,
+            "allInRatePerSqft": 22121
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Hyde Park Owners Desk",
+            "phone": "+919819123450",
+            "whatsappLink": "https://wa.me/919819123450?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%222%20BHK%20Luxury%20in%20Hyde%20Park%20Kharghar%20(Sector%2019)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Hyde Park Developers",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "2 BHK Luxury apartment in Hyde Park Kharghar, Sector 19, KHARGHAR. Verified carpet area: 650 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.692Z"
+        },
+        {
+          "id": "unit_proj_hyde_park_sec19_1401",
+          "unitNumber": "Unit 1401",
+          "bhkCount": 3,
+          "bhkType": "3 BHK Grande",
+          "carpetAreaSqm": 91.05,
+          "carpetAreaSqft": 980,
+          "floor": 14,
+          "totalFloors": 24,
+          "facing": "North-East",
+          "possessionStatus": "READY_TO_MOVE",
+          "financials": {
+            "agreementValue": 20384000,
+            "carpetAreaSqft": 980,
+            "ratePerSqft": 20800,
+            "stampDuty": 1223040,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 0,
+            "gstRate": 0,
+            "floorRiseCharges": 441000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 22478040,
+            "allInRatePerSqft": 22937
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Hyde Park Owners Desk",
+            "phone": "+919819123450",
+            "whatsappLink": "https://wa.me/919819123450?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%223%20BHK%20Grande%20in%20Hyde%20Park%20Kharghar%20(Sector%2019)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Hyde Park Developers",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "3 BHK Grande apartment in Hyde Park Kharghar, Sector 19, KHARGHAR. Verified carpet area: 980 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.692Z"
+        },
+        {
+          "id": "unit_proj_hyde_park_sec19_2104",
+          "unitNumber": "Unit 2104",
+          "bhkCount": 4,
+          "bhkType": "4 BHK Royal Suite",
+          "carpetAreaSqm": 134.71,
+          "carpetAreaSqft": 1450,
+          "floor": 21,
+          "totalFloors": 24,
+          "facing": "North-East",
+          "possessionStatus": "READY_TO_MOVE",
+          "financials": {
+            "agreementValue": 31102500,
+            "carpetAreaSqft": 1450,
+            "ratePerSqft": 21450,
+            "stampDuty": 1866150,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 0,
+            "gstRate": 0,
+            "floorRiseCharges": 1160000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 34558650,
+            "allInRatePerSqft": 23834
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Hyde Park Owners Desk",
+            "phone": "+919819123450",
+            "whatsappLink": "https://wa.me/919819123450?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%224%20BHK%20Royal%20Suite%20in%20Hyde%20Park%20Kharghar%20(Sector%2019)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Hyde Park Developers",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "4 BHK Royal Suite apartment in Hyde Park Kharghar, Sector 19, KHARGHAR. Verified carpet area: 1450 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.692Z"
+        }
+      ],
+      "lastAuditedAt": "2026-08-20T13:04:03.692Z"
+    },
+    {
+      "id": "proj_satyam_sheetal_heights_sec15",
+      "name": "Satyam Sheetal Heights",
+      "developerName": "Satyam Group",
+      "reraRegistrationNumber": "P52000008912",
+      "node": "KHARGHAR",
+      "sector": "Sector 15",
+      "localityKey": "KHARGHAR_CORE",
+      "address": "Plot 22, Sector 15, Kharghar - 410210",
+      "pincode": "410210",
+      "latitude": 19.0315,
+      "longitude": 73.0694,
+      "totalTowers": 2,
+      "totalSanctionedFloors": 19,
+      "totalUnits": 152,
+      "possessionStatus": "READY_TO_MOVE",
+      "projectStatus": "Completed",
+      "amenities": [
+        "Podium Garden",
+        "Gymnasium",
+        "Covered Parking",
+        "High-Speed Elevators",
+        "CCTV"
+      ],
+      "coverImage": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200",
+      "images": [
+        "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200"
+      ],
+      "wings": [
+        {
+          "wingName": "Tower A",
+          "sanctionedFloors": 19
+        },
+        {
+          "wingName": "Tower B",
+          "sanctionedFloors": 19
+        }
+      ],
+      "units": [
+        {
+          "id": "unit_proj_satyam_sheetal_heights_sec15_0702",
+          "unitNumber": "Unit 0702",
+          "bhkCount": 2,
+          "bhkType": "2 BHK Luxury",
+          "carpetAreaSqm": 60.39,
+          "carpetAreaSqft": 650,
+          "floor": 7,
+          "totalFloors": 19,
+          "facing": "North-East",
+          "possessionStatus": "READY_TO_MOVE",
+          "financials": {
+            "agreementValue": 13903500,
+            "carpetAreaSqft": 650,
+            "ratePerSqft": 21390,
+            "stampDuty": 834210,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 0,
+            "gstRate": 0,
+            "floorRiseCharges": 65000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 15232710,
+            "allInRatePerSqft": 23435
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Satyam Sales Desk",
+            "phone": "+919820455667",
+            "whatsappLink": "https://wa.me/919820455667?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%222%20BHK%20Luxury%20in%20Satyam%20Sheetal%20Heights%20(Sector%2015)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Satyam Group",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "2 BHK Luxury apartment in Satyam Sheetal Heights, Sector 15, KHARGHAR. Verified carpet area: 650 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.692Z"
+        },
+        {
+          "id": "unit_proj_satyam_sheetal_heights_sec15_1401",
+          "unitNumber": "Unit 1401",
+          "bhkCount": 3,
+          "bhkType": "3 BHK Grande",
+          "carpetAreaSqm": 91.05,
+          "carpetAreaSqft": 980,
+          "floor": 14,
+          "totalFloors": 19,
+          "facing": "North-East",
+          "possessionStatus": "READY_TO_MOVE",
+          "financials": {
+            "agreementValue": 21638400,
+            "carpetAreaSqft": 980,
+            "ratePerSqft": 22080,
+            "stampDuty": 1298304,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 0,
+            "gstRate": 0,
+            "floorRiseCharges": 441000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 23807704,
+            "allInRatePerSqft": 24294
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Satyam Sales Desk",
+            "phone": "+919820455667",
+            "whatsappLink": "https://wa.me/919820455667?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%223%20BHK%20Grande%20in%20Satyam%20Sheetal%20Heights%20(Sector%2015)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Satyam Group",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "3 BHK Grande apartment in Satyam Sheetal Heights, Sector 15, KHARGHAR. Verified carpet area: 980 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.692Z"
+        },
+        {
+          "id": "unit_proj_satyam_sheetal_heights_sec15_2104",
+          "unitNumber": "Unit 2104",
+          "bhkCount": 4,
+          "bhkType": "4 BHK Royal Suite",
+          "carpetAreaSqm": 134.71,
+          "carpetAreaSqft": 1450,
+          "floor": 21,
+          "totalFloors": 19,
+          "facing": "North-East",
+          "possessionStatus": "READY_TO_MOVE",
+          "financials": {
+            "agreementValue": 33016500,
+            "carpetAreaSqft": 1450,
+            "ratePerSqft": 22770,
+            "stampDuty": 1980990,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 0,
+            "gstRate": 0,
+            "floorRiseCharges": 1160000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 36587490,
+            "allInRatePerSqft": 25233
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Satyam Sales Desk",
+            "phone": "+919820455667",
+            "whatsappLink": "https://wa.me/919820455667?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%224%20BHK%20Royal%20Suite%20in%20Satyam%20Sheetal%20Heights%20(Sector%2015)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Satyam Group",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "4 BHK Royal Suite apartment in Satyam Sheetal Heights, Sector 15, KHARGHAR. Verified carpet area: 1450 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.692Z"
+        }
+      ],
+      "lastAuditedAt": "2026-08-20T13:04:03.692Z"
+    },
+    {
+      "id": "proj_shreeji_heights_sec15",
+      "name": "Shreeji Heights",
+      "developerName": "Shreeji Group",
+      "reraRegistrationNumber": "P52000018740",
+      "node": "KHARGHAR",
+      "sector": "Sector 15",
+      "localityKey": "KHARGHAR_CORE",
+      "address": "Plot 10, Sector 15, Kharghar - 410210",
+      "pincode": "410210",
+      "latitude": 19.0325,
+      "longitude": 73.0705,
+      "totalTowers": 3,
+      "totalSanctionedFloors": 22,
+      "totalUnits": 264,
+      "possessionStatus": "READY_TO_MOVE",
+      "projectStatus": "Completed",
+      "amenities": [
+        "Clubhouse",
+        "Swimming Pool",
+        "Fitness Studio",
+        "Party Hall",
+        "High Security"
+      ],
+      "coverImage": "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200",
+      "images": [
+        "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200"
+      ],
+      "wings": [
+        {
+          "wingName": "Tower A",
+          "sanctionedFloors": 22
+        },
+        {
+          "wingName": "Tower B",
+          "sanctionedFloors": 22
+        }
+      ],
+      "units": [
+        {
+          "id": "unit_proj_shreeji_heights_sec15_0702",
+          "unitNumber": "Unit 0702",
+          "bhkCount": 2,
+          "bhkType": "2 BHK Luxury",
+          "carpetAreaSqm": 60.39,
+          "carpetAreaSqft": 650,
+          "floor": 7,
+          "totalFloors": 22,
+          "facing": "North-East",
+          "possessionStatus": "READY_TO_MOVE",
+          "financials": {
+            "agreementValue": 13299000,
+            "carpetAreaSqft": 650,
+            "ratePerSqft": 20460,
+            "stampDuty": 797940,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 0,
+            "gstRate": 0,
+            "floorRiseCharges": 65000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 14591940,
+            "allInRatePerSqft": 22449
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Shreeji Direct",
+            "phone": "+919820789012",
+            "whatsappLink": "https://wa.me/919820789012?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%222%20BHK%20Luxury%20in%20Shreeji%20Heights%20(Sector%2015)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Shreeji Group",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "2 BHK Luxury apartment in Shreeji Heights, Sector 15, KHARGHAR. Verified carpet area: 650 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.692Z"
+        },
+        {
+          "id": "unit_proj_shreeji_heights_sec15_1401",
+          "unitNumber": "Unit 1401",
+          "bhkCount": 3,
+          "bhkType": "3 BHK Grande",
+          "carpetAreaSqm": 91.05,
+          "carpetAreaSqft": 980,
+          "floor": 14,
+          "totalFloors": 22,
+          "facing": "North-East",
+          "possessionStatus": "READY_TO_MOVE",
+          "financials": {
+            "agreementValue": 20697600,
+            "carpetAreaSqft": 980,
+            "ratePerSqft": 21120,
+            "stampDuty": 1241856,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 0,
+            "gstRate": 0,
+            "floorRiseCharges": 441000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 22810456,
+            "allInRatePerSqft": 23276
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Shreeji Direct",
+            "phone": "+919820789012",
+            "whatsappLink": "https://wa.me/919820789012?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%223%20BHK%20Grande%20in%20Shreeji%20Heights%20(Sector%2015)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Shreeji Group",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "3 BHK Grande apartment in Shreeji Heights, Sector 15, KHARGHAR. Verified carpet area: 980 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.692Z"
+        },
+        {
+          "id": "unit_proj_shreeji_heights_sec15_2104",
+          "unitNumber": "Unit 2104",
+          "bhkCount": 4,
+          "bhkType": "4 BHK Royal Suite",
+          "carpetAreaSqm": 134.71,
+          "carpetAreaSqft": 1450,
+          "floor": 21,
+          "totalFloors": 22,
+          "facing": "North-East",
+          "possessionStatus": "READY_TO_MOVE",
+          "financials": {
+            "agreementValue": 31581000,
+            "carpetAreaSqft": 1450,
+            "ratePerSqft": 21780,
+            "stampDuty": 1894860,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 0,
+            "gstRate": 0,
+            "floorRiseCharges": 1160000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 35065860,
+            "allInRatePerSqft": 24183
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Shreeji Direct",
+            "phone": "+919820789012",
+            "whatsappLink": "https://wa.me/919820789012?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%224%20BHK%20Royal%20Suite%20in%20Shreeji%20Heights%20(Sector%2015)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Shreeji Group",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "4 BHK Royal Suite apartment in Shreeji Heights, Sector 15, KHARGHAR. Verified carpet area: 1450 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.692Z"
+        }
+      ],
+      "lastAuditedAt": "2026-08-20T13:04:03.692Z"
+    },
+    {
+      "id": "proj_mahaavir_heritage_sec14",
+      "name": "Mahaavir Heritage",
+      "developerName": "Mahaavir Universal Homes",
+      "reraRegistrationNumber": "P52000019870",
+      "node": "KHARGHAR",
+      "sector": "Sector 14",
+      "localityKey": "KHARGHAR_CORE",
+      "address": "Plot 16, Sector 14, Kharghar - 410210",
+      "pincode": "410210",
+      "latitude": 19.0338,
+      "longitude": 73.0682,
+      "totalTowers": 2,
+      "totalSanctionedFloors": 19,
+      "totalUnits": 152,
+      "possessionStatus": "READY_TO_MOVE",
+      "projectStatus": "Completed",
+      "amenities": [
+        "Clubhouse",
+        "Gymnasium",
+        "Landscaped Garden",
+        "Ample Parking"
+      ],
+      "coverImage": "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200",
+      "images": [
+        "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200"
+      ],
+      "wings": [
+        {
+          "wingName": "Tower A",
+          "sanctionedFloors": 19
+        },
+        {
+          "wingName": "Tower B",
+          "sanctionedFloors": 19
+        }
+      ],
+      "units": [
+        {
+          "id": "unit_proj_mahaavir_heritage_sec14_0702",
+          "unitNumber": "Unit 0702",
+          "bhkCount": 2,
+          "bhkType": "2 BHK Luxury",
+          "carpetAreaSqm": 60.39,
+          "carpetAreaSqft": 650,
+          "floor": 7,
+          "totalFloors": 19,
+          "facing": "North-East",
+          "possessionStatus": "READY_TO_MOVE",
+          "financials": {
+            "agreementValue": 13097500,
+            "carpetAreaSqft": 650,
+            "ratePerSqft": 20150,
+            "stampDuty": 785850,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 0,
+            "gstRate": 0,
+            "floorRiseCharges": 65000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 14378350,
+            "allInRatePerSqft": 22121
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Mahaavir Sales Office",
+            "phone": "+919819234567",
+            "whatsappLink": "https://wa.me/919819234567?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%222%20BHK%20Luxury%20in%20Mahaavir%20Heritage%20(Sector%2014)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Mahaavir Universal Homes",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "2 BHK Luxury apartment in Mahaavir Heritage, Sector 14, KHARGHAR. Verified carpet area: 650 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.692Z"
+        },
+        {
+          "id": "unit_proj_mahaavir_heritage_sec14_1401",
+          "unitNumber": "Unit 1401",
+          "bhkCount": 3,
+          "bhkType": "3 BHK Grande",
+          "carpetAreaSqm": 91.05,
+          "carpetAreaSqft": 980,
+          "floor": 14,
+          "totalFloors": 19,
+          "facing": "North-East",
+          "possessionStatus": "READY_TO_MOVE",
+          "financials": {
+            "agreementValue": 20384000,
+            "carpetAreaSqft": 980,
+            "ratePerSqft": 20800,
+            "stampDuty": 1223040,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 0,
+            "gstRate": 0,
+            "floorRiseCharges": 441000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 22478040,
+            "allInRatePerSqft": 22937
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Mahaavir Sales Office",
+            "phone": "+919819234567",
+            "whatsappLink": "https://wa.me/919819234567?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%223%20BHK%20Grande%20in%20Mahaavir%20Heritage%20(Sector%2014)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Mahaavir Universal Homes",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "3 BHK Grande apartment in Mahaavir Heritage, Sector 14, KHARGHAR. Verified carpet area: 980 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.692Z"
+        },
+        {
+          "id": "unit_proj_mahaavir_heritage_sec14_2104",
+          "unitNumber": "Unit 2104",
+          "bhkCount": 4,
+          "bhkType": "4 BHK Royal Suite",
+          "carpetAreaSqm": 134.71,
+          "carpetAreaSqft": 1450,
+          "floor": 21,
+          "totalFloors": 19,
+          "facing": "North-East",
+          "possessionStatus": "READY_TO_MOVE",
+          "financials": {
+            "agreementValue": 31102500,
+            "carpetAreaSqft": 1450,
+            "ratePerSqft": 21450,
+            "stampDuty": 1866150,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 0,
+            "gstRate": 0,
+            "floorRiseCharges": 1160000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 34558650,
+            "allInRatePerSqft": 23834
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Mahaavir Sales Office",
+            "phone": "+919819234567",
+            "whatsappLink": "https://wa.me/919819234567?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%224%20BHK%20Royal%20Suite%20in%20Mahaavir%20Heritage%20(Sector%2014)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Mahaavir Universal Homes",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "4 BHK Royal Suite apartment in Mahaavir Heritage, Sector 14, KHARGHAR. Verified carpet area: 1450 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.692Z"
+        }
+      ],
+      "lastAuditedAt": "2026-08-20T13:04:03.692Z"
+    },
+    {
+      "id": "proj_bhagwati_greens_sec10",
+      "name": "Bhagwati Greens",
+      "developerName": "Bhagwati Group",
+      "reraRegistrationNumber": "P52000021345",
+      "node": "KHARGHAR",
+      "sector": "Sector 10",
+      "localityKey": "KHARGHAR_CORE",
+      "address": "Plot 5, Sector 10, Kharghar - 410210",
+      "pincode": "410210",
+      "latitude": 19.0388,
+      "longitude": 73.0721,
+      "totalTowers": 3,
+      "totalSanctionedFloors": 20,
+      "totalUnits": 240,
+      "possessionStatus": "READY_TO_MOVE",
+      "projectStatus": "Completed",
+      "amenities": [
+        "Podium Swimming Pool",
+        "Gymnasium",
+        "Landscape Garden",
+        "Intercom",
+        "Power Backup"
+      ],
+      "coverImage": "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200",
+      "images": [
+        "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200"
+      ],
+      "wings": [
+        {
+          "wingName": "Tower A",
+          "sanctionedFloors": 20
+        },
+        {
+          "wingName": "Tower B",
+          "sanctionedFloors": 20
+        }
+      ],
+      "units": [
+        {
+          "id": "unit_proj_bhagwati_greens_sec10_0702",
+          "unitNumber": "Unit 0702",
+          "bhkCount": 2,
+          "bhkType": "2 BHK Luxury",
+          "carpetAreaSqm": 60.39,
+          "carpetAreaSqft": 650,
+          "floor": 7,
+          "totalFloors": 20,
+          "facing": "North-East",
+          "possessionStatus": "READY_TO_MOVE",
+          "financials": {
+            "agreementValue": 12593750,
+            "carpetAreaSqft": 650,
+            "ratePerSqft": 19375,
+            "stampDuty": 755625,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 0,
+            "gstRate": 0,
+            "floorRiseCharges": 65000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 13844375,
+            "allInRatePerSqft": 21299
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Bhagwati Direct",
+            "phone": "+919820567890",
+            "whatsappLink": "https://wa.me/919820567890?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%222%20BHK%20Luxury%20in%20Bhagwati%20Greens%20(Sector%2010)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Bhagwati Group",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "2 BHK Luxury apartment in Bhagwati Greens, Sector 10, KHARGHAR. Verified carpet area: 650 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.692Z"
+        },
+        {
+          "id": "unit_proj_bhagwati_greens_sec10_1401",
+          "unitNumber": "Unit 1401",
+          "bhkCount": 3,
+          "bhkType": "3 BHK Grande",
+          "carpetAreaSqm": 91.05,
+          "carpetAreaSqft": 980,
+          "floor": 14,
+          "totalFloors": 20,
+          "facing": "North-East",
+          "possessionStatus": "READY_TO_MOVE",
+          "financials": {
+            "agreementValue": 19600000,
+            "carpetAreaSqft": 980,
+            "ratePerSqft": 20000,
+            "stampDuty": 1176000,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 0,
+            "gstRate": 0,
+            "floorRiseCharges": 441000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 21647000,
+            "allInRatePerSqft": 22089
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Bhagwati Direct",
+            "phone": "+919820567890",
+            "whatsappLink": "https://wa.me/919820567890?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%223%20BHK%20Grande%20in%20Bhagwati%20Greens%20(Sector%2010)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Bhagwati Group",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "3 BHK Grande apartment in Bhagwati Greens, Sector 10, KHARGHAR. Verified carpet area: 980 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.693Z"
+        },
+        {
+          "id": "unit_proj_bhagwati_greens_sec10_2104",
+          "unitNumber": "Unit 2104",
+          "bhkCount": 4,
+          "bhkType": "4 BHK Royal Suite",
+          "carpetAreaSqm": 134.71,
+          "carpetAreaSqft": 1450,
+          "floor": 21,
+          "totalFloors": 20,
+          "facing": "North-East",
+          "possessionStatus": "READY_TO_MOVE",
+          "financials": {
+            "agreementValue": 29906250,
+            "carpetAreaSqft": 1450,
+            "ratePerSqft": 20625,
+            "stampDuty": 1794375,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 0,
+            "gstRate": 0,
+            "floorRiseCharges": 1160000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 33290625,
+            "allInRatePerSqft": 22959
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Bhagwati Direct",
+            "phone": "+919820567890",
+            "whatsappLink": "https://wa.me/919820567890?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%224%20BHK%20Royal%20Suite%20in%20Bhagwati%20Greens%20(Sector%2010)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Bhagwati Group",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "4 BHK Royal Suite apartment in Bhagwati Greens, Sector 10, KHARGHAR. Verified carpet area: 1450 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.693Z"
+        }
+      ],
+      "lastAuditedAt": "2026-08-20T13:04:03.693Z"
+    },
+    {
+      "id": "proj_shilp_residency_sec11",
+      "name": "Shilp Residency",
+      "developerName": "Shilp Group",
+      "reraRegistrationNumber": "P52000020112",
+      "node": "KHARGHAR",
+      "sector": "Sector 11",
+      "localityKey": "KHARGHAR_CORE",
+      "address": "Plot 8, Sector 11, Kharghar - 410210",
+      "pincode": "410210",
+      "latitude": 19.0354,
+      "longitude": 73.0712,
+      "totalTowers": 1,
+      "totalSanctionedFloors": 17,
+      "totalUnits": 68,
+      "possessionStatus": "READY_TO_MOVE",
+      "projectStatus": "Completed",
+      "amenities": [
+        "Gymnasium",
+        "Lift",
+        "Security",
+        "Covered Parking",
+        "Water Storage"
+      ],
+      "coverImage": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200",
+      "images": [
+        "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200"
+      ],
+      "wings": [
+        {
+          "wingName": "Tower A",
+          "sanctionedFloors": 17
+        },
+        {
+          "wingName": "Tower B",
+          "sanctionedFloors": 17
+        }
+      ],
+      "units": [
+        {
+          "id": "unit_proj_shilp_residency_sec11_0702",
+          "unitNumber": "Unit 0702",
+          "bhkCount": 2,
+          "bhkType": "2 BHK Luxury",
+          "carpetAreaSqm": 60.39,
+          "carpetAreaSqft": 650,
+          "floor": 7,
+          "totalFloors": 17,
+          "facing": "North-East",
+          "possessionStatus": "READY_TO_MOVE",
+          "financials": {
+            "agreementValue": 12896000,
+            "carpetAreaSqft": 650,
+            "ratePerSqft": 19840,
+            "stampDuty": 773760,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 0,
+            "gstRate": 0,
+            "floorRiseCharges": 65000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 14164760,
+            "allInRatePerSqft": 21792
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Shilp Sales Desk",
+            "phone": "+919819678901",
+            "whatsappLink": "https://wa.me/919819678901?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%222%20BHK%20Luxury%20in%20Shilp%20Residency%20(Sector%2011)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Shilp Group",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "2 BHK Luxury apartment in Shilp Residency, Sector 11, KHARGHAR. Verified carpet area: 650 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.693Z"
+        },
+        {
+          "id": "unit_proj_shilp_residency_sec11_1401",
+          "unitNumber": "Unit 1401",
+          "bhkCount": 3,
+          "bhkType": "3 BHK Grande",
+          "carpetAreaSqm": 91.05,
+          "carpetAreaSqft": 980,
+          "floor": 14,
+          "totalFloors": 17,
+          "facing": "North-East",
+          "possessionStatus": "READY_TO_MOVE",
+          "financials": {
+            "agreementValue": 20070400,
+            "carpetAreaSqft": 980,
+            "ratePerSqft": 20480,
+            "stampDuty": 1204224,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 0,
+            "gstRate": 0,
+            "floorRiseCharges": 441000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 22145624,
+            "allInRatePerSqft": 22598
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Shilp Sales Desk",
+            "phone": "+919819678901",
+            "whatsappLink": "https://wa.me/919819678901?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%223%20BHK%20Grande%20in%20Shilp%20Residency%20(Sector%2011)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Shilp Group",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "3 BHK Grande apartment in Shilp Residency, Sector 11, KHARGHAR. Verified carpet area: 980 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.693Z"
+        },
+        {
+          "id": "unit_proj_shilp_residency_sec11_2104",
+          "unitNumber": "Unit 2104",
+          "bhkCount": 4,
+          "bhkType": "4 BHK Royal Suite",
+          "carpetAreaSqm": 134.71,
+          "carpetAreaSqft": 1450,
+          "floor": 21,
+          "totalFloors": 17,
+          "facing": "North-East",
+          "possessionStatus": "READY_TO_MOVE",
+          "financials": {
+            "agreementValue": 30624000,
+            "carpetAreaSqft": 1450,
+            "ratePerSqft": 21120,
+            "stampDuty": 1837440,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 0,
+            "gstRate": 0,
+            "floorRiseCharges": 1160000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 34051440,
+            "allInRatePerSqft": 23484
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Shilp Sales Desk",
+            "phone": "+919819678901",
+            "whatsappLink": "https://wa.me/919819678901?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%224%20BHK%20Royal%20Suite%20in%20Shilp%20Residency%20(Sector%2011)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Shilp Group",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "4 BHK Royal Suite apartment in Shilp Residency, Sector 11, KHARGHAR. Verified carpet area: 1450 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.693Z"
+        }
+      ],
+      "lastAuditedAt": "2026-08-20T13:04:03.693Z"
+    },
+    {
+      "id": "proj_goodwill_paradise_sec7",
+      "name": "Goodwill Paradise",
+      "developerName": "Goodwill Developers",
+      "reraRegistrationNumber": "P52000017840",
+      "node": "KHARGHAR",
+      "sector": "Sector 7",
+      "localityKey": "KHARGHAR_CORE",
+      "address": "Plot 3, Sector 7, Kharghar - 410210",
+      "pincode": "410210",
+      "latitude": 19.0289,
+      "longitude": 73.0632,
+      "totalTowers": 3,
+      "totalSanctionedFloors": 16,
+      "totalUnits": 192,
+      "possessionStatus": "READY_TO_MOVE",
+      "projectStatus": "Completed",
+      "amenities": [
+        "Clubhouse",
+        "Swimming Pool",
+        "Gymnasium",
+        "Ample Parking",
+        "24/7 Security"
+      ],
+      "coverImage": "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200",
+      "images": [
+        "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200"
+      ],
+      "wings": [
+        {
+          "wingName": "Tower A",
+          "sanctionedFloors": 16
+        },
+        {
+          "wingName": "Tower B",
+          "sanctionedFloors": 16
+        }
+      ],
+      "units": [
+        {
+          "id": "unit_proj_goodwill_paradise_sec7_0702",
+          "unitNumber": "Unit 0702",
+          "bhkCount": 2,
+          "bhkType": "2 BHK Luxury",
+          "carpetAreaSqm": 60.39,
+          "carpetAreaSqft": 650,
+          "floor": 7,
+          "totalFloors": 16,
+          "facing": "North-East",
+          "possessionStatus": "READY_TO_MOVE",
+          "financials": {
+            "agreementValue": 13601250,
+            "carpetAreaSqft": 650,
+            "ratePerSqft": 20925,
+            "stampDuty": 816075,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 0,
+            "gstRate": 0,
+            "floorRiseCharges": 65000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 14912325,
+            "allInRatePerSqft": 22942
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Goodwill Sales Lounge",
+            "phone": "+919820789012",
+            "whatsappLink": "https://wa.me/919820789012?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%222%20BHK%20Luxury%20in%20Goodwill%20Paradise%20(Sector%207)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Goodwill Developers",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "2 BHK Luxury apartment in Goodwill Paradise, Sector 7, KHARGHAR. Verified carpet area: 650 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.693Z"
+        },
+        {
+          "id": "unit_proj_goodwill_paradise_sec7_1401",
+          "unitNumber": "Unit 1401",
+          "bhkCount": 3,
+          "bhkType": "3 BHK Grande",
+          "carpetAreaSqm": 91.05,
+          "carpetAreaSqft": 980,
+          "floor": 14,
+          "totalFloors": 16,
+          "facing": "North-East",
+          "possessionStatus": "READY_TO_MOVE",
+          "financials": {
+            "agreementValue": 21168000,
+            "carpetAreaSqft": 980,
+            "ratePerSqft": 21600,
+            "stampDuty": 1270080,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 0,
+            "gstRate": 0,
+            "floorRiseCharges": 441000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 23309080,
+            "allInRatePerSqft": 23785
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Goodwill Sales Lounge",
+            "phone": "+919820789012",
+            "whatsappLink": "https://wa.me/919820789012?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%223%20BHK%20Grande%20in%20Goodwill%20Paradise%20(Sector%207)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Goodwill Developers",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "3 BHK Grande apartment in Goodwill Paradise, Sector 7, KHARGHAR. Verified carpet area: 980 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.693Z"
+        },
+        {
+          "id": "unit_proj_goodwill_paradise_sec7_2104",
+          "unitNumber": "Unit 2104",
+          "bhkCount": 4,
+          "bhkType": "4 BHK Royal Suite",
+          "carpetAreaSqm": 134.71,
+          "carpetAreaSqft": 1450,
+          "floor": 21,
+          "totalFloors": 16,
+          "facing": "North-East",
+          "possessionStatus": "READY_TO_MOVE",
+          "financials": {
+            "agreementValue": 32298750,
+            "carpetAreaSqft": 1450,
+            "ratePerSqft": 22275,
+            "stampDuty": 1937925,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 0,
+            "gstRate": 0,
+            "floorRiseCharges": 1160000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 35826675,
+            "allInRatePerSqft": 24708
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Goodwill Sales Lounge",
+            "phone": "+919820789012",
+            "whatsappLink": "https://wa.me/919820789012?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%224%20BHK%20Royal%20Suite%20in%20Goodwill%20Paradise%20(Sector%207)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Goodwill Developers",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "4 BHK Royal Suite apartment in Goodwill Paradise, Sector 7, KHARGHAR. Verified carpet area: 1450 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.693Z"
+        }
+      ],
+      "lastAuditedAt": "2026-08-20T13:04:03.693Z"
+    },
+    {
+      "id": "proj_gami_eden_sec6",
+      "name": "Gami Eden",
+      "developerName": "Gami Group",
+      "reraRegistrationNumber": "P52000024510",
+      "node": "KHARGHAR",
+      "sector": "Sector 6",
+      "localityKey": "KHARGHAR_CORE",
+      "address": "Plot 14, Sector 6, Kharghar - 410210",
+      "pincode": "410210",
+      "latitude": 19.0275,
+      "longitude": 73.0615,
+      "totalTowers": 2,
+      "totalSanctionedFloors": 15,
+      "totalUnits": 120,
+      "possessionStatus": "READY_TO_MOVE",
+      "projectStatus": "Completed",
+      "amenities": [
+        "Modern Gym",
+        "Landscape Garden",
+        "Covered Parking",
+        "High-Speed Lifts"
+      ],
+      "coverImage": "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200",
+      "images": [
+        "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200"
+      ],
+      "wings": [
+        {
+          "wingName": "Tower A",
+          "sanctionedFloors": 15
+        },
+        {
+          "wingName": "Tower B",
+          "sanctionedFloors": 15
+        }
+      ],
+      "units": [
+        {
+          "id": "unit_proj_gami_eden_sec6_0702",
+          "unitNumber": "Unit 0702",
+          "bhkCount": 2,
+          "bhkType": "2 BHK Luxury",
+          "carpetAreaSqm": 60.39,
+          "carpetAreaSqft": 650,
+          "floor": 7,
+          "totalFloors": 15,
+          "facing": "North-East",
+          "possessionStatus": "READY_TO_MOVE",
+          "financials": {
+            "agreementValue": 13299000,
+            "carpetAreaSqft": 650,
+            "ratePerSqft": 20460,
+            "stampDuty": 797940,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 0,
+            "gstRate": 0,
+            "floorRiseCharges": 65000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 14591940,
+            "allInRatePerSqft": 22449
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Gami Direct Desk",
+            "phone": "+919819890123",
+            "whatsappLink": "https://wa.me/919819890123?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%222%20BHK%20Luxury%20in%20Gami%20Eden%20(Sector%206)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Gami Group",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "2 BHK Luxury apartment in Gami Eden, Sector 6, KHARGHAR. Verified carpet area: 650 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.693Z"
+        },
+        {
+          "id": "unit_proj_gami_eden_sec6_1401",
+          "unitNumber": "Unit 1401",
+          "bhkCount": 3,
+          "bhkType": "3 BHK Grande",
+          "carpetAreaSqm": 91.05,
+          "carpetAreaSqft": 980,
+          "floor": 14,
+          "totalFloors": 15,
+          "facing": "North-East",
+          "possessionStatus": "READY_TO_MOVE",
+          "financials": {
+            "agreementValue": 20697600,
+            "carpetAreaSqft": 980,
+            "ratePerSqft": 21120,
+            "stampDuty": 1241856,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 0,
+            "gstRate": 0,
+            "floorRiseCharges": 441000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 22810456,
+            "allInRatePerSqft": 23276
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Gami Direct Desk",
+            "phone": "+919819890123",
+            "whatsappLink": "https://wa.me/919819890123?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%223%20BHK%20Grande%20in%20Gami%20Eden%20(Sector%206)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Gami Group",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "3 BHK Grande apartment in Gami Eden, Sector 6, KHARGHAR. Verified carpet area: 980 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.693Z"
+        },
+        {
+          "id": "unit_proj_gami_eden_sec6_2104",
+          "unitNumber": "Unit 2104",
+          "bhkCount": 4,
+          "bhkType": "4 BHK Royal Suite",
+          "carpetAreaSqm": 134.71,
+          "carpetAreaSqft": 1450,
+          "floor": 21,
+          "totalFloors": 15,
+          "facing": "North-East",
+          "possessionStatus": "READY_TO_MOVE",
+          "financials": {
+            "agreementValue": 31581000,
+            "carpetAreaSqft": 1450,
+            "ratePerSqft": 21780,
+            "stampDuty": 1894860,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 0,
+            "gstRate": 0,
+            "floorRiseCharges": 1160000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 35065860,
+            "allInRatePerSqft": 24183
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Gami Direct Desk",
+            "phone": "+919819890123",
+            "whatsappLink": "https://wa.me/919819890123?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%224%20BHK%20Royal%20Suite%20in%20Gami%20Eden%20(Sector%206)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Gami Group",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "4 BHK Royal Suite apartment in Gami Eden, Sector 6, KHARGHAR. Verified carpet area: 1450 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.693Z"
+        }
+      ],
+      "lastAuditedAt": "2026-08-20T13:04:03.693Z"
+    },
+    {
+      "id": "proj_gami_emerald_sec24",
+      "name": "Gami Emerald",
+      "developerName": "Gami Group",
+      "reraRegistrationNumber": "P52000028910",
+      "proposedCompletionDate": "2026-06-30",
+      "node": "KHARGHAR",
+      "sector": "Sector 24",
+      "localityKey": "KHARGHAR_CORE",
+      "address": "Plot 7, Sector 24, Kharghar - 410210",
+      "pincode": "410210",
+      "latitude": 19.0498,
+      "longitude": 73.0678,
+      "totalTowers": 2,
+      "totalSanctionedFloors": 18,
+      "totalUnits": 144,
+      "possessionStatus": "UNDER_CONSTRUCTION",
+      "projectStatus": "Under Construction",
+      "amenities": [
+        "Clubhouse",
+        "Swimming Pool",
+        "Kids Play Zone",
+        "Fitness Center"
+      ],
+      "coverImage": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200",
+      "images": [
+        "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200"
+      ],
+      "wings": [
+        {
+          "wingName": "Tower A",
+          "sanctionedFloors": 18
+        },
+        {
+          "wingName": "Tower B",
+          "sanctionedFloors": 18
+        }
+      ],
+      "units": [
+        {
+          "id": "unit_proj_gami_emerald_sec24_0702",
+          "unitNumber": "Unit 0702",
+          "bhkCount": 2,
+          "bhkType": "2 BHK Luxury",
+          "carpetAreaSqm": 60.39,
+          "carpetAreaSqft": 650,
+          "floor": 7,
+          "totalFloors": 18,
+          "facing": "North-East",
+          "possessionStatus": "UNDER_CONSTRUCTION",
+          "financials": {
+            "agreementValue": 11888500,
+            "carpetAreaSqft": 650,
+            "ratePerSqft": 18290,
+            "stampDuty": 713310,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 594425,
+            "gstRate": 0.05,
+            "floorRiseCharges": 65000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 13691235,
+            "allInRatePerSqft": 21063
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Gami Sales Lounge",
+            "phone": "+919819890123",
+            "whatsappLink": "https://wa.me/919819890123?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%222%20BHK%20Luxury%20in%20Gami%20Emerald%20(Sector%2024)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Gami Group",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "2 BHK Luxury apartment in Gami Emerald, Sector 24, KHARGHAR. Verified carpet area: 650 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.693Z"
+        },
+        {
+          "id": "unit_proj_gami_emerald_sec24_1401",
+          "unitNumber": "Unit 1401",
+          "bhkCount": 3,
+          "bhkType": "3 BHK Grande",
+          "carpetAreaSqm": 91.05,
+          "carpetAreaSqft": 980,
+          "floor": 14,
+          "totalFloors": 18,
+          "facing": "North-East",
+          "possessionStatus": "UNDER_CONSTRUCTION",
+          "financials": {
+            "agreementValue": 18502400,
+            "carpetAreaSqft": 980,
+            "ratePerSqft": 18880,
+            "stampDuty": 1110144,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 925120,
+            "gstRate": 0.05,
+            "floorRiseCharges": 441000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 21408664,
+            "allInRatePerSqft": 21846
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Gami Sales Lounge",
+            "phone": "+919819890123",
+            "whatsappLink": "https://wa.me/919819890123?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%223%20BHK%20Grande%20in%20Gami%20Emerald%20(Sector%2024)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Gami Group",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "3 BHK Grande apartment in Gami Emerald, Sector 24, KHARGHAR. Verified carpet area: 980 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.693Z"
+        }
+      ],
+      "lastAuditedAt": "2026-08-20T13:04:03.693Z"
+    },
+    {
+      "id": "proj_today_royal_elegance_sec1",
+      "name": "Today Royal Elegance",
+      "developerName": "Today Global Developers",
+      "reraRegistrationNumber": "P52000021940",
+      "node": "KHARGHAR",
+      "sector": "Sector 1",
+      "localityKey": "KHARGHAR_CORE",
+      "address": "Plot 2, Sector 1, Kharghar - 410210",
+      "pincode": "410210",
+      "latitude": 19.0234,
+      "longitude": 73.0589,
+      "totalTowers": 2,
+      "totalSanctionedFloors": 14,
+      "totalUnits": 112,
+      "possessionStatus": "READY_TO_MOVE",
+      "projectStatus": "Completed",
+      "amenities": [
+        "Gymnasium",
+        "Covered Parking",
+        "Intercom",
+        "Power Backup",
+        "24/7 Security"
+      ],
+      "coverImage": "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200",
+      "images": [
+        "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200"
+      ],
+      "wings": [
+        {
+          "wingName": "Tower A",
+          "sanctionedFloors": 14
+        },
+        {
+          "wingName": "Tower B",
+          "sanctionedFloors": 14
+        }
+      ],
+      "units": [
+        {
+          "id": "unit_proj_today_royal_elegance_sec1_0702",
+          "unitNumber": "Unit 0702",
+          "bhkCount": 2,
+          "bhkType": "2 BHK Luxury",
+          "carpetAreaSqm": 60.39,
+          "carpetAreaSqft": 650,
+          "floor": 7,
+          "totalFloors": 14,
+          "facing": "North-East",
+          "possessionStatus": "READY_TO_MOVE",
+          "financials": {
+            "agreementValue": 14105000,
+            "carpetAreaSqft": 650,
+            "ratePerSqft": 21700,
+            "stampDuty": 846300,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 0,
+            "gstRate": 0,
+            "floorRiseCharges": 65000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 15446300,
+            "allInRatePerSqft": 23764
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Today Global Desk",
+            "phone": "+919820233445",
+            "whatsappLink": "https://wa.me/919820233445?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%222%20BHK%20Luxury%20in%20Today%20Royal%20Elegance%20(Sector%201)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Today Global Developers",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "2 BHK Luxury apartment in Today Royal Elegance, Sector 1, KHARGHAR. Verified carpet area: 650 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.693Z"
+        },
+        {
+          "id": "unit_proj_today_royal_elegance_sec1_1401",
+          "unitNumber": "Unit 1401",
+          "bhkCount": 3,
+          "bhkType": "3 BHK Grande",
+          "carpetAreaSqm": 91.05,
+          "carpetAreaSqft": 980,
+          "floor": 14,
+          "totalFloors": 14,
+          "facing": "North-East",
+          "possessionStatus": "READY_TO_MOVE",
+          "financials": {
+            "agreementValue": 21952000,
+            "carpetAreaSqft": 980,
+            "ratePerSqft": 22400,
+            "stampDuty": 1317120,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 0,
+            "gstRate": 0,
+            "floorRiseCharges": 441000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 24140120,
+            "allInRatePerSqft": 24633
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Today Global Desk",
+            "phone": "+919820233445",
+            "whatsappLink": "https://wa.me/919820233445?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%223%20BHK%20Grande%20in%20Today%20Royal%20Elegance%20(Sector%201)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Today Global Developers",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "3 BHK Grande apartment in Today Royal Elegance, Sector 1, KHARGHAR. Verified carpet area: 980 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.693Z"
+        },
+        {
+          "id": "unit_proj_today_royal_elegance_sec1_2104",
+          "unitNumber": "Unit 2104",
+          "bhkCount": 4,
+          "bhkType": "4 BHK Royal Suite",
+          "carpetAreaSqm": 134.71,
+          "carpetAreaSqft": 1450,
+          "floor": 21,
+          "totalFloors": 14,
+          "facing": "North-East",
+          "possessionStatus": "READY_TO_MOVE",
+          "financials": {
+            "agreementValue": 33495000,
+            "carpetAreaSqft": 1450,
+            "ratePerSqft": 23100,
+            "stampDuty": 2009700,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 0,
+            "gstRate": 0,
+            "floorRiseCharges": 1160000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 37094700,
+            "allInRatePerSqft": 25583
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Today Global Desk",
+            "phone": "+919820233445",
+            "whatsappLink": "https://wa.me/919820233445?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%224%20BHK%20Royal%20Suite%20in%20Today%20Royal%20Elegance%20(Sector%201)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Today Global Developers",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "4 BHK Royal Suite apartment in Today Royal Elegance, Sector 1, KHARGHAR. Verified carpet area: 1450 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.693Z"
+        }
+      ],
+      "lastAuditedAt": "2026-08-20T13:04:03.693Z"
+    },
+    {
+      "id": "proj_arihant_anaika_sec26",
+      "name": "Arihant Anaika & Sports City",
+      "developerName": "Arihant Superstructures Ltd",
+      "reraRegistrationNumber": "P52000018972",
+      "proposedCompletionDate": "2025-12-31",
+      "node": "TALOJA",
+      "sector": "Sector 26",
+      "localityKey": "TALOJA_PHASE_2",
+      "address": "Arihant Anaika, Sector 26, Taloja Phase 2, Navi Mumbai - 410208",
+      "pincode": "410208",
+      "latitude": 19.0792,
+      "longitude": 73.1115,
+      "totalTowers": 8,
+      "totalSanctionedFloors": 14,
+      "totalUnits": 448,
+      "possessionStatus": "UNDER_CONSTRUCTION",
+      "projectStatus": "Under Construction",
+      "amenities": [
+        "Sports Arena",
+        "Cricket Pitch",
+        "Badminton Court",
+        "Jogging Track",
+        "Grand Clubhouse",
+        "Retail Plaza"
+      ],
+      "coverImage": "https://images.unsplash.com/photo-1574362848149-11496d93a7c7?w=1200",
+      "images": [
+        "https://images.unsplash.com/photo-1574362848149-11496d93a7c7?w=1200",
+        "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200"
+      ],
+      "wings": [
+        {
+          "wingName": "Tower A",
+          "sanctionedFloors": 14
+        },
+        {
+          "wingName": "Tower B",
+          "sanctionedFloors": 14
+        }
+      ],
+      "units": [
+        {
+          "id": "unit_proj_arihant_anaika_sec26_0402",
+          "unitNumber": "Unit 0402",
+          "bhkCount": 1,
+          "bhkType": "1 BHK Smart",
+          "carpetAreaSqm": 35.3,
+          "carpetAreaSqft": 380,
+          "floor": 4,
+          "totalFloors": 14,
+          "facing": "North-East",
+          "possessionStatus": "UNDER_CONSTRUCTION",
+          "financials": {
+            "agreementValue": 3283200,
+            "carpetAreaSqft": 380,
+            "ratePerSqft": 8640,
+            "stampDuty": 196992,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 32832,
+            "gstRate": 0.01,
+            "floorRiseCharges": 0,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 3943024,
+            "allInRatePerSqft": 10376
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Arihant Direct Desk",
+            "phone": "+919820890123",
+            "whatsappLink": "https://wa.me/919820890123?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%221%20BHK%20Smart%20in%20Arihant%20Anaika%20%26%20Sports%20City%20(Sector%2026)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Arihant Superstructures Ltd",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1574362848149-11496d93a7c7?w=1200",
+            "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "1 BHK Smart apartment in Arihant Anaika & Sports City, Sector 26, TALOJA. Verified carpet area: 380 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.693Z"
+        },
+        {
+          "id": "unit_proj_arihant_anaika_sec26_0805",
+          "unitNumber": "Unit 0805",
+          "bhkCount": 2,
+          "bhkType": "2 BHK Comfort",
+          "carpetAreaSqm": 53.88,
+          "carpetAreaSqft": 580,
+          "floor": 8,
+          "totalFloors": 14,
+          "facing": "North-East",
+          "possessionStatus": "UNDER_CONSTRUCTION",
+          "financials": {
+            "agreementValue": 5167800,
+            "carpetAreaSqft": 580,
+            "ratePerSqft": 8910,
+            "stampDuty": 310068,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 258390,
+            "gstRate": 0.05,
+            "floorRiseCharges": 87000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 6253258,
+            "allInRatePerSqft": 10781
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Arihant Direct Desk",
+            "phone": "+919820890123",
+            "whatsappLink": "https://wa.me/919820890123?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%222%20BHK%20Comfort%20in%20Arihant%20Anaika%20%26%20Sports%20City%20(Sector%2026)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Arihant Superstructures Ltd",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1574362848149-11496d93a7c7?w=1200",
+            "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "2 BHK Comfort apartment in Arihant Anaika & Sports City, Sector 26, TALOJA. Verified carpet area: 580 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.693Z"
+        }
+      ],
+      "lastAuditedAt": "2026-08-20T13:04:03.693Z"
+    },
+    {
+      "id": "proj_crown_taloja_lodha_sec26",
+      "name": "Crown Taloja (Lodha)",
+      "developerName": "Macrotech Developers (Lodha Group)",
+      "reraRegistrationNumber": "P52000022718",
+      "proposedCompletionDate": "2026-06-30",
+      "node": "TALOJA",
+      "sector": "Sector 26",
+      "localityKey": "TALOJA_PHASE_2",
+      "address": "Lodha Crown, Taloja Bypass Road, Sector 26, Taloja - 410208",
+      "pincode": "410208",
+      "latitude": 19.0781,
+      "longitude": 73.1132,
+      "totalTowers": 12,
+      "totalSanctionedFloors": 12,
+      "totalUnits": 576,
+      "possessionStatus": "UNDER_CONSTRUCTION",
+      "projectStatus": "Under Construction",
+      "amenities": [
+        "25,000 sqft Grand Club",
+        "Ganesh Temple",
+        "School in Campus",
+        "Medical Clinic",
+        "Shuttle Bus to Pendhar Metro"
+      ],
+      "coverImage": "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200",
+      "images": [
+        "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200"
+      ],
+      "wings": [
+        {
+          "wingName": "Tower A",
+          "sanctionedFloors": 12
+        },
+        {
+          "wingName": "Tower B",
+          "sanctionedFloors": 12
+        }
+      ],
+      "units": [
+        {
+          "id": "unit_proj_crown_taloja_lodha_sec26_0402",
+          "unitNumber": "Unit 0402",
+          "bhkCount": 1,
+          "bhkType": "1 BHK Smart",
+          "carpetAreaSqm": 35.3,
+          "carpetAreaSqft": 380,
+          "floor": 4,
+          "totalFloors": 12,
+          "facing": "North-East",
+          "possessionStatus": "UNDER_CONSTRUCTION",
+          "financials": {
+            "agreementValue": 3161600,
+            "carpetAreaSqft": 380,
+            "ratePerSqft": 8320,
+            "stampDuty": 189696,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 31616,
+            "gstRate": 0.01,
+            "floorRiseCharges": 0,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 3812912,
+            "allInRatePerSqft": 10034
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Lodha Direct Connect",
+            "phone": "+919820011223",
+            "whatsappLink": "https://wa.me/919820011223?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%221%20BHK%20Smart%20in%20Crown%20Taloja%20(Lodha)%20(Sector%2026)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Macrotech Developers (Lodha Group)",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "1 BHK Smart apartment in Crown Taloja (Lodha), Sector 26, TALOJA. Verified carpet area: 380 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.693Z"
+        },
+        {
+          "id": "unit_proj_crown_taloja_lodha_sec26_0805",
+          "unitNumber": "Unit 0805",
+          "bhkCount": 2,
+          "bhkType": "2 BHK Comfort",
+          "carpetAreaSqm": 53.88,
+          "carpetAreaSqft": 580,
+          "floor": 8,
+          "totalFloors": 12,
+          "facing": "North-East",
+          "possessionStatus": "UNDER_CONSTRUCTION",
+          "financials": {
+            "agreementValue": 4976400,
+            "carpetAreaSqft": 580,
+            "ratePerSqft": 8580,
+            "stampDuty": 298584,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 248820,
+            "gstRate": 0.05,
+            "floorRiseCharges": 87000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 6040804,
+            "allInRatePerSqft": 10415
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Lodha Direct Connect",
+            "phone": "+919820011223",
+            "whatsappLink": "https://wa.me/919820011223?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%222%20BHK%20Comfort%20in%20Crown%20Taloja%20(Lodha)%20(Sector%2026)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Macrotech Developers (Lodha Group)",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "2 BHK Comfort apartment in Crown Taloja (Lodha), Sector 26, TALOJA. Verified carpet area: 580 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.693Z"
+        }
+      ],
+      "lastAuditedAt": "2026-08-20T13:04:03.693Z"
+    },
+    {
+      "id": "proj_today_callisto_sec21",
+      "name": "Today Global Callisto",
+      "developerName": "Today Global Developers",
+      "reraRegistrationNumber": "P52000021890",
+      "proposedCompletionDate": "2026-03-31",
+      "node": "TALOJA",
+      "sector": "Sector 21",
+      "localityKey": "TALOJA_PHASE_2",
+      "address": "Plot 4, Sector 21, Taloja Phase 2, Navi Mumbai - 410208",
+      "pincode": "410208",
+      "latitude": 19.0768,
+      "longitude": 73.1098,
+      "totalTowers": 3,
+      "totalSanctionedFloors": 15,
+      "totalUnits": 180,
+      "possessionStatus": "UNDER_CONSTRUCTION",
+      "projectStatus": "Under Construction",
+      "amenities": [
+        "Clubhouse",
+        "Swimming Pool",
+        "Landscaped Garden",
+        "CCTV Surveillance",
+        "Solar Panels"
+      ],
+      "coverImage": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200",
+      "images": [
+        "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200"
+      ],
+      "wings": [
+        {
+          "wingName": "Tower A",
+          "sanctionedFloors": 15
+        },
+        {
+          "wingName": "Tower B",
+          "sanctionedFloors": 15
+        }
+      ],
+      "units": [
+        {
+          "id": "unit_proj_today_callisto_sec21_0402",
+          "unitNumber": "Unit 0402",
+          "bhkCount": 1,
+          "bhkType": "1 BHK Smart",
+          "carpetAreaSqm": 35.3,
+          "carpetAreaSqft": 380,
+          "floor": 4,
+          "totalFloors": 15,
+          "facing": "North-East",
+          "possessionStatus": "UNDER_CONSTRUCTION",
+          "financials": {
+            "agreementValue": 3344000,
+            "carpetAreaSqft": 380,
+            "ratePerSqft": 8800,
+            "stampDuty": 200640,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 33440,
+            "gstRate": 0.01,
+            "floorRiseCharges": 0,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 4008080,
+            "allInRatePerSqft": 10548
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Today Global Desk",
+            "phone": "+919820233445",
+            "whatsappLink": "https://wa.me/919820233445?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%221%20BHK%20Smart%20in%20Today%20Global%20Callisto%20(Sector%2021)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Today Global Developers",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "1 BHK Smart apartment in Today Global Callisto, Sector 21, TALOJA. Verified carpet area: 380 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.693Z"
+        },
+        {
+          "id": "unit_proj_today_callisto_sec21_0805",
+          "unitNumber": "Unit 0805",
+          "bhkCount": 2,
+          "bhkType": "2 BHK Comfort",
+          "carpetAreaSqm": 53.88,
+          "carpetAreaSqft": 580,
+          "floor": 8,
+          "totalFloors": 15,
+          "facing": "North-East",
+          "possessionStatus": "UNDER_CONSTRUCTION",
+          "financials": {
+            "agreementValue": 5263500,
+            "carpetAreaSqft": 580,
+            "ratePerSqft": 9075,
+            "stampDuty": 315810,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 263175,
+            "gstRate": 0.05,
+            "floorRiseCharges": 87000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 6359485,
+            "allInRatePerSqft": 10965
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Today Global Desk",
+            "phone": "+919820233445",
+            "whatsappLink": "https://wa.me/919820233445?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%222%20BHK%20Comfort%20in%20Today%20Global%20Callisto%20(Sector%2021)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Today Global Developers",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "2 BHK Comfort apartment in Today Global Callisto, Sector 21, TALOJA. Verified carpet area: 580 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.693Z"
+        }
+      ],
+      "lastAuditedAt": "2026-08-20T13:04:03.693Z"
+    },
+    {
+      "id": "proj_kamdhenu_grandeur_sec26",
+      "name": "Kamdhenu Grandeur",
+      "developerName": "Kamdhenu Realties",
+      "reraRegistrationNumber": "P52000023190",
+      "proposedCompletionDate": "2025-12-31",
+      "node": "TALOJA",
+      "sector": "Sector 26",
+      "localityKey": "TALOJA_PHASE_2",
+      "address": "Plot 15, Sector 26, Taloja Phase 2 - 410208",
+      "pincode": "410208",
+      "latitude": 19.0795,
+      "longitude": 73.1128,
+      "totalTowers": 3,
+      "totalSanctionedFloors": 14,
+      "totalUnits": 168,
+      "possessionStatus": "UNDER_CONSTRUCTION",
+      "projectStatus": "Under Construction",
+      "amenities": [
+        "Clubhouse",
+        "Gymnasium",
+        "Landscaped Garden",
+        "Ample Parking",
+        "Security"
+      ],
+      "coverImage": "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200",
+      "images": [
+        "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200"
+      ],
+      "wings": [
+        {
+          "wingName": "Tower A",
+          "sanctionedFloors": 14
+        },
+        {
+          "wingName": "Tower B",
+          "sanctionedFloors": 14
+        }
+      ],
+      "units": [
+        {
+          "id": "unit_proj_kamdhenu_grandeur_sec26_0402",
+          "unitNumber": "Unit 0402",
+          "bhkCount": 1,
+          "bhkType": "1 BHK Smart",
+          "carpetAreaSqm": 35.3,
+          "carpetAreaSqft": 380,
+          "floor": 4,
+          "totalFloors": 14,
+          "facing": "North-East",
+          "possessionStatus": "UNDER_CONSTRUCTION",
+          "financials": {
+            "agreementValue": 3222400,
+            "carpetAreaSqft": 380,
+            "ratePerSqft": 8480,
+            "stampDuty": 193344,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 32224,
+            "gstRate": 0.01,
+            "floorRiseCharges": 0,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 3877968,
+            "allInRatePerSqft": 10205
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Kamdhenu Sales Office",
+            "phone": "+919820567891",
+            "whatsappLink": "https://wa.me/919820567891?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%221%20BHK%20Smart%20in%20Kamdhenu%20Grandeur%20(Sector%2026)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Kamdhenu Realties",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "1 BHK Smart apartment in Kamdhenu Grandeur, Sector 26, TALOJA. Verified carpet area: 380 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.693Z"
+        },
+        {
+          "id": "unit_proj_kamdhenu_grandeur_sec26_0805",
+          "unitNumber": "Unit 0805",
+          "bhkCount": 2,
+          "bhkType": "2 BHK Comfort",
+          "carpetAreaSqm": 53.88,
+          "carpetAreaSqft": 580,
+          "floor": 8,
+          "totalFloors": 14,
+          "facing": "North-East",
+          "possessionStatus": "UNDER_CONSTRUCTION",
+          "financials": {
+            "agreementValue": 5072100,
+            "carpetAreaSqft": 580,
+            "ratePerSqft": 8745,
+            "stampDuty": 304326,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 253605,
+            "gstRate": 0.05,
+            "floorRiseCharges": 87000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 6147031,
+            "allInRatePerSqft": 10598
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Kamdhenu Sales Office",
+            "phone": "+919820567891",
+            "whatsappLink": "https://wa.me/919820567891?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%222%20BHK%20Comfort%20in%20Kamdhenu%20Grandeur%20(Sector%2026)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Kamdhenu Realties",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "2 BHK Comfort apartment in Kamdhenu Grandeur, Sector 26, TALOJA. Verified carpet area: 580 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.693Z"
+        }
+      ],
+      "lastAuditedAt": "2026-08-20T13:04:03.693Z"
+    },
+    {
+      "id": "proj_cidco_swapnapurti_sec28",
+      "name": "CIDCO Swapnapurti High-Rise Cluster",
+      "developerName": "CIDCO Housing",
+      "reraRegistrationNumber": "P52000018560",
+      "node": "TALOJA",
+      "sector": "Sector 28",
+      "localityKey": "TALOJA_PHASE_2",
+      "address": "Sector 28, Taloja Phase 2 - 410208",
+      "pincode": "410208",
+      "latitude": 19.0834,
+      "longitude": 73.1189,
+      "totalTowers": 12,
+      "totalSanctionedFloors": 14,
+      "totalUnits": 672,
+      "possessionStatus": "READY_TO_MOVE",
+      "projectStatus": "Completed",
+      "amenities": [
+        "Community Park",
+        "Open Gym",
+        "Playgrounds",
+        "Wide Internal Roads",
+        "Water Supply"
+      ],
+      "coverImage": "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200",
+      "images": [
+        "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200"
+      ],
+      "wings": [
+        {
+          "wingName": "Tower A",
+          "sanctionedFloors": 14
+        },
+        {
+          "wingName": "Tower B",
+          "sanctionedFloors": 14
+        }
+      ],
+      "units": [
+        {
+          "id": "unit_proj_cidco_swapnapurti_sec28_0402",
+          "unitNumber": "Unit 0402",
+          "bhkCount": 1,
+          "bhkType": "1 BHK Smart",
+          "carpetAreaSqm": 35.3,
+          "carpetAreaSqft": 380,
+          "floor": 4,
+          "totalFloors": 14,
+          "facing": "North-East",
+          "possessionStatus": "READY_TO_MOVE",
+          "financials": {
+            "agreementValue": 2918400,
+            "carpetAreaSqft": 380,
+            "ratePerSqft": 7680,
+            "stampDuty": 175104,
+            "stampDutyRate": 0.06,
+            "registrationFee": 29184,
+            "gst": 0,
+            "gstRate": 0,
+            "floorRiseCharges": 0,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 3522688,
+            "allInRatePerSqft": 9270
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "CIDCO Taloja Office",
+            "phone": "+919820011223",
+            "whatsappLink": "https://wa.me/919820011223?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%221%20BHK%20Smart%20in%20CIDCO%20Swapnapurti%20High-Rise%20Cluster%20(Sector%2028)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "CIDCO Housing",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "1 BHK Smart apartment in CIDCO Swapnapurti High-Rise Cluster, Sector 28, TALOJA. Verified carpet area: 380 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.693Z"
+        },
+        {
+          "id": "unit_proj_cidco_swapnapurti_sec28_0805",
+          "unitNumber": "Unit 0805",
+          "bhkCount": 2,
+          "bhkType": "2 BHK Comfort",
+          "carpetAreaSqm": 53.88,
+          "carpetAreaSqft": 580,
+          "floor": 8,
+          "totalFloors": 14,
+          "facing": "North-East",
+          "possessionStatus": "READY_TO_MOVE",
+          "financials": {
+            "agreementValue": 4593600,
+            "carpetAreaSqft": 580,
+            "ratePerSqft": 7920,
+            "stampDuty": 275616,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 0,
+            "gstRate": 0,
+            "floorRiseCharges": 87000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 5386216,
+            "allInRatePerSqft": 9287
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "CIDCO Taloja Office",
+            "phone": "+919820011223",
+            "whatsappLink": "https://wa.me/919820011223?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%222%20BHK%20Comfort%20in%20CIDCO%20Swapnapurti%20High-Rise%20Cluster%20(Sector%2028)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "CIDCO Housing",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "2 BHK Comfort apartment in CIDCO Swapnapurti High-Rise Cluster, Sector 28, TALOJA. Verified carpet area: 580 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.693Z"
+        }
+      ],
+      "lastAuditedAt": "2026-08-20T13:04:03.693Z"
+    },
+    {
+      "id": "proj_platinum_living_sec11",
+      "name": "Platinum Living",
+      "developerName": "Platinum Group",
+      "reraRegistrationNumber": "P52000024890",
+      "proposedCompletionDate": "2026-03-31",
+      "node": "TALOJA",
+      "sector": "Sector 11",
+      "localityKey": "TALOJA_PHASE_1",
+      "address": "Plot 20, Sector 11, Taloja Phase 1 - 410208",
+      "pincode": "410208",
+      "latitude": 19.0645,
+      "longitude": 73.0952,
+      "totalTowers": 2,
+      "totalSanctionedFloors": 16,
+      "totalUnits": 128,
+      "possessionStatus": "UNDER_CONSTRUCTION",
+      "projectStatus": "Under Construction",
+      "amenities": [
+        "Swimming Pool",
+        "Clubhouse",
+        "Gym",
+        "Kids Play Zone",
+        "Power Backup"
+      ],
+      "coverImage": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200",
+      "images": [
+        "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200"
+      ],
+      "wings": [
+        {
+          "wingName": "Tower A",
+          "sanctionedFloors": 16
+        },
+        {
+          "wingName": "Tower B",
+          "sanctionedFloors": 16
+        }
+      ],
+      "units": [
+        {
+          "id": "unit_proj_platinum_living_sec11_0402",
+          "unitNumber": "Unit 0402",
+          "bhkCount": 1,
+          "bhkType": "1 BHK Smart",
+          "carpetAreaSqm": 35.3,
+          "carpetAreaSqft": 380,
+          "floor": 4,
+          "totalFloors": 16,
+          "facing": "North-East",
+          "possessionStatus": "UNDER_CONSTRUCTION",
+          "financials": {
+            "agreementValue": 3708800,
+            "carpetAreaSqft": 380,
+            "ratePerSqft": 9760,
+            "stampDuty": 222528,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 37088,
+            "gstRate": 0.01,
+            "floorRiseCharges": 0,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 4398416,
+            "allInRatePerSqft": 11575
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Platinum Sales Desk",
+            "phone": "+919819456789",
+            "whatsappLink": "https://wa.me/919819456789?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%221%20BHK%20Smart%20in%20Platinum%20Living%20(Sector%2011)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Platinum Group",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "1 BHK Smart apartment in Platinum Living, Sector 11, TALOJA. Verified carpet area: 380 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.693Z"
+        },
+        {
+          "id": "unit_proj_platinum_living_sec11_0805",
+          "unitNumber": "Unit 0805",
+          "bhkCount": 2,
+          "bhkType": "2 BHK Comfort",
+          "carpetAreaSqm": 53.88,
+          "carpetAreaSqft": 580,
+          "floor": 8,
+          "totalFloors": 16,
+          "facing": "North-East",
+          "possessionStatus": "UNDER_CONSTRUCTION",
+          "financials": {
+            "agreementValue": 5837700,
+            "carpetAreaSqft": 580,
+            "ratePerSqft": 10065,
+            "stampDuty": 350262,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 291885,
+            "gstRate": 0.05,
+            "floorRiseCharges": 87000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 6996847,
+            "allInRatePerSqft": 12064
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Platinum Sales Desk",
+            "phone": "+919819456789",
+            "whatsappLink": "https://wa.me/919819456789?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%222%20BHK%20Comfort%20in%20Platinum%20Living%20(Sector%2011)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Platinum Group",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "2 BHK Comfort apartment in Platinum Living, Sector 11, TALOJA. Verified carpet area: 580 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.693Z"
+        }
+      ],
+      "lastAuditedAt": "2026-08-20T13:04:03.693Z"
+    },
+    {
+      "id": "proj_pendhar_metro_heights_sec16",
+      "name": "Pendhar Metro Heights",
+      "developerName": "Pendhar Realty",
+      "reraRegistrationNumber": "P52000027650",
+      "proposedCompletionDate": "2025-12-31",
+      "node": "TALOJA",
+      "sector": "Sector 16",
+      "localityKey": "TALOJA_PHASE_1",
+      "address": "Opp. Pendhar Metro Station, Sector 16, Taloja - 410208",
+      "pincode": "410208",
+      "latitude": 19.0712,
+      "longitude": 73.1012,
+      "totalTowers": 1,
+      "totalSanctionedFloors": 18,
+      "totalUnits": 72,
+      "possessionStatus": "UNDER_CONSTRUCTION",
+      "projectStatus": "Under Construction",
+      "amenities": [
+        "Direct Metro Access",
+        "Gymnasium",
+        "Covered Parking",
+        "Rooftop Lounge"
+      ],
+      "coverImage": "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200",
+      "images": [
+        "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200"
+      ],
+      "wings": [
+        {
+          "wingName": "Tower A",
+          "sanctionedFloors": 18
+        },
+        {
+          "wingName": "Tower B",
+          "sanctionedFloors": 18
+        }
+      ],
+      "units": [
+        {
+          "id": "unit_proj_pendhar_metro_heights_sec16_0402",
+          "unitNumber": "Unit 0402",
+          "bhkCount": 1,
+          "bhkType": "1 BHK Smart",
+          "carpetAreaSqm": 35.3,
+          "carpetAreaSqft": 380,
+          "floor": 4,
+          "totalFloors": 18,
+          "facing": "North-East",
+          "possessionStatus": "UNDER_CONSTRUCTION",
+          "financials": {
+            "agreementValue": 3830400,
+            "carpetAreaSqft": 380,
+            "ratePerSqft": 10080,
+            "stampDuty": 229824,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 38304,
+            "gstRate": 0.01,
+            "floorRiseCharges": 0,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 4528528,
+            "allInRatePerSqft": 11917
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Pendhar Realty Desk",
+            "phone": "+919820567890",
+            "whatsappLink": "https://wa.me/919820567890?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%221%20BHK%20Smart%20in%20Pendhar%20Metro%20Heights%20(Sector%2016)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Pendhar Realty",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "1 BHK Smart apartment in Pendhar Metro Heights, Sector 16, TALOJA. Verified carpet area: 380 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.693Z"
+        },
+        {
+          "id": "unit_proj_pendhar_metro_heights_sec16_0805",
+          "unitNumber": "Unit 0805",
+          "bhkCount": 2,
+          "bhkType": "2 BHK Comfort",
+          "carpetAreaSqm": 53.88,
+          "carpetAreaSqft": 580,
+          "floor": 8,
+          "totalFloors": 18,
+          "facing": "North-East",
+          "possessionStatus": "UNDER_CONSTRUCTION",
+          "financials": {
+            "agreementValue": 6029100,
+            "carpetAreaSqft": 580,
+            "ratePerSqft": 10395,
+            "stampDuty": 361746,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 301455,
+            "gstRate": 0.05,
+            "floorRiseCharges": 87000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 7209301,
+            "allInRatePerSqft": 12430
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Pendhar Realty Desk",
+            "phone": "+919820567890",
+            "whatsappLink": "https://wa.me/919820567890?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%222%20BHK%20Comfort%20in%20Pendhar%20Metro%20Heights%20(Sector%2016)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Pendhar Realty",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "2 BHK Comfort apartment in Pendhar Metro Heights, Sector 16, TALOJA. Verified carpet area: 580 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.693Z"
+        }
+      ],
+      "lastAuditedAt": "2026-08-20T13:04:03.693Z"
+    },
+    {
+      "id": "proj_galaxy_orion_sec6",
+      "name": "Galaxy Orion",
+      "developerName": "Galaxy Group",
+      "reraRegistrationNumber": "P52000019234",
+      "node": "TALOJA",
+      "sector": "Sector 6",
+      "localityKey": "TALOJA_PHASE_1",
+      "address": "Plot 11, Sector 6, Taloja Phase 1 - 410208",
+      "pincode": "410208",
+      "latitude": 19.0589,
+      "longitude": 73.0895,
+      "totalTowers": 2,
+      "totalSanctionedFloors": 15,
+      "totalUnits": 120,
+      "possessionStatus": "READY_TO_MOVE",
+      "projectStatus": "Completed",
+      "amenities": [
+        "Clubhouse",
+        "Gymnasium",
+        "Landscaped Garden",
+        "24/7 Security"
+      ],
+      "coverImage": "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200",
+      "images": [
+        "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200"
+      ],
+      "wings": [
+        {
+          "wingName": "Tower A",
+          "sanctionedFloors": 15
+        },
+        {
+          "wingName": "Tower B",
+          "sanctionedFloors": 15
+        }
+      ],
+      "units": [
+        {
+          "id": "unit_proj_galaxy_orion_sec6_0402",
+          "unitNumber": "Unit 0402",
+          "bhkCount": 1,
+          "bhkType": "1 BHK Smart",
+          "carpetAreaSqm": 35.3,
+          "carpetAreaSqft": 380,
+          "floor": 4,
+          "totalFloors": 15,
+          "facing": "North-East",
+          "possessionStatus": "READY_TO_MOVE",
+          "financials": {
+            "agreementValue": 3587200,
+            "carpetAreaSqft": 380,
+            "ratePerSqft": 9440,
+            "stampDuty": 215232,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 0,
+            "gstRate": 0,
+            "floorRiseCharges": 0,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 4232432,
+            "allInRatePerSqft": 11138
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Galaxy Sales Lounge",
+            "phone": "+919819789012",
+            "whatsappLink": "https://wa.me/919819789012?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%221%20BHK%20Smart%20in%20Galaxy%20Orion%20(Sector%206)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Galaxy Group",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "1 BHK Smart apartment in Galaxy Orion, Sector 6, TALOJA. Verified carpet area: 380 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.693Z"
+        },
+        {
+          "id": "unit_proj_galaxy_orion_sec6_0805",
+          "unitNumber": "Unit 0805",
+          "bhkCount": 2,
+          "bhkType": "2 BHK Comfort",
+          "carpetAreaSqm": 53.88,
+          "carpetAreaSqft": 580,
+          "floor": 8,
+          "totalFloors": 15,
+          "facing": "North-East",
+          "possessionStatus": "READY_TO_MOVE",
+          "financials": {
+            "agreementValue": 5646300,
+            "carpetAreaSqft": 580,
+            "ratePerSqft": 9735,
+            "stampDuty": 338778,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 0,
+            "gstRate": 0,
+            "floorRiseCharges": 87000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 6502078,
+            "allInRatePerSqft": 11210
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Galaxy Sales Lounge",
+            "phone": "+919819789012",
+            "whatsappLink": "https://wa.me/919819789012?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%222%20BHK%20Comfort%20in%20Galaxy%20Orion%20(Sector%206)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Galaxy Group",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "2 BHK Comfort apartment in Galaxy Orion, Sector 6, TALOJA. Verified carpet area: 580 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.693Z"
+        }
+      ],
+      "lastAuditedAt": "2026-08-20T13:04:03.693Z"
+    },
+    {
+      "id": "proj_sai_miracle_sec14",
+      "name": "Sai Miracle",
+      "developerName": "Sai Developers",
+      "reraRegistrationNumber": "P52000021300",
+      "node": "TALOJA",
+      "sector": "Sector 14",
+      "localityKey": "TALOJA_PHASE_1",
+      "address": "Plot 18, Sector 14, Taloja Phase 1 - 410208",
+      "pincode": "410208",
+      "latitude": 19.0689,
+      "longitude": 73.0984,
+      "totalTowers": 2,
+      "totalSanctionedFloors": 14,
+      "totalUnits": 112,
+      "possessionStatus": "READY_TO_MOVE",
+      "projectStatus": "Completed",
+      "amenities": [
+        "Podium Garden",
+        "Fitness Center",
+        "Covered Parking",
+        "Intercom"
+      ],
+      "coverImage": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200",
+      "images": [
+        "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200"
+      ],
+      "wings": [
+        {
+          "wingName": "Tower A",
+          "sanctionedFloors": 14
+        },
+        {
+          "wingName": "Tower B",
+          "sanctionedFloors": 14
+        }
+      ],
+      "units": [
+        {
+          "id": "unit_proj_sai_miracle_sec14_0402",
+          "unitNumber": "Unit 0402",
+          "bhkCount": 1,
+          "bhkType": "1 BHK Smart",
+          "carpetAreaSqm": 35.3,
+          "carpetAreaSqft": 380,
+          "floor": 4,
+          "totalFloors": 14,
+          "facing": "North-East",
+          "possessionStatus": "READY_TO_MOVE",
+          "financials": {
+            "agreementValue": 3526400,
+            "carpetAreaSqft": 380,
+            "ratePerSqft": 9280,
+            "stampDuty": 211584,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 0,
+            "gstRate": 0,
+            "floorRiseCharges": 0,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 4167984,
+            "allInRatePerSqft": 10968
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Sai Miracle Desk",
+            "phone": "+919820345678",
+            "whatsappLink": "https://wa.me/919820345678?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%221%20BHK%20Smart%20in%20Sai%20Miracle%20(Sector%2014)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Sai Developers",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "1 BHK Smart apartment in Sai Miracle, Sector 14, TALOJA. Verified carpet area: 380 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.693Z"
+        },
+        {
+          "id": "unit_proj_sai_miracle_sec14_0805",
+          "unitNumber": "Unit 0805",
+          "bhkCount": 2,
+          "bhkType": "2 BHK Comfort",
+          "carpetAreaSqm": 53.88,
+          "carpetAreaSqft": 580,
+          "floor": 8,
+          "totalFloors": 14,
+          "facing": "North-East",
+          "possessionStatus": "READY_TO_MOVE",
+          "financials": {
+            "agreementValue": 5550600,
+            "carpetAreaSqft": 580,
+            "ratePerSqft": 9570,
+            "stampDuty": 333036,
+            "stampDutyRate": 0.06,
+            "registrationFee": 30000,
+            "gst": 0,
+            "gstRate": 0,
+            "floorRiseCharges": 87000,
+            "parkingCharges": 250000,
+            "societyDevelopmentCharges": 150000,
+            "allInTotalCost": 6400636,
+            "allInRatePerSqft": 11036
+          },
+          "seller": {
+            "sellerType": "BUILDER",
+            "name": "Sai Miracle Desk",
+            "phone": "+919820345678",
+            "whatsappLink": "https://wa.me/919820345678?text=Hi%2C%20I%20am%20inquiring%20about%20the%20property%20listing%20for%20%222%20BHK%20Comfort%20in%20Sai%20Miracle%20(Sector%2014)%22%20in%20Kharghar%2FTaloja.",
+            "companyName": "Sai Developers",
+            "verified": true
+          },
+          "sourcePortal": "maharera",
+          "photos": [
+            "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200"
+          ],
+          "floorPlanUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200",
+          "description": "2 BHK Comfort apartment in Sai Miracle, Sector 14, TALOJA. Verified carpet area: 580 sqft with all-in financial costing calculated.",
+          "scrapedAt": "2026-08-20T13:04:03.693Z"
+        }
+      ],
+      "lastAuditedAt": "2026-08-20T13:04:03.693Z"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "node": "KHARGHAR",
+  "sector": "Sector 39",
+  "zone": "Upper Kharghar North Boundary",
+  "landmarks": [
+    "CIDCO High-End Layout 39",
+    "Valley Reserve"
+  ],
+  "nearestMetroStation": "Amandoot Metro",
+  "distanceToMetroKm": 1.2,
+  "averageRatePerSqft": 13900,
+  "centerCoordinates": {
+    "lat": 19.0838,
+    "lng": 73.0968
+  },
+  "scrapedAt": "2026-08-19T11:46:45.276Z",
+  "projectsCount": 0
+}

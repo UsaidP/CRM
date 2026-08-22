@@ -232,39 +232,5 @@ export async function mergeContacts(params: {
   };
 }
 
-/**
- * 24-Hour Messaging Window Compliance Checker
- * Meta WhatsApp Rule: Freeform responses are allowed only within 24h of the last user-initiated inbound message.
- * Outside 24h, an approved Meta Template Message is mandatory.
- */
-export function evaluate24HourMessagingWindow(lastInboundMessageAt?: Date | string | null): {
-  isOpen: boolean;
-  hoursRemaining: number;
-  requiresApprovedTemplate: boolean;
-  windowLabel: string;
-} {
-  if (!lastInboundMessageAt) {
-    return {
-      isOpen: false,
-      hoursRemaining: 0,
-      requiresApprovedTemplate: true,
-      windowLabel: 'Window Closed (Template Required)',
-    };
-  }
-
-  const lastTime = new Date(lastInboundMessageAt).getTime();
-  const now = Date.now();
-  const elapsedHours = (now - lastTime) / (1000 * 60 * 60);
-  const hoursRemaining = Math.max(0, 24 - elapsedHours);
-
-  const isOpen = hoursRemaining > 0;
-
-  return {
-    isOpen,
-    hoursRemaining: Math.round(hoursRemaining * 10) / 10,
-    requiresApprovedTemplate: !isOpen,
-    windowLabel: isOpen
-      ? `🟢 24h Window Open (${hoursRemaining.toFixed(1)} hrs left)`
-      : '🔴 24h Window Expired (Meta Template Required)',
-  };
-}
+import { evaluate24HourMessagingWindow } from '@/lib/constants/broker-constants';
+export { evaluate24HourMessagingWindow };
