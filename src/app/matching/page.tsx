@@ -659,7 +659,7 @@ export default function MatchmakerConsolePage() {
                 href={`https://wa.me/?text=${encodeURIComponent(generatedPortalData.waShareText)}`}
                 target="_blank"
                 rel="noreferrer"
-                className="px-4 py-2 rounded-xl bg-status-success hover:opacity-90 text-zinc-950 font-bold flex items-center gap-1.5 shadow-xs"
+                className="px-4 py-2 rounded-xl bg-status-success hover:opacity-90 text-white font-bold flex items-center gap-1.5 shadow-xs cursor-pointer"
               >
                 Share on WhatsApp
               </a>

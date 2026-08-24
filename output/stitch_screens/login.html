@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ZamZam Realty Console - Login</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-primary-fixed": "#002114",
+                      "surface-variant": "#e7e2da",
+                      "inverse-on-surface": "#f5f0e8",
+                      "background": "#fef9f0",
+                      "on-tertiary": "#ffffff",
+                      "surface-container-highest": "#e7e2da",
+                      "on-tertiary-fixed": "#2f1500",
+                      "on-tertiary-fixed-variant": "#6e3900",
+                      "on-error": "#ffffff",
+                      "inverse-primary": "#a5d0b9",
+                      "on-tertiary-container": "#f48c24",
+                      "primary-container": "#1b4332",
+                      "on-primary-container": "#86af99",
+                      "surface-dim": "#ded9d1",
+                      "primary-fixed": "#c1ecd4",
+                      "secondary-fixed-dim": "#95d4b3",
+                      "surface-tint": "#3f6653",
+                      "primary-fixed-dim": "#a5d0b9",
+                      "secondary-container": "#aeeecb",
+                      "on-background": "#1d1c17",
+                      "on-secondary-container": "#316e52",
+                      "on-error-container": "#93000a",
+                      "inverse-surface": "#32302b",
+                      "tertiary-container": "#5e3000",
+                      "on-surface-variant": "#414844",
+                      "secondary-fixed": "#b1f0ce",
+                      "secondary": "#2c694e",
+                      "outline-variant": "#c1c8c2",
+                      "on-secondary-fixed": "#002114",
+                      "surface-bright": "#fef9f0",
+                      "tertiary-fixed-dim": "#ffb77d",
+                      "tertiary": "#3e1e00",
+                      "on-surface": "#1d1c17",
+                      "tertiary-fixed": "#ffdcc3",
+                      "surface": "#fef9f0",
+                      "on-secondary-fixed-variant": "#0e5138",
+                      "on-primary-fixed-variant": "#274e3d",
+                      "surface-container-high": "#ede7df",
+                      "outline": "#717973",
+                      "surface-container-low": "#f8f3eb",
+                      "primary": "#012d1d",
+                      "error": "#ba1a1a",
+                      "on-primary": "#ffffff",
+                      "error-container": "#ffdad6",
+                      "on-secondary": "#ffffff",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-container": "#f2ede5"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "stack-xs": "4px",
+                      "gutter": "16px",
+                      "stack-sm": "8px",
+                      "row-height": "40px",
+                      "stack-md": "12px",
+                      "margin-page": "24px"
+              },
+              "fontFamily": {
+                      "timer-lg": [
+                              "JetBrains Mono"
+                      ],
+                      "label-bold": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-sm": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-sm": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "display-sm": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-md": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "data-mono": [
+                              "JetBrains Mono"
+                      ]
+              },
+              "fontSize": {
+                      "timer-lg": [
+                              "20px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-bold": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-sm": [
+                              "13px",
+                              {
+                                      "lineHeight": "18px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-sm": [
+                              "18px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-sm": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "data-mono": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "500"
+                              }
+                      ]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        /* Custom grid texture */
+        .bg-grid-texture {
+            background-size: 20px 20px;
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+        }
+        
+        /* Tactical input focus */
+        .tactical-input:focus {
+            outline: none;
+            box-shadow: inset 0 0 0 2px #2D6A4F;
+        }
+
+        /* Input styling overrides for forms plugin */
+        [type='text'], [type='email'], [type='password'] {
+            border-color: #E5E0D8;
+        }
+    </style>
+</head>
+<body class="bg-surface min-h-screen flex items-center justify-center p-margin-page font-body-md text-on-surface">
+<div class="flex w-full max-w-[1000px] h-[600px] bg-surface-container-lowest border border-outline-variant rounded-lg overflow-hidden flex-col md:flex-row">
+<!-- Left Brand Panel (40%) -->
+<div class="hidden md:flex flex-col justify-between w-[40%] bg-primary bg-grid-texture p-margin-page text-on-primary">
+<div>
+<div class="flex items-center gap-stack-sm mb-stack-md">
+<span class="material-symbols-outlined text-[32px]">domain</span>
+<h1 class="font-display-sm text-display-sm">ZamZam Realty</h1>
+</div>
+<p class="font-body-md text-body-md text-primary-fixed-dim opacity-80 max-w-[80%]">
+                    Kharghar · Taloja · Panvel — Tele-Ops Operations
+                </p>
+</div>
+<div class="flex flex-col gap-stack-md font-body-sm text-body-sm text-primary-fixed-dim">
+<div class="flex items-center gap-stack-sm">
+<span class="material-symbols-outlined text-[16px]">verified</span>
+<span>MahaRERA Verified Brokerage</span>
+</div>
+<div class="flex items-center gap-stack-sm">
+<span class="material-symbols-outlined text-[16px]">hub</span>
+<span>Excel Cluster A Connected</span>
+</div>
+<div class="flex items-center gap-stack-sm">
+<span class="material-symbols-outlined text-[16px]">lock</span>
+<span>Session Encryption Enabled</span>
+</div>
+</div>
+</div>
+<!-- Right Login Panel (60%) -->
+<div class="flex flex-col justify-between w-full md:w-[60%] p-[40px] md:p-[60px] bg-surface-container-lowest">
+<div class="flex flex-col justify-center h-full max-w-[400px] mx-auto w-full">
+<h2 class="font-headline-sm text-headline-sm mb-stack-md text-on-surface">Sign in to Operational Console</h2>
+<!-- Error State Pill -->
+<div class="flex items-center gap-stack-sm bg-[#FFF3F2] border border-[#FFD9D6] text-[#93000A] px-stack-md py-stack-xs rounded-full mb-gutter font-body-sm text-body-sm" role="alert">
+<span class="material-symbols-outlined text-[16px]">error</span>
+<span>Invalid credentials — 2 attempts remaining</span>
+</div>
+<form action="#" class="flex flex-col gap-gutter" method="POST" onsubmit="event.preventDefault();">
+<!-- Email Input -->
+<div class="flex flex-col gap-stack-xs">
+<label class="font-label-bold text-label-bold text-on-surface-variant uppercase" for="email">Operator Email</label>
+<input class="tactical-input h-[32px] px-stack-md rounded text-body-md font-body-md bg-surface border border-outline-variant text-on-surface" id="email" name="email" required="" type="email" value="agent.a@zamzam.com"/>
+</div>
+<!-- Password Input -->
+<div class="flex flex-col gap-stack-xs">
+<label class="font-label-bold text-label-bold text-on-surface-variant uppercase flex justify-between" for="password">
+                            Access Key
+                        </label>
+<div class="relative flex items-center">
+<input class="tactical-input h-[32px] w-full pl-stack-md pr-[40px] rounded text-body-md font-body-md bg-surface border border-outline-variant text-on-surface" id="password" name="password" required="" type="password" value="********"/>
+<button aria-label="Toggle password visibility" class="absolute right-stack-sm text-on-surface-variant hover:text-on-surface flex items-center justify-center" type="button">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+</button>
+</div>
+</div>
+<!-- Remember & Forgot -->
+<div class="flex items-center justify-between mt-stack-xs">
+<label class="flex items-center gap-stack-sm cursor-pointer group">
+<input class="rounded-[2px] border-outline-variant text-primary focus:ring-primary h-4 w-4 bg-surface" type="checkbox"/>
+<span class="font-body-sm text-body-sm text-on-surface-variant group-hover:text-on-surface transition-colors">Remember this device</span>
+</label>
+<a class="font-body-sm text-body-sm text-secondary hover:text-primary transition-colors underline decoration-secondary/30 hover:decoration-primary" href="#">Forgot password?</a>
+</div>
+<!-- CTA -->
+<button class="w-full h-[40px] mt-stack-sm bg-primary-container text-on-primary rounded flex items-center justify-center gap-stack-sm font-label-bold text-label-bold hover:bg-primary transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-container" type="submit">
+                        START SHIFT
+                        <span class="bg-on-primary-fixed text-primary-fixed-dim px-2 py-0.5 rounded-[2px] font-data-mono text-[10px] ml-stack-sm tracking-wider opacity-80 border border-on-primary-fixed-variant">ENTER ↵</span>
+</button>
+</form>
+</div>
+<!-- Footer -->
+<div class="mt-auto pt-gutter border-t border-outline-variant flex justify-between items-center font-data-mono text-data-mono text-outline text-[12px]">
+<span>v2.4.1</span>
+<span>Cluster A</span>
+<span class="flex items-center gap-[4px]">
+<div class="w-2 h-2 rounded-full bg-secondary-container border border-secondary"></div>
+                    99.98% uptime
+                </span>
+</div>
+</div>
+</div>
+</body></html>

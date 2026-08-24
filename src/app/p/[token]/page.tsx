@@ -13,7 +13,10 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   try {
-    const { token } = await params;
+    const resolvedParams = await Promise.resolve(params);
+    const token = resolvedParams?.token;
+    if (!token) return { title: 'Portal Not Found | ZamZam Properties' };
+
     const portal = await prisma.clientPortal.findUnique({
       where: { token },
       select: { title: true, customMessage: true },
@@ -38,6 +41,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function ClientPortalPage({ params }: PageProps) {
   const { token } = await params;
+  
+  if (!token) {
+    notFound();
+  }
 
   const portal = await prisma.clientPortal.findUnique({
     where: { token },

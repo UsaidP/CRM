@@ -18,6 +18,7 @@ import {
   ChevronRight,
   Calculator
 } from 'lucide-react';
+import { formatDateFull } from '@/lib/date-utils';
 
 interface ProjectDetailsModalProps {
   project: any;
@@ -241,13 +242,13 @@ export function ProjectDetailsModal({
                     <div className="flex justify-between py-1 border-b border-border-subtle">
                       <span className="text-content-muted">Commencement Date:</span>
                       <span className="font-mono text-content">
-                        {project.commencementCertificateDate ? new Date(project.commencementCertificateDate).toLocaleDateString('en-IN') : '15/01/2020'}
+                        {project.commencementCertificateDate ? formatDateFull(project.commencementCertificateDate) : '15 Jan 2020'}
                       </span>
                     </div>
                     <div className="flex justify-between py-1 border-b border-border-subtle">
                       <span className="text-content-muted">Expected Possession:</span>
                       <span className="font-mono text-content">
-                        {project.expectedPossessionDate ? new Date(project.expectedPossessionDate).toLocaleDateString('en-IN') : '31/12/2026'}
+                        {project.expectedPossessionDate ? formatDateFull(project.expectedPossessionDate) : '31 Dec 2026'}
                       </span>
                     </div>
                     <div className="flex justify-between py-1 border-b border-border-subtle">

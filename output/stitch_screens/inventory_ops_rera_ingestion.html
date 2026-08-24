@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-background font-body-md text-body-md text-on-surface" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ZamZam Realty Ops - Inventory &amp; RERA Ingestion</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600&amp;family=Plus+Jakarta+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+                  "primary-fixed": "#c1ecd4",
+                  "secondary": "#2c694e",
+                  "tertiary-fixed-dim": "#ffb77d",
+                  "surface-bright": "#fef9f0",
+                  "secondary-fixed-dim": "#95d4b3",
+                  "on-tertiary-fixed": "#2f1500",
+                  "surface-variant": "#e7e2da",
+                  "inverse-surface": "#32302b",
+                  "on-secondary-container": "#316e52",
+                  "surface-container": "#f2ede5",
+                  "primary-container": "#1b4332",
+                  "on-primary-fixed": "#002114",
+                  "on-secondary-fixed-variant": "#0e5138",
+                  "on-error": "#ffffff",
+                  "on-tertiary-container": "#f48c24",
+                  "tertiary-fixed": "#ffdcc3",
+                  "on-primary": "#ffffff",
+                  "inverse-primary": "#a5d0b9",
+                  "on-secondary": "#ffffff",
+                  "surface-tint": "#3f6653",
+                  "surface-dim": "#ded9d1",
+                  "secondary-fixed": "#b1f0ce",
+                  "on-tertiary-fixed-variant": "#6e3900",
+                  "surface-container-lowest": "#ffffff",
+                  "on-primary-fixed-variant": "#274e3d",
+                  "surface-container-highest": "#e7e2da",
+                  "primary": "#012d1d",
+                  "on-tertiary": "#ffffff",
+                  "error": "#ba1a1a",
+                  "inverse-on-surface": "#f5f0e8",
+                  "outline-variant": "#c1c8c2",
+                  "primary-fixed-dim": "#a5d0b9",
+                  "background": "#fef9f0",
+                  "surface": "#fef9f0",
+                  "on-primary-container": "#86af99",
+                  "surface-container-high": "#ede7df",
+                  "on-surface-variant": "#414844",
+                  "surface-container-low": "#f8f3eb",
+                  "on-surface": "#1d1c17",
+                  "on-error-container": "#93000a",
+                  "tertiary": "#3e1e00",
+                  "on-secondary-fixed": "#002114",
+                  "on-background": "#1d1c17",
+                  "outline": "#717973",
+                  "error-container": "#ffdad6",
+                  "secondary-container": "#aeeecb",
+                  "tertiary-container": "#5e3000"
+          },
+          "borderRadius": {
+                  "DEFAULT": "0.125rem",
+                  "lg": "0.25rem",
+                  "xl": "0.5rem",
+                  "full": "0.75rem"
+          },
+          "spacing": {
+                  "row-height": "40px",
+                  "gutter": "16px",
+                  "margin-page": "24px",
+                  "stack-xs": "4px",
+                  "stack-sm": "8px",
+                  "stack-md": "12px"
+          },
+          "fontFamily": {
+                  "data-mono": [
+                          "JetBrains Mono"
+                  ],
+                  "timer-lg": [
+                          "JetBrains Mono"
+                  ],
+                  "label-bold": [
+                          "Plus Jakarta Sans"
+                  ],
+                  "headline-sm": [
+                          "Plus Jakarta Sans"
+                  ],
+                  "body-md": [
+                          "Plus Jakarta Sans"
+                  ],
+                  "body-sm": [
+                          "Plus Jakarta Sans"
+                  ],
+                  "display-sm": [
+                          "Plus Jakarta Sans"
+                  ]
+          },
+          "fontSize": {
+                  "data-mono": [
+                          "14px",
+                          {
+                                  "lineHeight": "20px",
+                                  "fontWeight": "500"
+                          }
+                  ],
+                  "timer-lg": [
+                          "20px",
+                          {
+                                  "lineHeight": "24px",
+                                  "fontWeight": "600"
+                          }
+                  ],
+                  "label-bold": [
+                          "12px",
+                          {
+                                  "lineHeight": "16px",
+                                  "letterSpacing": "0.05em",
+                                  "fontWeight": "600"
+                          }
+                  ],
+                  "headline-sm": [
+                          "18px",
+                          {
+                                  "lineHeight": "24px",
+                                  "fontWeight": "600"
+                          }
+                  ],
+                  "body-md": [
+                          "14px",
+                          {
+                                  "lineHeight": "20px",
+                                  "fontWeight": "400"
+                          }
+                  ],
+                  "body-sm": [
+                          "13px",
+                          {
+                                  "lineHeight": "18px",
+                                  "fontWeight": "400"
+                          }
+                  ],
+                  "display-sm": [
+                          "24px",
+                          {
+                                  "lineHeight": "32px",
+                                  "fontWeight": "700"
+                          }
+                  ]
+          }
+      },
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .material-symbols-outlined.fill {
+      font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    
+    /* Custom Scrollbar for dense data panels */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background-color: #c1c8c2;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+<!-- SideNavBar component mapped from JSON -->
+<nav class="hidden md:flex flex-col h-full py-gutter bg-surface-container dark:bg-surface-container-highest border-r border-surface-variant dark:border-outline-variant fixed left-0 top-0 h-full w-[280px] z-20">
+<div class="px-margin-page mb-8">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary fill">apartment</span>
+</div>
+<div>
+<h1 class="font-headline-sm text-headline-sm text-primary">ZamZam Console</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Ops Suite v2.4</p>
+</div>
+</div>
+<button class="mt-6 w-full h-row-height bg-primary-container text-on-primary rounded font-label-bold flex items-center justify-center gap-2 hover:bg-surface-tint transition-colors">
+<span class="material-symbols-outlined text-[18px]">add</span>
+        New Scrape Task
+      </button>
+</div>
+<ul class="flex-1 px-4 space-y-1 overflow-y-auto">
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-surface-variant py-stack-md hover:bg-surface-container-high dark:hover:bg-surface-dim transition-all active:translate-x-1 duration-150" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-body-md">Dashboard</span>
+</a>
+</li>
+<li>
+<!-- Active State: Inventory / RERA Ingestion relates to Inventory -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg bg-secondary-container text-on-secondary-container border-l-4 border-secondary font-label-bold hover:bg-surface-container-high dark:hover:bg-surface-dim transition-all active:translate-x-1 duration-150" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span>Inventory</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-surface-variant py-stack-md hover:bg-surface-container-high dark:hover:bg-surface-dim transition-all active:translate-x-1 duration-150" href="#">
+<span class="material-symbols-outlined">sync</span>
+<span class="font-body-md">Scraper Ops</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-surface-variant py-stack-md hover:bg-surface-container-high dark:hover:bg-surface-dim transition-all active:translate-x-1 duration-150" href="#">
+<span class="material-symbols-outlined">perm_media</span>
+<span class="font-body-md">Media Vault</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-surface-variant py-stack-md hover:bg-surface-container-high dark:hover:bg-surface-dim transition-all active:translate-x-1 duration-150" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="font-body-md">RERA Logs</span>
+</a>
+</li>
+</ul>
+<div class="px-4 mt-auto">
+<ul class="space-y-1">
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined">contact_support</span>
+<span class="font-body-md">Support</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined">dns</span>
+<span class="font-body-md">System Status</span>
+</a>
+</li>
+</ul>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="flex-1 flex flex-col ml-0 md:ml-[280px] h-full overflow-hidden bg-background relative z-10">
+<!-- TopNavBar component mapped from JSON -->
+<header class="bg-surface-bright dark:bg-inverse-surface border-b border-surface-variant dark:border-outline-variant docked full-width top-0 z-30 flex justify-between items-center w-full px-margin-page h-row-height min-h-[64px]">
+<!-- Mobile Menu Toggle (Visible only on md-) -->
+<button class="md:hidden p-2 -ml-2 text-primary hover:bg-surface-container rounded transition-colors">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<!-- Search Bar -->
+<div class="flex-1 flex items-center max-w-md">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
+<input class="w-full h-8 pl-10 pr-4 bg-surface-container border border-outline-variant rounded-full text-body-sm focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary transition-shadow placeholder:text-on-surface-variant text-on-surface" placeholder="Search MahaRERA ID, Project Name, Developer..." type="text"/>
+</div>
+</div>
+<!-- Right Actions -->
+<div class="flex items-center gap-4 ml-4">
+<!-- Call Timer Component Placeholder -->
+<div class="hidden lg:flex items-center gap-2 bg-surface-container px-3 py-1 rounded border border-surface-variant">
+<span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+<span class="font-timer-lg text-timer-lg text-primary">02:14</span>
+</div>
+<button class="w-8 h-8 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container dark:hover:bg-surface-container-high transition-colors active:scale-95 transition-transform">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container dark:hover:bg-surface-container-high transition-colors active:scale-95 transition-transform">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container dark:hover:bg-surface-container-high transition-colors active:scale-95 transition-transform">
+<span class="material-symbols-outlined">help</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-surface-variant overflow-hidden border border-outline-variant ml-2 flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant">person</span>
+</div>
+</div>
+</header>
+<!-- Page Content -->
+<div class="flex-1 overflow-y-auto p-margin-page">
+<!-- Page Header -->
+<div class="mb-gutter flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+<div>
+<h2 class="font-display-sm text-display-sm text-primary">Inventory Ops &amp; RERA Ingestion</h2>
+<div class="flex items-center gap-2 mt-2">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">location_on</span>
+<span class="font-body-md text-on-surface-variant">Kharghar &amp; Taloja Focus Area</span>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="h-row-height px-4 bg-surface-container-lowest border border-outline-variant text-primary rounded font-label-bold flex items-center gap-2 hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[18px]">download</span>
+                Export Log
+            </button>
+<button class="h-row-height px-4 bg-primary-container text-on-primary rounded font-label-bold flex items-center gap-2 hover:bg-surface-tint transition-colors">
+<span class="material-symbols-outlined text-[18px]">play_arrow</span>
+                Force Sync Now
+            </button>
+</div>
+</div>
+<!-- Main Layout Grid -->
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-gutter h-[calc(100%-80px)]">
+<!-- Scraper Ops Panel (Spans 2 columns) -->
+<section class="xl:col-span-2 bg-surface-container-lowest border border-surface-variant rounded-xl flex flex-col overflow-hidden">
+<!-- Panel Header -->
+<div class="p-4 border-b border-surface-variant bg-surface-bright flex flex-wrap justify-between items-center gap-4">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary">database</span>
+                Target Registry: MahaRERA Navi Mumbai Database
+              </h3>
+<p class="font-body-sm text-body-sm mt-1 flex items-center gap-2">
+<span class="inline-block w-2 h-2 rounded-full bg-secondary"></span>
+<span class="text-secondary font-medium">Live</span>
+<span class="text-on-surface-variant">- 6,038 Units Synchronized (Last crawl 4h ago)</span>
+</p>
+</div>
+<!-- Sparkline visualization placeholder -->
+<div class="w-32 h-10 flex items-end justify-between gap-[2px] opacity-70">
+<div class="w-full bg-secondary rounded-t-sm" style="height: 30%"></div>
+<div class="w-full bg-secondary rounded-t-sm" style="height: 50%"></div>
+<div class="w-full bg-secondary rounded-t-sm" style="height: 40%"></div>
+<div class="w-full bg-secondary rounded-t-sm" style="height: 70%"></div>
+<div class="w-full bg-secondary rounded-t-sm" style="height: 60%"></div>
+<div class="w-full bg-secondary rounded-t-sm" style="height: 90%"></div>
+<div class="w-full bg-secondary rounded-t-sm" style="height: 100%"></div>
+<div class="w-full bg-secondary rounded-t-sm" style="height: 80%"></div>
+</div>
+</div>
+<!-- Filters -->
+<div class="px-4 py-3 border-b border-surface-variant bg-surface-container-low flex flex-wrap gap-2">
+<button class="px-3 py-1.5 rounded-full border border-secondary bg-secondary-container text-on-secondary-container font-label-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+              Verified MahaRERA ID
+            </button>
+<button class="px-3 py-1.5 rounded-full border border-outline-variant bg-surface-container-lowest text-on-surface-variant font-label-bold hover:bg-surface-container transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">pending_actions</span>
+              Pending Floor Plan
+            </button>
+<button class="px-3 py-1.5 rounded-full border border-outline-variant bg-surface-container-lowest text-on-surface-variant font-label-bold hover:bg-surface-container transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">receipt_long</span>
+              Missing Cost Sheet
+            </button>
+</div>
+<!-- Data List -->
+<div class="flex-1 overflow-y-auto bg-surface-bright">
+<table class="w-full text-left border-collapse">
+<thead class="sticky top-0 bg-surface-bright z-10 border-b border-surface-variant">
+<tr>
+<th class="px-4 py-2 font-label-bold text-on-surface-variant w-10"></th>
+<th class="px-4 py-2 font-label-bold text-on-surface-variant">Project / Developer</th>
+<th class="px-4 py-2 font-label-bold text-on-surface-variant">MahaRERA ID</th>
+<th class="px-4 py-2 font-label-bold text-on-surface-variant">Data Health</th>
+<th class="px-4 py-2 font-label-bold text-on-surface-variant text-right">Action</th>
+</tr>
+</thead>
+<tbody class="font-data-mono text-data-mono">
+<!-- Selected Row Example -->
+<tr class="h-row-height border-b border-surface-variant bg-[#eaf4ef] border-l-[3px] border-l-secondary">
+<td class="px-4 py-2 text-center text-secondary">
+<span class="material-symbols-outlined text-[18px]">radio_button_checked</span>
+</td>
+<td class="px-4 py-2">
+<div class="font-medium text-on-surface">Paradise Sai World Empire</div>
+<div class="text-[12px] text-on-surface-variant font-body-sm mt-0.5">Paradise Group • Kharghar</div>
+</td>
+<td class="px-4 py-2 text-primary">P52000002131</td>
+<td class="px-4 py-2">
+<div class="flex items-center gap-2">
+<div class="w-24 h-1.5 bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-secondary" style="width: 85%"></div>
+</div>
+<span class="text-[12px] text-on-surface-variant">85%</span>
+</div>
+</td>
+<td class="px-4 py-2 text-right">
+<button class="px-3 py-1 bg-surface-container-lowest border border-outline-variant rounded font-label-bold text-primary hover:bg-surface-container transition-colors">Ingest</button>
+</td>
+</tr>
+<!-- Standard Row -->
+<tr class="h-row-height border-b border-surface-variant hover:bg-surface-container-low transition-colors border-l-[3px] border-l-transparent">
+<td class="px-4 py-2 text-center text-outline">
+<span class="material-symbols-outlined text-[18px]">radio_button_unchecked</span>
+</td>
+<td class="px-4 py-2">
+<div class="font-medium text-on-surface">Arihant Clan Aalishan</div>
+<div class="text-[12px] text-on-surface-variant font-body-sm mt-0.5">Arihant Superstructures • Kharghar</div>
+</td>
+<td class="px-4 py-2 text-primary">P52000006391</td>
+<td class="px-4 py-2">
+<div class="flex items-center gap-2">
+<div class="w-24 h-1.5 bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-tertiary-container" style="width: 45%"></div>
+</div>
+<span class="text-[12px] text-on-surface-variant">45%</span>
+</div>
+</td>
+<td class="px-4 py-2 text-right">
+<button class="px-3 py-1 bg-primary-container text-on-primary rounded font-label-bold hover:bg-surface-tint transition-colors">Ingest</button>
+</td>
+</tr>
+<!-- Standard Row -->
+<tr class="h-row-height border-b border-surface-variant hover:bg-surface-container-low transition-colors border-l-[3px] border-l-transparent">
+<td class="px-4 py-2 text-center text-outline">
+<span class="material-symbols-outlined text-[18px]">radio_button_unchecked</span>
+</td>
+<td class="px-4 py-2">
+<div class="font-medium text-on-surface">Adhiraj Capital City</div>
+<div class="text-[12px] text-on-surface-variant font-body-sm mt-0.5">Adhiraj Constructions • Kharghar</div>
+</td>
+<td class="px-4 py-2 text-primary">P52000022907</td>
+<td class="px-4 py-2">
+<div class="flex items-center gap-2">
+<div class="w-24 h-1.5 bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-secondary" style="width: 92%"></div>
+</div>
+<span class="text-[12px] text-on-surface-variant">92%</span>
+</div>
+</td>
+<td class="px-4 py-2 text-right">
+<button class="px-3 py-1 bg-surface-container-lowest border border-outline-variant rounded font-label-bold text-primary hover:bg-surface-container transition-colors">Ingest</button>
+</td>
+</tr>
+<!-- Standard Row -->
+<tr class="h-row-height border-b border-surface-variant hover:bg-surface-container-low transition-colors border-l-[3px] border-l-transparent">
+<td class="px-4 py-2 text-center text-outline">
+<span class="material-symbols-outlined text-[18px]">radio_button_unchecked</span>
+</td>
+<td class="px-4 py-2">
+<div class="font-medium text-on-surface">Mahaavir Exotique</div>
+<div class="text-[12px] text-on-surface-variant font-body-sm mt-0.5">Mahaavir Universal • Kharghar</div>
+</td>
+<td class="px-4 py-2 text-primary">P52000031174</td>
+<td class="px-4 py-2">
+<div class="flex items-center gap-2">
+<div class="w-24 h-1.5 bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-secondary" style="width: 100%"></div>
+</div>
+<span class="text-[12px] text-on-surface-variant">100%</span>
+</div>
+</td>
+<td class="px-4 py-2 text-right">
+<button class="px-3 py-1 bg-surface-container-lowest border border-outline-variant rounded font-label-bold text-primary hover:bg-surface-container transition-colors text-outline" disabled="">Synced</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Keyboard shortcut hint -->
+<div class="p-2 border-t border-surface-variant bg-surface-container-lowest flex justify-end">
+<div class="flex items-center gap-1.5 px-2 py-1 bg-surface-container rounded text-[10px] font-label-bold text-on-surface-variant">
+<span class="material-symbols-outlined text-[12px]">keyboard</span>
+              [Space] Select Row  |  [Enter] Ingest Selected
+            </div>
+</div>
+</section>
+<!-- Media Vault Uploader Panel (Right Column) -->
+<section class="bg-surface-container-lowest border border-surface-variant rounded-xl flex flex-col overflow-hidden">
+<!-- Panel Header -->
+<div class="p-4 border-b border-surface-variant bg-surface-bright flex justify-between items-center">
+<h3 class="font-headline-sm text-headline-sm text-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary">cloud_upload</span>
+              Media Vault
+            </h3>
+<span class="px-2 py-0.5 bg-secondary-container text-on-secondary-container text-[10px] font-label-bold uppercase rounded">Selected: Paradise Sai</span>
+</div>
+<!-- Content Area -->
+<div class="p-4 flex-1 overflow-y-auto flex flex-col gap-6">
+<!-- Drag & Drop Zone -->
+<div class="border-2 border-dashed border-outline-variant rounded-lg p-6 bg-surface-container-low flex flex-col items-center justify-center text-center hover:bg-surface-container transition-colors cursor-pointer group">
+<div class="w-12 h-12 rounded-full bg-surface-variant flex items-center justify-center mb-3 group-hover:bg-primary-container group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined text-[24px]">note_add</span>
+</div>
+<p class="font-headline-sm text-on-surface mb-1">Drop assets here</p>
+<p class="font-body-sm text-on-surface-variant mb-4">4K Walkthroughs (MP4), High-Res Floor Plans (PDF/PNG), Project Brochures</p>
+<button class="px-4 py-2 bg-surface-container-lowest border border-outline-variant rounded font-label-bold text-primary shadow-sm hover:bg-surface-bright">
+                Browse Files
+              </button>
+</div>
+<!-- Upload Progress -->
+<div>
+<h4 class="font-label-bold text-on-surface-variant uppercase mb-3">Active Uploads</h4>
+<div class="bg-surface-container-low rounded-lg p-3 border border-surface-variant mb-2">
+<div class="flex justify-between items-start mb-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[18px]">picture_as_pdf</span>
+<span class="font-data-mono text-[13px] text-on-surface truncate max-w-[150px]">Tower_A_Floorplan.pdf</span>
+</div>
+<span class="font-data-mono text-[12px] text-on-surface-variant">64%</span>
+</div>
+<div class="w-full h-1.5 bg-surface-variant rounded-full overflow-hidden mb-2">
+<div class="h-full bg-secondary" style="width: 64%"></div>
+</div>
+<div class="flex gap-1 flex-wrap">
+<span class="px-2 py-0.5 bg-surface-variant text-on-surface-variant text-[10px] rounded border border-outline-variant">Unit Floor Plan</span>
+<span class="px-2 py-0.5 bg-surface-variant text-on-surface-variant text-[10px] rounded border border-outline-variant">Tower A</span>
+</div>
+</div>
+</div>
+<!-- File Tagging Reference -->
+<div>
+<h4 class="font-label-bold text-on-surface-variant uppercase mb-3">Available Metadata Tags</h4>
+<div class="flex flex-wrap gap-2">
+<span class="px-2.5 py-1 bg-surface-container border border-outline-variant text-on-surface-variant text-[11px] font-label-bold rounded-full cursor-pointer hover:border-secondary hover:text-secondary">Master Layout</span>
+<span class="px-2.5 py-1 bg-surface-container border border-outline-variant text-on-surface-variant text-[11px] font-label-bold rounded-full cursor-pointer hover:border-secondary hover:text-secondary">Unit Floor Plan</span>
+<span class="px-2.5 py-1 bg-surface-container border border-outline-variant text-on-surface-variant text-[11px] font-label-bold rounded-full cursor-pointer hover:border-secondary hover:text-secondary">Legal RERA Certificate</span>
+<span class="px-2.5 py-1 bg-surface-container border border-outline-variant text-on-surface-variant text-[11px] font-label-bold rounded-full cursor-pointer hover:border-secondary hover:text-secondary">Sample Flat Video</span>
+<span class="px-2.5 py-1 bg-surface-container border border-outline-variant text-on-surface-variant text-[11px] font-label-bold rounded-full cursor-pointer hover:border-secondary hover:text-secondary">+ Custom Tag</span>
+</div>
+</div>
+<!-- Settings / Controls -->
+<div class="mt-auto pt-4 border-t border-surface-variant">
+<label class="flex items-start gap-3 cursor-pointer group">
+<div class="relative inline-flex items-center mt-1">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-9 h-5 bg-surface-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-secondary"></div>
+</div>
+<div>
+<div class="font-label-bold text-on-surface group-hover:text-secondary transition-colors">14-Day Freshness Circuit Breaker</div>
+<div class="font-body-sm text-on-surface-variant text-[12px] mt-1 leading-tight">Automatically flag properties inactive if price unverified for 14 days.</div>
+</div>
+</label>
+</div>
+</div>
+</section>
+</div>
+</div>
+</main>
+</body></html>

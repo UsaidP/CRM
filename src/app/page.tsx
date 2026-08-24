@@ -2,7 +2,6 @@ import Link from 'next/link';
 import { prisma } from '@/lib/db/prisma';
 import { assessUnitFreshness } from '@/lib/domain/verification-engine';
 import { evaluateEngagementTier } from '@/lib/domain/portal-generator';
-import { HallmarkStamp } from '@/components/ui/HallmarkStamp';
 import { 
   Building2,
   ShieldCheck, 
@@ -23,17 +22,39 @@ import {
   DollarSign,
   Calendar,
   Phone,
+  PhoneCall,
   MessageSquare,
   Car,
   ExternalLink,
   Check,
   ChevronRight,
-  Filter
+  Filter,
+  Download,
+  CalendarDays,
+  Plus,
+  PlaySquare,
+  TrendingDown,
+  Layers,
+  BarChart3,
+  QrCode,
+  Compass,
 } from 'lucide-react';
 import { YoutubeIcon, InstagramIcon } from '@/components/icons/SocialIcons';
+import { HallmarkStamp } from '@/components/ui/HallmarkStamp';
 import { rankFirmLeadsForNextConnect } from '@/lib/domain/prioritization-engine';
+import { formatDateTime, formatDateWithWeekday } from '@/lib/date-utils';
 
 export const dynamic = 'force-dynamic';
+
+function formatIndianCurrency(amount: number) {
+  if (amount >= 10000000) {
+    return `₹${(amount / 10000000).toFixed(2)} Cr`;
+  }
+  if (amount >= 100000) {
+    return `₹${(amount / 100000).toFixed(1)} L`;
+  }
+  return `₹${amount.toLocaleString('en-IN')}`;
+}
 
 export default async function DashboardPage() {
   let projectCount = 0;
@@ -55,6 +76,7 @@ export default async function DashboardPage() {
   let topConnectNext: any = null;
   let pendingReminders: any[] = [];
   let overdueRemindersCount = 0;
+  let rankedLeads: any[] = [];
 
   try {
     const [
@@ -137,13 +159,9 @@ export default async function DashboardPage() {
 
     // Evaluate Connect Next Recommendation
     const nonClosed = rawLeads.filter((l) => l.currentStage !== 'closed_lost' && l.currentStage !== 'closed_won');
-    const ranked = rankFirmLeadsForNextConnect(nonClosed, new Date());
-    if (ranked.length > 0) {
-      const topScore = ranked[0];
-      const fullLead = rawLeads.find((l) => l.id === topScore.leadId);
-      if (fullLead) {
-        topConnectNext = { ...topScore, fullLead };
-      }
+    rankedLeads = rankFirmLeadsForNextConnect(nonClosed, new Date());
+    if (rankedLeads.length > 0) {
+      topConnectNext = rankedLeads[0];
     }
 
     overdueRemindersCount = rawReminders.filter((r) => new Date(r.dueAt).getTime() < Date.now()).length;
@@ -318,7 +336,7 @@ export default async function DashboardPage() {
                   )}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="px-4 py-2 bg-status-success hover:opacity-90 text-zinc-950 font-bold text-xs rounded-xl shadow-lg transition-all flex items-center gap-1.5"
+                  className="px-4 py-2 bg-status-success hover:opacity-90 text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
                 >
                   <MessageSquare className="w-4 h-4" />
                   <span>WhatsApp Client</span>
@@ -520,7 +538,7 @@ export default async function DashboardPage() {
                         href={`https://wa.me/${lead.phoneE164.replace(/\+/g, '')}?text=${encodeURIComponent(`Hi ${lead.fullName || 'Client'}, thank you for connecting with ZamZam Properties regarding Navi Mumbai property options. How can I assist you today?`)}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="px-3 py-1.5 rounded-lg bg-status-success hover:opacity-90 text-zinc-950 font-semibold text-xs transition-all flex items-center gap-1.5 shadow-md"
+                        className="px-3 py-1.5 rounded-lg bg-status-success hover:opacity-90 text-white font-bold text-xs transition-all flex items-center gap-1.5 shadow-xs cursor-pointer"
                       >
                         <MessageSquare className="w-3.5 h-3.5" />
                         WhatsApp
@@ -657,12 +675,7 @@ export default async function DashboardPage() {
                       </div>
                       <p className="text-[11px] text-content-secondary truncate max-w-xs">{rem.title}</p>
                       <p className="text-[10px] font-mono text-content-muted">
-                        {new Date(rem.dueAt).toLocaleTimeString([], {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                          day: 'numeric',
-                          month: 'short',
-                        })}
+                        {formatDateTime(rem.dueAt)}
                       </p>
                     </div>
 
@@ -720,11 +733,7 @@ export default async function DashboardPage() {
             <div className="space-y-3">
               {siteVisits.slice(0, 2).map((visit) => {
                 const stops = JSON.parse(visit.itineraryUnitsJson || '[]');
-                const dateStr = new Date(visit.scheduledDate).toLocaleDateString('en-IN', {
-                  weekday: 'short',
-                  day: 'numeric',
-                  month: 'short',
-                });
+                const dateStr = formatDateWithWeekday(visit.scheduledDate);
 
                 return (
                   <div

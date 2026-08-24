@@ -53,6 +53,7 @@ import { QuickLogModal } from '@/components/leads/QuickLogModal';
 import { AccessibleDialog } from '@/components/ui/AccessibleDialog';
 import { evaluateLeadConnectPriority, rankFirmLeadsForNextConnect, PrioritizedLeadScore } from '@/lib/domain/prioritization-engine';
 import { TelecallerConsoleView } from '@/components/leads/TelecallerConsoleView';
+import { formatDateTime } from '@/lib/date-utils';
 
 export function LeadsMatrixClient({ initialLeads = [] }: { initialLeads?: any[] }) {
   const [leads, setLeads] = useState<any[]>(initialLeads);
@@ -443,7 +444,7 @@ export function LeadsMatrixClient({ initialLeads = [] }: { initialLeads?: any[] 
                     )}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="px-4 py-2.5 bg-status-success hover:opacity-90 text-zinc-950 font-bold text-xs rounded-xl shadow-xs transition-all flex items-center gap-2"
+                    className="px-4 py-2.5 bg-status-success hover:opacity-90 text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center gap-2 cursor-pointer"
                   >
                     <MessageSquare className="w-4 h-4" />
                     <span>WhatsApp Now</span>
@@ -742,13 +743,8 @@ export function LeadsMatrixClient({ initialLeads = [] }: { initialLeads?: any[] 
                                   <Clock className="w-3 h-3" />
                                   {isReminderOverdue ? 'OVERDUE' : 'SCHEDULED'}
                                 </span>
-                                <span suppressHydrationWarning className="text-xs text-content-secondary font-mono font-medium">
-                                  {new Date(nextReminder.dueAt).toLocaleTimeString([], {
-                                    hour: '2-digit',
-                                    minute: '2-digit',
-                                    day: 'numeric',
-                                    month: 'short',
-                                  })}
+                                <span className="text-xs text-content-secondary font-mono font-medium">
+                                  {formatDateTime(nextReminder.dueAt)}
                                 </span>
                               </div>
                               <p className="text-xs text-content font-semibold truncate max-w-xs group-hover/rem:text-accent flex items-center gap-1">

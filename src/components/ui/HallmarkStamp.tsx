@@ -1,6 +1,5 @@
-'use client';
-
 import React from 'react';
+import { formatDateFull } from '@/lib/date-utils';
 
 interface HallmarkStampProps {
   type?: 'rera' | 'audit' | 'ledger' | 'source' | 'verified';
@@ -22,7 +21,7 @@ export function HallmarkStamp({
   const formattedDate = date
     ? typeof date === 'string'
       ? date
-      : new Date(date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+      : formatDateFull(date)
     : undefined;
 
   const defaultLabels = {

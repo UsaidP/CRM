@@ -820,196 +820,268 @@ export function InventoryClient({
         descriptionId="add-project-description"
         size="xl"
       >
-            <div className="flex items-center justify-between pb-3 border-b border-[#b59658]/20">
-              <div className="flex items-center gap-2">
-                <Building2 className="w-4 h-4 text-[#b59658]" />
-                <div>
-                  <h2 id="add-project-title" className="font-bold text-white text-base font-display">{editingProjectId ? 'Edit developer project' : 'Add developer project and RERA profile'}</h2>
-                  <p id="add-project-description" className="mt-1 text-[11px] text-slate-400">Shape the project story, media, location context, and commercial record used in client proposals.</p>
-                </div>
-              </div>
-              <button type="button" data-dialog-close aria-label="Close project form" onClick={() => { setShowAddProjectModal(false); setEditingProjectId(null); }} className="min-h-11 min-w-11 text-slate-400 hover:text-white p-1">
-                <X className="w-4 h-4" />
-              </button>
+        <div className="flex items-center justify-between pb-3 border-b border-border">
+          <div className="flex items-center gap-2">
+            <Building2 className="w-4 h-4 text-accent" />
+            <div>
+              <h2 id="add-project-title" className="font-bold text-content text-base font-display">
+                {editingProjectId ? 'Edit Developer Project' : 'Add Developer Project & RERA Profile'}
+              </h2>
+              <p id="add-project-description" className="mt-1 text-xs text-content-muted">
+                Shape the project story, media, location context, and commercial record used in client proposals.
+              </p>
             </div>
+          </div>
+          <button
+            type="button"
+            data-dialog-close
+            aria-label="Close project form"
+            onClick={() => { setShowAddProjectModal(false); setEditingProjectId(null); }}
+            className="p-1 rounded-lg text-content-muted hover:text-content hover:bg-surface-subtle transition-colors cursor-pointer"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
 
-            {actionError && <div role="alert" className="rounded-lg border border-red-500/40 bg-red-950/50 p-3 text-xs text-red-200">{actionError}</div>}
+        {actionError && (
+          <div role="alert" className="rounded-xl border border-status-danger/40 bg-status-danger-surface p-3 text-xs text-status-danger font-medium mt-3">
+            {actionError}
+          </div>
+        )}
 
-            <form onSubmit={handleCreateProject} className="space-y-3.5">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="text-slate-300 block mb-1">Developer / Builder Name *</label>
-                  <input
-                    type="text"
-                    aria-label="Developer or builder name"
-                    data-dialog-autofocus
-                    required
-                    placeholder="e.g. Crown Lifespaces"
-                    value={projectForm.developerName}
-                    onChange={(e) => setProjectForm({ ...projectForm, developerName: e.target.value })}
-                    className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2 text-white placeholder-slate-500 focus:outline-none focus:border-[#ccb67b]"
-                  />
-                </div>
-                <div>
-                  <label className="text-slate-300 block mb-1">Project Name *</label>
-                  <input
-                    type="text"
-                    aria-label="Project name"
-                    required
-                    placeholder="e.g. Crown Heights Luxury"
-                    value={projectForm.projectName}
-                    onChange={(e) => setProjectForm({ ...projectForm, projectName: e.target.value })}
-                    className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2 text-white placeholder-slate-500 focus:outline-none focus:border-[#ccb67b]"
-                  />
-                </div>
-              </div>
+        <form onSubmit={handleCreateProject} className="space-y-4 pt-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-bold text-content block mb-1">Developer / Builder Name *</label>
+              <input
+                type="text"
+                aria-label="Developer or builder name"
+                data-dialog-autofocus
+                required
+                placeholder="e.g. Crown Lifespaces"
+                value={projectForm.developerName}
+                onChange={(e) => setProjectForm({ ...projectForm, developerName: e.target.value })}
+                className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content placeholder-content-muted focus:outline-hidden focus:border-accent focus:ring-1 focus:ring-accent font-medium"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-content block mb-1">Project Name *</label>
+              <input
+                type="text"
+                aria-label="Project name"
+                required
+                placeholder="e.g. Crown Heights Luxury"
+                value={projectForm.projectName}
+                onChange={(e) => setProjectForm({ ...projectForm, projectName: e.target.value })}
+                className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content placeholder-content-muted focus:outline-hidden focus:border-accent focus:ring-1 focus:ring-accent font-medium"
+              />
+            </div>
+          </div>
 
-              <div className="space-y-3 rounded-xl border border-[#b59658]/15 bg-[#12151f] p-3">
-                <div>
-                  <label className="text-slate-300 block mb-1">Client-facing one-line summary</label>
-                  <input aria-label="Project short description" type="text" maxLength={240} placeholder="A calm, design-led address with valley-facing residences" value={projectForm.shortDescription} onChange={(e) => setProjectForm({ ...projectForm, shortDescription: e.target.value })} className="w-full bg-[#1b202c] border border-[#b59658]/25 rounded-lg p-2 text-white placeholder-slate-500" />
-                </div>
-                <div>
-                  <label className="text-slate-300 block mb-1">Project description</label>
-                  <textarea aria-label="Project description" rows={4} maxLength={4000} placeholder="Describe the design intent, living experience, delivery context, and what makes the project relevant to this client." value={projectForm.description} onChange={(e) => setProjectForm({ ...projectForm, description: e.target.value })} className="w-full bg-[#1b202c] border border-[#b59658]/25 rounded-lg p-2 text-white placeholder-slate-500" />
-                </div>
-                <div>
-                  <label className="text-slate-300 block mb-1">Location story</label>
-                  <textarea aria-label="Project location description" rows={2} maxLength={1000} placeholder="Explain access, nearby transit, schools, retail, and the micro-market in human terms." value={projectForm.locationDescription} onChange={(e) => setProjectForm({ ...projectForm, locationDescription: e.target.value })} className="w-full bg-[#1b202c] border border-[#b59658]/25 rounded-lg p-2 text-white placeholder-slate-500" />
-                </div>
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  <div>
-                    <label className="text-slate-300 block mb-1">Key highlights <span className="text-slate-500">(one per line)</span></label>
-                    <textarea aria-label="Project key highlights" rows={4} placeholder="Valley-facing balconies\nLow-density two-tower plan\nWalkable metro access" value={projectForm.keyHighlights.join('\n')} onChange={(e) => setProjectForm({ ...projectForm, keyHighlights: e.target.value.split('\n').map((item) => item.trim()).filter(Boolean) })} className="w-full bg-[#1b202c] border border-[#b59658]/25 rounded-lg p-2 text-white placeholder-slate-500" />
-                  </div>
-                  <div>
-                    <label className="text-slate-300 block mb-1">Amenities <span className="text-slate-500">(one per line)</span></label>
-                    <textarea aria-label="Project amenities" rows={4} placeholder="Clubhouse\nSwimming pool\nFitness studio" value={projectForm.amenities.join('\n')} onChange={(e) => setProjectForm({ ...projectForm, amenities: e.target.value.split('\n').map((item) => item.trim()).filter(Boolean) })} className="w-full bg-[#1b202c] border border-[#b59658]/25 rounded-lg p-2 text-white placeholder-slate-500" />
-                  </div>
-                </div>
-                <div>
-                  <label className="text-slate-300 block mb-1">Cover image URL <span className="text-slate-500">(optional; uploaded gallery can be used automatically)</span></label>
-                  <input aria-label="Project cover image URL" type="url" placeholder="https://…" value={projectForm.coverImageUrl} onChange={(e) => setProjectForm({ ...projectForm, coverImageUrl: e.target.value })} className="w-full bg-[#1b202c] border border-[#b59658]/25 rounded-lg p-2 text-white placeholder-slate-500" />
-                </div>
-                <MediaUploader value={projectForm.mediaGallery} onChange={(mediaGallery) => setProjectForm({ ...projectForm, mediaGallery })} label="Project gallery" />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="text-slate-300 block mb-1">MahaRERA Registration Number *</label>
-                  <input
-                    type="text"
-                    aria-label="RERA registration number"
-                    required
-                    placeholder="e.g. P52000018920"
-                    value={projectForm.reraNumber}
-                    onChange={(e) => setProjectForm({ ...projectForm, reraNumber: e.target.value.toUpperCase() })}
-                    className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2 text-white placeholder-slate-500 font-bold text-amber-300 focus:outline-none focus:border-[#ccb67b]"
-                  />
-                </div>
-                <div>
-                  <label className="text-slate-300 block mb-1">Micro-Market Locality *</label>
-                  <select aria-label="Micro-market locality"
-                    value={projectForm.microMarket}
-                    onChange={(e) => setProjectForm({ ...projectForm, microMarket: e.target.value })}
-                    className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2 text-white focus:outline-none focus:border-[#ccb67b]"
-                  >
-                    <option value="Kharghar Sector 35">Kharghar Sector 35</option>
-                    <option value="Kharghar Sector 36">Kharghar Sector 36</option>
-                    <option value="Kharghar Sector 20">Kharghar Sector 20</option>
-                    <option value="Taloja Phase 1">Taloja Phase 1</option>
-                    <option value="Upper Kharghar">Upper Kharghar</option>
-                    <option value="Roadpali">Roadpali</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div>
-                  <label className="text-slate-300 block mb-1">Distance to Metro (Km)</label>
-                  <input aria-label="Distance to metro in kilometres"
-                    type="number"
-                    step="0.05"
-                    value={projectForm.distanceToMetroKm}
-                    onChange={(e) => setProjectForm({ ...projectForm, distanceToMetroKm: Number(e.target.value) })}
-                    className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2 text-white"
-                  />
-                </div>
-                <div>
-                  <label className="text-slate-300 block mb-1">Base Price / Sqft (₹)</label>
-                  <input aria-label="Base price per square foot"
-                    type="number"
-                    step="50"
-                    value={projectForm.basePricePerSqft}
-                    onChange={(e) => setProjectForm({ ...projectForm, basePricePerSqft: Number(e.target.value) })}
-                    className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2 text-white"
-                  />
-                </div>
-                <div>
-                  <label className="text-slate-300 block mb-1">Std Commission %</label>
-                  <input aria-label="Standard commission percentage"
-                    type="number"
-                    step="0.1"
-                    value={projectForm.standardCommissionPercent}
-                    onChange={(e) => setProjectForm({ ...projectForm, standardCommissionPercent: Number(e.target.value) })}
-                    className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2 text-white"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="text-slate-300 block mb-1">Developer Sales POC Name</label>
-                  <input aria-label="Developer sales point of contact name"
-                    type="text"
-                    placeholder="e.g. Vikram Joshi"
-                    value={projectForm.developerSalesPocName}
-                    onChange={(e) => setProjectForm({ ...projectForm, developerSalesPocName: e.target.value })}
-                    className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2 text-white"
-                  />
-                </div>
-                <div>
-                  <label className="text-slate-300 block mb-1">Developer Sales POC Mobile</label>
-                  <input aria-label="Developer sales point of contact mobile"
-                    type="text"
-                    placeholder="+91 98190 01122"
-                    value={projectForm.developerSalesPocPhone}
-                    onChange={(e) => setProjectForm({ ...projectForm, developerSalesPocPhone: e.target.value })}
-                    className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2 text-white"
-                  />
-                </div>
-              </div>
-
-              <div className="p-3 rounded-lg bg-[#12151f] border border-[#b59658]/20 flex items-center justify-between">
-                <div>
-                  <span className="text-white font-bold block">Occupancy Certificate (OC) Received</span>
-                  <span className="text-[10px] text-slate-400">If checked, buyers pay 0% statutory GST.</span>
-                </div>
-                <input aria-label="Occupancy certificate received"
-                  type="checkbox"
-                  checked={projectForm.hasOccupancyCertificate}
-                  onChange={(e) => setProjectForm({ ...projectForm, hasOccupancyCertificate: e.target.checked })}
-                  className="w-4 h-4 accent-[#ccb67b] cursor-pointer"
+          <div className="space-y-3 rounded-2xl border border-border bg-surface-subtle/50 p-4">
+            <div>
+              <label className="text-xs font-bold text-content block mb-1">Client-facing one-line summary</label>
+              <input
+                aria-label="Project short description"
+                type="text"
+                maxLength={240}
+                placeholder="A calm, design-led address with valley-facing residences"
+                value={projectForm.shortDescription}
+                onChange={(e) => setProjectForm({ ...projectForm, shortDescription: e.target.value })}
+                className="w-full bg-surface border border-border rounded-xl p-2.5 text-xs text-content placeholder-content-muted focus:outline-hidden focus:border-accent font-medium"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-content block mb-1">Project description</label>
+              <textarea
+                aria-label="Project description"
+                rows={3}
+                maxLength={4000}
+                placeholder="Describe the design intent, living experience, delivery context, and what makes the project relevant to this client."
+                value={projectForm.description}
+                onChange={(e) => setProjectForm({ ...projectForm, description: e.target.value })}
+                className="w-full bg-surface border border-border rounded-xl p-2.5 text-xs text-content placeholder-content-muted focus:outline-hidden focus:border-accent font-medium"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-content block mb-1">Location story</label>
+              <textarea
+                aria-label="Project location description"
+                rows={2}
+                maxLength={1000}
+                placeholder="Explain access, nearby transit, schools, retail, and the micro-market in human terms."
+                value={projectForm.locationDescription}
+                onChange={(e) => setProjectForm({ ...projectForm, locationDescription: e.target.value })}
+                className="w-full bg-surface border border-border rounded-xl p-2.5 text-xs text-content placeholder-content-muted focus:outline-hidden focus:border-accent font-medium"
+              />
+            </div>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div>
+                <label className="text-xs font-bold text-content block mb-1">
+                  Key highlights <span className="text-content-muted font-normal">(one per line)</span>
+                </label>
+                <textarea
+                  aria-label="Project key highlights"
+                  rows={3}
+                  placeholder="Valley-facing balconies&#10;Low-density two-tower plan&#10;Walkable metro access"
+                  value={projectForm.keyHighlights.join('\n')}
+                  onChange={(e) => setProjectForm({ ...projectForm, keyHighlights: e.target.value.split('\n').map((item) => item.trim()).filter(Boolean) })}
+                  className="w-full bg-surface border border-border rounded-xl p-2.5 text-xs text-content placeholder-content-muted focus:outline-hidden focus:border-accent font-medium"
                 />
               </div>
-
-              <div className="pt-2 flex justify-end gap-2 border-t border-[#b59658]/20">
-                <button
-                  type="button"
-                  onClick={() => setShowAddProjectModal(false)}
-                  className="min-h-11 px-3 py-1.5 rounded-lg bg-[#12151f] text-slate-300 hover:text-white"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={creatingProject}
-                  className="min-h-11 px-4 py-1.5 rounded-lg bg-gradient-to-r from-[#8a6f3c] via-[#b59658] to-[#ccb67b] text-[#12151f] font-bold shadow-md cursor-pointer"
-                >
-                  {creatingProject ? 'Saving…' : editingProjectId ? 'Save project changes' : 'Register project'}
-                </button>
+              <div>
+                <label className="text-xs font-bold text-content block mb-1">
+                  Amenities <span className="text-content-muted font-normal">(one per line)</span>
+                </label>
+                <textarea
+                  aria-label="Project amenities"
+                  rows={3}
+                  placeholder="Clubhouse&#10;Swimming pool&#10;Fitness studio"
+                  value={projectForm.amenities.join('\n')}
+                  onChange={(e) => setProjectForm({ ...projectForm, amenities: e.target.value.split('\n').map((item) => item.trim()).filter(Boolean) })}
+                  className="w-full bg-surface border border-border rounded-xl p-2.5 text-xs text-content placeholder-content-muted focus:outline-hidden focus:border-accent font-medium"
+                />
               </div>
-            </form>
+            </div>
+            <div>
+              <label className="text-xs font-bold text-content block mb-1">
+                Cover image URL <span className="text-content-muted font-normal">(optional)</span>
+              </label>
+              <input
+                aria-label="Project cover image URL"
+                type="url"
+                placeholder="https://…"
+                value={projectForm.coverImageUrl}
+                onChange={(e) => setProjectForm({ ...projectForm, coverImageUrl: e.target.value })}
+                className="w-full bg-surface border border-border rounded-xl p-2.5 text-xs text-content placeholder-content-muted focus:outline-hidden focus:border-accent font-medium"
+              />
+            </div>
+            <MediaUploader value={projectForm.mediaGallery} onChange={(mediaGallery) => setProjectForm({ ...projectForm, mediaGallery })} label="Project gallery" />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-bold text-content block mb-1">MahaRERA Registration Number *</label>
+              <input
+                type="text"
+                aria-label="RERA registration number"
+                required
+                placeholder="e.g. P52000018920"
+                value={projectForm.reraNumber}
+                onChange={(e) => setProjectForm({ ...projectForm, reraNumber: e.target.value.toUpperCase() })}
+                className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content font-mono font-bold focus:outline-hidden focus:border-accent focus:ring-1 focus:ring-accent"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-content block mb-1">Micro-Market Locality *</label>
+              <select
+                aria-label="Micro-market locality"
+                value={projectForm.microMarket}
+                onChange={(e) => setProjectForm({ ...projectForm, microMarket: e.target.value })}
+                className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content focus:outline-hidden focus:border-accent focus:ring-1 focus:ring-accent font-medium"
+              >
+                <option value="Kharghar Sector 35" className="bg-surface text-content">Kharghar Sector 35</option>
+                <option value="Kharghar Sector 36" className="bg-surface text-content">Kharghar Sector 36</option>
+                <option value="Kharghar Sector 20" className="bg-surface text-content">Kharghar Sector 20</option>
+                <option value="Taloja Phase 1" className="bg-surface text-content">Taloja Phase 1</option>
+                <option value="Upper Kharghar" className="bg-surface text-content">Upper Kharghar</option>
+                <option value="Roadpali" className="bg-surface text-content">Roadpali</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label className="text-xs font-bold text-content block mb-1">Distance to Metro (Km)</label>
+              <input
+                aria-label="Distance to metro in kilometres"
+                type="number"
+                step="0.05"
+                value={projectForm.distanceToMetroKm}
+                onChange={(e) => setProjectForm({ ...projectForm, distanceToMetroKm: Number(e.target.value) })}
+                className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content font-mono focus:outline-hidden focus:border-accent font-medium"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-content block mb-1">Base Price / Sqft (₹)</label>
+              <input
+                aria-label="Base price per square foot"
+                type="number"
+                step="50"
+                value={projectForm.basePricePerSqft}
+                onChange={(e) => setProjectForm({ ...projectForm, basePricePerSqft: Number(e.target.value) })}
+                className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content font-mono focus:outline-hidden focus:border-accent font-medium"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-content block mb-1">Std Commission %</label>
+              <input
+                aria-label="Standard commission percentage"
+                type="number"
+                step="0.1"
+                value={projectForm.standardCommissionPercent}
+                onChange={(e) => setProjectForm({ ...projectForm, standardCommissionPercent: Number(e.target.value) })}
+                className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content font-mono focus:outline-hidden focus:border-accent font-medium"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-bold text-content block mb-1">Developer Sales POC Name</label>
+              <input
+                aria-label="Developer sales point of contact name"
+                type="text"
+                placeholder="e.g. Vikram Joshi"
+                value={projectForm.developerSalesPocName}
+                onChange={(e) => setProjectForm({ ...projectForm, developerSalesPocName: e.target.value })}
+                className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content placeholder-content-muted focus:outline-hidden focus:border-accent font-medium"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-content block mb-1">Developer Sales POC Mobile</label>
+              <input
+                aria-label="Developer sales point of contact mobile"
+                type="text"
+                placeholder="+91 98190 01122"
+                value={projectForm.developerSalesPocPhone}
+                onChange={(e) => setProjectForm({ ...projectForm, developerSalesPocPhone: e.target.value })}
+                className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content placeholder-content-muted font-mono focus:outline-hidden focus:border-accent font-medium"
+              />
+            </div>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-surface-subtle border border-border flex items-center justify-between">
+            <div>
+              <span className="text-content font-bold text-xs block">Occupancy Certificate (OC) Received</span>
+              <span className="text-[11px] text-content-muted">If checked, buyers pay 0% statutory GST.</span>
+            </div>
+            <input
+              aria-label="Occupancy certificate received"
+              type="checkbox"
+              checked={projectForm.hasOccupancyCertificate}
+              onChange={(e) => setProjectForm({ ...projectForm, hasOccupancyCertificate: e.target.checked })}
+              className="w-4 h-4 accent-accent cursor-pointer rounded"
+            />
+          </div>
+
+          <div className="pt-3 flex justify-end gap-2 border-t border-border">
+            <button
+              type="button"
+              onClick={() => setShowAddProjectModal(false)}
+              className="px-4 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-bold transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={creatingProject}
+              className="px-5 py-2 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold shadow-sm transition-all cursor-pointer"
+            >
+              {creatingProject ? 'Saving…' : editingProjectId ? 'Save project changes' : 'Register project'}
+            </button>
+          </div>
+        </form>
       </AccessibleDialog>
 
       {/* ========================================================================= */}
@@ -1022,192 +1094,265 @@ export function InventoryClient({
         descriptionId="add-unit-description"
         size="xl"
       >
-            <div className="flex items-center justify-between pb-3 border-b border-[#b59658]/20">
-              <div className="flex items-center gap-2">
-                <Plus className="w-4 h-4 text-[#b59658]" />
-                <div>
-                  <h2 id="add-unit-title" className="font-bold text-white text-base font-display">{editingUnitId ? 'Edit property unit' : 'Add property unit'}</h2>
-                  <p id="add-unit-description" className="mt-1 text-[11px] text-slate-400">Capture the unit story, floor plan, media, and transparent commercial inputs for a client-ready presentation.</p>
-                </div>
-              </div>
-              <button type="button" data-dialog-close aria-label="Close unit form" onClick={() => { setShowAddModal(false); setEditingUnitId(null); }} className="min-h-11 min-w-11 text-slate-400 hover:text-white p-1">
-                <X className="w-4 h-4" />
-              </button>
+        <div className="flex items-center justify-between pb-3 border-b border-border">
+          <div className="flex items-center gap-2">
+            <Plus className="w-4 h-4 text-accent" />
+            <div>
+              <h2 id="add-unit-title" className="font-bold text-content text-base font-display">
+                {editingUnitId ? 'Edit Property Unit' : 'Add Property Unit'}
+              </h2>
+              <p id="add-unit-description" className="mt-1 text-xs text-content-muted">
+                Capture the unit story, floor plan, media, and transparent commercial inputs for a client-ready presentation.
+              </p>
             </div>
+          </div>
+          <button
+            type="button"
+            data-dialog-close
+            aria-label="Close unit form"
+            onClick={() => { setShowAddModal(false); setEditingUnitId(null); }}
+            className="p-1 rounded-lg text-content-muted hover:text-content hover:bg-surface-subtle transition-colors cursor-pointer"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
 
-            {actionError && <div role="alert" className="rounded-lg border border-red-500/40 bg-red-950/50 p-3 text-xs text-red-200">{actionError}</div>}
+        {actionError && (
+          <div role="alert" className="rounded-xl border border-status-danger/40 bg-status-danger-surface p-3 text-xs text-status-danger font-medium mt-3">
+            {actionError}
+          </div>
+        )}
 
-            <form onSubmit={handleCreateUnit} className="space-y-3.5">
-              <div>
-                <label className="text-slate-300 block mb-1">Developer Project *</label>
-                <select aria-label="Developer project"
-                  data-dialog-autofocus
-                  value={unitForm.projectId}
-                  onChange={(e) => setUnitForm({ ...unitForm, projectId: e.target.value })}
-                  className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2 text-white focus:outline-none focus:border-[#ccb67b]"
-                >
-                  {projects.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.projectName} ({p.developerName} • {p.microMarket})
-                    </option>
-                  ))}
-                </select>
-              </div>
+        <form onSubmit={handleCreateUnit} className="space-y-4 pt-3">
+          <div>
+            <label className="text-xs font-bold text-content block mb-1">Developer Project *</label>
+            <select
+              aria-label="Developer project"
+              data-dialog-autofocus
+              value={unitForm.projectId}
+              onChange={(e) => setUnitForm({ ...unitForm, projectId: e.target.value })}
+              className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content focus:outline-hidden focus:border-accent focus:ring-1 focus:ring-accent font-medium"
+            >
+              {projects.map((p) => (
+                <option key={p.id} value={p.id} className="bg-surface text-content">
+                  {p.projectName} ({p.developerName} • {p.microMarket})
+                </option>
+              ))}
+            </select>
+          </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div>
-                  <label className="text-slate-300 block mb-1">Unit Number</label>
-                  <input aria-label="Unit number"
-                    type="text"
-                    placeholder="e.g. A-1204"
-                    value={unitForm.unitNumber}
-                    onChange={(e) => setUnitForm({ ...unitForm, unitNumber: e.target.value })}
-                    className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2 text-white"
-                  />
-                </div>
-                <div>
-                  <label className="text-slate-300 block mb-1">BHK Config</label>
-                  <select aria-label="BHK configuration"
-                    value={unitForm.bhk}
-                    onChange={(e) => setUnitForm({ ...unitForm, bhk: Number(e.target.value) })}
-                    className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2 text-white"
-                  >
-                    <option value="1">1 BHK</option>
-                    <option value="2">2 BHK</option>
-                    <option value="3">3 BHK</option>
-                    <option value="4">4 BHK</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="text-slate-300 block mb-1">Carpet Area (Sq.Ft) *</label>
-                  <input aria-label="Carpet area in square feet"
-                    type="number"
-                    required
-                    value={unitForm.carpetAreaSqft}
-                    onChange={(e) => setUnitForm({ ...unitForm, carpetAreaSqft: Number(e.target.value) })}
-                    className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2 text-white"
-                  />
-                </div>
-              </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label className="text-xs font-bold text-content block mb-1">Unit Number</label>
+              <input
+                aria-label="Unit number"
+                type="text"
+                placeholder="e.g. A-1204"
+                value={unitForm.unitNumber}
+                onChange={(e) => setUnitForm({ ...unitForm, unitNumber: e.target.value })}
+                className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content font-mono focus:outline-hidden focus:border-accent font-medium"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-content block mb-1">BHK Config</label>
+              <select
+                aria-label="BHK configuration"
+                value={unitForm.bhk}
+                onChange={(e) => setUnitForm({ ...unitForm, bhk: Number(e.target.value) })}
+                className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content focus:outline-hidden focus:border-accent font-medium"
+              >
+                <option value="1" className="bg-surface text-content">1 BHK</option>
+                <option value="2" className="bg-surface text-content">2 BHK</option>
+                <option value="3" className="bg-surface text-content">3 BHK</option>
+                <option value="4" className="bg-surface text-content">4 BHK</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-bold text-content block mb-1">Carpet Area (Sq.Ft) *</label>
+              <input
+                aria-label="Carpet area in square feet"
+                type="number"
+                required
+                value={unitForm.carpetAreaSqft}
+                onChange={(e) => setUnitForm({ ...unitForm, carpetAreaSqft: Number(e.target.value) })}
+                className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content font-mono focus:outline-hidden focus:border-accent font-medium"
+              />
+            </div>
+          </div>
 
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <div>
-                  <label className="text-slate-300 block mb-1">Bathrooms</label>
-                  <input aria-label="Number of bathrooms" type="number" min={1} value={unitForm.bathrooms} onChange={(e) => setUnitForm({ ...unitForm, bathrooms: Number(e.target.value) })} className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2 text-white" />
-                </div>
-                <div>
-                  <label className="text-slate-300 block mb-1">Balconies</label>
-                  <input aria-label="Number of balconies" type="number" min={0} value={unitForm.balconies} onChange={(e) => setUnitForm({ ...unitForm, balconies: Number(e.target.value) })} className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2 text-white" />
-                </div>
-              </div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div>
+              <label className="text-xs font-bold text-content block mb-1">Bathrooms</label>
+              <input
+                aria-label="Number of bathrooms"
+                type="number"
+                min={1}
+                value={unitForm.bathrooms}
+                onChange={(e) => setUnitForm({ ...unitForm, bathrooms: Number(e.target.value) })}
+                className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content font-mono focus:outline-hidden focus:border-accent font-medium"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-content block mb-1">Balconies</label>
+              <input
+                aria-label="Number of balconies"
+                type="number"
+                min={0}
+                value={unitForm.balconies}
+                onChange={(e) => setUnitForm({ ...unitForm, balconies: Number(e.target.value) })}
+                className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content font-mono focus:outline-hidden focus:border-accent font-medium"
+              />
+            </div>
+          </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div>
-                  <label className="text-slate-300 block mb-1">Floor Number</label>
-                  <input aria-label="Floor number"
-                    type="number"
-                    value={unitForm.floorNumber}
-                    onChange={(e) => setUnitForm({ ...unitForm, floorNumber: Number(e.target.value) })}
-                    className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2 text-white"
-                  />
-                </div>
-                <div>
-                  <label className="text-slate-300 block mb-1">Total Floors</label>
-                  <input aria-label="Total floors"
-                    type="number"
-                    value={unitForm.totalFloors}
-                    onChange={(e) => setUnitForm({ ...unitForm, totalFloors: Number(e.target.value) })}
-                    className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2 text-white"
-                  />
-                </div>
-                <div>
-                  <label className="text-slate-300 block mb-1">Facing</label>
-                  <select aria-label="Unit facing"
-                    value={unitForm.facing}
-                    onChange={(e) => setUnitForm({ ...unitForm, facing: e.target.value })}
-                    className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2 text-white"
-                  >
-                    <option value="EAST">EAST</option>
-                    <option value="WEST">WEST</option>
-                    <option value="NORTH">NORTH</option>
-                    <option value="SOUTH">SOUTH</option>
-                    <option value="NORTH_EAST">NORTH_EAST</option>
-                  </select>
-                </div>
-              </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label className="text-xs font-bold text-content block mb-1">Floor Number</label>
+              <input
+                aria-label="Floor number"
+                type="number"
+                value={unitForm.floorNumber}
+                onChange={(e) => setUnitForm({ ...unitForm, floorNumber: Number(e.target.value) })}
+                className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content font-mono focus:outline-hidden focus:border-accent font-medium"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-content block mb-1">Total Floors</label>
+              <input
+                aria-label="Total floors"
+                type="number"
+                value={unitForm.totalFloors}
+                onChange={(e) => setUnitForm({ ...unitForm, totalFloors: Number(e.target.value) })}
+                className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content font-mono focus:outline-hidden focus:border-accent font-medium"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-content block mb-1">Facing</label>
+              <select
+                aria-label="Unit facing"
+                value={unitForm.facing}
+                onChange={(e) => setUnitForm({ ...unitForm, facing: e.target.value })}
+                className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content focus:outline-hidden focus:border-accent font-medium"
+              >
+                <option value="EAST" className="bg-surface text-content">EAST</option>
+                <option value="WEST" className="bg-surface text-content">WEST</option>
+                <option value="NORTH" className="bg-surface text-content">NORTH</option>
+                <option value="SOUTH" className="bg-surface text-content">SOUTH</option>
+                <option value="NORTH_EAST" className="bg-surface text-content">NORTH_EAST</option>
+              </select>
+            </div>
+          </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="text-slate-300 block mb-1">Agreement Base Value (₹) *</label>
-                  <input aria-label="Agreement base value"
-                    type="number"
-                    required
-                    step="10000"
-                    value={unitForm.agreementValue}
-                    onChange={(e) => setUnitForm({ ...unitForm, agreementValue: Number(e.target.value) })}
-                    className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2 text-white font-bold text-[#ccb67b]"
-                  />
-                </div>
-                <div>
-                  <label className="text-slate-300 block mb-1">Possession Status</label>
-                  <select aria-label="Possession status"
-                    value={unitForm.possessionStatus}
-                    onChange={(e) => setUnitForm({ ...unitForm, possessionStatus: e.target.value })}
-                    className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2 text-white"
-                  >
-                    <option value="READY_TO_MOVE">READY_TO_MOVE (0% GST with OC)</option>
-                    <option value="UNDER_CONSTRUCTION">UNDER_CONSTRUCTION (5% GST)</option>
-                  </select>
-                </div>
-              </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-bold text-content block mb-1">Agreement Base Value (₹) *</label>
+              <input
+                aria-label="Agreement base value"
+                type="number"
+                required
+                step="10000"
+                value={unitForm.agreementValue}
+                onChange={(e) => setUnitForm({ ...unitForm, agreementValue: Number(e.target.value) })}
+                className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content font-mono font-bold focus:outline-hidden focus:border-accent focus:ring-1 focus:ring-accent"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-content block mb-1">Possession Status</label>
+              <select
+                aria-label="Possession status"
+                value={unitForm.possessionStatus}
+                onChange={(e) => setUnitForm({ ...unitForm, possessionStatus: e.target.value })}
+                className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content focus:outline-hidden focus:border-accent font-medium"
+              >
+                <option value="READY_TO_MOVE" className="bg-surface text-content">READY_TO_MOVE (0% GST with OC)</option>
+                <option value="UNDER_CONSTRUCTION" className="bg-surface text-content">UNDER_CONSTRUCTION (5% GST)</option>
+              </select>
+            </div>
+          </div>
 
-              <div className="space-y-3 rounded-xl border border-[#b59658]/15 bg-[#12151f] p-3">
-                <div>
-                  <label className="text-slate-300 block mb-1">Client-facing unit description</label>
-                  <textarea aria-label="Unit description" rows={4} maxLength={4000} placeholder="Describe the light, outlook, layout, finishes, and the kind of buyer this home suits." value={unitForm.description} onChange={(e) => setUnitForm({ ...unitForm, description: e.target.value })} className="w-full bg-[#1b202c] border border-[#b59658]/25 rounded-lg p-2 text-white placeholder-slate-500" />
-                </div>
-                <div>
-                  <label className="text-slate-300 block mb-1">Feature highlights <span className="text-slate-500">(one per line)</span></label>
-                  <textarea aria-label="Unit feature highlights" rows={3} placeholder="Corner living room\nMorning light\nTwo covered parking bays" value={unitForm.featureHighlights.join('\n')} onChange={(e) => setUnitForm({ ...unitForm, featureHighlights: e.target.value.split('\n').map((item) => item.trim()).filter(Boolean) })} className="w-full bg-[#1b202c] border border-[#b59658]/25 rounded-lg p-2 text-white placeholder-slate-500" />
-                </div>
-                <div>
-                  <label className="text-slate-300 block mb-1">Floor plan URL <span className="text-slate-500">(optional)</span></label>
-                  <input aria-label="Floor plan URL" type="url" placeholder="https://…" value={unitForm.floorPlanUrl} onChange={(e) => setUnitForm({ ...unitForm, floorPlanUrl: e.target.value })} className="w-full bg-[#1b202c] border border-[#b59658]/25 rounded-lg p-2 text-white placeholder-slate-500" />
-                </div>
-                <div>
-                  <label className="text-slate-300 block mb-1">External walkthrough URL <span className="text-slate-500">(optional)</span></label>
-                  <input aria-label="External walkthrough URL" type="url" placeholder="YouTube, Vimeo, or builder walkthrough link" value={unitForm.videoReelUrl} onChange={(e) => setUnitForm({ ...unitForm, videoReelUrl: e.target.value })} className="w-full bg-[#1b202c] border border-[#b59658]/25 rounded-lg p-2 text-white placeholder-slate-500" />
-                </div>
-                <MediaUploader value={unitForm.mediaGallery} onChange={(mediaGallery) => setUnitForm({ ...unitForm, mediaGallery, photoUrls: mediaGallery.filter((asset) => asset.kind === 'image').map((asset) => asset.url) })} label="Unit gallery and walkthrough" />
-              </div>
+          <div className="space-y-3 rounded-2xl border border-border bg-surface-subtle/50 p-4">
+            <div>
+              <label className="text-xs font-bold text-content block mb-1">Client-facing unit description</label>
+              <textarea
+                aria-label="Unit description"
+                rows={3}
+                maxLength={4000}
+                placeholder="Describe the light, outlook, layout, finishes, and the kind of buyer this home suits."
+                value={unitForm.description}
+                onChange={(e) => setUnitForm({ ...unitForm, description: e.target.value })}
+                className="w-full bg-surface border border-border rounded-xl p-2.5 text-xs text-content placeholder-content-muted focus:outline-hidden focus:border-accent font-medium"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-content block mb-1">
+                Feature highlights <span className="text-content-muted font-normal">(one per line)</span>
+              </label>
+              <textarea
+                aria-label="Unit feature highlights"
+                rows={2}
+                placeholder="Corner living room&#10;Morning light&#10;Two covered parking bays"
+                value={unitForm.featureHighlights.join('\n')}
+                onChange={(e) => setUnitForm({ ...unitForm, featureHighlights: e.target.value.split('\n').map((item) => item.trim()).filter(Boolean) })}
+                className="w-full bg-surface border border-border rounded-xl p-2.5 text-xs text-content placeholder-content-muted focus:outline-hidden focus:border-accent font-medium"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-content block mb-1">
+                Floor plan URL <span className="text-content-muted font-normal">(optional)</span>
+              </label>
+              <input
+                aria-label="Floor plan URL"
+                type="url"
+                placeholder="https://…"
+                value={unitForm.floorPlanUrl}
+                onChange={(e) => setUnitForm({ ...unitForm, floorPlanUrl: e.target.value })}
+                className="w-full bg-surface border border-border rounded-xl p-2.5 text-xs text-content placeholder-content-muted focus:outline-hidden focus:border-accent font-medium"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-content block mb-1">
+                External walkthrough URL <span className="text-content-muted font-normal">(optional)</span>
+              </label>
+              <input
+                aria-label="External walkthrough URL"
+                type="url"
+                placeholder="YouTube, Vimeo, or builder walkthrough link"
+                value={unitForm.videoReelUrl}
+                onChange={(e) => setUnitForm({ ...unitForm, videoReelUrl: e.target.value })}
+                className="w-full bg-surface border border-border rounded-xl p-2.5 text-xs text-content placeholder-content-muted focus:outline-hidden focus:border-accent font-medium"
+              />
+            </div>
+            <MediaUploader value={unitForm.mediaGallery} onChange={(mediaGallery) => setUnitForm({ ...unitForm, mediaGallery, photoUrls: mediaGallery.filter((asset) => asset.kind === 'image').map((asset) => asset.url) })} label="Unit gallery and walkthrough" />
+          </div>
 
-              <div>
-                <label className="text-slate-300 block mb-1">Audit Log / Inspection Verification Notes</label>
-                <textarea aria-label="Audit log and inspection verification notes"
-                  rows={2}
-                  value={unitForm.verificationNotes}
-                  onChange={(e) => setUnitForm({ ...unitForm, verificationNotes: e.target.value })}
-                  className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2 text-white"
-                />
-              </div>
+          <div>
+            <label className="text-xs font-bold text-content block mb-1">Audit Log / Inspection Verification Notes</label>
+            <textarea
+              aria-label="Audit log and inspection verification notes"
+              rows={2}
+              value={unitForm.verificationNotes}
+              onChange={(e) => setUnitForm({ ...unitForm, verificationNotes: e.target.value })}
+              className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content placeholder-content-muted focus:outline-hidden focus:border-accent font-medium"
+            />
+          </div>
 
-              <div className="pt-2 flex justify-end gap-2 border-t border-[#b59658]/20">
-                <button
-                  type="button"
-                  onClick={() => setShowAddModal(false)}
-                  className="min-h-11 px-3 py-1.5 rounded-lg bg-[#12151f] text-slate-300 hover:text-white"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={creatingUnit}
-                  className="min-h-11 px-4 py-1.5 rounded-lg bg-gradient-to-r from-[#8a6f3c] via-[#b59658] to-[#ccb67b] text-[#12151f] font-bold shadow-md cursor-pointer"
-                >
-                  {creatingUnit ? 'Saving…' : editingUnitId ? 'Save unit changes' : 'Add property unit'}
-                </button>
-              </div>
-            </form>
+          <div className="pt-3 flex justify-end gap-2 border-t border-border">
+            <button
+              type="button"
+              onClick={() => setShowAddModal(false)}
+              className="px-4 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-bold transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={creatingUnit}
+              className="px-5 py-2 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold shadow-sm transition-all cursor-pointer"
+            >
+              {creatingUnit ? 'Saving…' : editingUnitId ? 'Save unit changes' : 'Add property unit'}
+            </button>
+          </div>
+        </form>
       </AccessibleDialog>
 
       {/* ========================================================================= */}
@@ -1222,76 +1367,92 @@ export function InventoryClient({
       >
         {verifyModalUnit && (
           <>
-            <div className="flex items-center justify-between pb-3 border-b border-[#b59658]/20">
+            <div className="flex items-center justify-between pb-3 border-b border-border">
               <div>
-              <h2 id="verify-unit-title" className="font-bold text-white text-sm font-display flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-[#b59658]" />
-                Inventory update record
-              </h2>
-              <p id="verify-unit-description" className="mt-1 text-[11px] text-slate-400">Record the source and status used for the freshness date.</p>
+                <h2 id="verify-unit-title" className="font-bold text-content text-base font-display flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-accent" />
+                  Inventory Update Record
+                </h2>
+                <p id="verify-unit-description" className="mt-1 text-xs text-content-muted">
+                  Record the source and status used for the freshness date.
+                </p>
               </div>
-              <button type="button" data-dialog-close aria-label="Close inventory update" onClick={() => setVerifyModalUnit(null)} className="min-h-11 min-w-11 text-slate-400 hover:text-white">✕</button>
+              <button
+                type="button"
+                data-dialog-close
+                aria-label="Close inventory update"
+                onClick={() => setVerifyModalUnit(null)}
+                className="p-1 rounded-lg text-content-muted hover:text-content hover:bg-surface-subtle transition-colors cursor-pointer"
+              >
+                ✕
+              </button>
             </div>
 
             {auditSuccessMsg ? (
-              <div className="p-4 rounded-xl bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 text-center">
+              <div className="p-4 rounded-xl bg-status-success-surface border border-status-success/40 text-status-success font-medium text-xs text-center my-3">
                 ✓ {auditSuccessMsg}
               </div>
             ) : (
               <>
-              {actionError && <div role="alert" className="rounded-lg border border-red-500/40 bg-red-950/50 p-3 text-xs text-red-200">{actionError}</div>}
-              <form onSubmit={handleVerifyUnit} className="space-y-3.5 pt-2">
-                <div>
-                  <span className="text-slate-400 block">Target Unit:</span>
-                  <strong className="text-white">
-                    {verifyModalUnit.project?.projectName} - Unit {verifyModalUnit.unitNumber} ({verifyModalUnit.bhk} BHK)
-                  </strong>
-                </div>
+                {actionError && (
+                  <div role="alert" className="rounded-xl border border-status-danger/40 bg-status-danger-surface p-3 text-xs text-status-danger font-medium mt-3">
+                    {actionError}
+                  </div>
+                )}
+                <form onSubmit={handleVerifyUnit} className="space-y-4 pt-3">
+                  <div className="p-3 rounded-xl bg-surface-subtle border border-border">
+                    <span className="text-content-muted text-[11px] block">Target Unit:</span>
+                    <strong className="text-content text-xs font-bold">
+                      {verifyModalUnit.project?.projectName} - Unit {verifyModalUnit.unitNumber} ({verifyModalUnit.bhk} BHK)
+                    </strong>
+                  </div>
 
-                <div>
-                  <label className="text-slate-300 block mb-1">Target Verification Status:</label>
-                  <select aria-label="Target verification status"
-                    data-dialog-autofocus
-                    value={targetStatus}
-                    onChange={(e) => setTargetStatus(e.target.value)}
-                    className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2.5 text-white focus:outline-none focus:border-amber-500/60"
-                  >
-                    <option value="ACTIVE_MARKETABLE">ACTIVE_MARKETABLE (broker update &lt;14d)</option>
-                    <option value="PHYSICALLY_AUDITED">PHYSICALLY_AUDITED (internal status)</option>
-                    <option value="STALE_EXPIRED">STALE_EXPIRED</option>
-                    <option value="ARCHIVED_SOLD">ARCHIVED_SOLD</option>
-                  </select>
-                </div>
+                  <div>
+                    <label className="text-xs font-bold text-content block mb-1">Target Verification Status:</label>
+                    <select
+                      aria-label="Target verification status"
+                      data-dialog-autofocus
+                      value={targetStatus}
+                      onChange={(e) => setTargetStatus(e.target.value)}
+                      className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content focus:outline-hidden focus:border-accent focus:ring-1 focus:ring-accent font-medium"
+                    >
+                      <option value="ACTIVE_MARKETABLE" className="bg-surface text-content">ACTIVE_MARKETABLE (broker update &lt;14d)</option>
+                      <option value="PHYSICALLY_AUDITED" className="bg-surface text-content">PHYSICALLY_AUDITED (internal status)</option>
+                      <option value="STALE_EXPIRED" className="bg-surface text-content">STALE_EXPIRED</option>
+                      <option value="ARCHIVED_SOLD" className="bg-surface text-content">ARCHIVED_SOLD</option>
+                    </select>
+                  </div>
 
-                <div>
-                  <label className="text-slate-300 block mb-1">Mandatory Update Notes:</label>
-                  <textarea aria-label="Mandatory update notes"
-                    rows={3}
-                    value={auditNotes}
-                    onChange={(e) => setAuditNotes(e.target.value)}
-                    placeholder="Record the source, price check, availability update, or site review…"
-                    className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2.5 text-white focus:outline-none focus:border-amber-500/60"
-                    required
-                  />
-                </div>
+                  <div>
+                    <label className="text-xs font-bold text-content block mb-1">Mandatory Update Notes:</label>
+                    <textarea
+                      aria-label="Mandatory update notes"
+                      rows={3}
+                      value={auditNotes}
+                      onChange={(e) => setAuditNotes(e.target.value)}
+                      placeholder="Record the source, price check, availability update, or site review…"
+                      className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content placeholder-content-muted focus:outline-hidden focus:border-accent focus:ring-1 focus:ring-accent font-medium"
+                      required
+                    />
+                  </div>
 
-                <div className="pt-2 flex flex-col-reverse sm:flex-row justify-end gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setVerifyModalUnit(null)}
-                    className="min-h-11 px-4 py-2 rounded-lg bg-[#12151f] text-slate-300 hover:bg-slate-800 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={submittingAudit}
-                    className="min-h-11 px-5 py-2 rounded-lg bg-gradient-to-r from-[#8a6f3c] via-[#b59658] to-[#ccb67b] text-[#12151f] font-bold shadow-md cursor-pointer hover:brightness-110 transition-all"
-                  >
-                    {submittingAudit ? 'Recording…' : 'Record update'}
-                  </button>
-                </div>
-              </form>
+                  <div className="pt-3 flex flex-col-reverse sm:flex-row justify-end gap-2 border-t border-border">
+                    <button
+                      type="button"
+                      onClick={() => setVerifyModalUnit(null)}
+                      className="px-4 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-bold transition-colors cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={submittingAudit}
+                      className="px-5 py-2 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold shadow-sm transition-all cursor-pointer"
+                    >
+                      {submittingAudit ? 'Recording…' : 'Record Update'}
+                    </button>
+                  </div>
+                </form>
               </>
             )}
           </>
@@ -1310,55 +1471,67 @@ export function InventoryClient({
       >
         {calcModalUnit && (
           <>
-            <div className="flex items-center justify-between pb-3 border-b border-[#b59658]/20">
+            <div className="flex items-center justify-between pb-3 border-b border-border">
               <div>
-                <h2 id="cost-sheet-title" className="font-bold text-white text-base font-display">Statutory all-in cost sheet</h2>
-                <p id="cost-sheet-description" className="text-[10px] text-slate-400">{calcModalUnit.project?.projectName} • Unit {calcModalUnit.unitNumber}</p>
+                <h2 id="cost-sheet-title" className="font-bold text-content text-base font-display">
+                  Statutory All-in Cost Sheet
+                </h2>
+                <p id="cost-sheet-description" className="text-xs text-content-muted">
+                  {calcModalUnit.project?.projectName} • Unit {calcModalUnit.unitNumber}
+                </p>
               </div>
-              <button type="button" data-dialog-close aria-label="Close cost sheet" onClick={() => setCalcModalUnit(null)} className="min-h-11 min-w-11 text-slate-400 hover:text-white">✕</button>
+              <button
+                type="button"
+                data-dialog-close
+                aria-label="Close cost sheet"
+                onClick={() => setCalcModalUnit(null)}
+                className="p-1 rounded-lg text-content-muted hover:text-content hover:bg-surface-subtle transition-colors cursor-pointer"
+              >
+                ✕
+              </button>
             </div>
 
-            <div className="space-y-2 divide-y divide-[#b59658]/10 text-slate-300">
-              <div className="flex justify-between pt-1">
+            <div className="space-y-2 divide-y divide-border text-xs text-content-muted pt-2">
+              <div className="flex justify-between pt-2">
                 <span>Agreement Base Value:</span>
-                <strong className="text-white">{formatINR(calcModalUnit.agreementValue)}</strong>
+                <strong className="text-content font-mono font-bold">{formatINR(calcModalUnit.agreementValue)}</strong>
               </div>
-              <div className="flex justify-between pt-1">
+              <div className="flex justify-between pt-2">
                 <span>Maharashtra Stamp Duty ({calcModalUnit.stampDutyRate}%):</span>
-                <strong className="text-white">{formatINR(Math.round((calcModalUnit.agreementValue * calcModalUnit.stampDutyRate) / 100))}</strong>
+                <strong className="text-content font-mono font-bold">{formatINR(Math.round((calcModalUnit.agreementValue * calcModalUnit.stampDutyRate) / 100))}</strong>
               </div>
-              <div className="flex justify-between pt-1">
+              <div className="flex justify-between pt-2">
                 <span>Registration Fee (1% capped at ₹30k):</span>
-                <strong className="text-white">{formatINR(calcModalUnit.registrationFee)}</strong>
+                <strong className="text-content font-mono font-bold">{formatINR(calcModalUnit.registrationFee)}</strong>
               </div>
-              <div className="flex justify-between pt-1">
+              <div className="flex justify-between pt-2">
                 <span>GST ({calcModalUnit.gstRate}% {calcModalUnit.gstRate === 0 ? 'OC Received' : 'Under-Construction'}):</span>
-                <strong className="text-white">{formatINR(Math.round((calcModalUnit.agreementValue * calcModalUnit.gstRate) / 100))}</strong>
+                <strong className="text-content font-mono font-bold">{formatINR(Math.round((calcModalUnit.agreementValue * calcModalUnit.gstRate) / 100))}</strong>
               </div>
-              <div className="flex justify-between pt-1">
+              <div className="flex justify-between pt-2">
                 <span>Floor Rise Charges:</span>
-                <strong className="text-white">{formatINR(calcModalUnit.floorRiseCharges)}</strong>
+                <strong className="text-content font-mono font-bold">{formatINR(calcModalUnit.floorRiseCharges)}</strong>
               </div>
-              <div className="flex justify-between pt-1">
+              <div className="flex justify-between pt-2">
                 <span>Covered Car Parking:</span>
-                <strong className="text-white">{formatINR(calcModalUnit.parkingCharges)}</strong>
+                <strong className="text-content font-mono font-bold">{formatINR(calcModalUnit.parkingCharges)}</strong>
               </div>
-              <div className="flex justify-between pt-1">
+              <div className="flex justify-between pt-2">
                 <span>Society Development / Club Charges:</span>
-                <strong className="text-white">{formatINR(calcModalUnit.societyDevelopmentCharges)}</strong>
+                <strong className="text-content font-mono font-bold">{formatINR(calcModalUnit.societyDevelopmentCharges)}</strong>
               </div>
-              <div className="flex justify-between pt-2 border-t border-[#b59658]/30 text-sm font-bold text-[#ccb67b]">
+              <div className="flex justify-between pt-3 border-t border-border text-sm font-bold text-accent">
                 <span>Total All-Inclusive Capitalized Cost:</span>
-                <span>{formatINR(calcModalUnit.allInTotalCost)}</span>
+                <span className="font-mono">{formatINR(calcModalUnit.allInTotalCost)}</span>
               </div>
             </div>
 
-            <div className="pt-2 flex justify-end">
+            <div className="pt-4 flex justify-end border-t border-border mt-3">
               <button
                 type="button"
                 data-dialog-autofocus
                 onClick={() => setCalcModalUnit(null)}
-                className="min-h-11 px-4 py-1.5 rounded-lg bg-[#12151f] hover:bg-[#2a3040] text-slate-200 border border-[#b59658]/30 cursor-pointer"
+                className="px-5 py-2 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold shadow-sm transition-all cursor-pointer"
               >
                 Close Cost Sheet
               </button>

@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import { HallmarkStamp } from '@/components/ui/HallmarkStamp';
 import { AccessibleDialog } from '@/components/ui/AccessibleDialog';
+import { formatDateFull, formatTimeShort } from '@/lib/date-utils';
 
 export function DealsLedgerClient({
   initialDeals = [],
@@ -595,12 +596,8 @@ export function DealsLedgerClient({
                           <HallmarkStamp type="ledger" label="Recorded" size="sm" />
                           <span>{deal.closingBroker?.fullName || 'Senior Broker'}</span>
                         </div>
-                        <div suppressHydrationWarning className="text-[10px] text-content-muted mt-0.5 font-mono">
-                          {new Date(deal.bookingDate).toLocaleDateString('en-IN', {
-                            day: '2-digit',
-                            month: 'short',
-                            year: 'numeric',
-                          })} • {new Date(deal.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                        <div className="text-[10px] text-content-muted mt-0.5 font-mono">
+                          {formatDateFull(deal.bookingDate)} • {formatTimeShort(deal.createdAt)}
                         </div>
                       </td>
 
@@ -677,140 +674,154 @@ export function DealsLedgerClient({
         descriptionId="register-deal-description"
         size="lg"
       >
-            <div className="flex items-center justify-between pb-3 border-b border-[#b59658]/20">
-              <div>
-              <h2 id="register-deal-title" className="font-bold text-white text-base font-display flex items-center gap-2">
-                <DollarSign className="w-4 h-4 text-[#b59658]" />
-                Register property deal and commission split
-              </h2>
-              <p id="register-deal-description" className="mt-1 text-[11px] text-slate-400">Create a ledger record for the buyer, unit, and agreed brokerage split.</p>
-              </div>
-              <button type="button" data-dialog-close aria-label="Close register deal form" onClick={() => setShowRegisterModal(false)} className="min-h-11 min-w-11 text-slate-400 hover:text-white">✕</button>
+        <div className="flex items-center justify-between pb-3 border-b border-border">
+          <div>
+            <h2 id="register-deal-title" className="font-bold text-content text-base font-display flex items-center gap-2">
+              <DollarSign className="w-4 h-4 text-accent" />
+              Register Property Deal &amp; Commission Split
+            </h2>
+            <p id="register-deal-description" className="mt-1 text-xs text-content-muted">
+              Create a verified ledger record for the buyer, unit, and agreed brokerage split.
+            </p>
+          </div>
+          <button
+            type="button"
+            data-dialog-close
+            aria-label="Close register deal form"
+            onClick={() => setShowRegisterModal(false)}
+            className="p-1 rounded-lg text-content-muted hover:text-content hover:bg-surface-subtle transition-colors cursor-pointer"
+          >
+            ✕
+          </button>
+        </div>
+
+        {actionError && (
+          <div role="alert" className="rounded-xl border border-status-danger/40 bg-status-danger-surface p-3 text-xs text-status-danger font-medium mt-3">
+            {actionError}
+          </div>
+        )}
+
+        <form onSubmit={handleRegisterDeal} className="space-y-4 pt-3">
+          <div>
+            <label htmlFor="deal-lead" className="text-xs font-bold text-content block mb-1">Purchaser Lead:</label>
+            <select
+              id="deal-lead"
+              name="leadId"
+              data-dialog-autofocus
+              value={selectedLeadId}
+              onChange={(e) => setSelectedLeadId(e.target.value)}
+              className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content focus:outline-hidden focus:border-accent focus:ring-1 focus:ring-accent font-medium"
+            >
+              {leads.map((l) => (
+                <option key={l.id} value={l.id} className="bg-surface text-content">
+                  {l.fullName} ({l.phoneE164})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="deal-unit" className="text-xs font-bold text-content block mb-1">Purchased Property Unit:</label>
+            <select
+              id="deal-unit"
+              name="propertyUnitId"
+              value={selectedUnitId}
+              onChange={(e) => setSelectedUnitId(e.target.value)}
+              className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content focus:outline-hidden focus:border-accent focus:ring-1 focus:ring-accent font-medium"
+            >
+              {units.map((u) => (
+                <option key={u.id} value={u.id} className="bg-surface text-content">
+                  {u.project?.projectName} - Unit {u.unitNumber} ({u.bhk} BHK • ₹{(u.agreementValue / 100000).toFixed(2)}L)
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label htmlFor="deal-brokerage" className="text-xs font-bold text-content block mb-1">Developer Brokerage (%):</label>
+              <input
+                id="deal-brokerage"
+                name="brokeragePercent"
+                type="number"
+                step="0.1"
+                value={brokeragePercent}
+                onChange={(e) => setBrokeragePercent(Number(e.target.value))}
+                className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content font-mono focus:outline-hidden focus:border-accent focus:ring-1 focus:ring-accent font-medium"
+              />
             </div>
 
-            {actionError && <div role="alert" className="rounded-lg border border-red-500/40 bg-red-950/50 p-3 text-xs text-red-200">{actionError}</div>}
+            <div>
+              <label htmlFor="deal-rep-split" className="text-xs font-bold text-content block mb-1">Sales Rep Split (%):</label>
+              <input
+                id="deal-rep-split"
+                name="repSplitPercent"
+                type="number"
+                step="1"
+                value={repSplitPercent}
+                onChange={(e) => setRepSplitPercent(Number(e.target.value))}
+                className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content font-mono focus:outline-hidden focus:border-accent focus:ring-1 focus:ring-accent font-medium"
+              />
+            </div>
+          </div>
 
-            <form onSubmit={handleRegisterDeal} className="space-y-3.5 pt-2">
-              <div>
-                <label htmlFor="deal-lead" className="text-slate-300 block mb-1">Purchaser lead:</label>
-                <select
-                  id="deal-lead"
-                  name="leadId"
-                  data-dialog-autofocus
-                  value={selectedLeadId}
-                  onChange={(e) => setSelectedLeadId(e.target.value)}
-                  className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2.5 text-white focus:outline-none focus:border-amber-500/60"
-                >
-                  {leads.map((l) => (
-                    <option key={l.id} value={l.id}>
-                      {l.fullName} ({l.phoneE164})
-                    </option>
-                  ))}
-                </select>
-              </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label htmlFor="deal-co-broker" className="text-xs font-bold text-content block mb-1">Co-Broker Firm (Optional):</label>
+              <input
+                id="deal-co-broker"
+                name="coBrokerName"
+                type="text"
+                placeholder="e.g. Shree Ganesh Properties"
+                value={coBrokerName}
+                onChange={(e) => setCoBrokerName(e.target.value)}
+                className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content placeholder-content-muted focus:outline-hidden focus:border-accent focus:ring-1 focus:ring-accent font-medium"
+              />
+            </div>
 
-              <div>
-                <label htmlFor="deal-unit" className="text-slate-300 block mb-1">Purchased property unit:</label>
-                <select
-                  id="deal-unit"
-                  name="propertyUnitId"
-                  value={selectedUnitId}
-                  onChange={(e) => setSelectedUnitId(e.target.value)}
-                  className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2.5 text-white focus:outline-none focus:border-amber-500/60"
-                >
-                  {units.map((u) => (
-                    <option key={u.id} value={u.id}>
-                      {u.project?.projectName} - Unit {u.unitNumber} ({u.bhk} BHK • ₹{(u.agreementValue / 100000).toFixed(2)}L)
-                    </option>
-                  ))}
-                </select>
-              </div>
+            <div>
+              <label htmlFor="deal-co-broker-share" className="text-xs font-bold text-content block mb-1">Co-Broker Share (%):</label>
+              <input
+                id="deal-co-broker-share"
+                name="coBrokerSharePercent"
+                type="number"
+                step="1"
+                value={coBrokerSharePercent}
+                onChange={(e) => setCoBrokerSharePercent(Number(e.target.value))}
+                className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content font-mono focus:outline-hidden focus:border-accent focus:ring-1 focus:ring-accent font-medium"
+              />
+            </div>
+          </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label htmlFor="deal-brokerage" className="text-slate-300 block mb-1">Developer brokerage percentage:</label>
-                  <input
-                    id="deal-brokerage"
-                    name="brokeragePercent"
-                    type="number"
-                    step="0.1"
-                    value={brokeragePercent}
-                    onChange={(e) => setBrokeragePercent(Number(e.target.value))}
-                    className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2.5 text-white focus:outline-none focus:border-amber-500/60"
-                  />
-                </div>
+          <div>
+            <label htmlFor="deal-notes" className="text-xs font-bold text-content block mb-1">Transaction Notes:</label>
+            <textarea
+              id="deal-notes"
+              name="notes"
+              rows={2}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content placeholder-content-muted focus:outline-hidden focus:border-accent focus:ring-1 focus:ring-accent font-medium"
+            />
+          </div>
 
-                <div>
-                  <label htmlFor="deal-rep-split" className="text-slate-300 block mb-1">Sales representative split percentage:</label>
-                  <input
-                    id="deal-rep-split"
-                    name="repSplitPercent"
-                    type="number"
-                    step="1"
-                    value={repSplitPercent}
-                    onChange={(e) => setRepSplitPercent(Number(e.target.value))}
-                    className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2.5 text-white focus:outline-none focus:border-amber-500/60"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label htmlFor="deal-co-broker" className="text-slate-300 block mb-1">Co-broker firm (optional):</label>
-                  <input
-                    id="deal-co-broker"
-                    name="coBrokerName"
-                    type="text"
-                    placeholder="e.g. Shree Ganesh Properties"
-                    value={coBrokerName}
-                    onChange={(e) => setCoBrokerName(e.target.value)}
-                    className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2.5 text-white focus:outline-none focus:border-amber-500/60"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="deal-co-broker-share" className="text-slate-300 block mb-1">Co-broker share percentage:</label>
-                  <input
-                    id="deal-co-broker-share"
-                    name="coBrokerSharePercent"
-                    type="number"
-                    step="1"
-                    value={coBrokerSharePercent}
-                    onChange={(e) => setCoBrokerSharePercent(Number(e.target.value))}
-                    className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2.5 text-white focus:outline-none focus:border-amber-500/60"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label htmlFor="deal-notes" className="text-slate-300 block mb-1">Transaction notes:</label>
-                <textarea
-                  id="deal-notes"
-                  name="notes"
-                  rows={2}
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2.5 text-white focus:outline-none focus:border-amber-500/60"
-                />
-              </div>
-
-              <div className="pt-2 flex flex-col-reverse sm:flex-row justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setShowRegisterModal(false)}
-                  className="min-h-11 px-4 py-2 rounded-lg bg-[#12151f] text-slate-300 hover:bg-slate-800 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="min-h-11 px-5 py-2 rounded-lg bg-gradient-to-r from-[#8a6f3c] via-[#b59658] to-[#ccb67b] text-[#12151f] font-bold shadow-md hover:brightness-110 transition-all"
-                >
-                  {submitting ? 'Recording…' : 'Register deal'}
-                </button>
-              </div>
-            </form>
+          <div className="pt-3 border-t border-border flex flex-col-reverse sm:flex-row justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => setShowRegisterModal(false)}
+              className="px-4 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-bold transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="px-5 py-2 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold shadow-sm transition-all cursor-pointer"
+            >
+              {submitting ? 'Recording…' : 'Register Deal'}
+            </button>
+          </div>
+        </form>
       </AccessibleDialog>
 
       {/* MODAL: Update Milestone Status */}
@@ -823,59 +834,79 @@ export function DealsLedgerClient({
       >
         {updateDeal && (
           <>
-            <div className="flex items-center justify-between pb-3 border-b border-[#b59658]/20">
+            <div className="flex items-center justify-between pb-3 border-b border-border">
               <div>
-                <h2 id="update-milestone-title" className="font-bold text-white text-base font-display">Update payment milestone</h2>
-                <p id="update-milestone-description" className="mt-1 text-[11px] text-slate-400">Record the next confirmed payment or invoice state.</p>
+                <h2 id="update-milestone-title" className="font-bold text-content text-base font-display">
+                  Update Payment Milestone
+                </h2>
+                <p id="update-milestone-description" className="mt-1 text-xs text-content-muted">
+                  Record the next confirmed payment or invoice state.
+                </p>
               </div>
-              <button type="button" data-dialog-close aria-label="Close update milestone form" onClick={() => setUpdateDeal(null)} className="min-h-11 min-w-11 text-slate-400 hover:text-white">✕</button>
+              <button
+                type="button"
+                data-dialog-close
+                aria-label="Close update milestone form"
+                onClick={() => setUpdateDeal(null)}
+                className="p-1 rounded-lg text-content-muted hover:text-content hover:bg-surface-subtle transition-colors cursor-pointer"
+              >
+                ✕
+              </button>
             </div>
 
-            {actionError && <div role="alert" className="rounded-lg border border-red-500/40 bg-red-950/50 p-3 text-xs text-red-200">{actionError}</div>}
+            {actionError && (
+              <div role="alert" className="rounded-xl border border-status-danger/40 bg-status-danger-surface p-3 text-xs text-status-danger font-medium mt-3">
+                {actionError}
+              </div>
+            )}
 
-            <form onSubmit={handleUpdateStatus} className="space-y-3.5 pt-2">
+            <form onSubmit={handleUpdateStatus} className="space-y-4 pt-3">
               <div>
-                <label htmlFor="milestone-status" className="text-slate-300 block mb-1">Target milestone status:</label>
+                <label htmlFor="milestone-status" className="text-xs font-bold text-content block mb-1">
+                  Target Milestone Status:
+                </label>
                 <select
                   id="milestone-status"
                   name="dealStatus"
                   data-dialog-autofocus
                   value={newStatus}
                   onChange={(e) => setNewStatus(e.target.value)}
-                  className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2.5 text-white focus:outline-none focus:border-amber-500/60"
+                  className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content focus:outline-hidden focus:border-accent focus:ring-1 focus:ring-accent font-medium"
                 >
-                  <option value="TOKEN_RECEIVED">TOKEN_RECEIVED (Booking Advance)</option>
-                  <option value="AGREEMENT_REGISTERED">AGREEMENT_REGISTERED (Sub-Registrar)</option>
-                  <option value="INVOICE_SENT">INVOICE_SENT (GST Tax Invoice)</option>
-                  <option value="PAYMENT_RECEIVED">PAYMENT_RECEIVED (RTGS Cleared)</option>
-                  <option value="CANCELLED">CANCELLED</option>
+                  <option value="TOKEN_RECEIVED" className="bg-surface text-content">TOKEN_RECEIVED (Booking Advance)</option>
+                  <option value="AGREEMENT_REGISTERED" className="bg-surface text-content">AGREEMENT_REGISTERED (Sub-Registrar)</option>
+                  <option value="INVOICE_SENT" className="bg-surface text-content">INVOICE_SENT (GST Tax Invoice)</option>
+                  <option value="PAYMENT_RECEIVED" className="bg-surface text-content">PAYMENT_RECEIVED (RTGS Cleared)</option>
+                  <option value="CANCELLED" className="bg-surface text-content">CANCELLED</option>
                 </select>
               </div>
 
               <div>
-                <label htmlFor="invoice-number" className="text-slate-300 block mb-1">GST tax invoice number:</label>
+                <label htmlFor="invoice-number" className="text-xs font-bold text-content block mb-1">
+                  GST Tax Invoice Number:
+                </label>
                 <input
                   id="invoice-number"
                   name="developerInvoiceNumber"
                   type="text"
                   value={invoiceNumber}
                   onChange={(e) => setInvoiceNumber(e.target.value)}
-                  className="w-full bg-[#12151f] border border-[#b59658]/30 rounded-lg p-2 text-white"
+                  className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content font-mono focus:outline-hidden focus:border-accent focus:ring-1 focus:ring-accent font-medium"
                 />
               </div>
 
-              <div className="pt-2 flex justify-end gap-2">
+              <div className="pt-3 border-t border-border flex justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setUpdateDeal(null)}
-                  className="min-h-11 px-3 py-1.5 rounded-lg bg-[#12151f] text-slate-300"
+                  className="px-4 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-bold transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={savingStatus}
-                  className="min-h-11 px-4 py-1.5 rounded-lg bg-gradient-to-r from-[#8a6f3c] via-[#b59658] to-[#ccb67b] text-[#12151f] font-bold shadow-md"
+                  className="px-5 py-2 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold shadow-sm transition-all cursor-pointer"
                 >
                   {savingStatus ? 'Saving…' : 'Update status'}
                 </button>

@@ -13,22 +13,33 @@ import {
   TrendingUp, 
   FileText, 
   Layers,
-  ArrowRight,
-  ShieldCheck,
-  Zap,
-  DollarSign
+  ArrowRight, 
+  ShieldCheck, 
+  Zap, 
+  DollarSign,
+  Download,
+  MessageSquare,
+  Save,
+  Building2,
+  MapPin,
+  Check,
+  Percent,
+  Sliders,
+  Award
 } from 'lucide-react';
 import { HallmarkStamp } from '@/components/ui/HallmarkStamp';
 
 export default function CostCalculatorPage() {
-  const [agreementValue, setAgreementValue] = useState<number>(5500000);
+  const [agreementValue, setAgreementValue] = useState<number>(6800000);
   const [hasOC, setHasOC] = useState<boolean>(false);
   const [isFemaleBuyer, setIsFemaleBuyer] = useState<boolean>(false);
   const [floorNumber, setFloorNumber] = useState<number>(8);
-  const [carpetAreaSqft, setCarpetAreaSqft] = useState<number>(650);
+  const [carpetAreaSqft, setCarpetAreaSqft] = useState<number>(685);
   const [parkingCharges, setParkingCharges] = useState<number>(250000);
   const [societyDevCharges, setSocietyDevCharges] = useState<number>(150000);
   const [selectedPresetMarket, setSelectedPresetMarket] = useState<string>('Kharghar Sector 35');
+  const [projectName, setProjectName] = useState<string>('Crown Greens');
+  const [copiedMsg, setCopiedMsg] = useState(false);
 
   const costBreakdown = useMemo(() => {
     return calculateAllInCost({
@@ -47,9 +58,9 @@ export default function CostCalculatorPage() {
     const m = NAVI_MUMBAI_MICRO_MARKETS[marketKey];
     if (!m) return;
 
-    let carpet = 650;
-    if (bhk === 1) carpet = 420;
-    if (bhk === 2) carpet = 650;
+    let carpet = 685;
+    if (bhk === 1) carpet = 440;
+    if (bhk === 2) carpet = 685;
     if (bhk === 3) carpet = 980;
 
     const rate = hasOC ? m.rtmPricePerSqft : m.underConstructionPricePerSqft;
@@ -60,34 +71,70 @@ export default function CostCalculatorPage() {
 
   const formatINR = (val: number) => {
     if (!val && val !== 0) return '₹0';
-    if (val >= 10000000) return `₹${(val / 10000000).toFixed(2)} Cr`;
-    if (val >= 100000) return `₹${(val / 100000).toFixed(2)} Lakh`;
     return `₹${Number(val).toLocaleString('en-IN')}`;
   };
 
+  const handleShareWhatsApp = () => {
+    const text = `*ZamZam Realty - Maharashtra Statutory Cost Sheet*
+Project: ${projectName} (${selectedPresetMarket})
+Carpet Area: ${carpetAreaSqft} sq.ft
+---
+1. Agreement Value: ${formatINR(agreementValue)}
+2. Maharashtra Stamp Duty (${isFemaleBuyer ? '5%' : '6%'}): ${formatINR(costBreakdown.stampDutyAmount)}
+3. MahaRERA Registration: ${formatINR(costBreakdown.registrationFee)}
+4. Statutory GST (${hasOC ? '0% Ready OC' : '5%'}): ${formatINR(costBreakdown.gstAmount)}
+5. Parking & Society Corpus: ${formatINR(parkingCharges + societyDevCharges)}
+---
+*Grand Net Capitalized Total (C_all-in): ${formatINR(costBreakdown.totalAllInCost)}*
+_Calculated in compliance with Maharashtra Stamp Act & MahaRERA regulations._`;
+
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+  };
+
   return (
-    <div className="space-y-6 max-w-6xl mx-auto pb-16 text-content font-sans">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-surface border border-border shadow-xs">
+    <div className="space-y-6 max-w-7xl mx-auto pb-16 text-content">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-4 border-b border-border">
         <div>
-          <div className="flex items-center gap-2 mb-1.5">
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-accent-soft text-accent-text border border-accent/20 uppercase tracking-wider flex items-center gap-1">
-              <Calculator className="w-3.5 h-3.5 text-accent" /> STATUTORY COST ENGINE
+          <div className="flex items-center gap-2 mb-1">
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-status-success-surface text-status-success border border-status-success/30 uppercase tracking-wider flex items-center gap-1">
+              <Calculator className="w-3 h-3" /> STATUTORY COST ENGINE
             </span>
-            <HallmarkStamp type="ledger" label="Calculated from entered values" />
+            <span className="text-xs font-semibold text-content-muted flex items-center gap-1">
+              <MapPin className="w-3.5 h-3.5 text-accent" />
+              {projectName}, {selectedPresetMarket}
+            </span>
           </div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-content font-display">
-            Capitalized Cost Engine (C_all-in)
+          <h1 className="text-2xl font-extrabold text-content tracking-tight font-display">
+            Maharashtra Statutory Capitalized Cost Engine
           </h1>
-          <p className="text-content-secondary text-xs mt-1">
-            Estimate itemized acquisition costs from the values and certificate status you enter.
+          <p className="text-xs text-content-muted mt-0.5">
+            Transparent acquisition breakdown: Stamp Duty, Registration, GST, and Corpus Funds (C_all-in)
           </p>
+        </div>
+
+        {/* Action Toolbar */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={() => window.print()}
+            className="flex items-center gap-1.5 px-3.5 py-2 bg-surface border border-border rounded-xl text-xs font-bold text-content hover:bg-surface-subtle transition-colors shadow-2xs cursor-pointer"
+          >
+            <Download className="w-3.5 h-3.5 text-accent" />
+            <span>Export PDF</span>
+          </button>
+          <button
+            onClick={handleShareWhatsApp}
+            className="flex items-center gap-1.5 px-3.5 py-2 bg-status-success-surface border border-status-success/30 rounded-xl text-xs font-bold text-status-success hover:bg-status-success hover:text-white transition-all shadow-2xs cursor-pointer"
+          >
+            <MessageSquare className="w-3.5 h-3.5" />
+            <span>Share WhatsApp</span>
+          </button>
         </div>
       </div>
 
       {/* Preset Quick Chips */}
-      <div className="p-4 rounded-2xl bg-surface border border-border shadow-xs flex flex-wrap items-center gap-2 text-xs">
-        <span className="text-content-muted font-semibold text-xs flex items-center gap-1">
+      <div className="p-3 bg-surface rounded-2xl border border-border flex flex-wrap items-center gap-2 text-xs shadow-2xs">
+        <span className="text-content-muted font-bold text-xs flex items-center gap-1">
           <Zap className="w-3.5 h-3.5 text-accent" />
           Micro-Market Presets:
         </span>
@@ -96,11 +143,10 @@ export default function CostCalculatorPage() {
             type="button"
             key={key}
             onClick={() => applyPreset(key, 2)}
-            aria-pressed={selectedPresetMarket === key}
-            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+            className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               selectedPresetMarket === key
-                ? 'bg-accent text-white font-bold shadow-xs'
-                : 'bg-surface text-content-secondary border border-border hover:bg-surface-subtle hover:text-content'
+                ? 'bg-accent text-white shadow-2xs'
+                : 'bg-surface-subtle text-content-muted border border-border hover:text-content hover:bg-surface'
             }`}
           >
             {key}
@@ -108,164 +154,215 @@ export default function CostCalculatorPage() {
         ))}
       </div>
 
-      {/* Two-Column Working Grid */}
+      {/* Main Grid Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Pane: Parameter Inputs (5 cols) */}
+        {/* Left Column: Input Form (5 Cols) */}
         <div className="lg:col-span-5 space-y-4">
-          <div className="p-5 rounded-2xl bg-surface border border-border shadow-xs space-y-4 text-xs font-sans">
-            <h3 className="font-bold text-content text-sm font-display border-b border-border pb-2.5">
-              Property Parameters
-            </h3>
-
-            <div>
-              <label className="text-content-secondary font-medium block mb-1.5">Agreement Base Value (₹):</label>
-              <input
-                aria-label="Agreement base value"
-                type="number"
-                step="50000"
-                value={agreementValue}
-                onChange={(e) => setAgreementValue(Number(e.target.value))}
-                className="w-full bg-surface-inset border border-border rounded-xl p-2.5 text-xs text-content font-bold font-mono focus:outline-none focus:border-accent"
-              />
-              <span className="text-accent-text font-bold font-mono text-xs block mt-1">
-                {formatINR(agreementValue)}
+          {/* Unit Details Card */}
+          <div className="bg-surface border border-border rounded-2xl p-5 shadow-2xs space-y-4">
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <h3 className="text-xs font-bold text-content font-display uppercase tracking-wider flex items-center gap-2">
+                <Building2 className="w-4 h-4 text-accent" />
+                Unit Configuration
+              </h3>
+              <span className="bg-accent-soft text-accent-text font-bold font-mono text-[10px] px-2 py-0.5 rounded-lg uppercase border border-accent/20">
+                {carpetAreaSqft} SQ.FT CARPET
               </span>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-3 text-xs">
               <div>
-                <label className="text-content-secondary font-medium block mb-1.5">Carpet Area (sq.ft):</label>
+                <label className="block text-[11px] font-bold text-content-muted mb-1 uppercase font-mono">
+                  Project Name
+                </label>
                 <input
-                  aria-label="Carpet area in square feet"
-                  type="number"
-                  value={carpetAreaSqft}
-                  onChange={(e) => setCarpetAreaSqft(Number(e.target.value))}
-                  className="w-full bg-surface-inset border border-border rounded-xl p-2.5 text-xs text-content font-mono focus:outline-none focus:border-accent"
+                  type="text"
+                  value={projectName}
+                  onChange={(e) => setProjectName(e.target.value)}
+                  className="w-full px-3.5 py-2 bg-surface-subtle border border-border rounded-xl text-xs font-semibold text-content focus:outline-hidden focus:border-accent"
                 />
               </div>
 
-              <div>
-                <label className="text-content-secondary font-medium block mb-1.5">Floor Number:</label>
-                <input
-                  aria-label="Floor number"
-                  type="number"
-                  value={floorNumber}
-                  onChange={(e) => setFloorNumber(Number(e.target.value))}
-                  className="w-full bg-surface-inset border border-border rounded-xl p-2.5 text-xs text-content font-mono focus:outline-none focus:border-accent"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-content-secondary font-medium block mb-1.5">Covered Parking (₹):</label>
-                <input
-                  aria-label="Covered parking charges"
-                  type="number"
-                  step="25000"
-                  value={parkingCharges}
-                  onChange={(e) => setParkingCharges(Number(e.target.value))}
-                  className="w-full bg-surface-inset border border-border rounded-xl p-2.5 text-xs text-content font-mono focus:outline-none focus:border-accent"
-                />
-              </div>
-
-              <div>
-                <label className="text-content-secondary font-medium block mb-1.5">Society &amp; Club (₹):</label>
-                <input
-                  aria-label="Society and club charges"
-                  type="number"
-                  step="25000"
-                  value={societyDevCharges}
-                  onChange={(e) => setSocietyDevCharges(Number(e.target.value))}
-                  className="w-full bg-surface-inset border border-border rounded-xl p-2.5 text-xs text-content font-mono focus:outline-none focus:border-accent"
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-content-muted mb-1 uppercase font-mono">
+                    Carpet Area (sq.ft)
+                  </label>
+                  <input
+                    type="number"
+                    value={carpetAreaSqft}
+                    onChange={(e) => setCarpetAreaSqft(Number(e.target.value))}
+                    className="w-full px-3.5 py-2 bg-surface-subtle border border-border rounded-xl text-xs font-mono font-bold text-content focus:outline-hidden focus:border-accent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-content-muted mb-1 uppercase font-mono">
+                    Floor Number
+                  </label>
+                  <input
+                    type="number"
+                    value={floorNumber}
+                    onChange={(e) => setFloorNumber(Number(e.target.value))}
+                    className="w-full px-3.5 py-2 bg-surface-subtle border border-border rounded-xl text-xs font-mono font-bold text-content focus:outline-hidden focus:border-accent"
+                  />
+                </div>
               </div>
             </div>
+          </div>
 
-            <div className="pt-3 border-t border-border space-y-2.5">
-              <label className="flex items-center gap-2 cursor-pointer text-content-secondary font-medium">
-                <input
-                  aria-label="Occupancy certificate received"
-                  type="checkbox"
-                  checked={hasOC}
-                  onChange={(e) => setHasOC(e.target.checked)}
-                  className="w-4 h-4 rounded border-border text-accent focus:ring-accent"
-                />
-                <span>Occupancy Certificate (OC) Received (0% GST)</span>
-              </label>
+          {/* Statutory Rate Inputs Card */}
+          <div className="bg-surface border border-border rounded-2xl p-5 shadow-2xs space-y-4">
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <h3 className="text-xs font-bold text-content font-display uppercase tracking-wider flex items-center gap-2">
+                <Percent className="w-4 h-4 text-accent" />
+                Statutory Parameters
+              </h3>
+            </div>
 
-              <label className="flex items-center gap-2 cursor-pointer text-content-secondary font-medium">
+            <div className="space-y-3 text-xs">
+              <div>
+                <label className="block text-[11px] font-bold text-content-muted mb-1 uppercase font-mono">
+                  Base Agreement Value (₹)
+                </label>
                 <input
-                  aria-label="Female sole purchaser"
-                  type="checkbox"
-                  checked={isFemaleBuyer}
-                  onChange={(e) => setIsFemaleBuyer(e.target.checked)}
-                  className="w-4 h-4 rounded border-border text-accent focus:ring-accent"
+                  type="number"
+                  step="50000"
+                  value={agreementValue}
+                  onChange={(e) => setAgreementValue(Number(e.target.value))}
+                  className="w-full px-3.5 py-2 bg-surface-subtle border border-border rounded-xl text-sm font-mono font-bold text-content focus:outline-hidden focus:border-accent"
                 />
-                <span>Female Sole Purchaser (1% Stamp Duty Concession)</span>
-              </label>
+              </div>
+
+              {/* Toggles: Occupancy Certificate & Female Concession */}
+              <div className="grid grid-cols-2 gap-3 pt-1">
+                <label className="flex items-center gap-2 p-2.5 rounded-xl bg-surface-subtle border border-border cursor-pointer hover:border-accent/40 transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={hasOC}
+                    onChange={(e) => setHasOC(e.target.checked)}
+                    className="rounded text-accent focus:ring-accent"
+                  />
+                  <div className="min-w-0">
+                    <span className="font-bold text-xs text-content block">Ready OC</span>
+                    <span className="text-[10px] text-content-muted">0% GST Exemption</span>
+                  </div>
+                </label>
+
+                <label className="flex items-center gap-2 p-2.5 rounded-xl bg-surface-subtle border border-border cursor-pointer hover:border-accent/40 transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={isFemaleBuyer}
+                    onChange={(e) => setIsFemaleBuyer(e.target.checked)}
+                    className="rounded text-accent focus:ring-accent"
+                  />
+                  <div className="min-w-0">
+                    <span className="font-bold text-xs text-content block">Female Buyer</span>
+                    <span className="text-[10px] text-content-muted">1% Stamp Duty Rebate</span>
+                  </div>
+                </label>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-content-muted mb-1 uppercase font-mono">
+                    Covered Parking (₹)
+                  </label>
+                  <input
+                    type="number"
+                    value={parkingCharges}
+                    onChange={(e) => setParkingCharges(Number(e.target.value))}
+                    className="w-full px-3.5 py-2 bg-surface-subtle border border-border rounded-xl text-xs font-mono font-bold text-content"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-content-muted mb-1 uppercase font-mono">
+                    Society Corpus (₹)
+                  </label>
+                  <input
+                    type="number"
+                    value={societyDevCharges}
+                    onChange={(e) => setSocietyDevCharges(Number(e.target.value))}
+                    className="w-full px-3.5 py-2 bg-surface-subtle border border-border rounded-xl text-xs font-mono font-bold text-content"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Right Pane: Itemized Statutory Breakdown (7 cols) */}
+        {/* Right Column: Capitalized Statutory Cost Engine Breakdown (7 Cols) */}
         <div className="lg:col-span-7 space-y-4">
-          <div className="p-5 rounded-2xl bg-surface border border-border shadow-xs space-y-4 text-xs font-sans">
-            <div className="flex justify-between items-center border-b border-border pb-3">
-              <h3 className="font-bold text-content text-base font-display">
-                Itemized Statutory Out-of-Pocket Ledger
-              </h3>
-              <span className="text-[10px] text-status-success font-bold font-mono bg-status-success-surface px-2.5 py-0.5 rounded-lg border border-status-success/30">
-                Estimate only
-              </span>
+          <div className="bg-surface border border-border rounded-2xl p-6 shadow-2xs space-y-5">
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-content-muted font-mono">
+                  Statutory Output Breakdown
+                </span>
+                <h3 className="text-base font-bold text-content font-display">
+                  All-In Net Capitalized Total (C_all-in)
+                </h3>
+              </div>
+              <div className="text-right">
+                <span className="text-[10px] font-mono font-bold bg-status-success-surface text-status-success border border-status-success/30 px-2.5 py-1 rounded-full">
+                  MahaRERA Compliant
+                </span>
+              </div>
             </div>
 
-            <div className="space-y-2 divide-y divide-border text-content-secondary">
-              <div className="flex justify-between pt-2">
-                <span>1. Agreement Base Value:</span>
-                <strong className="text-content font-mono">{formatINR(agreementValue)}</strong>
+            {/* Itemized Rows */}
+            <div className="space-y-3 text-xs">
+              <div className="flex items-center justify-between py-2 border-b border-border">
+                <span className="font-semibold text-content-muted">01. Base Agreement Value</span>
+                <span className="font-mono font-bold text-sm text-content">{formatINR(agreementValue)}</span>
               </div>
 
-              <div className="flex justify-between pt-2">
-                <span>2. Maharashtra Stamp Duty ({costBreakdown.stampDutyRate}%):</span>
-                <strong className="text-content font-mono">{formatINR(costBreakdown.stampDutyAmount)}</strong>
-              </div>
-
-              <div className="flex justify-between pt-2">
-                <span>3. Registration Fee (1% capped at ₹30,000):</span>
-                <strong className="text-content font-mono">{formatINR(costBreakdown.registrationFee)}</strong>
-              </div>
-
-              <div className="flex justify-between pt-2">
-                <span>4. GST ({costBreakdown.gstRate}% {hasOC ? '• OC Exempt' : '• Under-Construction'}):</span>
-                <strong className="text-content font-mono">{formatINR(costBreakdown.gstAmount)}</strong>
-              </div>
-
-              <div className="flex justify-between pt-2">
-                <span>5. Floor Rise Charges (Fl {floorNumber}):</span>
-                <strong className="text-content font-mono">{formatINR(costBreakdown.floorRiseCharges)}</strong>
-              </div>
-
-              <div className="flex justify-between pt-2">
-                <span>6. Covered Parking Allotment:</span>
-                <strong className="text-content font-mono">{formatINR(parkingCharges)}</strong>
-              </div>
-
-              <div className="flex justify-between pt-2">
-                <span>7. Society Development &amp; Club Charges:</span>
-                <strong className="text-content font-mono">{formatINR(societyDevCharges)}</strong>
-              </div>
-
-              <div className="pt-4 border-t border-border flex justify-between items-center text-sm font-bold text-accent-text">
+              <div className="flex items-center justify-between py-2 border-b border-border">
                 <div>
-                  <span className="block text-content">Total Capitalized Cost (C_all-in):</span>
-                  <span className="text-xs text-content-muted font-normal">
-                    Adds +{((costBreakdown.totalAllInCost - agreementValue) / agreementValue * 100).toFixed(1)}% above base
-                  </span>
+                  <span className="font-semibold text-content-muted">02. Maharashtra Stamp Duty</span>
+                  <span className="ml-2 text-[10px] font-mono text-accent font-bold">({isFemaleBuyer ? '5% Female' : '6% Standard'})</span>
                 </div>
-                <div className="text-right">
-                  <div className="text-2xl text-accent-text font-mono font-bold">{formatINR(costBreakdown.totalAllInCost)}</div>
+                <span className="font-mono font-bold text-sm text-content">{formatINR(costBreakdown.stampDutyAmount)}</span>
+              </div>
+
+              <div className="flex items-center justify-between py-2 border-b border-border">
+                <div>
+                  <span className="font-semibold text-content-muted">03. Registration Charges</span>
+                  <span className="ml-2 text-[10px] font-mono text-content-muted">(Fixed MahaRERA rate)</span>
                 </div>
+                <span className="font-mono font-bold text-sm text-content">{formatINR(costBreakdown.registrationFee)}</span>
+              </div>
+
+              <div className="flex items-center justify-between py-2 border-b border-border">
+                <div>
+                  <span className="font-semibold text-content-muted">04. Statutory GST</span>
+                  <span className="ml-2 text-[10px] font-mono text-status-success font-bold">({hasOC ? '0% Exempt (Ready OC)' : '5% Under-Construction'})</span>
+                </div>
+                <span className="font-mono font-bold text-sm text-content">{formatINR(costBreakdown.gstAmount)}</span>
+              </div>
+
+              <div className="flex items-center justify-between py-2 border-b border-border">
+                <span className="font-semibold text-content-muted">05. Covered Parking Charges</span>
+                <span className="font-mono font-bold text-sm text-content">{formatINR(parkingCharges)}</span>
+              </div>
+
+              <div className="flex items-center justify-between py-2 border-b border-border">
+                <span className="font-semibold text-content-muted">06. Society Corpus / Development Fund</span>
+                <span className="font-mono font-bold text-sm text-content">{formatINR(societyDevCharges)}</span>
+              </div>
+            </div>
+
+            {/* Grand Total Hero Box */}
+            <div className="p-5 bg-surface-subtle rounded-2xl border-2 border-accent flex items-center justify-between shadow-xs">
+              <div>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-accent font-display">
+                  Grand Capitalized Net Total
+                </span>
+                <div className="text-xs text-content-muted mt-0.5">
+                  All statutory levies included
+                </div>
+              </div>
+              <div className="font-mono text-2xl font-extrabold text-content">
+                {formatINR(costBreakdown.totalAllInCost)}
               </div>
             </div>
           </div>

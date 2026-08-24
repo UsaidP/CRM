@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Escorted Site Visit Completion &amp; Deal Token Capture</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface": "#1d1c17",
+                        "surface": "#fef9f0",
+                        "surface-bright": "#fef9f0",
+                        "on-tertiary": "#ffffff",
+                        "inverse-surface": "#32302b",
+                        "outline-variant": "#c1c8c2",
+                        "surface-container-high": "#ede7df",
+                        "secondary-fixed": "#b1f0ce",
+                        "primary-fixed": "#c1ecd4",
+                        "on-secondary-fixed": "#002114",
+                        "tertiary-container": "#5e3000",
+                        "inverse-primary": "#a5d0b9",
+                        "error": "#ba1a1a",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed-dim": "#ffb77d",
+                        "surface-tint": "#3f6653",
+                        "secondary-fixed-dim": "#95d4b3",
+                        "error-container": "#ffdad6",
+                        "on-secondary-fixed-variant": "#0e5138",
+                        "secondary-container": "#aeeecb",
+                        "secondary": "#2c694e",
+                        "on-tertiary-fixed": "#2f1500",
+                        "tertiary-fixed": "#ffdcc3",
+                        "on-primary-fixed-variant": "#274e3d",
+                        "on-error": "#ffffff",
+                        "surface-container": "#f2ede5",
+                        "primary-container": "#1b4332",
+                        "on-secondary-container": "#316e52",
+                        "surface-container-highest": "#e7e2da",
+                        "on-tertiary-container": "#f48c24",
+                        "surface-dim": "#ded9d1",
+                        "primary": "#012d1d",
+                        "on-primary-fixed": "#002114",
+                        "outline": "#717973",
+                        "inverse-on-surface": "#f5f0e8",
+                        "on-secondary": "#ffffff",
+                        "surface-variant": "#e7e2da",
+                        "on-primary-container": "#86af99",
+                        "on-surface-variant": "#414844",
+                        "primary-fixed-dim": "#a5d0b9",
+                        "on-tertiary-fixed-variant": "#6e3900",
+                        "tertiary": "#3e1e00",
+                        "surface-container-low": "#f8f3eb",
+                        "on-background": "#1d1c17",
+                        "background": "#fef9f0",
+                        "on-primary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "stack-sm": "8px",
+                        "margin-page": "24px",
+                        "gutter": "16px",
+                        "stack-xs": "4px",
+                        "row-height": "40px",
+                        "stack-md": "12px"
+                    },
+                    "fontFamily": {
+                        "display-sm": ["Plus Jakarta Sans"],
+                        "body-sm": ["Plus Jakarta Sans"],
+                        "timer-lg": ["JetBrains Mono"],
+                        "data-mono": ["JetBrains Mono"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "headline-sm": ["Plus Jakarta Sans"],
+                        "label-bold": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "display-sm": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "body-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+                        "timer-lg": ["20px", { "lineHeight": "24px", "fontWeight": "600" }],
+                        "data-mono": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }],
+                        "label-bold": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: #FBFBF9; }
+        .amber-highlight { color: #D97706; }
+        .cypress-border { border-color: #2D6A4F; }
+        .cypress-bg-tint { background-color: rgba(45, 106, 79, 0.05); }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid #E5E0D8;
+        }
+    </style>
+</head>
+<body class="font-body-md text-on-surface antialiased h-screen w-screen flex items-center justify-center bg-[#FBFBF9] p-4 relative overflow-hidden">
+<!-- Atmospheric background hint -->
+<div class="absolute inset-0 pointer-events-none opacity-20" style="background-image: radial-gradient(circle at 50% -20%, #b1f0ce 0%, transparent 60%);"></div>
+<!-- Modal Container -->
+<main class="relative z-10 w-full max-w-[960px] h-full max-h-[720px] bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden border border-outline-variant">
+<!-- 1. Modal Header -->
+<header class="bg-primary-container text-on-primary p-6 shrink-0 border-b border-primary-fixed-dim">
+<div class="flex justify-between items-start mb-4">
+<h1 class="font-display-sm text-display-sm text-white">Escorted Site Visit Completion &amp; Deal Token Capture</h1>
+<button aria-label="Close" class="text-on-primary-container hover:text-white transition-colors">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="flex flex-wrap gap-x-8 gap-y-2 mt-4 pt-4 border-t border-[rgba(255,255,255,0.1)]">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-primary-fixed">tag</span>
+<span class="font-data-mono text-data-mono text-white">#VST-2026-0842</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-primary-fixed">person</span>
+<span class="font-body-sm text-body-sm text-surface-container">Dr. Sameer Deshmukh</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-primary-fixed">badge</span>
+<span class="font-body-sm text-body-sm text-surface-container">Aakash Verma</span>
+</div>
+</div>
+</header>
+<!-- Scrollable Content -->
+<div class="flex-1 overflow-y-auto p-6 bg-[#FBFBF9] grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Left Column -->
+<div class="flex flex-col gap-6">
+<!-- 2. Tour Feedback -->
+<section class="glass-card rounded-lg p-5">
+<h2 class="font-headline-sm text-headline-sm text-primary mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined">rate_review</span> Tour Feedback
+                    </h2>
+<div class="mb-4">
+<label class="font-label-bold text-label-bold text-on-surface-variant block mb-2 uppercase">Client Verdict</label>
+<div class="flex items-center gap-3 p-3 cypress-bg-tint border-l-2 cypress-border rounded-r-md">
+<span class="material-symbols-outlined text-secondary">check_circle</span>
+<span class="font-body-md text-body-md font-medium text-secondary">Token Advance Submitted</span>
+</div>
+</div>
+<div class="mb-4">
+<label class="font-label-bold text-label-bold text-on-surface-variant block mb-2 uppercase">Rating</label>
+<div class="flex gap-1 text-[#D97706]">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+</div>
+<div>
+<label class="font-label-bold text-label-bold text-on-surface-variant block mb-2 uppercase">Visit Notes</label>
+<textarea class="w-full bg-white border border-outline-variant rounded p-3 font-body-sm text-body-sm text-on-surface focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary min-h-[80px] resize-none" readonly="">Client loved the 14th floor layout and the 24ft wide living room deck. Confirmed booking for Unit A-1402.</textarea>
+</div>
+</section>
+<!-- 5. Invoice Trigger -->
+<section class="glass-card rounded-lg p-5">
+<label class="flex items-start gap-3 cursor-pointer">
+<input checked="" class="mt-1 h-5 w-5 text-secondary border-outline rounded focus:ring-secondary" type="checkbox"/>
+<div>
+<span class="font-body-md text-body-md font-semibold text-primary block">Generate Phase 1 Developer Advance Invoice (18% GST)</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant block mt-1">Automatically routes to billing department upon save.</span>
+</div>
+</label>
+</section>
+</div>
+<!-- Right Column -->
+<div class="flex flex-col gap-6">
+<!-- 3. Token Booking Particulars -->
+<section class="glass-card rounded-lg p-5 border-l-4 border-l-[#D97706]">
+<h2 class="font-headline-sm text-headline-sm text-primary mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined">payments</span> Token Booking Particulars
+                    </h2>
+<div class="grid grid-cols-1 gap-y-4">
+<div>
+<span class="font-label-bold text-label-bold text-on-surface-variant block uppercase">Selected Unit</span>
+<span class="font-body-md text-body-md text-on-surface font-medium">Crown Heights - Unit A-1402 (3BHK 1,180 sq.ft)</span>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div>
+<span class="font-label-bold text-label-bold text-on-surface-variant block uppercase">Agreed Base Value</span>
+<span class="font-data-mono text-data-mono text-on-surface">₹1,45,00,000</span>
+</div>
+<div class="bg-surface-container-low p-2 rounded border border-outline-variant">
+<span class="font-label-bold text-label-bold text-on-surface-variant block uppercase">Token Amount</span>
+<span class="font-data-mono text-data-mono text-[#D97706] font-bold text-lg">₹1,00,000</span>
+</div>
+</div>
+<div>
+<span class="font-label-bold text-label-bold text-on-surface-variant block uppercase mb-2">Payment Mode</span>
+<div class="flex gap-2">
+<span class="px-3 py-1 bg-secondary text-white font-label-bold text-label-bold rounded flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">check</span> NEFT / IMPS</span>
+<span class="px-3 py-1 bg-surface-variant text-on-surface-variant font-label-bold text-label-bold rounded border border-outline-variant">Cheque</span>
+<span class="px-3 py-1 bg-surface-variant text-on-surface-variant font-label-bold text-label-bold rounded border border-outline-variant">UPI</span>
+</div>
+<div class="mt-2 text-sm">
+<span class="font-label-bold text-label-bold text-on-surface-variant">Ref:</span> <span class="font-data-mono text-data-mono text-on-surface">#TXN-HDFC-99482103</span>
+</div>
+</div>
+<div>
+<span class="font-label-bold text-label-bold text-on-surface-variant block uppercase">Developer Cheque Payable</span>
+<span class="font-body-md text-body-md text-on-surface">M/s Crown Infra Projects Pvt Ltd</span>
+</div>
+</div>
+</section>
+<!-- 4. Brokerage Preview -->
+<section class="glass-card rounded-lg p-5 bg-surface-container-lowest">
+<h2 class="font-headline-sm text-headline-sm text-primary mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined">pie_chart</span> Brokerage Preview
+                    </h2>
+<div class="space-y-3">
+<div class="flex justify-between items-center pb-2 border-b border-surface-variant">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Gross Brokerage (2.5%)</span>
+<span class="font-data-mono text-data-mono text-on-surface">₹3,62,500</span>
+</div>
+<div class="flex justify-between items-center pb-2 border-b border-surface-variant">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Rep Incentive Split (50%)</span>
+<span class="font-data-mono text-data-mono text-on-surface">₹1,81,250</span>
+</div>
+<div class="flex justify-between items-center pt-1">
+<span class="font-body-md text-body-md font-semibold text-primary">Firm Net Realized</span>
+<span class="font-data-mono text-data-mono font-bold text-secondary text-lg">₹1,81,250</span>
+</div>
+</div>
+</section>
+</div>
+</div>
+<!-- 6. Footer -->
+<footer class="bg-surface p-6 border-t border-outline-variant shrink-0 flex justify-between items-center">
+<button class="px-6 py-2 border-2 border-outline-variant bg-white text-primary font-label-bold text-label-bold rounded hover:bg-surface-variant transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">save</span>
+                Save Visit Notes Only
+            </button>
+<button class="px-6 py-3 bg-primary-container text-white font-label-bold text-label-bold rounded hover:bg-primary transition-colors flex items-center gap-2 shadow-sm">
+<span class="material-symbols-outlined text-[18px]">task_alt</span>
+                Confirm Deal &amp; Advance to Stage: Closed Won
+                <span class="ml-2 px-1.5 py-0.5 bg-white/20 rounded text-[10px] tracking-widest border border-white/30">ENTER</span>
+</button>
+</footer>
+</main>
+</body></html>

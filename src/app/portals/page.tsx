@@ -28,6 +28,7 @@ import {
   Globe
 } from 'lucide-react';
 import { HallmarkStamp } from '@/components/ui/HallmarkStamp';
+import { formatTimeShort } from '@/lib/date-utils';
 import { AccessibleDialog } from '@/components/ui/AccessibleDialog';
 import { buildPublicPortalUrl } from '@/lib/navigation';
 
@@ -294,7 +295,7 @@ export default function ClientPortalsConsolePage() {
                         <div>
                           <span className="text-status-success font-semibold">{lastLog.eventType}</span>
                           <span className="text-[10px] text-content-muted block">
-                            {new Date(lastLog.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                            {formatTimeShort(lastLog.createdAt)}
                           </span>
                         </div>
                       ) : (
@@ -316,7 +317,7 @@ export default function ClientPortalsConsolePage() {
                           target="_blank"
                           rel="noreferrer"
                           aria-label={`Follow up with ${portal.lead?.fullName || 'prospective buyer'} on WhatsApp`}
-                          className="h-8 w-8 grid place-items-center rounded-xl bg-status-success hover:opacity-90 text-zinc-950 shadow-2xs transition-all cursor-pointer"
+                          className="h-8 w-8 grid place-items-center rounded-xl bg-status-success hover:opacity-90 text-white shadow-xs transition-all cursor-pointer"
                         >
                           <MessageSquare className="w-4 h-4" />
                         </a>
@@ -379,7 +380,7 @@ export default function ClientPortalsConsolePage() {
                       {log.targetUnitId && <span className="text-[10px] text-content-muted block">Target Unit: {log.targetUnitId}</span>}
                     </div>
                     <span className="text-[10px] text-content-muted">
-                      {new Date(log.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                      {formatTimeShort(log.createdAt)}
                     </span>
                   </div>
                 ))}

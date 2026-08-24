@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Navi Luxury Portal - ZamZam Properties</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary": "#904d00",
+                    "tertiary-fixed-dim": "#4edea3",
+                    "tertiary-container": "#00452d",
+                    "on-secondary-fixed-variant": "#6e3900",
+                    "secondary-fixed": "#ffdcc3",
+                    "primary": "#012d1d",
+                    "surface-dim": "#dadad8",
+                    "error": "#ba1a1a",
+                    "inverse-surface": "#2f3130",
+                    "primary-fixed-dim": "#a5d0b9",
+                    "surface-container-low": "#f4f4f2",
+                    "on-primary-fixed": "#002114",
+                    "on-tertiary": "#ffffff",
+                    "surface-variant": "#e2e3e1",
+                    "error-container": "#ffdad6",
+                    "on-error-container": "#93000a",
+                    "on-secondary-container": "#663500",
+                    "tertiary-fixed": "#6ffbbe",
+                    "on-error": "#ffffff",
+                    "inverse-primary": "#a5d0b9",
+                    "secondary-container": "#fe932c",
+                    "surface": "#f9f9f7",
+                    "surface-container-lowest": "#ffffff",
+                    "on-background": "#1a1c1b",
+                    "primary-container": "#1b4332",
+                    "on-primary-container": "#86af99",
+                    "inverse-on-surface": "#f1f1ef",
+                    "outline-variant": "#c1c8c2",
+                    "on-primary-fixed-variant": "#274e3d",
+                    "on-tertiary-fixed": "#002113",
+                    "surface-bright": "#f9f9f7",
+                    "outline": "#717973",
+                    "surface-container": "#eeeeec",
+                    "primary-fixed": "#c1ecd4",
+                    "on-tertiary-fixed-variant": "#005236",
+                    "surface-tint": "#3f6653",
+                    "on-tertiary-container": "#1abc84",
+                    "on-surface": "#1a1c1b",
+                    "surface-container-high": "#e8e8e6",
+                    "surface-container-highest": "#e2e3e1",
+                    "secondary-fixed-dim": "#ffb77d",
+                    "on-secondary-fixed": "#2f1500",
+                    "on-primary": "#ffffff",
+                    "background": "#f9f9f7",
+                    "on-secondary": "#ffffff",
+                    "tertiary": "#002d1c",
+                    "on-surface-variant": "#414844"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "gutter": "24px",
+                    "base": "8px",
+                    "container-max": "1280px",
+                    "margin-desktop": "64px",
+                    "margin-mobile": "16px"
+            },
+            "fontFamily": {
+                    "headline-lg": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "title-md": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "data-price": [
+                            "JetBrains Mono"
+                    ],
+                    "headline-lg-mobile": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "display-lg": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "body-md": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "label-sm": [
+                            "JetBrains Mono"
+                    ]
+            },
+            "fontSize": {
+                    "headline-lg": [
+                            "32px",
+                            {
+                                    "lineHeight": "40px",
+                                    "letterSpacing": "-0.01em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "title-md": [
+                            "20px",
+                            {
+                                    "lineHeight": "28px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "data-price": [
+                            "18px",
+                            {
+                                    "lineHeight": "24px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "500"
+                            }
+                    ],
+                    "headline-lg-mobile": [
+                            "24px",
+                            {
+                                    "lineHeight": "32px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "display-lg": [
+                            "48px",
+                            {
+                                    "lineHeight": "56px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "body-md": [
+                            "16px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "label-sm": [
+                            "12px",
+                            {
+                                    "lineHeight": "16px",
+                                    "fontWeight": "400"
+                            }
+                    ]
+            }
+    },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: theme('colors.background');
+            color: theme('colors.on-background');
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            overscroll-behavior-y: none;
+        }
+        
+        /* Hide scrollbar for clean mobile look */
+        ::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid theme('colors.outline-variant' / 30%);
+        }
+
+        .ledger-row {
+            border-bottom: 1px solid theme('colors.surface-variant');
+        }
+        .ledger-row:last-child {
+            border-bottom: none;
+        }
+        
+        .embla {
+            overflow: hidden;
+        }
+        .embla__container {
+            display: flex;
+        }
+        .embla__slide {
+            flex: 0 0 100%;
+            min-width: 0;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="pb-[100px] md:pb-0 bg-surface">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-xl border-b border-outline-variant/30 dark:border-outline/20 flex justify-between items-center px-margin-mobile h-16 transition-transform duration-200">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-on-secondary-container" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">ZamZam Properties</span>
+<span class="font-title-md text-title-md text-primary tracking-tight leading-tight">Navi Luxury Portal</span>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined">call</span>
+</button>
+<button class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined">forum</span>
+</button>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="pt-[88px] px-margin-mobile flex flex-col gap-gutter max-w-container-max mx-auto">
+<!-- Welcome Note -->
+<section class="py-2">
+<p class="font-body-md text-body-md text-on-surface-variant">Curated Portfolio for</p>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary mt-1">Dr. Sameer Deshmukh</h1>
+</section>
+<!-- Hero Property Card -->
+<section class="bg-surface-container-lowest rounded-xl border border-surface-variant overflow-hidden">
+<!-- Image Carousel Placeholder -->
+<div class="relative w-full aspect-[4/3] bg-surface-container flex items-center justify-center">
+<img class="w-full h-full object-cover absolute inset-0" data-alt="A highly detailed 4K architectural photograph of a luxurious high-rise residential tower named Crown Heights, located in Kharghar Sector 35. The tower features a sleek modern facade with expansive glass balconies. The lighting is bright and sunny, highlighting the building's premium finishes. The mood is aspirational and grand, fitting for a top-tier real estate presentation. The overarching UI style is modern, minimalist, and utilizes a palette of deep forest greens, alabaster whites, and subtle terracotta accents to create an 'Architectural Botanical Ledger' aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBhaHG3Vb7BuWMcz8ukndQ8giEz5o9lI8cLUuvPohcxdUSHm3qT_ooWrSD_rgsX1Wf7-jqFm_iuxwT059tF-Udn2vKkMPNQ6odhllcgkxBCx5lRfmFiIJ8sVpVdk-cbITA-oFmlnqY1jwrqOMMHSdBSsRQGkLVKXgHFTSAGnNub-G0BYSzdHh5saCTnN2AjgM-SYJPsDRmp9logHtFsPgt97XifkvZ8qRfy0oNyy8vsoNffoW_Jj5caOT7tlSAzVczW-oeNkNm3qUif"/>
+<!-- Overlay Badges -->
+<div class="absolute top-4 left-4 flex flex-col gap-2 z-10">
+<div class="bg-surface-container-lowest/90 backdrop-blur-sm px-3 py-1.5 rounded flex items-center gap-1.5 shadow-sm">
+<span class="material-symbols-outlined text-[14px] text-tertiary-container" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span class="font-label-sm text-label-sm text-tertiary-container font-medium">MahaRERA: P52000028914 (CIDCO Clear)</span>
+</div>
+<div class="bg-primary/90 backdrop-blur-sm px-3 py-1.5 rounded flex items-center gap-1.5 shadow-sm inline-flex w-fit">
+<span class="material-symbols-outlined text-[14px] text-on-primary">construction</span>
+<span class="font-label-sm text-label-sm text-on-primary">Under Construction • Dec 2026</span>
+</div>
+</div>
+</div>
+<div class="p-4">
+<h2 class="font-title-md text-title-md text-primary mb-4">Crown Heights - Tower A</h2>
+<!-- Specs Grid -->
+<div class="grid grid-cols-2 gap-y-4 gap-x-2 border-t border-surface-variant pt-4">
+<div class="flex items-start gap-2">
+<span class="material-symbols-outlined text-outline mt-0.5">bed</span>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase">Configuration</p>
+<p class="font-body-md text-body-md text-primary font-medium">3 BHK Premium</p>
+</div>
+</div>
+<div class="flex items-start gap-2">
+<span class="material-symbols-outlined text-outline mt-0.5">straighten</span>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase">Area</p>
+<p class="font-body-md text-body-md text-primary font-medium">1,180 sq.ft Carpet</p>
+</div>
+</div>
+<div class="flex items-start gap-2">
+<span class="material-symbols-outlined text-outline mt-0.5">apartment</span>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase">Level</p>
+<p class="font-body-md text-body-md text-primary font-medium">14th Floor</p>
+</div>
+</div>
+<div class="flex items-start gap-2">
+<span class="material-symbols-outlined text-outline mt-0.5">golf_course</span>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase">View</p>
+<p class="font-body-md text-body-md text-primary font-medium">Golf Course Facing</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Statutory Cost Breakdown -->
+<section class="bg-surface-container-lowest rounded-xl border border-surface-variant overflow-hidden">
+<div class="p-4 border-b border-surface-variant flex justify-between items-center bg-surface-container-low">
+<h3 class="font-label-sm text-label-sm text-primary uppercase font-bold tracking-widest">STATUTORY COST BREAKDOWN</h3>
+<span class="material-symbols-outlined text-outline">expand_more</span>
+</div>
+<div class="p-4 flex flex-col gap-3">
+<div class="flex justify-between items-center ledger-row pb-3">
+<span class="font-body-md text-body-md text-on-surface-variant">Base Agreement Value</span>
+<span class="font-data-price text-data-price text-primary">₹1,45,00,000</span>
+</div>
+<div class="flex justify-between items-center ledger-row pb-3">
+<span class="font-body-md text-body-md text-on-surface-variant">Stamp Duty (6%)</span>
+<span class="font-data-price text-data-price text-primary">₹8,70,000</span>
+</div>
+<div class="flex justify-between items-center ledger-row pb-3">
+<span class="font-body-md text-body-md text-on-surface-variant">Maha Registration</span>
+<span class="font-data-price text-data-price text-primary">₹30,000</span>
+</div>
+<div class="flex justify-between items-center ledger-row pb-3">
+<span class="font-body-md text-body-md text-on-surface-variant">GST (5% UC)</span>
+<span class="font-data-price text-data-price text-primary">₹7,25,000</span>
+</div>
+<div class="flex justify-between items-center ledger-row pb-3">
+<span class="font-body-md text-body-md text-on-surface-variant">Society Corpus &amp; Maint.</span>
+<span class="font-data-price text-data-price text-primary">₹3,50,000</span>
+</div>
+<div class="flex justify-between items-center pt-2 mt-2 border-t-2 border-primary-container">
+<span class="font-body-md text-body-md text-primary font-bold">All-In Statutory Total</span>
+<span class="font-data-price text-data-price font-bold" style="color: #10B981;">₹1,64,75,000</span>
+</div>
+</div>
+</section>
+<!-- Media Gallery (Floor Plan & Video) -->
+<section class="grid grid-cols-2 gap-4">
+<div class="relative aspect-square rounded-xl overflow-hidden border border-surface-variant bg-surface-container flex flex-col items-center justify-center cursor-pointer group">
+<img class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity" data-alt="A highly detailed architectural floor plan blueprint of a luxurious 3 BHK apartment. The lines are crisp and technical, rendered in deep forest green and alabaster white to match the Architectural Botanical Ledger theme. The layout is spacious and clearly labeled, conveying a sense of premium residential design. The lighting is neutral and even, perfect for technical drawings." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDhu3XhdkMkfPSmO_x6aNvW4ZRq1mSV1O_4Dib57Ai2Wz8ucu4vqI4a6VdELzmNSx5Hs58h9T6krIe7DOj9PbhRshwe23aK4M4JZPJIOhaGQPJAllQEIKRMTFT-GtGxg7-8jeQaP7AR1XHCInn-EcsuEl2iMf8_4pKJGCuZfsaL1buh2VRp0wF2gzi8IZFGtn81R28FSXkcumq4LSrb6gqe6A11tH1XdKZUGyL5b3K_Q2I8R2p5auCb6YaVPxqveoNA25aW_AOtfUbc"/>
+<div class="z-10 flex flex-col items-center gap-2 bg-surface-container-lowest/80 backdrop-blur px-3 py-2 rounded-lg m-4 text-center">
+<span class="material-symbols-outlined text-primary">zoom_in</span>
+<span class="font-label-sm text-label-sm text-primary font-medium">Floor Plan Preview</span>
+</div>
+</div>
+<div class="relative aspect-square rounded-xl overflow-hidden border border-surface-variant bg-surface-container flex flex-col items-center justify-center cursor-pointer group">
+<img class="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" data-alt="A stunning 4K drone shot of a luxury high-rise construction site surrounded by lush greenery, captured at golden hour. The building's structural framework is visible, bathed in warm sunlight. The overarching UI style is modern, minimalist, and utilizes a palette of deep forest greens, alabaster whites, and subtle terracotta accents to create an 'Architectural Botanical Ledger' aesthetic. The image exudes progress and premium real estate development." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAtOdMmMLZ0emCZuJuq6S45posltXc4YhJ1qiYsQkmgR0x7-MUPTyxbtY1y-Yt1vVpLKJuvlgs6wJLazc4UT1f1xe6p6AI0FWX_O1bK-iklIRiOA1LSZ3CUITJk-XB9WKnGklwo6nAi3Buhqg2eeR771KlaEqlyy--OiA1vgM6f1bdGSmO7i7YyDHac1rWNWSlGy_eqhGVeHmSEK_-ywgrt8h68D80Z5LWDa5s1-xUwElh795FUEBZ7pbZI-7XjX5m8-bnOqLc2DOv8"/>
+<div class="absolute inset-0 bg-primary/20"></div>
+<div class="z-10 w-12 h-12 rounded-full bg-white/90 backdrop-blur flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</div>
+<span class="z-10 absolute bottom-3 font-label-sm text-label-sm text-white font-medium bg-primary/60 px-2 py-1 rounded backdrop-blur-sm">4K Drone Walkthrough</span>
+</div>
+</section>
+<!-- Escorted Site Visit Scheduler -->
+<section class="bg-surface-container-lowest rounded-xl border border-surface-variant p-4 flex flex-col gap-5 mb-8">
+<h3 class="font-title-md text-title-md text-primary">Schedule Your VIP Site Visit</h3>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase mb-3">Select Date</p>
+<div class="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 snap-x">
+<button class="snap-start shrink-0 px-4 py-2 rounded border border-primary bg-primary/5 text-primary font-body-md text-body-md font-medium">Sat 24 Aug</button>
+<button class="snap-start shrink-0 px-4 py-2 rounded border border-surface-variant text-on-surface-variant font-body-md text-body-md">Sun 25 Aug</button>
+<button class="snap-start shrink-0 px-4 py-2 rounded border border-surface-variant text-on-surface-variant font-body-md text-body-md">Mon 26 Aug</button>
+</div>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase mb-3">Select Time</p>
+<div class="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 snap-x">
+<button class="snap-start shrink-0 px-4 py-2 rounded border border-surface-variant text-on-surface-variant font-body-md text-body-md">11:00 AM</button>
+<button class="snap-start shrink-0 px-4 py-2 rounded border border-primary bg-primary/5 text-primary font-body-md text-body-md font-medium">03:30 PM</button>
+<button class="snap-start shrink-0 px-4 py-2 rounded border border-surface-variant text-on-surface-variant font-body-md text-body-md">05:00 PM</button>
+</div>
+</div>
+<div class="flex items-center gap-3 bg-tertiary-container/10 p-3 rounded-lg">
+<span class="material-symbols-outlined text-tertiary-container">directions_car</span>
+<p class="font-body-md text-body-md text-primary text-sm">Complimentary AC Cab Pickup from Kharghar Station</p>
+</div>
+<button class="w-full bg-primary-container text-on-primary py-4 rounded-lg font-title-md text-body-md font-bold hover:bg-primary transition-colors flex justify-center items-center gap-2">
+<span class="material-symbols-outlined text-[20px]">calendar_month</span>
+                Confirm VIP Site Visit &amp; Request Cab
+            </button>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 py-3 pb-safe bg-surface dark:bg-surface-container-lowest border-t border-outline-variant/20 shadow-[0_-4px_20px_rgba(27,67,50,0.05)] z-50 md:hidden rounded-t-xl">
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline p-2 hover:text-secondary dark:hover:text-secondary-fixed transition-colors">
+<span class="material-symbols-outlined">domain</span>
+<span class="font-label-sm text-[10px] mt-1">Showcase</span>
+</button>
+<button class="flex flex-col items-center justify-center bg-secondary-container dark:bg-secondary text-on-secondary-container dark:text-on-secondary rounded-full px-5 py-1.5 scale-90 transition-transform duration-150">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">event_available</span>
+<span class="font-label-sm text-[10px] mt-1 font-bold">VIP Visit</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline p-2 hover:text-secondary dark:hover:text-secondary-fixed transition-colors">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+<span class="font-label-sm text-[10px] mt-1">Portfolio</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline p-2 hover:text-secondary dark:hover:text-secondary-fixed transition-colors">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-sm text-[10px] mt-1">Settings</span>
+</button>
+</nav>
+</body></html>

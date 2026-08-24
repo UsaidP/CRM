@@ -40,6 +40,7 @@ import {
 } from 'lucide-react';
 import { AccessibleDialog } from '@/components/ui/AccessibleDialog';
 import { SourceEvidenceDrawer } from '@/components/leads/SourceEvidenceDrawer';
+import { formatDateTime, formatTimeShort } from '@/lib/date-utils';
 
 interface CalendarEvent {
   id: string;
@@ -533,62 +534,62 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
 
   const getEventBadgeColor = (e: CalendarEvent) => {
     if (e.status === 'COMPLETED') {
-      return 'bg-zinc-800/80 text-zinc-400 border-zinc-700/60 line-through';
+      return 'bg-surface-subtle text-content-muted border-border line-through';
     }
     if (e.sourceType === 'SITE_VISIT') {
-      return 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40 hover:bg-cyan-500/30';
+      return 'bg-status-info-surface text-status-info border-status-info/40 hover:bg-status-info-surface/80';
     }
     if (e.isPastDue || (e.status === 'PENDING' && new Date(e.start).getTime() < Date.now())) {
-      return 'bg-rose-500/20 text-rose-300 border-rose-500/50 hover:bg-rose-500/30 animate-pulse';
+      return 'bg-status-danger-surface text-status-danger border-status-danger/50 hover:bg-status-danger-surface/80 animate-pulse';
     }
     if (e.reminderType === 'WHATSAPP') {
-      return 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/30';
+      return 'bg-status-success-surface text-status-success border-status-success/40 hover:bg-status-success-surface/80';
     }
     if (e.reminderType === 'CALL') {
-      return 'bg-amber-500/20 text-amber-300 border-amber-500/40 hover:bg-amber-500/30';
+      return 'bg-accent-soft text-accent-text border-accent/40 hover:bg-accent-soft/80';
     }
-    return 'bg-blue-500/20 text-blue-300 border-blue-500/40 hover:bg-blue-500/30';
+    return 'bg-status-info-surface text-status-info border-status-info/40 hover:bg-status-info-surface/80';
   };
 
   const getStatusBadgeColor = (status: string) => {
     switch (status) {
       case 'COMPLETED':
-        return 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40';
+        return 'bg-status-success-surface text-status-success border-status-success/40';
       case 'CANCELLED':
       case 'NO_SHOW':
-        return 'bg-rose-500/20 text-rose-300 border-rose-500/40';
+        return 'bg-status-danger-surface text-status-danger border-status-danger/40';
       case 'IN_PROGRESS':
       case 'CONFIRMED':
-        return 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40';
+        return 'bg-status-info-surface text-status-info border-status-info/40';
       case 'SNOOZED':
-        return 'bg-purple-500/20 text-purple-300 border-purple-500/40';
+        return 'bg-accent-soft text-accent-text border-accent/40';
       default:
-        return 'bg-amber-500/20 text-amber-300 border-amber-500/40';
+        return 'bg-accent-soft text-accent-text border-accent/40';
     }
   };
 
   const getPriorityBadge = (priority?: string) => {
     switch (priority) {
       case 'URGENT':
-        return 'bg-red-500/20 text-red-300 border-red-500/40';
+        return 'bg-status-danger-surface text-status-danger border-status-danger/40';
       case 'HIGH':
-        return 'bg-amber-500/20 text-amber-300 border-amber-500/40';
+        return 'bg-accent-soft text-accent-text border-accent/40';
       case 'MEDIUM':
-        return 'bg-blue-500/20 text-blue-300 border-blue-500/40';
+        return 'bg-status-info-surface text-status-info border-status-info/40';
       default:
-        return 'bg-zinc-800 text-zinc-400 border-zinc-700';
+        return 'bg-surface-subtle text-content-muted border-border';
     }
   };
 
   const getEventIcon = (type: string, sourceType: string) => {
-    if (sourceType === 'SITE_VISIT') return <Car className="w-3 h-3 text-cyan-400 shrink-0" />;
-    if (type === 'WHATSAPP') return <MessageSquare className="w-3 h-3 text-emerald-400 shrink-0" />;
-    if (type === 'CALL') return <Phone className="w-3 h-3 text-amber-400 shrink-0" />;
-    return <Clock className="w-3 h-3 text-blue-400 shrink-0" />;
+    if (sourceType === 'SITE_VISIT') return <Car className="w-3 h-3 text-status-info shrink-0" />;
+    if (type === 'WHATSAPP') return <MessageSquare className="w-3 h-3 text-status-success shrink-0" />;
+    if (type === 'CALL') return <Phone className="w-3 h-3 text-accent shrink-0" />;
+    return <Clock className="w-3 h-3 text-status-info shrink-0" />;
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-16 text-zinc-100 font-sans">
+    <div className="space-y-6 max-w-7xl mx-auto pb-16 text-content font-sans">
       {/* Top Banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-surface border border-border shadow-xs">
         <div>
@@ -764,64 +765,64 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
         </div>
 
         {/* Filter Pills & Search */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-3 pt-2 border-t border-zinc-800/60">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-3 pt-3 border-t border-border">
           <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
             <button
               onClick={() => setFilterType('ALL')}
-              className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-all ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
                 filterType === 'ALL'
-                  ? 'bg-zinc-800 text-white border-amber-500/50'
-                  : 'bg-zinc-900/80 text-zinc-400 border-zinc-800 hover:text-white'
+                  ? 'bg-accent text-white border-accent shadow-xs'
+                  : 'bg-surface-subtle text-content-secondary border-border hover:bg-surface hover:text-content'
               }`}
             >
               All Events ({counts.total})
             </button>
             <button
               onClick={() => setFilterType('OVERDUE')}
-              className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-all ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
                 filterType === 'OVERDUE'
-                  ? 'bg-rose-500/20 text-rose-300 border-rose-500'
-                  : 'bg-zinc-900/80 text-zinc-400 border-zinc-800 hover:text-rose-400'
+                  ? 'bg-status-danger-surface text-status-danger border-status-danger ring-1 ring-status-danger/30'
+                  : 'bg-surface-subtle text-content-secondary border-border hover:text-status-danger hover:border-status-danger/40'
               }`}
             >
               🔔 Overdue ({counts.overdue})
             </button>
             <button
               onClick={() => setFilterType('TODAY')}
-              className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-all ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
                 filterType === 'TODAY'
-                  ? 'bg-amber-500/20 text-amber-300 border-amber-500'
-                  : 'bg-zinc-900/80 text-zinc-400 border-zinc-800 hover:text-amber-400'
+                  ? 'bg-accent-soft text-accent-text border-accent ring-1 ring-accent/30'
+                  : 'bg-surface-subtle text-content-secondary border-border hover:text-accent hover:border-accent/40'
               }`}
             >
               📅 Today ({counts.today})
             </button>
             <button
               onClick={() => setFilterType('CALL')}
-              className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-all ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
                 filterType === 'CALL'
-                  ? 'bg-amber-500/20 text-amber-300 border-amber-500'
-                  : 'bg-zinc-900/80 text-zinc-400 border-zinc-800 hover:text-amber-400'
+                  ? 'bg-accent-soft text-accent-text border-accent ring-1 ring-accent/30'
+                  : 'bg-surface-subtle text-content-secondary border-border hover:text-accent hover:border-accent/40'
               }`}
             >
               📞 Calls ({counts.calls})
             </button>
             <button
               onClick={() => setFilterType('WHATSAPP')}
-              className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-all ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
                 filterType === 'WHATSAPP'
-                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500'
-                  : 'bg-zinc-900/80 text-zinc-400 border-zinc-800 hover:text-emerald-400'
+                  ? 'bg-status-success-surface text-status-success border-status-success ring-1 ring-status-success/30'
+                  : 'bg-surface-subtle text-content-secondary border-border hover:text-status-success hover:border-status-success/40'
               }`}
             >
               💬 WhatsApp ({counts.whatsapps})
             </button>
             <button
               onClick={() => setFilterType('SITE_VISIT')}
-              className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-all ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
                 filterType === 'SITE_VISIT'
-                  ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500'
-                  : 'bg-zinc-900/80 text-zinc-400 border-zinc-800 hover:text-cyan-400'
+                  ? 'bg-status-info-surface text-status-info border-status-info ring-1 ring-status-info/30'
+                  : 'bg-surface-subtle text-content-secondary border-border hover:text-status-info hover:border-status-info/40'
               }`}
             >
               🚗 Tours ({counts.visits})
@@ -830,13 +831,13 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
 
           {/* Search Box */}
           <div className="relative w-full md:w-64">
-            <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-zinc-500" />
+            <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-content-muted" />
             <input
               type="text"
               placeholder="Search tasks, clients, notes..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-8 pr-3 py-1.5 bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500/60"
+              className="w-full pl-8 pr-3 py-1.5 bg-surface-subtle border border-border rounded-xl text-xs text-content placeholder-content-muted focus:outline-hidden focus:border-accent font-medium"
             />
           </div>
         </div>
@@ -909,8 +910,8 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
                         title={`${e.title} - ${e.leadName}`}
                       >
                         {getEventIcon(e.reminderType, e.sourceType)}
-                        <span suppressHydrationWarning className="font-semibold truncate">
-                          {isMounted ? new Date(e.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                        <span className="font-semibold truncate">
+                          {formatTimeShort(e.start)}
                         </span>
                         <span className="truncate">{e.leadName}</span>
                       </div>
@@ -979,48 +980,43 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
 
 
                         {event.priority === 'URGENT' && (
-                          <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                          <span className="px-1.5 py-0.5 rounded-md text-[9px] font-bold bg-status-danger-surface text-status-danger border border-status-danger/40">
                             URGENT
                           </span>
                         )}
 
                         <span
-                          className={`px-1.5 py-0.5 rounded text-[9px] font-semibold border ${
+                          className={`px-1.5 py-0.5 rounded-md text-[9px] font-semibold border ${
                             event.status === 'COMPLETED'
-                              ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
-                              : 'bg-zinc-800 text-zinc-400 border-zinc-700'
+                              ? 'bg-status-success-surface text-status-success border-status-success/30'
+                              : 'bg-surface-subtle text-content-muted border-border'
                           }`}
                         >
                           {event.status}
                         </span>
                       </div>
 
-                      <div className="flex flex-wrap items-center gap-3 text-xs text-zinc-400">
+                      <div className="flex flex-wrap items-center gap-3 text-xs text-content-muted">
                         <div className="flex items-center gap-1">
-                          <User className="w-3.5 h-3.5 text-zinc-500" />
-                          <span className="text-zinc-300 font-medium">{event.leadName}</span>
+                          <User className="w-3.5 h-3.5 text-content-muted" />
+                          <span className="text-content font-medium">{event.leadName}</span>
                           {event.sourceCode && (
-                            <span className="text-[10px] font-mono px-1 py-0.2 bg-zinc-800 text-zinc-400 rounded">
+                            <span className="text-[10px] font-mono px-1 py-0.5 bg-surface-subtle text-content-muted rounded-md border border-border">
                               {event.sourceCode}
                             </span>
                           )}
                         </div>
 
-                        <div className="flex items-center gap-1 text-zinc-400">
-                          <Clock className="w-3.5 h-3.5 text-zinc-500" />
-                          <span suppressHydrationWarning>
-                            {isMounted
-                              ? new Date(event.start).toLocaleString([], {
-                                  dateStyle: 'medium',
-                                  timeStyle: 'short',
-                                })
-                              : ''}
+                        <div className="flex items-center gap-1 text-content-muted">
+                          <Clock className="w-3.5 h-3.5 text-content-muted" />
+                          <span>
+                            {formatDateTime(event.start)}
                           </span>
                         </div>
                       </div>
 
                       {event.notes && (
-                        <p className="text-xs text-zinc-400 line-clamp-1 italic bg-zinc-950/60 px-2 py-1 rounded border border-zinc-800/60 max-w-xl">
+                        <p className="text-xs text-content-muted line-clamp-1 italic bg-surface-subtle px-2.5 py-1 rounded-lg border border-border max-w-xl">
                           "{event.notes}"
                         </p>
                       )}
@@ -1040,14 +1036,14 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
                           )}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="p-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 transition-all"
+                          className="p-2 rounded-xl bg-status-success-surface hover:bg-status-success/20 text-status-success border border-status-success/30 transition-all cursor-pointer"
                           title="WhatsApp Client"
                         >
                           <MessageSquare className="w-4 h-4" />
                         </a>
                         <a
                           href={`tel:${event.phoneE164}`}
-                          className="p-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-amber-400 border border-amber-500/30 transition-all"
+                          className="p-2 rounded-xl bg-accent-soft hover:bg-accent/20 text-accent-text border border-accent/30 transition-all cursor-pointer"
                           title="Call Client"
                         >
                           <Phone className="w-4 h-4" />
@@ -1058,10 +1054,10 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
                     {event.sourceType === 'REMINDER' && (
                       <button
                         onClick={() => handleToggleComplete(event)}
-                        className={`p-2 rounded-xl border transition-all ${
+                        className={`p-2 rounded-xl border transition-all cursor-pointer ${
                           event.status === 'COMPLETED'
-                            ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
-                            : 'bg-zinc-900 text-zinc-400 hover:text-emerald-400 hover:border-emerald-500/40 border-zinc-800'
+                            ? 'bg-status-success-surface text-status-success border-status-success/40'
+                            : 'bg-surface hover:bg-surface-subtle text-content-muted hover:text-status-success hover:border-status-success/40 border-border'
                         }`}
                         title={event.status === 'COMPLETED' ? 'Mark Incomplete' : 'Mark Completed'}
                       >
@@ -1073,10 +1069,10 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
               );
             })
           ) : (
-            <div className="text-center py-16 bg-[#0c0e16] border border-zinc-800 rounded-2xl p-8 space-y-3">
-              <CalendarIcon className="w-12 h-12 text-zinc-600 mx-auto" />
-              <h3 className="text-base font-semibold text-zinc-300">No Scheduled Events Found</h3>
-              <p className="text-xs text-zinc-500 max-w-sm mx-auto">
+            <div className="text-center py-16 bg-surface border border-border rounded-2xl p-8 space-y-3 shadow-xs">
+              <CalendarIcon className="w-12 h-12 text-content-muted mx-auto" />
+              <h3 className="text-base font-bold text-content">No Scheduled Events Found</h3>
+              <p className="text-xs text-content-muted max-w-sm mx-auto">
                 No reminders or tours match the selected filter criteria. Use the schedule button above to add a task.
               </p>
             </div>
@@ -1094,10 +1090,10 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
         >
           <div className="space-y-4">
             {/* Modal Header with Mode Switch */}
-            <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
+            <div className="flex items-center justify-between pb-3 border-b border-border">
               <div className="flex items-center gap-2">
-                <CalendarClock className="w-5 h-5 text-amber-400" />
-                <h2 id="event-details-dialog-title" className="text-base font-bold text-white">
+                <CalendarClock className="w-5 h-5 text-accent" />
+                <h2 id="event-details-dialog-title" className="text-base font-bold text-content font-display">
                   Scheduled Action Details
                 </h2>
               </div>
@@ -1105,10 +1101,10 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
                 <button
                   type="button"
                   onClick={() => setIsEditingEvent(!isEditingEvent)}
-                  className={`px-3 py-1 rounded-lg text-xs font-semibold border transition-all flex items-center gap-1.5 ${
+                  className={`px-3 py-1 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 cursor-pointer ${
                     isEditingEvent
-                      ? 'bg-amber-500/10 text-amber-300 border-amber-500/30'
-                      : 'bg-zinc-900 text-zinc-300 border-zinc-700 hover:text-white'
+                      ? 'bg-accent text-white border-accent shadow-xs'
+                      : 'bg-surface hover:bg-surface-subtle text-content border-border'
                   }`}
                 >
                   {isEditingEvent ? <Eye className="w-3.5 h-3.5" /> : <Edit3 className="w-3.5 h-3.5" />}
@@ -1116,8 +1112,10 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
                 </button>
                 <button
                   type="button"
+                  data-dialog-close
+                  aria-label="Close dialog"
                   onClick={() => setSelectedEvent(null)}
-                  className="text-zinc-400 hover:text-white p-1 rounded-lg transition-colors"
+                  className="p-1 rounded-lg text-content-muted hover:text-content hover:bg-surface-subtle transition-colors cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -1125,13 +1123,13 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
             </div>
 
             {/* Quick Action Contact Bar */}
-            <div className="p-3 rounded-xl bg-zinc-950/80 border border-zinc-800 flex flex-wrap items-center justify-between gap-2">
+            <div className="p-3 rounded-2xl bg-surface-subtle border border-border flex flex-wrap items-center justify-between gap-2">
               <div className="flex flex-wrap items-center gap-2">
                 {selectedEvent.phoneE164 ? (
                   <>
                     <a
                       href={`tel:${selectedEvent.phoneE164}`}
-                      className="px-3 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs font-semibold transition-all flex items-center gap-1.5"
+                      className="px-3 py-1.5 rounded-xl bg-accent-soft hover:bg-accent/20 text-accent-text border border-accent/30 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
                     >
                       <PhoneCall className="w-3.5 h-3.5" />
                       <span>Call {selectedEvent.phoneE164}</span>
@@ -1142,14 +1140,14 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
                       )}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-semibold transition-all flex items-center gap-1.5"
+                      className="px-3 py-1.5 rounded-xl bg-status-success-surface hover:bg-status-success/20 text-status-success border border-status-success/30 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
                     >
                       <MessageCircle className="w-3.5 h-3.5" />
                       <span>WhatsApp</span>
                     </a>
                   </>
                 ) : (
-                  <span className="text-xs text-zinc-500 italic">No phone number on file</span>
+                  <span className="text-xs text-content-muted italic">No phone number on file</span>
                 )}
               </div>
 
@@ -1163,9 +1161,9 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
                         setDrawerLead(foundLead);
                       }
                     }}
-                    className="px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-700 text-xs font-semibold transition-all flex items-center gap-1.5"
+                    className="px-3 py-1.5 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
                   >
-                    <User className="w-3.5 h-3.5 text-cyan-400" />
+                    <User className="w-3.5 h-3.5 text-accent" />
                     <span>Lead Profile</span>
                   </button>
                 )}
@@ -1174,10 +1172,10 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
                   <button
                     type="button"
                     onClick={() => handleToggleComplete(selectedEvent)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all flex items-center gap-1.5 ${
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 cursor-pointer ${
                       selectedEvent.status === 'COMPLETED'
-                        ? 'bg-zinc-900 border-zinc-700 text-zinc-400 hover:text-white'
-                        : 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/30'
+                        ? 'bg-surface border-border text-content-muted hover:text-content'
+                        : 'bg-status-success-surface border-status-success/40 text-status-success hover:bg-status-success/20'
                     }`}
                   >
                     <CheckSquare className="w-3.5 h-3.5" />
@@ -1190,13 +1188,13 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
             {/* VIEW DETAILS MODE */}
             {!isEditingEvent ? (
               <div className="space-y-4">
-                <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800/80 space-y-3">
+                <div className="p-4 rounded-2xl bg-surface-subtle border border-border space-y-3">
                   <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
                     <div>
-                      <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 border border-zinc-700">
+                      <span className="text-[10px] uppercase font-mono font-bold tracking-wider px-2 py-0.5 rounded-md bg-surface text-content border border-border">
                         {selectedEvent.sourceType === 'SITE_VISIT' ? 'Escorted Site Visit' : 'Client Reminder'}
                       </span>
-                      <h3 className="text-sm font-bold text-white mt-1.5">{selectedEvent.title}</h3>
+                      <h3 className="text-sm font-bold text-content font-display mt-1.5">{selectedEvent.title}</h3>
                     </div>
                     <div className="flex items-center gap-2">
                       <span
@@ -1218,38 +1216,35 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 text-xs border-t border-zinc-800">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 text-xs border-t border-border">
                     <div>
-                      <p className="text-zinc-500">Target Client</p>
-                      <p className="font-semibold text-zinc-200 mt-0.5 flex items-center gap-1.5">
-                        <User className="w-3.5 h-3.5 text-amber-400" />
+                      <p className="text-content-muted text-[11px] font-medium">Target Client</p>
+                      <p className="font-bold text-content mt-0.5 flex items-center gap-1.5">
+                        <User className="w-3.5 h-3.5 text-accent" />
                         <span>{selectedEvent.leadName}</span>
                       </p>
                     </div>
 
                     <div>
-                      <p className="text-zinc-500">Scheduled Time</p>
-                      <p className="font-semibold text-zinc-200 mt-0.5 flex items-center gap-1.5">
-                        <Clock className="w-3.5 h-3.5 text-cyan-400" />
-                        <span suppressHydrationWarning>
-                          {new Date(selectedEvent.start).toLocaleString('en-IN', {
-                            dateStyle: 'medium',
-                            timeStyle: 'short',
-                          })}
+                      <p className="text-content-muted text-[11px] font-medium">Scheduled Time</p>
+                      <p className="font-bold text-content mt-0.5 flex items-center gap-1.5">
+                        <Clock className="w-3.5 h-3.5 text-accent" />
+                        <span>
+                          {formatDateTime(selectedEvent.start)}
                         </span>
                       </p>
                     </div>
 
                     <div>
-                      <p className="text-zinc-500">Assigned Broker / Rep</p>
-                      <p className="font-semibold text-zinc-200 mt-0.5">
+                      <p className="text-content-muted text-[11px] font-medium">Assigned Broker / Rep</p>
+                      <p className="font-bold text-content mt-0.5">
                         {selectedEvent.brokerName || 'Primary Broker'}
                       </p>
                     </div>
 
                     <div>
-                      <p className="text-zinc-500">Category / Type</p>
-                      <p className="font-semibold text-zinc-200 mt-0.5">
+                      <p className="text-content-muted text-[11px] font-medium">Category / Type</p>
+                      <p className="font-bold text-content mt-0.5">
                         {selectedEvent.sourceType === 'SITE_VISIT'
                           ? 'Escorted Site Visit Tour'
                           : `${selectedEvent.reminderType} Follow-up`}
@@ -1258,12 +1253,12 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
                   </div>
 
                   {selectedEvent.sourceType === 'SITE_VISIT' && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 text-xs border-t border-zinc-800">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 text-xs border-t border-border">
                       {selectedEvent.pickupLocation && (
                         <div>
-                          <p className="text-zinc-500">Pickup Location</p>
-                          <p className="font-semibold text-zinc-200 mt-0.5 flex items-center gap-1">
-                            <MapPin className="w-3 h-3 text-cyan-400" />
+                          <p className="text-content-muted text-[11px] font-medium">Pickup Location</p>
+                          <p className="font-bold text-content mt-0.5 flex items-center gap-1">
+                            <MapPin className="w-3 h-3 text-accent" />
                             {selectedEvent.pickupLocation}
                           </p>
                         </div>
@@ -1272,9 +1267,9 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
                   )}
 
                   {selectedEvent.notes && (
-                    <div className="pt-2 text-xs border-t border-zinc-800">
-                      <p className="text-zinc-500 mb-1">Notes / Instructions</p>
-                      <div className="p-2.5 rounded-lg bg-zinc-950/80 border border-zinc-800 text-zinc-300 text-xs whitespace-pre-wrap">
+                    <div className="pt-3 text-xs border-t border-border">
+                      <p className="text-content-muted text-[11px] font-medium mb-1">Notes / Instructions</p>
+                      <div className="p-3 rounded-xl bg-surface border border-border text-content text-xs whitespace-pre-wrap font-medium">
                         {selectedEvent.notes}
                       </div>
                     </div>
@@ -1284,26 +1279,26 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
                 {/* Snooze Options */}
                 {selectedEvent.sourceType === 'REMINDER' && selectedEvent.status !== 'COMPLETED' && (
                   <div className="space-y-1.5">
-                    <p className="text-[11px] font-semibold text-zinc-400">Quick Snooze Reminder</p>
+                    <p className="text-xs font-bold text-content">Quick Snooze Reminder</p>
                     <div className="grid grid-cols-3 gap-2">
                       <button
                         type="button"
                         onClick={() => handleSnooze(selectedEvent, 60)}
-                        className="py-2 px-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-white rounded-xl text-xs transition-all text-center"
+                        className="py-2 px-2 bg-surface hover:bg-surface-subtle border border-border text-content rounded-xl text-xs font-bold transition-all text-center cursor-pointer"
                       >
                         +1 Hour
                       </button>
                       <button
                         type="button"
                         onClick={() => handleSnooze(selectedEvent, 1440)}
-                        className="py-2 px-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-white rounded-xl text-xs transition-all text-center"
+                        className="py-2 px-2 bg-surface hover:bg-surface-subtle border border-border text-content rounded-xl text-xs font-bold transition-all text-center cursor-pointer"
                       >
                         +Tomorrow
                       </button>
                       <button
                         type="button"
                         onClick={() => handleSnooze(selectedEvent, 10080)}
-                        className="py-2 px-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-white rounded-xl text-xs transition-all text-center"
+                        className="py-2 px-2 bg-surface hover:bg-surface-subtle border border-border text-content rounded-xl text-xs font-bold transition-all text-center cursor-pointer"
                       >
                         +1 Week
                       </button>
@@ -1312,11 +1307,11 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
                 )}
 
                 {/* Edit & Delete Action Row */}
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 pt-2 border-t border-zinc-800">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 pt-3 border-t border-border">
                   <button
                     type="button"
                     onClick={() => setIsEditingEvent(true)}
-                    className="w-full sm:w-auto px-4 py-2.5 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all"
+                    className="w-full sm:w-auto px-4 py-2.5 bg-accent hover:bg-accent-hover text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-xs cursor-pointer"
                   >
                     <Edit3 className="w-3.5 h-3.5" />
                     <span>Edit Schedule Details</span>
@@ -1326,7 +1321,7 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
                     <button
                       type="button"
                       onClick={() => handleDeleteReminder(selectedEvent)}
-                      className="w-full sm:w-auto text-xs text-rose-400 hover:text-rose-300 flex items-center justify-center gap-1 px-3 py-2.5 rounded-xl hover:bg-rose-950/20 transition-all"
+                      className="w-full sm:w-auto text-xs text-status-danger hover:text-status-danger/80 flex items-center justify-center gap-1 px-3 py-2.5 rounded-xl hover:bg-status-danger-surface transition-all font-bold cursor-pointer"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                       <span>Delete Reminder</span>
@@ -1338,23 +1333,23 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
               /* EDIT FORM MODE */
               <form onSubmit={handleSaveEventDetails} className="space-y-4 pt-1">
                 {editError && (
-                  <div className="p-3 bg-red-950/60 border border-red-500/40 rounded-xl text-red-200 text-xs flex items-center gap-2">
-                    <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
+                  <div className="p-3 bg-status-danger-surface border border-status-danger/40 rounded-xl text-status-danger text-xs font-medium flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
                     <span>{editError}</span>
                   </div>
                 )}
 
                 {editSuccess && (
-                  <div className="p-3 bg-emerald-950/60 border border-emerald-500/40 rounded-xl text-emerald-200 text-xs flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <div className="p-3 bg-status-success-surface border border-status-success/40 rounded-xl text-status-success text-xs font-medium flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 shrink-0" />
                     <span>{editSuccess}</span>
                   </div>
                 )}
 
                 {/* Title / Promise */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-zinc-300 flex items-center gap-1.5">
-                    <FileText className="w-3.5 h-3.5 text-amber-400" />
+                  <label className="text-xs font-bold text-content flex items-center gap-1.5">
+                    <FileText className="w-3.5 h-3.5 text-accent" />
                     <span>Task Title / Description *</span>
                   </label>
                   <input
@@ -1363,65 +1358,65 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
                     value={editTitle}
                     onChange={(e) => setEditTitle(e.target.value)}
                     placeholder="e.g. Follow up with client regarding 2BHK builder VP discount"
-                    className="w-full px-3.5 py-2.5 bg-zinc-900/90 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all"
+                    className="w-full px-3.5 py-2.5 bg-surface-subtle border border-border rounded-xl text-xs text-content placeholder-content-muted focus:outline-hidden focus:border-accent focus:ring-1 focus:ring-accent font-medium transition-all"
                   />
                 </div>
 
                 {/* Type, Priority, Status */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-zinc-300">Action Type</label>
+                    <label className="text-xs font-bold text-content">Action Type</label>
                     <select
                       value={editType}
                       onChange={(e) => setEditType(e.target.value)}
                       disabled={selectedEvent.sourceType === 'SITE_VISIT'}
-                      className="w-full px-3 py-2.5 bg-zinc-900/90 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 disabled:opacity-50 transition-all"
+                      className="w-full px-3.5 py-2.5 bg-surface-subtle border border-border rounded-xl text-xs text-content focus:outline-hidden focus:border-accent focus:ring-1 focus:ring-accent font-medium disabled:opacity-50 transition-all"
                     >
-                      <option value="CALL">📞 Phone Call</option>
-                      <option value="WHATSAPP">💬 WhatsApp</option>
-                      <option value="SITE_VISIT_FOLLOWUP">🚗 Site Visit Follow-up</option>
-                      <option value="TOKEN_FOLLOWUP">💰 Token / Booking</option>
-                      <option value="REQUIREMENT_CHECK">📑 Requirements</option>
-                      <option value="GENERAL">📝 General Task</option>
+                      <option value="CALL" className="bg-surface text-content">📞 Phone Call</option>
+                      <option value="WHATSAPP" className="bg-surface text-content">💬 WhatsApp</option>
+                      <option value="SITE_VISIT_FOLLOWUP" className="bg-surface text-content">🚗 Site Visit Follow-up</option>
+                      <option value="TOKEN_FOLLOWUP" className="bg-surface text-content">💰 Token / Booking</option>
+                      <option value="REQUIREMENT_CHECK" className="bg-surface text-content">📑 Requirements</option>
+                      <option value="GENERAL" className="bg-surface text-content">📝 General Task</option>
                     </select>
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-zinc-300">Priority</label>
+                    <label className="text-xs font-bold text-content">Priority</label>
                     <select
                       value={editPriority}
                       onChange={(e) => setEditPriority(e.target.value)}
-                      className="w-full px-3.5 py-2.5 bg-zinc-900/90 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all"
+                      className="w-full px-3.5 py-2.5 bg-surface-subtle border border-border rounded-xl text-xs text-content focus:outline-hidden focus:border-accent focus:ring-1 focus:ring-accent font-medium transition-all"
                     >
-                      <option value="URGENT">🔴 Urgent</option>
-                      <option value="HIGH">🟡 High</option>
-                      <option value="MEDIUM">⚪ Medium</option>
-                      <option value="LOW">🟢 Low</option>
+                      <option value="URGENT" className="bg-surface text-content">🔴 Urgent</option>
+                      <option value="HIGH" className="bg-surface text-content">🟡 High</option>
+                      <option value="MEDIUM" className="bg-surface text-content">⚪ Medium</option>
+                      <option value="LOW" className="bg-surface text-content">🟢 Low</option>
                     </select>
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-zinc-300">Status</label>
+                    <label className="text-xs font-bold text-content">Status</label>
                     <select
                       value={editStatus}
                       onChange={(e) => setEditStatus(e.target.value)}
-                      className="w-full px-3.5 py-2.5 bg-zinc-900/90 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all"
+                      className="w-full px-3.5 py-2.5 bg-surface-subtle border border-border rounded-xl text-xs text-content focus:outline-hidden focus:border-accent focus:ring-1 focus:ring-accent font-medium transition-all"
                     >
                       {selectedEvent.sourceType === 'SITE_VISIT' ? (
                         <>
-                          <option value="SCHEDULED">🗓️ Scheduled</option>
-                          <option value="CONFIRMED">✅ Confirmed</option>
-                          <option value="IN_PROGRESS">🚗 In Progress</option>
-                          <option value="COMPLETED">🏁 Completed</option>
-                          <option value="CANCELLED">❌ Cancelled</option>
-                          <option value="NO_SHOW">⚠️ No Show</option>
+                          <option value="SCHEDULED" className="bg-surface text-content">🗓️ Scheduled</option>
+                          <option value="CONFIRMED" className="bg-surface text-content">✅ Confirmed</option>
+                          <option value="IN_PROGRESS" className="bg-surface text-content">🚗 In Progress</option>
+                          <option value="COMPLETED" className="bg-surface text-content">🏁 Completed</option>
+                          <option value="CANCELLED" className="bg-surface text-content">❌ Cancelled</option>
+                          <option value="NO_SHOW" className="bg-surface text-content">⚠️ No Show</option>
                         </>
                       ) : (
                         <>
-                          <option value="PENDING">⏳ Pending</option>
-                          <option value="COMPLETED">✅ Completed</option>
-                          <option value="SNOOZED">⏰ Snoozed</option>
-                          <option value="CANCELLED">❌ Cancelled</option>
+                          <option value="PENDING" className="bg-surface text-content">⏳ Pending</option>
+                          <option value="COMPLETED" className="bg-surface text-content">✅ Completed</option>
+                          <option value="SNOOZED" className="bg-surface text-content">⏰ Snoozed</option>
+                          <option value="CANCELLED" className="bg-surface text-content">❌ Cancelled</option>
                         </>
                       )}
                     </select>
@@ -1430,47 +1425,47 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
 
                 {/* Quick Presets for Edit */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-zinc-300">Quick Reschedule Presets</label>
+                  <label className="text-xs font-bold text-content">Quick Reschedule Presets</label>
                   <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
                     <button
                       type="button"
                       onClick={() => applyEditDatePreset('1H')}
-                      className="py-1.5 px-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 text-zinc-300 hover:text-white rounded-lg text-xs font-medium transition-all text-center"
+                      className="py-1.5 px-2 bg-surface hover:bg-surface-subtle border border-border text-content rounded-lg text-xs font-bold transition-all text-center cursor-pointer"
                     >
                       +1 Hour
                     </button>
                     <button
                       type="button"
                       onClick={() => applyEditDatePreset('TODAY_4PM')}
-                      className="py-1.5 px-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 text-zinc-300 hover:text-white rounded-lg text-xs font-medium transition-all text-center"
+                      className="py-1.5 px-2 bg-surface hover:bg-surface-subtle border border-border text-content rounded-lg text-xs font-bold transition-all text-center cursor-pointer"
                     >
                       Today 4 PM
                     </button>
                     <button
                       type="button"
                       onClick={() => applyEditDatePreset('TOMORROW_10AM')}
-                      className="py-1.5 px-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 text-zinc-300 hover:text-white rounded-lg text-xs font-medium transition-all text-center"
+                      className="py-1.5 px-2 bg-surface hover:bg-surface-subtle border border-border text-content rounded-lg text-xs font-bold transition-all text-center cursor-pointer"
                     >
                       Tmrw 10 AM
                     </button>
                     <button
                       type="button"
                       onClick={() => applyEditDatePreset('TOMORROW_4PM')}
-                      className="py-1.5 px-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 text-zinc-300 hover:text-white rounded-lg text-xs font-medium transition-all text-center"
+                      className="py-1.5 px-2 bg-surface hover:bg-surface-subtle border border-border text-content rounded-lg text-xs font-bold transition-all text-center cursor-pointer"
                     >
                       Tmrw 4 PM
                     </button>
                     <button
                       type="button"
                       onClick={() => applyEditDatePreset('WEEKEND')}
-                      className="py-1.5 px-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 text-zinc-300 hover:text-white rounded-lg text-xs font-medium transition-all text-center"
+                      className="py-1.5 px-2 bg-surface hover:bg-surface-subtle border border-border text-content rounded-lg text-xs font-bold transition-all text-center cursor-pointer"
                     >
                       Sat 11 AM
                     </button>
                     <button
                       type="button"
                       onClick={() => applyEditDatePreset('1W')}
-                      className="py-1.5 px-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 text-zinc-300 hover:text-white rounded-lg text-xs font-medium transition-all text-center"
+                      className="py-1.5 px-2 bg-surface hover:bg-surface-subtle border border-border text-content rounded-lg text-xs font-bold transition-all text-center cursor-pointer"
                     >
                       +1 Week
                     </button>
@@ -1479,8 +1474,8 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
 
                 {/* Scheduled Due Date */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-zinc-300 flex items-center gap-1.5">
-                    <Calendar className="w-3.5 h-3.5 text-amber-400" />
+                  <label className="text-xs font-bold text-content flex items-center gap-1.5">
+                    <Calendar className="w-3.5 h-3.5 text-accent" />
                     <span>Due Date &amp; Time *</span>
                   </label>
                   <input
@@ -1488,7 +1483,7 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
                     required
                     value={editDueDate}
                     onChange={(e) => setEditDueDate(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-zinc-900/90 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all"
+                    className="w-full px-3.5 py-2.5 bg-surface-subtle border border-border rounded-xl text-xs text-content font-mono font-medium focus:outline-hidden focus:border-accent focus:ring-1 focus:ring-accent transition-all"
                   />
                 </div>
 
@@ -1496,23 +1491,23 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
                 {selectedEvent.sourceType === 'SITE_VISIT' && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                     <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-zinc-300">Pickup Location</label>
+                      <label className="text-xs font-bold text-content">Pickup Location</label>
                       <input
                         type="text"
                         value={editPickupLocation}
                         onChange={(e) => setEditPickupLocation(e.target.value)}
                         placeholder="e.g. Kharghar Railway Station (East)"
-                        className="w-full px-3.5 py-2.5 bg-zinc-900/90 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all"
+                        className="w-full px-3.5 py-2.5 bg-surface-subtle border border-border rounded-xl text-xs text-content placeholder-content-muted focus:outline-hidden focus:border-accent font-medium transition-all"
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-zinc-300">Cab &amp; Driver Details</label>
+                      <label className="text-xs font-bold text-content">Cab &amp; Driver Details</label>
                       <input
                         type="text"
                         value={editCabDetails}
                         onChange={(e) => setEditCabDetails(e.target.value)}
                         placeholder="e.g. Ertiga MH-46-AZ-1234 (Ramesh)"
-                        className="w-full px-3.5 py-2.5 bg-zinc-900/90 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all"
+                        className="w-full px-3.5 py-2.5 bg-surface-subtle border border-border rounded-xl text-xs text-content placeholder-content-muted focus:outline-hidden focus:border-accent font-medium transition-all"
                       />
                     </div>
                   </div>
@@ -1520,22 +1515,22 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
 
                 {/* Notes & Talking Points */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-zinc-300">Notes &amp; Instructions</label>
+                  <label className="text-xs font-bold text-content">Notes &amp; Instructions</label>
                   <textarea
                     rows={3}
                     value={editNotes}
                     onChange={(e) => setEditNotes(e.target.value)}
                     placeholder="Add instructions, client feedback, or negotiation points..."
-                    className="w-full px-3.5 py-2.5 bg-zinc-900/90 border border-zinc-800 rounded-xl text-xs text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all"
+                    className="w-full px-3.5 py-2.5 bg-surface-subtle border border-border rounded-xl text-xs text-content placeholder-content-muted focus:outline-hidden focus:border-accent focus:ring-1 focus:ring-accent font-medium transition-all"
                   />
                 </div>
 
                 {/* Form Action Buttons */}
-                <div className="flex flex-col-reverse sm:flex-row items-center justify-between gap-2.5 pt-3 border-t border-zinc-800">
+                <div className="flex flex-col-reverse sm:flex-row items-center justify-between gap-2.5 pt-3 border-t border-border">
                   <button
                     type="button"
                     onClick={() => setIsEditingEvent(false)}
-                    className="w-full sm:w-auto px-4 py-2.5 bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 rounded-xl text-xs font-semibold transition-all"
+                    className="w-full sm:w-auto px-4 py-2.5 bg-surface border border-border hover:bg-surface-subtle text-content rounded-xl text-xs font-bold transition-all cursor-pointer"
                   >
                     Cancel
                   </button>
@@ -1543,7 +1538,7 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
                   <button
                     type="submit"
                     disabled={savingEdit}
-                    className="w-full sm:w-auto px-5 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-zinc-950 font-bold text-xs rounded-xl shadow-lg shadow-amber-500/20 disabled:opacity-50 flex items-center justify-center gap-1.5 transition-all"
+                    className="w-full sm:w-auto px-5 py-2.5 bg-accent hover:bg-accent-hover text-white font-bold text-xs rounded-xl shadow-xs disabled:opacity-50 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
                   >
                     <Save className="w-3.5 h-3.5" />
                     <span>{savingEdit ? 'Saving...' : 'Save Changes'}</span>
@@ -1563,22 +1558,24 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
           titleId="schedule-reminder-dialog-title"
           size="md"
         >
-          <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
+          <div className="flex items-center justify-between pb-3 border-b border-border">
             <div className="flex items-center gap-2.5">
-              <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400">
+              <div className="p-2 rounded-xl bg-accent-soft border border-accent/20 text-accent">
                 <CalendarClock className="w-4 h-4" />
               </div>
               <div>
-                <h2 id="schedule-reminder-dialog-title" className="text-base font-bold text-white tracking-tight">
+                <h2 id="schedule-reminder-dialog-title" className="text-base font-bold text-content font-display tracking-tight">
                   Schedule Client Reminder
                 </h2>
-                <p className="text-[11px] text-zinc-400">Set targeted callback promises and follow-up deadlines</p>
+                <p className="text-xs text-content-muted">Set targeted callback promises and follow-up deadlines</p>
               </div>
             </div>
             <button
               type="button"
+              data-dialog-close
+              aria-label="Close dialog"
               onClick={() => setShowAddModal(false)}
-              className="text-zinc-400 hover:text-white p-1.5 rounded-lg hover:bg-zinc-800/60 transition-colors"
+              className="p-1.5 rounded-lg text-content-muted hover:text-content hover:bg-surface-subtle transition-colors cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
@@ -1586,25 +1583,25 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
 
           <form onSubmit={handleCreateReminder} className="space-y-4 pt-3">
             {formError && (
-              <div className="p-3 bg-red-950/60 border border-red-500/40 rounded-xl text-red-200 text-xs flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
+              <div className="p-3 bg-status-danger-surface border border-status-danger/40 rounded-xl text-status-danger text-xs font-medium flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>{formError}</span>
               </div>
             )}
 
             {/* Select Client Lead */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-zinc-300 flex items-center gap-1.5">
-                <User className="w-3.5 h-3.5 text-amber-400" />
+              <label className="text-xs font-bold text-content flex items-center gap-1.5">
+                <User className="w-3.5 h-3.5 text-accent" />
                 <span>Client Lead *</span>
               </label>
               <select
                 value={newLeadId}
                 onChange={(e) => setNewLeadId(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-zinc-900/90 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all"
+                className="w-full px-3.5 py-2.5 bg-surface-subtle border border-border rounded-xl text-xs text-content focus:outline-hidden focus:border-accent focus:ring-1 focus:ring-accent font-medium transition-all"
               >
                 {leads.map((l) => (
-                  <option key={l.id} value={l.id}>
+                  <option key={l.id} value={l.id} className="bg-surface text-content">
                     {l.fullName || 'Client'} ({l.phoneE164 || 'No Phone'}) {l.sourceCode ? `[${l.sourceCode}]` : ''}
                   </option>
                 ))}
@@ -1613,8 +1610,8 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
 
             {/* Title / Description */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-zinc-300 flex items-center gap-1.5">
-                <FileText className="w-3.5 h-3.5 text-amber-400" />
+              <label className="text-xs font-bold text-content flex items-center gap-1.5">
+                <FileText className="w-3.5 h-3.5 text-accent" />
                 <span>Reminder Title / Promise *</span>
               </label>
               <input
@@ -1623,79 +1620,79 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
                 placeholder="e.g. Call to discuss Kharghar Sec 35 floor plans & builder discount"
                 value={newTitle}
                 onChange={(e) => setNewTitle(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-zinc-900/90 border border-zinc-800 rounded-xl text-xs text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all"
+                className="w-full px-3.5 py-2.5 bg-surface-subtle border border-border rounded-xl text-xs text-content placeholder-content-muted focus:outline-hidden focus:border-accent font-medium transition-all"
               />
             </div>
 
             {/* Type & Priority */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-zinc-300">Action Type</label>
+                <label className="text-xs font-bold text-content">Action Type</label>
                 <select
                   value={newType}
                   onChange={(e) => setNewType(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-zinc-900/90 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all"
+                  className="w-full px-3.5 py-2.5 bg-surface-subtle border border-border rounded-xl text-xs text-content focus:outline-hidden focus:border-accent font-medium transition-all"
                 >
-                  <option value="CALL">📞 Phone Call</option>
-                  <option value="WHATSAPP">💬 WhatsApp Message</option>
-                  <option value="SITE_VISIT_FOLLOWUP">🚗 Site Visit Follow-up</option>
-                  <option value="TOKEN_FOLLOWUP">💰 Token / Booking Follow-up</option>
-                  <option value="REQUIREMENT_CHECK">📑 Requirement Check</option>
-                  <option value="GENERAL">📝 General Reminder</option>
+                  <option value="CALL" className="bg-surface text-content">📞 Phone Call</option>
+                  <option value="WHATSAPP" className="bg-surface text-content">💬 WhatsApp Message</option>
+                  <option value="SITE_VISIT_FOLLOWUP" className="bg-surface text-content">🚗 Site Visit Follow-up</option>
+                  <option value="TOKEN_FOLLOWUP" className="bg-surface text-content">💰 Token / Booking Follow-up</option>
+                  <option value="REQUIREMENT_CHECK" className="bg-surface text-content">📑 Requirement Check</option>
+                  <option value="GENERAL" className="bg-surface text-content">📝 General Reminder</option>
                 </select>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-zinc-300">Priority</label>
+                <label className="text-xs font-bold text-content">Priority</label>
                 <select
                   value={newPriority}
                   onChange={(e) => setNewPriority(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-zinc-900/90 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all"
+                  className="w-full px-3.5 py-2.5 bg-surface-subtle border border-border rounded-xl text-xs text-content focus:outline-hidden focus:border-accent font-medium transition-all"
                 >
-                  <option value="URGENT">🔴 Urgent</option>
-                  <option value="HIGH">🟡 High Priority</option>
-                  <option value="MEDIUM">⚪ Medium</option>
-                  <option value="LOW">🟢 Low</option>
+                  <option value="URGENT" className="bg-surface text-content">🔴 Urgent</option>
+                  <option value="HIGH" className="bg-surface text-content">🟡 High Priority</option>
+                  <option value="MEDIUM" className="bg-surface text-content">⚪ Medium</option>
+                  <option value="LOW" className="bg-surface text-content">🟢 Low</option>
                 </select>
               </div>
             </div>
 
             {/* Quick Presets */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-zinc-300">Quick Schedule Presets</label>
+              <label className="text-xs font-bold text-content">Quick Schedule Presets</label>
               <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
                 <button
                   type="button"
                   onClick={() => applyDatePreset('1H')}
-                  className="py-1.5 px-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 text-zinc-300 hover:text-white rounded-lg text-xs font-medium transition-all text-center"
+                  className="py-1.5 px-2 bg-surface hover:bg-surface-subtle border border-border text-content rounded-lg text-xs font-bold transition-all text-center cursor-pointer"
                 >
                   +1 Hour
                 </button>
                 <button
                   type="button"
                   onClick={() => applyDatePreset('TODAY_4PM')}
-                  className="py-1.5 px-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 text-zinc-300 hover:text-white rounded-lg text-xs font-medium transition-all text-center"
+                  className="py-1.5 px-2 bg-surface hover:bg-surface-subtle border border-border text-content rounded-lg text-xs font-bold transition-all text-center cursor-pointer"
                 >
                   Today 4 PM
                 </button>
                 <button
                   type="button"
                   onClick={() => applyDatePreset('TOMORROW_10AM')}
-                  className="py-1.5 px-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 text-zinc-300 hover:text-white rounded-lg text-xs font-medium transition-all text-center"
+                  className="py-1.5 px-2 bg-surface hover:bg-surface-subtle border border-border text-content rounded-lg text-xs font-bold transition-all text-center cursor-pointer"
                 >
                   Tmrw 10 AM
                 </button>
                 <button
                   type="button"
                   onClick={() => applyDatePreset('TOMORROW_4PM')}
-                  className="py-1.5 px-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 text-zinc-300 hover:text-white rounded-lg text-xs font-medium transition-all text-center"
+                  className="py-1.5 px-2 bg-surface hover:bg-surface-subtle border border-border text-content rounded-lg text-xs font-bold transition-all text-center cursor-pointer"
                 >
                   Tmrw 4 PM
                 </button>
                 <button
                   type="button"
                   onClick={() => applyDatePreset('WEEKEND')}
-                  className="py-1.5 px-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 text-zinc-300 hover:text-white rounded-lg text-xs font-medium transition-all text-center col-span-3 sm:col-span-1"
+                  className="py-1.5 px-2 bg-surface hover:bg-surface-subtle border border-border text-content rounded-lg text-xs font-bold transition-all text-center col-span-3 sm:col-span-1 cursor-pointer"
                 >
                   Sat 11 AM
                 </button>
@@ -1704,8 +1701,8 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
 
             {/* Due Date Input */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-zinc-300 flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5 text-amber-400" />
+              <label className="text-xs font-bold text-content flex items-center gap-1.5">
+                <Calendar className="w-3.5 h-3.5 text-accent" />
                 <span>Due Date &amp; Time *</span>
               </label>
               <input
@@ -1713,34 +1710,34 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
                 required
                 value={newDueDate}
                 onChange={(e) => setNewDueDate(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-zinc-900/90 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all"
+                className="w-full px-3.5 py-2.5 bg-surface-subtle border border-border rounded-xl text-xs text-content font-mono font-medium focus:outline-hidden focus:border-accent transition-all"
               />
             </div>
 
             {/* Notes */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-zinc-300">Notes / Talking Points</label>
+              <label className="text-xs font-bold text-content">Notes / Talking Points</label>
               <textarea
                 rows={3}
                 placeholder="Mention developer VP negotiation, 2BHK corner unit carpet area..."
                 value={newNotes}
                 onChange={(e) => setNewNotes(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-zinc-900/90 border border-zinc-800 rounded-xl text-xs text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all"
+                className="w-full px-3.5 py-2.5 bg-surface-subtle border border-border rounded-xl text-xs text-content placeholder-content-muted focus:outline-hidden focus:border-accent font-medium transition-all"
               />
             </div>
 
-            <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-2.5 pt-3 border-t border-zinc-800">
+            <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-2.5 pt-3 border-t border-border">
               <button
                 type="button"
                 onClick={() => setShowAddModal(false)}
-                className="w-full sm:w-auto px-4 py-2.5 bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 rounded-xl text-xs font-semibold transition-all"
+                className="w-full sm:w-auto px-4 py-2.5 bg-surface border border-border hover:bg-surface-subtle text-content rounded-xl text-xs font-bold transition-all cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full sm:w-auto px-5 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-zinc-950 font-bold text-xs rounded-xl shadow-lg shadow-amber-500/20 disabled:opacity-50 flex items-center justify-center gap-1.5 transition-all"
+                className="w-full sm:w-auto px-5 py-2.5 bg-accent hover:bg-accent-hover text-white font-bold text-xs rounded-xl shadow-xs disabled:opacity-50 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
               >
                 <Save className="w-3.5 h-3.5" />
                 <span>{submitting ? 'Scheduling...' : 'Save Reminder'}</span>

@@ -447,7 +447,7 @@ export function TelecallerConsoleView({
                       href={getWhatsAppUrl()}
                       target="_blank"
                       rel="noreferrer"
-                      className="p-2 rounded-xl bg-status-success hover:opacity-90 text-zinc-950 font-bold transition-all shadow-xs"
+                      className="p-2 rounded-xl bg-status-success hover:opacity-90 text-white font-bold transition-all shadow-xs cursor-pointer"
                       title="Open WhatsApp with Verified Brochure Template"
                     >
                       <MessageSquare className="w-4 h-4" />

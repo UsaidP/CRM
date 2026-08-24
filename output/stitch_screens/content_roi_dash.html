@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Executive Sales Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&amp;family=JetBrains+Mono:wght@500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-container": "#5e3000",
+                        "on-secondary-fixed": "#002114",
+                        "on-surface": "#1d1c17",
+                        "primary-container": "#1b4332",
+                        "on-tertiary-fixed-variant": "#6e3900",
+                        "error": "#ba1a1a",
+                        "inverse-on-surface": "#f5f0e8",
+                        "outline": "#717973",
+                        "surface-tint": "#3f6653",
+                        "on-primary-container": "#86af99",
+                        "on-secondary-fixed-variant": "#0e5138",
+                        "on-background": "#1d1c17",
+                        "surface-container-highest": "#e7e2da",
+                        "primary-fixed": "#c1ecd4",
+                        "on-tertiary-container": "#f48c24",
+                        "tertiary-fixed-dim": "#ffb77d",
+                        "surface-container-high": "#ede7df",
+                        "surface-variant": "#e7e2da",
+                        "surface-dim": "#ded9d1",
+                        "error-container": "#ffdad6",
+                        "surface-container-low": "#f8f3eb",
+                        "on-error-container": "#93000a",
+                        "secondary-container": "#aeeecb",
+                        "secondary": "#2c694e",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container": "#f2ede5",
+                        "on-secondary": "#ffffff",
+                        "outline-variant": "#c1c8c2",
+                        "surface-bright": "#fef9f0",
+                        "tertiary-fixed": "#ffdcc3",
+                        "surface": "#fef9f0",
+                        "on-primary-fixed": "#002114",
+                        "inverse-surface": "#32302b",
+                        "primary-fixed-dim": "#a5d0b9",
+                        "primary": "#012d1d",
+                        "secondary-fixed": "#b1f0ce",
+                        "on-primary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "tertiary": "#3e1e00",
+                        "secondary-fixed-dim": "#95d4b3",
+                        "on-tertiary-fixed": "#2f1500",
+                        "on-tertiary": "#ffffff",
+                        "on-surface-variant": "#414844",
+                        "on-primary-fixed-variant": "#274e3d",
+                        "on-secondary-container": "#316e52",
+                        "inverse-primary": "#a5d0b9",
+                        "background": "#fef9f0"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "stack-md": "12px",
+                        "margin-page": "24px",
+                        "stack-sm": "8px",
+                        "stack-xs": "4px",
+                        "gutter": "16px",
+                        "row-height": "40px"
+                    },
+                    "fontFamily": {
+                        "display-sm": ["Plus Jakarta Sans"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "timer-lg": ["JetBrains Mono"],
+                        "data-mono": ["JetBrains Mono"],
+                        "label-bold": ["Plus Jakarta Sans"],
+                        "headline-sm": ["Plus Jakarta Sans"],
+                        "body-sm": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "display-sm": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "timer-lg": ["20px", { "lineHeight": "24px", "fontWeight": "600" }],
+                        "data-mono": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+                        "label-bold": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "headline-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }],
+                        "body-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .stroke-focus {
+            box-shadow: inset 0 0 0 2px #2D6A4F;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md antialiased overflow-hidden">
+<!-- Top Nav Bar (Shared Component) -->
+<nav class="fixed top-0 w-full z-50 flex justify-between items-center px-margin-page h-[64px] bg-surface border-b border-outline-variant shadow-none transition-colors duration-200 ease-in-out">
+<div class="flex items-center gap-6">
+<span class="font-headline-sm text-headline-sm font-bold text-primary">EstateFlow CRM</span>
+<div class="hidden md:flex gap-4">
+<a class="font-label-bold text-label-bold text-on-surface-variant hover:bg-surface-container-low hover:text-primary transition-colors duration-200 px-3 py-2 rounded" href="#">Pipeline</a>
+<a class="font-label-bold text-label-bold text-on-surface-variant hover:bg-surface-container-low hover:text-primary transition-colors duration-200 px-3 py-2 rounded" href="#">Leads</a>
+<a class="font-label-bold text-label-bold text-on-surface-variant hover:bg-surface-container-low hover:text-primary transition-colors duration-200 px-3 py-2 rounded" href="#">Micro-Markets</a>
+<a class="font-label-bold text-label-bold text-secondary border-b-2 border-secondary pb-1 px-3 py-2" href="#">Analytics</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center bg-surface-container-low rounded-lg px-3 py-1.5 border border-outline-variant">
+<span class="material-symbols-outlined text-on-surface-variant mr-2" style="font-variation-settings: 'FILL' 0;">search</span>
+<input class="bg-transparent border-none text-body-sm text-on-surface w-48 focus:ring-0 placeholder:text-on-surface-variant" placeholder="Search..." type="text"/>
+</div>
+<button class="text-on-surface-variant hover:text-primary hover:bg-surface-container-low p-2 rounded-full transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary hover:bg-surface-container-low p-2 rounded-full transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">settings</span>
+</button>
+<img alt="Executive Profile" class="w-8 h-8 rounded-full object-cover border border-outline-variant" data-alt="A highly detailed portrait of a professional female executive in her late 30s, wearing a tailored navy blue blazer over a crisp white blouse. She has short, styled black hair and a confident, approachable expression. The lighting is bright and modern, resembling a high-end corporate headshot taken in a well-lit office environment with a subtle blurred background showing modern architecture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuByglD1dvJ5hHTVoltBqU_8kdOfueGTDkYSiZefRqqui0B1IDj-N-QRBhqG33tQ5gAKTk54oOO0cKvC4pvrEvlngiEx1m3PcMtbKISLAlGHns6OCyZJXnLLAIZxuAGysJsLZyRxk33d3fpbBnHb5NcmklUIp_CiAgibgyambtWGeTy3l9PO2KoJdR8ocK-o3YfybfZ6OYyCYm_SIemog0CVS2GGclv9aQUQHzlzchOIiBcWj401ErJ2z7d2OQwa9PaYVnxP8tsP8771"/>
+</div>
+</nav>
+<!-- Side Nav Bar (Shared Component) -->
+<aside class="hidden md:flex flex-col h-full py-stack-md fixed left-0 top-[64px] w-[280px] bg-surface-container-low border-r border-outline-variant z-40 transition-colors duration-200 ease-in-out">
+<div class="px-margin-page mb-6 mt-4">
+<div class="flex items-center gap-3 mb-2">
+<div class="w-10 h-10 rounded-lg bg-primary-container text-on-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined">workspace_premium</span>
+</div>
+<div>
+<h2 class="font-headline-sm text-headline-sm text-primary">Lead Command</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Active Session: 4h 12m</p>
+</div>
+</div>
+<button class="w-full mt-4 bg-primary text-on-primary font-label-bold text-label-bold py-2 rounded hover:bg-primary-container transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                New Lead <span class="bg-surface-variant text-on-surface-variant px-1 rounded text-[10px] ml-1">[Alt+N]</span>
+</button>
+</div>
+<nav class="flex-1 px-4 flex flex-col gap-1">
+<a class="flex items-center gap-3 px-4 py-2 font-body-md text-body-md text-on-surface-variant hover:bg-surface-variant rounded transition-transform scale-95 active:scale-100" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center gap-3 px-4 py-2 font-body-md text-body-md text-on-surface-variant hover:bg-surface-variant rounded transition-transform scale-95 active:scale-100" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">person_search</span>
+                Active Leads
+            </a>
+<a class="flex items-center gap-3 px-4 py-2 font-body-md text-body-md text-on-surface-variant hover:bg-surface-variant rounded transition-transform scale-95 active:scale-100" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">home_work</span>
+                Inventory
+            </a>
+<a class="flex items-center gap-3 px-4 py-2 font-body-md text-body-md text-on-surface-variant hover:bg-surface-variant rounded transition-transform scale-95 active:scale-100" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">campaign</span>
+                Marketing
+            </a>
+<a class="flex items-center gap-3 px-4 py-2 font-body-md text-body-md bg-secondary-container text-on-secondary-container border-l-4 border-secondary rounded-r transition-transform scale-95 active:scale-100" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">insert_chart</span>
+                Reports
+            </a>
+</nav>
+<div class="px-4 mt-auto mb-[64px] border-t border-outline-variant pt-4 flex flex-col gap-1">
+<a class="flex items-center gap-3 px-4 py-2 font-body-md text-body-md text-on-surface-variant hover:bg-surface-variant rounded transition-transform scale-95 active:scale-100" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">help_outline</span>
+                Support
+            </a>
+<a class="flex items-center gap-3 px-4 py-2 font-body-md text-body-md text-on-surface-variant hover:bg-surface-variant rounded transition-transform scale-95 active:scale-100" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">dark_mode</span>
+                Dark Mode
+            </a>
+</div>
+</aside>
+<!-- Main Workspace Canvas -->
+<main class="pt-[64px] md:pl-[280px] h-screen overflow-y-auto bg-background p-margin-page">
+<div class="max-w-7xl mx-auto space-y-gutter">
+<!-- Page Header -->
+<div class="flex justify-between items-end mb-6">
+<div>
+<h1 class="font-display-sm text-display-sm text-on-surface mb-1">Executive Dashboard</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Real Estate Sales Velocity &amp; Content ROI</p>
+</div>
+<div class="flex gap-2">
+<button class="bg-surface-container-highest text-on-surface font-label-bold text-label-bold px-4 py-2 rounded border border-outline-variant hover:bg-surface-variant transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">calendar_today</span>
+                        This Month
+                    </button>
+<button class="bg-primary text-on-primary font-label-bold text-label-bold px-4 py-2 rounded hover:bg-primary-container transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">download</span>
+                        Export Report
+                    </button>
+</div>
+</div>
+<!-- KPI Cards Container -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
+<!-- Card 1 -->
+<div class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant relative overflow-hidden group hover:border-secondary transition-colors">
+<div class="flex justify-between items-start mb-2">
+<p class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider">Gross Brokerage</p>
+<span class="material-symbols-outlined text-secondary bg-secondary-container/30 p-1.5 rounded-lg" style="font-variation-settings: 'FILL' 1;">account_balance_wallet</span>
+</div>
+<div class="flex items-baseline gap-2">
+<h3 class="font-display-sm text-[28px] leading-tight text-on-surface">₹38.5L</h3>
+</div>
+<div class="mt-2 flex items-center gap-1 font-body-sm text-body-sm text-secondary font-medium">
+<span class="material-symbols-outlined text-[16px]">trending_up</span>
+<span>+24% vs Target</span>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant relative overflow-hidden group hover:border-secondary transition-colors">
+<div class="flex justify-between items-start mb-2">
+<p class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider">Speed-to-Lead SLA</p>
+<span class="material-symbols-outlined text-primary bg-primary-container/30 p-1.5 rounded-lg" style="font-variation-settings: 'FILL' 1;">timer</span>
+</div>
+<div class="flex items-baseline gap-2">
+<h3 class="font-timer-lg text-timer-lg text-on-surface">3m 42s</h3>
+</div>
+<div class="mt-2 flex items-center gap-1 font-body-sm text-body-sm text-primary font-medium">
+<span class="bg-secondary/10 text-secondary px-1.5 py-0.5 rounded text-[10px] uppercase font-bold mr-1">Success</span>
+<span>94% Compliance</span>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant relative overflow-hidden group hover:border-secondary transition-colors">
+<div class="flex justify-between items-start mb-2">
+<p class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider">Site Visit to Token</p>
+<span class="material-symbols-outlined text-tertiary-container bg-tertiary-container/20 p-1.5 rounded-lg text-[20px]" style="font-variation-settings: 'FILL' 1;">key</span>
+</div>
+<div class="flex items-baseline gap-2">
+<h3 class="font-display-sm text-[28px] leading-tight text-on-surface">28.4%</h3>
+</div>
+<div class="mt-2 w-full bg-surface-variant rounded-full h-1.5 mb-1 overflow-hidden">
+<div class="bg-secondary h-1.5 rounded-full" style="width: 28.4%"></div>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant relative overflow-hidden group hover:border-secondary transition-colors">
+<div class="flex justify-between items-start mb-2">
+<p class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider">Cost per Qual. Lead</p>
+<span class="material-symbols-outlined text-on-surface-variant bg-surface-variant p-1.5 rounded-lg" style="font-variation-settings: 'FILL' 1;">monetization_on</span>
+</div>
+<div class="flex items-baseline gap-2">
+<h3 class="font-display-sm text-[28px] leading-tight text-on-surface">₹0</h3>
+</div>
+<div class="mt-2 flex items-center gap-1 font-body-sm text-body-sm text-on-surface-variant font-medium">
+<span class="material-symbols-outlined text-[16px]">public</span>
+<span>100% Organic Social</span>
+</div>
+</div>
+</div>
+<!-- Main Content Area (Two Columns) -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter mt-6">
+<!-- Left Column: Waterfall Chart -->
+<div class="lg:col-span-2 bg-surface-container-lowest rounded-xl border border-outline-variant p-5 flex flex-col">
+<h2 class="font-headline-sm text-headline-sm text-on-surface mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">waterfall_chart</span>
+                        Full-Funnel Conversion Velocity Waterfall
+                    </h2>
+<div class="flex-1 flex flex-col justify-between relative mt-4">
+<!-- Funnel Container -->
+<div class="flex flex-col gap-2 relative z-10 w-full max-w-2xl mx-auto">
+<!-- Step 1 -->
+<div class="flex items-center w-full h-[40px] group">
+<div class="w-48 text-right pr-4 font-body-sm text-body-sm text-on-surface-variant group-hover:text-primary transition-colors">Social Inbound</div>
+<div class="flex-1 h-full bg-primary-container rounded-r flex items-center px-3" style="width: 100%;">
+<span class="font-data-mono text-data-mono text-on-primary-container">1,248</span>
+</div>
+</div>
+<!-- Step 2 -->
+<div class="flex items-center w-full h-[40px] group">
+<div class="w-48 text-right pr-4 font-body-sm text-body-sm text-on-surface-variant group-hover:text-primary transition-colors">Telecaller Qualified</div>
+<div class="flex-1 h-full flex items-center">
+<div class="h-full bg-primary/80 rounded-r flex items-center px-3 transition-all duration-500" style="width: 33%;">
+<span class="font-data-mono text-data-mono text-on-primary">412</span>
+</div>
+<span class="ml-3 font-label-bold text-[10px] text-on-surface-variant">33%</span>
+</div>
+</div>
+<!-- Step 3 -->
+<div class="flex items-center w-full h-[40px] group">
+<div class="w-48 text-right pr-4 font-body-sm text-body-sm text-on-surface-variant group-hover:text-primary transition-colors">Requirement Matched</div>
+<div class="flex-1 h-full flex items-center">
+<div class="h-full bg-secondary rounded-r flex items-center px-3 transition-all duration-500" style="width: 25%;">
+<span class="font-data-mono text-data-mono text-on-secondary">310</span>
+</div>
+<span class="ml-3 font-label-bold text-[10px] text-on-surface-variant">75%</span>
+</div>
+</div>
+<!-- Step 4 -->
+<div class="flex items-center w-full h-[40px] group">
+<div class="w-48 text-right pr-4 font-body-sm text-body-sm text-on-surface-variant group-hover:text-primary transition-colors">Client Portal Viewed</div>
+<div class="flex-1 h-full flex items-center">
+<div class="h-full bg-secondary-container rounded-r flex items-center px-3 transition-all duration-500" style="width: 20%;">
+<span class="font-data-mono text-data-mono text-on-secondary-container">245</span>
+</div>
+<span class="ml-3 font-label-bold text-[10px] text-on-surface-variant">79%</span>
+</div>
+</div>
+<!-- Step 5 -->
+<div class="flex items-center w-full h-[40px] group">
+<div class="w-48 text-right pr-4 font-body-sm text-body-sm text-on-surface-variant group-hover:text-primary transition-colors">Escorted Site Visit</div>
+<div class="flex-1 h-full flex items-center">
+<div class="h-full bg-surface-tint rounded-r flex items-center px-3 transition-all duration-500" style="width: 7%;">
+<span class="font-data-mono text-data-mono text-on-primary">86</span>
+</div>
+<span class="ml-3 font-label-bold text-[10px] text-on-surface-variant">35%</span>
+</div>
+</div>
+<!-- Step 6 -->
+<div class="flex items-center w-full h-[40px] group">
+<div class="w-48 text-right pr-4 font-body-sm text-body-sm text-on-surface-variant group-hover:text-primary transition-colors">Token Paid</div>
+<div class="flex-1 h-full flex items-center">
+<div class="h-full bg-tertiary-container rounded-r flex items-center px-2 transition-all duration-500" style="width: 3%;">
+<span class="font-data-mono text-data-mono text-on-tertiary">24</span>
+</div>
+<span class="ml-3 font-label-bold text-[10px] text-on-surface-variant">28%</span>
+</div>
+</div>
+<!-- Step 7 -->
+<div class="flex items-center w-full h-[40px] group">
+<div class="w-48 text-right pr-4 font-label-bold text-label-bold text-primary font-bold">Deal Won</div>
+<div class="flex-1 h-full flex items-center">
+<div class="h-full bg-primary rounded-r flex items-center px-2 transition-all duration-500" style="width: 2%;">
+<span class="font-data-mono text-data-mono text-on-primary">19</span>
+</div>
+<span class="ml-3 font-label-bold text-[10px] text-primary">79% Win Rate</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Leaderboard -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant p-5 flex flex-col">
+<h2 class="font-headline-sm text-headline-sm text-on-surface mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary-container">leaderboard</span>
+                        Sales Agent Leaderboard
+                    </h2>
+<div class="flex flex-col gap-3">
+<!-- Rank 1 -->
+<div class="flex items-center gap-3 p-3 rounded-lg bg-surface-container-low border border-outline-variant/50 relative overflow-hidden stroke-focus bg-[#FBFBF9] hover:bg-surface-variant transition-colors">
+<div class="w-10 h-10 rounded-full bg-surface border border-outline-variant flex items-center justify-center relative shadow-sm">
+<img alt="Farhan Qureshi" class="w-full h-full rounded-full object-cover" data-alt="A small, circular avatar portrait of a confident Indian male real estate agent named Farhan Qureshi. He is wearing a professional suit and smiling warmly. The lighting is bright and studio-quality. The background is a plain, neutral corporate grey. The image is cropped tightly around his face and shoulders." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC8RekjfWci2Ec6lWNJNL4db_HL5vjV8MYZMHcSptwSB9kumpI6Wpo9vuERPGLPuBrwHJkxMT764WugapvCnzNwJhR0kIyEVjIfjyai7tWV_Y6JC6LwzWV0QswIDx0mVhoGlzE1WlDpzfII1E4AXdCakzm-m6g9gkw2b4wYGlroNFHJRUK1wIqwfzjz8gZOQebq0GlPbgj_vRDXcKuIp-PeiRaXJ0Db_PJ5yYLe8OJO0LWFidvu5mv6SeeOB2PkM20aGBfdztkAR5fx"/>
+<div class="absolute -bottom-1 -right-1 bg-surface rounded-full p-0.5 border border-outline-variant shadow-sm">
+<span class="material-symbols-outlined text-[14px] text-[#D4AF37]" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+</div>
+</div>
+<div class="flex-1">
+<h4 class="font-label-bold text-label-bold text-on-surface">Farhan Qureshi</h4>
+<div class="flex items-center gap-2 mt-0.5">
+<span class="font-body-sm text-[11px] text-on-surface-variant">10 Deals</span>
+<span class="w-1 h-1 rounded-full bg-outline-variant"></span>
+<span class="font-body-sm text-[11px] text-secondary font-medium">98% SLA</span>
+</div>
+</div>
+<div class="text-right">
+<p class="font-data-mono text-data-mono font-bold text-primary">₹14.5L</p>
+<p class="font-label-bold text-[10px] text-on-surface-variant uppercase">Commission</p>
+</div>
+</div>
+<!-- Rank 2 -->
+<div class="flex items-center gap-3 p-3 rounded-lg bg-surface border border-outline-variant hover:bg-surface-variant transition-colors">
+<div class="w-10 h-10 rounded-full bg-surface border border-outline-variant flex items-center justify-center relative shadow-sm">
+<img alt="Rohit Sharma" class="w-full h-full rounded-full object-cover" data-alt="A small, circular avatar portrait of a professional Indian male real estate agent named Rohit Sharma. He is wearing a smart casual blazer and has a friendly, approachable demeanor. The lighting is bright and studio-quality. The background is a subtle blurred office environment. The image is cropped tightly around his face and shoulders." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6RCgnEpzMGSuJEVnsmLGtyH1Wn8H3Ua6f1ntfTWnVkwcLwOzufv5x1tgisqP3xTOmR0FVZ0RjPBGEEyQ_uvGGHEKvQ-BLgn0gtzFeQkRuhl4G3onUkfj3tBIjms33zDMieDNOgppC1idf_NcCuN9lKgv13ohotDJR66-kRxKpGCe9rF_9KweEY4DHVh4gqRAdqBTfI6iggM2CaHeASdizRMohCAFvGcgd2yYyV3qc3us9-Z_H1jJc-MTjpdPuJ_9hcy9TKet26YAZ"/>
+<div class="absolute -bottom-1 -right-1 bg-surface rounded-full p-0.5 border border-outline-variant shadow-sm">
+<span class="material-symbols-outlined text-[14px] text-[#C0C0C0]" style="font-variation-settings: 'FILL' 1;">military_tech</span>
+</div>
+</div>
+<div class="flex-1">
+<h4 class="font-label-bold text-label-bold text-on-surface">Rohit Sharma</h4>
+<div class="flex items-center gap-2 mt-0.5">
+<span class="font-body-sm text-[11px] text-on-surface-variant">7 Deals</span>
+<span class="w-1 h-1 rounded-full bg-outline-variant"></span>
+<span class="font-body-sm text-[11px] text-secondary font-medium">92% SLA</span>
+</div>
+</div>
+<div class="text-right">
+<p class="font-data-mono text-data-mono font-bold text-on-surface">₹11.2L</p>
+<p class="font-label-bold text-[10px] text-on-surface-variant uppercase">Commission</p>
+</div>
+</div>
+<!-- Rank 3 -->
+<div class="flex items-center gap-3 p-3 rounded-lg bg-surface border border-outline-variant hover:bg-surface-variant transition-colors">
+<div class="w-10 h-10 rounded-full bg-surface border border-outline-variant flex items-center justify-center relative shadow-sm">
+<img alt="Sneha Patil" class="w-full h-full rounded-full object-cover" data-alt="A small, circular avatar portrait of a professional Indian female real estate agent named Sneha Patil. She is wearing elegant corporate attire and has a confident, professional smile. The lighting is bright and studio-quality. The background is a clean, modern white wall. The image is cropped tightly around her face and shoulders." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCUmXqfp-8SEnV2bSKl_998mDSl3j8mFrf-qYVv403G3zm5gGVWJpCtg-9mJjQIlKLNW1Y4SXUOehPsF8z8iNQfBSbclCfndVV1OU9NKOWhAjw_b1sTYal6uXdql-oyldROwKk3g2DKBP_we4cOMbCVn8E-fzjPY3232-r4-n1uwEMeS6pdX9ZXpfgaZ3Jun9kMkH86GT6zbsIuq2XI02jrlieoDs9lVOp3m9Dwku6hQkwF2D42Ziv1qerD_cn72yXUDNVdaQcPcvMZ"/>
+<div class="absolute -bottom-1 -right-1 bg-surface rounded-full p-0.5 border border-outline-variant shadow-sm">
+<span class="material-symbols-outlined text-[14px] text-[#CD7F32]" style="font-variation-settings: 'FILL' 1;">military_tech</span>
+</div>
+</div>
+<div class="flex-1">
+<h4 class="font-label-bold text-label-bold text-on-surface">Sneha Patil</h4>
+<div class="flex items-center gap-2 mt-0.5">
+<span class="font-body-sm text-[11px] text-on-surface-variant">6 Deals</span>
+<span class="w-1 h-1 rounded-full bg-outline-variant"></span>
+<span class="font-body-sm text-[11px] text-secondary font-medium">95% SLA</span>
+</div>
+</div>
+<div class="text-right">
+<p class="font-data-mono text-data-mono font-bold text-on-surface">₹8.4L</p>
+<p class="font-label-bold text-[10px] text-on-surface-variant uppercase">Commission</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Section: Table -->
+<div class="mt-6 bg-surface-container-lowest rounded-xl border border-outline-variant p-5">
+<h2 class="font-headline-sm text-headline-sm text-on-surface mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary">video_camera_front</span>
+                    Content Revenue Yield Breakdown
+                </h2>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-outline-variant">
+<th class="py-3 px-4 font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider w-2/5">Content Title</th>
+<th class="py-3 px-4 font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider">Channel</th>
+<th class="py-3 px-4 font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider text-right">Leads Generated</th>
+<th class="py-3 px-4 font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider text-right">Deals Closed</th>
+<th class="py-3 px-4 font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider text-right">Revenue Yield</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<!-- Row 1 -->
+<tr class="h-row-height hover:bg-surface-container-low transition-colors group">
+<td class="py-2 px-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-6 bg-surface-variant rounded border border-outline-variant overflow-hidden flex-shrink-0 relative">
+<img alt="Thumbnail" class="w-full h-full object-cover" data-alt="A tiny thumbnail image representing a real estate walkthrough video. It shows a bright, modern living room in an upscale apartment, focusing on large windows and sleek furniture. The image is small and rectangular, serving as a video preview icon." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCBfM_GSMQu7gv5r8EnqqK2eh5Et7u6mC_excK57ahnYq5irW63kJ9Rj7N3Pg8vNAsUqR5y8mjxI3KEhcCC1ppQ1GvLnnwymPqdatecArBbaktUA021Ztq5X6vPvHfIa28ZlSd_2luHgF1qJzTGANUKu4UDjCgXQmLgqOaZ_pBa_foiH6sYiFUSLWCiKUCxb2H-us2L1Rla474zNdEF98S5Hs0FFOGWkLuXrpgDOds9rhYL4j5y3E57klsAW12UG1NIFbdgvdB_3gQX"/>
+<div class="absolute inset-0 bg-black/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-[12px]" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</div>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface font-medium truncate">Kharghar 3BHK Walkthrough</span>
+</div>
+</td>
+<td class="py-2 px-4">
+<span class="inline-flex items-center gap-1 bg-surface-variant text-on-surface-variant px-2 py-0.5 rounded text-[11px] font-bold uppercase tracking-wide">
+<span class="material-symbols-outlined text-[12px]">smart_display</span> YouTube
+                                    </span>
+</td>
+<td class="py-2 px-4 text-right font-data-mono text-data-mono text-on-surface">342</td>
+<td class="py-2 px-4 text-right font-data-mono text-data-mono text-on-surface">8</td>
+<td class="py-2 px-4 text-right font-data-mono text-data-mono font-bold text-primary">₹12.5L</td>
+</tr>
+<!-- Row 2 -->
+<tr class="h-row-height hover:bg-surface-container-low transition-colors group">
+<td class="py-2 px-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-6 bg-surface-variant rounded border border-outline-variant overflow-hidden flex-shrink-0 relative">
+<img alt="Thumbnail" class="w-full h-full object-cover" data-alt="A tiny thumbnail image representing a short-form real estate reel. It features a fast-paced vertical shot of a luxurious bathroom vanity. The image is small and rectangular, serving as a video preview icon." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDjPvsCndxeCRUQKSeHMBuglfuMh07jEAU_sE-PYjnnuidMs_38MK0BotEaCF0vb2XhRRuLlw2DJrwK-hnF7L5LjcvFUBeOZ3uuof-11tErefNSBmpNn2MNVnIuaUqQPu3zZZPGn97cPkxPp09Pc13jNrELPvPpyMXDC0CpUze8REVtC7BIoyivkSddljW73J_F0zvYGoSltkSYssT8WLcBBL4nhgZ9Zv-FJNVRn0e-ZVRh0uQWEODBdSlMWVmnPbN5WvwlmBClZEzc"/>
+<div class="absolute inset-0 bg-black/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-[12px]" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</div>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface font-medium truncate">Top 5 Amenities in Andheri East</span>
+</div>
+</td>
+<td class="py-2 px-4">
+<span class="inline-flex items-center gap-1 bg-surface-variant text-on-surface-variant px-2 py-0.5 rounded text-[11px] font-bold uppercase tracking-wide">
+<span class="material-symbols-outlined text-[12px]">photo_camera</span> Instagram
+                                    </span>
+</td>
+<td class="py-2 px-4 text-right font-data-mono text-data-mono text-on-surface">512</td>
+<td class="py-2 px-4 text-right font-data-mono text-data-mono text-on-surface">5</td>
+<td class="py-2 px-4 text-right font-data-mono text-data-mono font-bold text-on-surface">₹7.2L</td>
+</tr>
+<!-- Row 3 -->
+<tr class="h-row-height hover:bg-surface-container-low transition-colors group">
+<td class="py-2 px-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-6 bg-surface-variant rounded border border-outline-variant overflow-hidden flex-shrink-0 relative">
+<img alt="Thumbnail" class="w-full h-full object-cover" data-alt="A tiny thumbnail image representing a real estate neighborhood guide video. It shows an aerial drone shot of a modern residential complex surrounded by greenery. The image is small and rectangular, serving as a video preview icon." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD4KTxITCbJX0QjlihcmWcO4Q27HjPj5QDbsnxg-5ITr0PwDCEiTWMTPSN-N0g8LLMbaraJg2bowRQ-3KNhZoRE8Hx1z0zJpS6GZvFttnMfIYzDA1k1BPk8843EHFd_BNYWkpSVe0ESSGgCCHAtOPKZof0IfRo9Q2b-e5fsn3sFcpxqgT2He2i4gkEHfNF0HOYiY635pPZmQQEdU67Ss7MQQKvn6D78oZcXY8RR44-AqA49iXH94CMhc1t1BsPnhAm8bU1WvYujGkp7"/>
+<div class="absolute inset-0 bg-black/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-[12px]" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</div>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface font-medium truncate">Navi Mumbai Market Update - Q3</span>
+</div>
+</td>
+<td class="py-2 px-4">
+<span class="inline-flex items-center gap-1 bg-surface-variant text-on-surface-variant px-2 py-0.5 rounded text-[11px] font-bold uppercase tracking-wide">
+<span class="material-symbols-outlined text-[12px]">smart_display</span> YouTube
+                                    </span>
+</td>
+<td class="py-2 px-4 text-right font-data-mono text-data-mono text-on-surface">189</td>
+<td class="py-2 px-4 text-right font-data-mono text-data-mono text-on-surface">3</td>
+<td class="py-2 px-4 text-right font-data-mono text-data-mono font-bold text-on-surface">₹4.8L</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="h-8"></div> <!-- Bottom padding -->
+</div>
+</main>
+</body></html>

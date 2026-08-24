@@ -4,6 +4,8 @@
  * the single most critical next action for the advisory team.
  */
 
+import { formatTimeShort, formatDateShort } from '@/lib/date-utils';
+
 export interface LeadReminderInfo {
   id: string;
   title: string;
@@ -75,7 +77,7 @@ export function evaluateLeadConnectPriority(lead: any, now: Date = new Date()): 
       
       score += 45;
       primaryReason = `🔔 Overdue Reminder: "${r.title}" was due ${overdueStr}`;
-      secondaryReasons.push(`Scheduled for ${new Date(r.dueAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`);
+      secondaryReasons.push(`Scheduled for ${formatTimeShort(r.dueAt)}`);
       urgencyTier = 'CRITICAL';
       nextAction = r.reminderType === 'WHATSAPP' ? 'WHATSAPP' : 'CALL';
       actionDetails = `Complete overdue ${r.reminderType.toLowerCase()} reminder: ${r.title}`;
@@ -84,7 +86,7 @@ export function evaluateLeadConnectPriority(lead: any, now: Date = new Date()): 
       isDueToday = true;
       score += 35;
       primaryReason = `⏰ Due in ${diffMinutes} min: "${r.title}"`;
-      secondaryReasons.push(`Target time: ${new Date(r.dueAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`);
+      secondaryReasons.push(`Target time: ${formatTimeShort(r.dueAt)}`);
       urgencyTier = 'HIGH';
       nextAction = r.reminderType === 'WHATSAPP' ? 'WHATSAPP' : 'CALL';
       actionDetails = `Upcoming ${r.reminderType.toLowerCase()}: ${r.title}`;
@@ -92,14 +94,14 @@ export function evaluateLeadConnectPriority(lead: any, now: Date = new Date()): 
       // Due later today
       isDueToday = true;
       score += 25;
-      primaryReason = `📅 Due Today at ${new Date(r.dueAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}: "${r.title}"`;
+      primaryReason = `📅 Due Today at ${formatTimeShort(r.dueAt)}: "${r.title}"`;
       secondaryReasons.push(`Scheduled task for today`);
       urgencyTier = 'HIGH';
       nextAction = r.reminderType === 'WHATSAPP' ? 'WHATSAPP' : 'CALL';
       actionDetails = `Today's schedule: ${r.title}`;
     } else {
       score += 10;
-      secondaryReasons.push(`Upcoming reminder on ${new Date(r.dueAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}`);
+      secondaryReasons.push(`Upcoming reminder on ${formatDateShort(r.dueAt)}`);
     }
   }
 

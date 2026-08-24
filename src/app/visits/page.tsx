@@ -308,7 +308,7 @@ export default function SiteVisitsPage() {
                       href={`https://wa.me/${(visit.lead?.phoneE164 || '').replace(/\+/g, '')}?text=${encodeURIComponent(waShareText)}`}
                       target="_blank"
                       rel="noreferrer"
-                      className="px-3.5 py-2 rounded-xl bg-status-success hover:opacity-90 text-zinc-950 font-bold text-xs flex items-center gap-1.5 shadow-2xs cursor-pointer"
+                      className="px-3.5 py-2 rounded-xl bg-status-success hover:opacity-90 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs cursor-pointer"
                     >
                       <Share2 className="w-3.5 h-3.5" />
                       WhatsApp Itinerary

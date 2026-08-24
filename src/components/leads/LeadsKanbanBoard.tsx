@@ -22,6 +22,7 @@ import {
   PlusCircle,
 } from 'lucide-react';
 import { PrioritizedLeadScore } from '@/lib/domain/prioritization-engine';
+import { formatDateShort } from '@/lib/date-utils';
 
 export interface KanbanStageDef {
   id: string;
@@ -282,10 +283,7 @@ export function LeadsKanbanBoard({
                           </div>
 
                           <div className="text-[10px] text-content-muted font-mono font-semibold">
-                            {new Date(lead.createdAt).toLocaleDateString([], {
-                              month: 'short',
-                              day: 'numeric',
-                            })}
+                            {formatDateShort(lead.createdAt)}
                           </div>
                         </div>
 
@@ -311,12 +309,7 @@ export function LeadsKanbanBoard({
                               Latest Remark / Note:
                             </span>
                             <span className="text-content-muted font-mono">
-                              {latestComm
-                                ? new Date(latestComm.createdAt).toLocaleDateString([], {
-                                    month: 'short',
-                                    day: 'numeric',
-                                  })
-                                : 'Recent'}
+                              {latestComm ? formatDateShort(latestComm.createdAt) : 'Recent'}
                             </span>
                           </div>
 
@@ -402,7 +395,7 @@ export function LeadsKanbanBoard({
                                   target="_blank"
                                   rel="noreferrer"
                                   onClick={(e) => e.stopPropagation()}
-                                  className="p-1.5 rounded-lg bg-status-success-surface hover:bg-status-success text-status-success hover:text-zinc-950 border border-status-success/30 transition-all cursor-pointer"
+                                  className="p-1.5 rounded-lg bg-status-success-surface hover:bg-status-success text-status-success hover:text-white border border-status-success/30 transition-all cursor-pointer"
                                   title="WhatsApp Client"
                                 >
                                   <MessageSquare className="w-3.5 h-3.5" />

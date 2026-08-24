@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { YoutubeIcon, InstagramIcon } from '@/components/icons/SocialIcons';
 import { OFFICIAL_BROKER_NUMBERS } from '@/lib/constants/broker-constants';
+import { formatDateTime } from '@/lib/date-utils';
 
 interface SourceEvidenceDrawerProps {
   lead: any | null;
@@ -93,7 +94,7 @@ export function SourceEvidenceDrawer({
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-zinc-800 text-zinc-300 border border-zinc-700">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-surface-subtle text-content-muted border border-border">
             UNKNOWN ORGANIC
           </span>
         );
@@ -103,21 +104,21 @@ export function SourceEvidenceDrawer({
   const getOutcomeBadge = (out: string) => {
     const o = (out || '').toUpperCase();
     if (o.includes('INTERESTED') || o.includes('TOKEN') || o.includes('BOOKING')) {
-      return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">✅ {out}</span>;
+      return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-status-success-surface text-status-success border border-status-success/30">✅ {out}</span>;
     }
     if (o.includes('VISIT')) {
-      return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-300 border border-amber-500/30">🚗 {out}</span>;
+      return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-accent-soft text-accent-text border border-accent/30">🚗 {out}</span>;
     }
     if (o.includes('FOLLOW_UP') || o.includes('CALLBACK')) {
-      return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/10 text-blue-300 border border-blue-500/30">📅 {out}</span>;
+      return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-status-info-surface text-status-info border border-status-info/30">📅 {out}</span>;
     }
     if (o.includes('RINGING') || o.includes('BUSY')) {
-      return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-yellow-500/10 text-yellow-300 border border-yellow-500/30">⏳ {out}</span>;
+      return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-status-warning-surface text-status-warning border border-status-warning/30">⏳ {out}</span>;
     }
     if (o.includes('NOT_INTERESTED') || o.includes('DROPPED')) {
-      return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/10 text-red-300 border border-red-500/30">❌ {out}</span>;
+      return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-status-danger-surface text-status-danger border border-status-danger/30">❌ {out}</span>;
     }
-    return <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-zinc-800 text-zinc-300">{out || 'General Log'}</span>;
+    return <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-surface-subtle text-content-muted border border-border">{out || 'General Log'}</span>;
   };
 
   const handleCreateCommunication = async (e: React.FormEvent) => {
@@ -552,7 +553,7 @@ export function SourceEvidenceDrawer({
 
                         <div className="flex items-center gap-2">
                           <span className="text-[11px] font-mono text-content-muted">
-                            {new Date(c.createdAt).toLocaleDateString()} {new Date(c.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            {formatDateTime(c.createdAt)}
                           </span>
                           {!isEditing && (
                             <button
@@ -660,7 +661,7 @@ export function SourceEvidenceDrawer({
                             {meta.followUpDate && (
                               <span className="px-2 py-0.5 rounded bg-status-info-surface border border-status-info/30 text-[10px] text-status-info font-mono flex items-center gap-1">
                                 <Calendar className="w-3 h-3 text-status-info" />
-                                Follow-Up: {new Date(meta.followUpDate).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
+                                Follow-Up: {formatDateTime(meta.followUpDate)}
                               </span>
                             )}
 

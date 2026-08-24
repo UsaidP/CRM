@@ -86,20 +86,20 @@ export function parseProjectsCSV(csvText: string, requireProjectCardType = true)
     }
 
     const projectName = getCol(cols, ['projectName', 'project_name', 'name', 'title', 'Project Name']);
-    const reraNumber = getCol(cols, ['reraNumber', 'rera_number', 'reraId', 'rera', 'RERA']);
+    const reraNumber = getCol(cols, ['reraNumber', 'rera_number', 'reraId', 'rera_id', 'rera', 'RERA', 'MahaRERA ID', 'MahaRERA', 'Maha RERA ID', 'RERA ID', 'maha_rera_id']);
     const developerName = getCol(cols, ['developerName', 'developer_name', 'developer', 'builder', 'Builder Name', 'company']);
-    const microMarket = getCol(cols, ['microMarket', 'micro_market', 'location', 'subLocality', 'locality', 'Address', 'city']);
+    const microMarket = getCol(cols, ['microMarket', 'micro_market', 'Micro-Market', 'micro-market', 'location', 'subLocality', 'locality', 'Address', 'city']);
 
     if (!projectName || projectName.trim() === '') {
       errors.push(`Row ${i + 1}: Missing project name`);
       continue;
     }
 
-    const rawLat = getCol(cols, ['latitude', 'lat']);
-    const rawLng = getCol(cols, ['longitude', 'lng', 'long']);
-    const rawBasePrice = getCol(cols, ['basePricePerSqft', 'base_price_sqft', 'pricePerSqft', 'ratePerSqft', 'price']);
-    const rawTowers = getCol(cols, ['totalTowers', 'total_towers', 'towers']);
-    const rawFloors = getCol(cols, ['totalFloors', 'total_floors', 'floors']);
+    const rawLat = getCol(cols, ['latitude', 'lat', 'Latitude']);
+    const rawLng = getCol(cols, ['longitude', 'lng', 'long', 'Longitude']);
+    const rawBasePrice = getCol(cols, ['basePricePerSqft', 'base_price_sqft', 'pricePerSqft', 'ratePerSqft', 'price', 'Base Price Per Sqft']);
+    const rawTowers = getCol(cols, ['totalTowers', 'total_towers', 'towers', 'Total Towers', 'total towers']);
+    const rawFloors = getCol(cols, ['totalFloors', 'total_floors', 'floors', 'Total Floors', 'total floors']);
 
     let basePricePerSqft = rawBasePrice ? parseFloat(rawBasePrice.replace(/[^0-9.]/g, '')) : undefined;
     if (basePricePerSqft && isNaN(basePricePerSqft)) basePricePerSqft = undefined;
@@ -124,7 +124,7 @@ export function parseProjectsCSV(csvText: string, requireProjectCardType = true)
       microMarket: (microMarket && microMarket.trim()) || 'Kharghar Sector 35',
       address: getCol(cols, ['address', 'fullAddress', 'Address']),
       subLocality: getCol(cols, ['subLocality', 'sub_locality', 'sector']),
-      possessionDate: getCol(cols, ['possessionDate', 'possession_date', 'possession']),
+      possessionDate: getCol(cols, ['possessionDate', 'possession_date', 'possession', 'Possession Date']),
       latitude,
       longitude,
       totalTowers: totalTowers || 1,

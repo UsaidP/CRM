@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Active Call &amp; Field Companion - ZamZam CRM</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "outline-variant": "#c1c8c2",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-dim": "#dadad8",
+                        "error": "#ba1a1a",
+                        "on-surface": "#1a1c1b",
+                        "inverse-surface": "#2f3130",
+                        "tertiary": "#002d1c",
+                        "outline": "#717973",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-container": "#75b393",
+                        "surface-container-highest": "#e2e3e1",
+                        "secondary-fixed-dim": "#ffb77d",
+                        "on-surface-variant": "#414844",
+                        "tertiary-fixed": "#b1f0ce",
+                        "on-secondary-fixed": "#2f1500",
+                        "surface-tint": "#3f6653",
+                        "on-tertiary-fixed": "#002114",
+                        "on-secondary-container": "#663500",
+                        "primary-fixed-dim": "#a5d0b9",
+                        "secondary": "#904d00",
+                        "tertiary-fixed-dim": "#95d4b3",
+                        "error-container": "#ffdad6",
+                        "surface-bright": "#f9f9f7",
+                        "surface": "#f9f9f7",
+                        "on-tertiary": "#ffffff",
+                        "primary": "#012d1d",
+                        "on-primary-fixed-variant": "#274e3d",
+                        "primary-fixed": "#c1ecd4",
+                        "inverse-on-surface": "#f1f1ef",
+                        "tertiary-container": "#00452e",
+                        "background": "#f9f9f7",
+                        "surface-container-high": "#e8e8e6",
+                        "on-primary": "#ffffff",
+                        "on-primary-container": "#86af99",
+                        "secondary-container": "#fe932c",
+                        "surface-variant": "#e2e3e1",
+                        "on-tertiary-fixed-variant": "#0e5138",
+                        "on-error": "#ffffff",
+                        "surface-container-low": "#f4f4f2",
+                        "on-secondary-fixed-variant": "#6e3900",
+                        "secondary-fixed": "#ffdcc3",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed": "#002114",
+                        "inverse-primary": "#a5d0b9",
+                        "primary-container": "#1b4332",
+                        "surface-container": "#eeeeec",
+                        "on-background": "#1a1c1b"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "margin-mobile": "16px",
+                        "gutter": "16px",
+                        "unit": "4px",
+                        "xl": "32px",
+                        "sm": "8px",
+                        "lg": "24px",
+                        "md": "16px",
+                        "xs": "4px"
+                    },
+                    fontFamily: {
+                        "headline-sm": ["Plus Jakarta Sans"],
+                        "data-sm": ["JetBrains Mono"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "body-sm": ["Plus Jakarta Sans"],
+                        "data-lg": ["JetBrains Mono"],
+                        "data-md": ["JetBrains Mono"],
+                        "label-caps": ["Plus Jakarta Sans"],
+                        "headline-md": ["Plus Jakarta Sans"]
+                    },
+                    fontSize: {
+                        "headline-sm": ["16px", { lineHeight: "24px", fontWeight: "600" }],
+                        "data-sm": ["12px", { lineHeight: "16px", fontWeight: "400" }],
+                        "headline-lg": ["28px", { lineHeight: "36px", letterSpacing: "-0.02em", fontWeight: "700" }],
+                        "body-md": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+                        "body-sm": ["14px", { lineHeight: "20px", fontWeight: "400" }],
+                        "data-lg": ["18px", { lineHeight: "24px", fontWeight: "500" }],
+                        "data-md": ["14px", { lineHeight: "20px", fontWeight: "500" }],
+                        "label-caps": ["12px", { lineHeight: "16px", letterSpacing: "0.05em", fontWeight: "700" }],
+                        "headline-md": ["20px", { lineHeight: "28px", letterSpacing: "-0.01em", fontWeight: "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #FBFBF9; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 1; }
+        .card-shadow { box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.05); }
+        .pulse-amber { animation: pulse-amber 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse-amber { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface flex flex-col min-h-screen">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center px-margin-mobile py-sm w-full z-50 bg-surface border-b border-outline-variant flat no shadows transition-colors duration-200">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-headline-sm">AV</div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm font-bold text-primary">ZamZam CRM</span>
+<span class="font-data-sm text-data-sm text-on-surface-variant flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-secondary-container"></span>
+                    Active Line 022-4897-2011
+                </span>
+</div>
+</div>
+<div class="flex items-center gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="signal_cellular_alt">signal_cellular_alt</span>
+<span class="material-symbols-outlined" data-icon="battery_full">battery_full</span>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow px-margin-mobile py-md flex flex-col gap-md pb-[100px]">
+<!-- Active Call Hero Card -->
+<section class="bg-surface-container-lowest rounded-lg border border-outline-variant card-shadow p-md relative overflow-hidden">
+<div class="absolute top-0 left-0 w-1 h-full bg-secondary-container"></div>
+<div class="flex justify-between items-start mb-sm">
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface">Dr. Sameer Deshmukh</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Orthopedic Surgeon</p>
+</div>
+<div class="bg-error-container text-on-error-container px-2 py-1 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] pulse-amber" data-icon="bolt">bolt</span>
+<span class="font-data-sm text-data-sm font-bold">00:42s</span>
+</div>
+</div>
+<div class="font-data-lg text-data-lg text-primary mb-sm tracking-tight">+91 98201 44521</div>
+<div class="flex items-center gap-2 mb-md bg-surface-container-low p-2 rounded">
+<span class="material-symbols-outlined text-secondary-container text-[16px]" data-icon="smart_display">smart_display</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">YouTube Short: Kharghar Sec 35 Luxury 3BHK</span>
+</div>
+<div class="border-t border-outline-variant pt-sm mb-md flex justify-between items-center">
+<div class="font-label-caps text-label-caps text-on-surface-variant">AI SCORE</div>
+<div class="font-headline-sm text-headline-sm text-primary flex items-center gap-1">
+                    94/100 <span class="text-secondary-container text-[18px]">•</span> Hot Prospect
+                </div>
+</div>
+<!-- Intent Matrix -->
+<div class="grid grid-cols-2 gap-xs">
+<div class="bg-surface-container flex flex-col p-2 rounded">
+<span class="font-label-caps text-label-caps text-outline">01 INTENT</span>
+<span class="font-data-sm text-data-sm text-on-surface">Immediate</span>
+</div>
+<div class="bg-surface-container flex flex-col p-2 rounded">
+<span class="font-label-caps text-label-caps text-outline">02 BUDGET</span>
+<span class="font-data-sm text-data-sm text-on-surface">₹1.65 Cr</span>
+</div>
+<div class="bg-surface-container flex flex-col p-2 rounded">
+<span class="font-label-caps text-label-caps text-outline">03 LOC</span>
+<span class="font-data-sm text-data-sm text-on-surface">Sec 35/36</span>
+</div>
+<div class="bg-surface-container flex flex-col p-2 rounded">
+<span class="font-label-caps text-label-caps text-outline">04 TIME</span>
+<span class="font-data-sm text-data-sm text-on-surface">&lt;30 Days</span>
+</div>
+</div>
+</section>
+<!-- 1-Click Call Actions -->
+<section class="flex justify-between items-center px-sm">
+<button class="flex flex-col items-center gap-1 group">
+<div class="w-12 h-12 rounded-full border border-outline-variant flex items-center justify-center bg-surface-container-lowest text-on-surface-variant group-active:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined" data-icon="mic_off">mic_off</span>
+</div>
+<span class="font-label-caps text-label-caps text-on-surface-variant">Mute</span>
+</button>
+<button class="flex flex-col items-center gap-1 group">
+<div class="w-12 h-12 rounded-full border border-outline-variant flex items-center justify-center bg-surface-container-lowest text-on-surface-variant group-active:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined" data-icon="volume_up">volume_up</span>
+</div>
+<span class="font-label-caps text-label-caps text-on-surface-variant">Speaker</span>
+</button>
+<button class="flex flex-col items-center gap-1 group">
+<div class="w-12 h-12 rounded-full border border-outline-variant flex items-center justify-center bg-surface-container-lowest text-on-surface-variant group-active:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined" data-icon="pause">pause</span>
+</div>
+<span class="font-label-caps text-label-caps text-on-surface-variant">Hold</span>
+</button>
+<button class="flex flex-col items-center gap-1 group">
+<div class="w-12 h-12 rounded-full border border-error bg-error-container text-error flex items-center justify-center group-active:bg-error group-active:text-on-error transition-colors">
+<span class="material-symbols-outlined" data-icon="radio_button_checked">radio_button_checked</span>
+</div>
+<span class="font-label-caps text-label-caps text-error">Rec (02:14)</span>
+</button>
+</section>
+<!-- Rapid Disposition Grid -->
+<section class="grid grid-cols-2 gap-sm">
+<button class="bg-primary text-on-primary rounded-lg p-sm min-h-[80px] flex flex-col justify-center items-center text-center shadow-sm active:scale-95 transition-transform">
+<span class="material-symbols-outlined mb-1" data-icon="check_circle">check_circle</span>
+<span class="font-label-caps text-label-caps">Site Visit Booked</span>
+</button>
+<button class="bg-[#10B981] text-white rounded-lg p-sm min-h-[80px] flex flex-col justify-center items-center text-center shadow-sm active:scale-95 transition-transform">
+<span class="material-symbols-outlined mb-1" data-icon="chat">chat</span>
+<span class="font-label-caps text-label-caps">WhatsApp Plans</span>
+</button>
+<button class="bg-secondary-container text-on-secondary-container rounded-lg p-sm min-h-[80px] flex flex-col justify-center items-center text-center shadow-sm active:scale-95 transition-transform">
+<span class="material-symbols-outlined mb-1" data-icon="schedule">schedule</span>
+<span class="font-label-caps text-label-caps">Callback 2h</span>
+</button>
+<button class="bg-[#64748B] text-white rounded-lg p-sm min-h-[80px] flex flex-col justify-center items-center text-center shadow-sm active:scale-95 transition-transform">
+<span class="material-symbols-outlined mb-1" data-icon="close">close</span>
+<span class="font-label-caps text-label-caps">Price Objection</span>
+</button>
+</section>
+<!-- Live Quick Notes -->
+<section class="bg-surface-container-lowest rounded-lg border border-outline-variant p-md flex flex-col gap-sm">
+<div class="flex items-center gap-2 text-primary">
+<span class="material-symbols-outlined" data-icon="mic">mic</span>
+<span class="font-label-caps text-label-caps">LIVE NOTES (DICTATING...)</span>
+</div>
+<textarea class="w-full bg-transparent border-b border-outline-variant border-t-0 border-l-0 border-r-0 focus:ring-0 focus:border-primary p-0 font-body-sm text-on-surface resize-none h-20" placeholder="Start speaking or typing...">Buyer requires East-facing Vastu compliant unit on 12th+ floor with 2 covered car parkings.</textarea>
+<div class="flex flex-wrap gap-2 mt-xs">
+<span class="bg-surface-container px-2 py-1 rounded font-data-sm text-data-sm text-on-surface-variant">#HighBudget</span>
+<span class="bg-surface-container px-2 py-1 rounded font-data-sm text-data-sm text-on-surface-variant">#VastuEast</span>
+<span class="bg-surface-container px-2 py-1 rounded font-data-sm text-data-sm text-on-surface-variant">#WantsBalcony</span>
+<span class="bg-surface-container px-2 py-1 rounded font-data-sm text-data-sm text-on-surface-variant">#SaturdayTour</span>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-sm pb-md pt-sm bg-surface rounded-t-lg shadow-sm border-t border-outline-variant transition-transform duration-150">
+<!-- Dialer (Active) -->
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-4 py-1 scale-95 active:scale-90 transition-transform duration-150 hover:bg-surface-container-highest" href="#">
+<span class="material-symbols-outlined" data-icon="call" data-weight="fill">call</span>
+<span class="font-label-caps text-label-caps mt-1">Dialer</span>
+</a>
+<!-- Queue -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 scale-95 active:scale-90 transition-transform duration-150 hover:bg-surface-container-highest relative" href="#">
+<div class="relative">
+<span class="material-symbols-outlined" data-icon="queue_play_next">queue_play_next</span>
+<span class="absolute -top-1 -right-2 bg-error text-on-error font-data-sm text-[10px] w-4 h-4 rounded-full flex items-center justify-center">14</span>
+</div>
+<span class="font-label-caps text-label-caps mt-1">Queue</span>
+</a>
+<!-- Visits -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 scale-95 active:scale-90 transition-transform duration-150 hover:bg-surface-container-highest relative" href="#">
+<div class="relative">
+<span class="material-symbols-outlined" data-icon="calendar_today">calendar_today</span>
+<span class="absolute -top-1 -right-2 bg-secondary-container text-on-secondary-container font-data-sm text-[10px] w-4 h-4 rounded-full flex items-center justify-center">3</span>
+</div>
+<span class="font-label-caps text-label-caps mt-1">Visits</span>
+</a>
+<!-- Inventory -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 scale-95 active:scale-90 transition-transform duration-150 hover:bg-surface-container-highest" href="#">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+<span class="font-label-caps text-label-caps mt-1">Inventory</span>
+</a>
+</nav>
+</body></html>

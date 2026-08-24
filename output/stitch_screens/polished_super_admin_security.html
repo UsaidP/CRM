@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ZamZam Realty Super-Admin Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+  .material-symbols-outlined {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+  }
+</style>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+                "error": "#ba1a1a",
+                "surface-container-high": "#ede7df",
+                "tertiary": "#3e1e00",
+                "on-error": "#ffffff",
+                "on-tertiary-container": "#f48c24",
+                "surface-container-low": "#f8f3eb",
+                "surface-container": "#f2ede5",
+                "on-primary-container": "#86af99",
+                "on-primary-fixed": "#002114",
+                "surface-container-lowest": "#ffffff",
+                "surface-variant": "#e7e2da",
+                "on-error-container": "#93000a",
+                "primary-fixed-dim": "#a5d0b9",
+                "secondary-fixed-dim": "#95d4b3",
+                "secondary": "#2c694e",
+                "inverse-primary": "#a5d0b9",
+                "on-secondary-fixed-variant": "#0e5138",
+                "primary-fixed": "#c1ecd4",
+                "on-surface-variant": "#414844",
+                "outline": "#717973",
+                "error-container": "#ffdad6",
+                "primary": "#012d1d",
+                "surface-bright": "#fef9f0",
+                "secondary-container": "#aeeecb",
+                "surface-dim": "#ded9d1",
+                "primary-container": "#1b4332",
+                "on-secondary-fixed": "#002114",
+                "tertiary-fixed": "#ffdcc3",
+                "on-tertiary": "#ffffff",
+                "inverse-on-surface": "#f5f0e8",
+                "background": "#fef9f0",
+                "on-secondary": "#ffffff",
+                "on-primary-fixed-variant": "#274e3d",
+                "on-surface": "#1d1c17",
+                "secondary-fixed": "#b1f0ce",
+                "outline-variant": "#c1c8c2",
+                "on-tertiary-fixed": "#2f1500",
+                "surface-container-highest": "#e7e2da",
+                "tertiary-fixed-dim": "#ffb77d",
+                "tertiary-container": "#5e3000",
+                "on-tertiary-fixed-variant": "#6e3900",
+                "inverse-surface": "#32302b",
+                "on-primary": "#ffffff",
+                "on-background": "#1d1c17",
+                "surface": "#fef9f0",
+                "on-secondary-container": "#316e52",
+                "surface-tint": "#3f6653"
+        },
+        "borderRadius": {
+                "DEFAULT": "0.125rem",
+                "lg": "0.25rem",
+                "xl": "0.5rem",
+                "full": "0.75rem"
+        },
+        "spacing": {
+                "stack-md": "12px",
+                "gutter": "16px",
+                "stack-sm": "8px",
+                "row-height": "40px",
+                "margin-page": "24px",
+                "stack-xs": "4px"
+        },
+        "fontFamily": {
+                "display-sm": [
+                        "Plus Jakarta Sans"
+                ],
+                "headline-sm": [
+                        "Plus Jakarta Sans"
+                ],
+                "data-mono": [
+                        "JetBrains Mono"
+                ],
+                "timer-lg": [
+                        "JetBrains Mono"
+                ],
+                "body-md": [
+                        "Plus Jakarta Sans"
+                ],
+                "body-sm": [
+                        "Plus Jakarta Sans"
+                ],
+                "label-bold": [
+                        "Plus Jakarta Sans"
+                ]
+        },
+        "fontSize": {
+                "display-sm": [
+                        "24px",
+                        {
+                                "lineHeight": "32px",
+                                "fontWeight": "700"
+                        }
+                ],
+                "headline-sm": [
+                        "18px",
+                        {
+                                "lineHeight": "24px",
+                                "fontWeight": "600"
+                        }
+                ],
+                "data-mono": [
+                        "14px",
+                        {
+                                "lineHeight": "20px",
+                                "fontWeight": "500"
+                        }
+                ],
+                "timer-lg": [
+                        "20px",
+                        {
+                                "lineHeight": "24px",
+                                "fontWeight": "600"
+                        }
+                ],
+                "body-md": [
+                        "14px",
+                        {
+                                "lineHeight": "20px",
+                                "fontWeight": "400"
+                        }
+                ],
+                "body-sm": [
+                        "13px",
+                        {
+                                "lineHeight": "18px",
+                                "fontWeight": "400"
+                        }
+                ],
+                "label-bold": [
+                        "12px",
+                        {
+                                "lineHeight": "16px",
+                                "letterSpacing": "0.05em",
+                                "fontWeight": "600"
+                        }
+                ]
+        }
+},
+    },
+  }
+</script>
+</head>
+<body class="bg-background text-on-surface font-body-sm h-screen flex overflow-hidden">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-surface-container dark:bg-surface-container-lowest text-primary dark:text-primary-fixed-dim border-r border-outline-variant dark:border-outline flex flex-col py-gutter space-y-stack-md z-40">
+<div class="px-margin-page pb-stack-md border-b border-outline-variant">
+<h1 class="font-headline-sm text-headline-sm font-black text-on-surface">ZamZam Realty</h1>
+<p class="font-label-bold text-label-bold text-on-surface-variant">Tele-Ops Console</p>
+</div>
+<nav class="flex-1 overflow-y-auto px-stack-sm space-y-1">
+<a class="flex items-center px-3 h-row-height rounded-lg text-on-surface-variant dark:text-outline-variant hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-all group" href="#">
+<span class="material-symbols-outlined mr-3 text-outline-variant group-hover:text-primary" data-icon="dashboard">dashboard</span>
+<span class="font-label-bold text-label-bold">Dashboard</span>
+</a>
+<a class="flex items-center px-3 h-row-height rounded-lg text-on-surface-variant dark:text-outline-variant hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-all group" href="#">
+<span class="material-symbols-outlined mr-3 text-outline-variant group-hover:text-primary" data-icon="person_search">person_search</span>
+<span class="font-label-bold text-label-bold">Leads</span>
+</a>
+<a class="flex items-center px-3 h-row-height rounded-lg text-on-surface-variant dark:text-outline-variant hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-all group" href="#">
+<span class="material-symbols-outlined mr-3 text-outline-variant group-hover:text-primary" data-icon="phone_callback">phone_callback</span>
+<span class="font-label-bold text-label-bold">Callbacks</span>
+</a>
+<a class="flex items-center px-3 h-row-height rounded-lg text-on-surface-variant dark:text-outline-variant hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-all group" href="#">
+<span class="material-symbols-outlined mr-3 text-outline-variant group-hover:text-primary" data-icon="analytics">analytics</span>
+<span class="font-label-bold text-label-bold">Performance</span>
+</a>
+<a class="flex items-center px-3 h-row-height rounded-lg bg-secondary-container dark:bg-primary-container text-on-secondary-container dark:text-on-primary-container border-l-4 border-secondary dark:border-inverse-primary translate-x-1 transition-transform group" href="#">
+<span class="material-symbols-outlined mr-3 text-primary" data-icon="settings">settings</span>
+<span class="font-label-bold text-label-bold">Settings</span>
+</a>
+</nav>
+<div class="px-margin-page mt-auto">
+<button class="w-full h-row-height bg-primary text-on-primary rounded-lg font-label-bold text-label-bold flex items-center justify-center hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined mr-2 text-[18px]">add</span>
+        New Lead
+      </button>
+</div>
+<div class="mt-4 border-t border-outline-variant pt-4 px-stack-sm space-y-1">
+<a class="flex items-center px-3 h-row-height rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors group" href="#">
+<span class="material-symbols-outlined mr-3 text-outline-variant group-hover:text-primary" data-icon="help">help</span>
+<span class="font-label-bold text-label-bold">Support</span>
+</a>
+<a class="flex items-center px-3 h-row-height rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors group" href="#">
+<span class="material-symbols-outlined mr-3 text-outline-variant group-hover:text-primary" data-icon="logout">logout</span>
+<span class="font-label-bold text-label-bold">Logout</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Wrapper -->
+<main class="flex-1 ml-[280px] flex flex-col h-full bg-background relative z-10">
+<!-- TopNavBar -->
+<header class="flex justify-between items-center w-full px-margin-page h-[64px] z-50 sticky top-0 bg-surface dark:bg-surface-dim border-b border-outline-variant dark:border-outline">
+<div class="flex items-center space-x-6">
+<nav class="flex space-x-6">
+<!-- Supressing Top Nav Links as instructed by 'Settings' active state, focusing on Super Admin content -->
+<h2 class="font-display-sm text-display-sm font-bold text-primary dark:text-primary-fixed">Super Admin Console</h2>
+</nav>
+</div>
+<div class="flex items-center space-x-4">
+<div class="bg-surface-container-high rounded px-3 py-1 border border-outline-variant flex items-center">
+<span class="font-timer-lg text-timer-lg text-primary mr-2">42/100 Calls Completed</span>
+<span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+</div>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-label-bold text-label-bold overflow-hidden border border-outline">
+<img alt="Agent Profile" class="w-full h-full object-cover" data-alt="A highly detailed close-up portrait of a professional real estate executive in a modern, well-lit office setting. The lighting is bright and clean, casting soft shadows that highlight a confident and approachable expression. The individual is wearing sharp business attire. The overall mood is authoritative yet welcoming, utilizing a natural color palette that fits seamlessly into a high-end corporate dashboard environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDD60IkIRfGTQjiBp6EYl8HHVyf-ZrvwB2RpY177udIoS8phWiXXCS0o9_usDLVv8MLiAjiuyufO9BCotCgrcxUm7Z4So7oDuObvjHhsTldyZGDAw2LG3Z1ojZqTeCjqqiG2mEQYqPJZHtDi5drYU0cS80l-0-9b52GtyIm1Fbc6ul7-OOyUMfABVUQilPpM07QynwJow5zi6uOg3noBCtSHn9AM7lRi1aN2LMXkP9h9KKGv3DJvRSrLLzzYFxScz0GpZ7XJB5-Ztot"/>
+</div>
+</div>
+</header>
+<!-- Content Canvas -->
+<div class="flex-1 overflow-y-auto p-margin-page pb-24">
+<!-- Sub-Navigation for Super Admin -->
+<div class="flex border-b border-outline-variant mb-6 space-x-8">
+<button class="pb-2 font-label-bold text-label-bold text-primary border-b-2 border-primary">Role Permissions Matrix</button>
+<button class="pb-2 font-label-bold text-label-bold text-on-surface-variant hover:text-primary transition-colors">Cloud Telephony &amp; WhatsApp API</button>
+<button class="pb-2 font-label-bold text-label-bold text-on-surface-variant hover:text-primary transition-colors">Security &amp; Audit Trail</button>
+</div>
+<!-- Grid Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
+<!-- Role Matrix (Takes up 2 columns on large screens) -->
+<div class="lg:col-span-2 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm p-4 flex flex-col h-full">
+<div class="flex justify-between items-center mb-4">
+<h3 class="font-headline-sm text-headline-sm text-primary">Role Permissions Matrix</h3>
+<button class="text-secondary font-label-bold text-label-bold hover:underline flex items-center">
+<span class="material-symbols-outlined text-[16px] mr-1">edit</span> Edit Roles
+              </button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-outline-variant">
+<th class="py-2 px-3 font-label-bold text-label-bold text-on-surface-variant">Permission</th>
+<th class="py-2 px-3 font-label-bold text-label-bold text-center">Super Admin</th>
+<th class="py-2 px-3 font-label-bold text-label-bold text-center">Broker Mgr</th>
+<th class="py-2 px-3 font-label-bold text-label-bold text-center">Sales Exec</th>
+<th class="py-2 px-3 font-label-bold text-label-bold text-center">Telecaller</th>
+</tr>
+</thead>
+<tbody class="font-body-sm">
+<tr class="border-b border-surface-container h-row-height hover:bg-surface-container-low transition-colors">
+<td class="py-2 px-3">Export Lead Data</td>
+<td class="text-center"><span class="material-symbols-outlined text-secondary text-[20px]">check_circle</span></td>
+<td class="text-center"><span class="material-symbols-outlined text-secondary text-[20px]">check_circle</span></td>
+<td class="text-center"><span class="material-symbols-outlined text-outline-variant text-[20px]">cancel</span></td>
+<td class="text-center"><span class="material-symbols-outlined text-outline-variant text-[20px]">cancel</span></td>
+</tr>
+<tr class="border-b border-surface-container h-row-height hover:bg-surface-container-low transition-colors">
+<td class="py-2 px-3">Unmask Phone Numbers</td>
+<td class="text-center"><span class="material-symbols-outlined text-secondary text-[20px]">check_circle</span></td>
+<td class="text-center"><span class="material-symbols-outlined text-tertiary text-[20px]">warning</span></td>
+<td class="text-center"><span class="material-symbols-outlined text-outline-variant text-[20px]">cancel</span></td>
+<td class="text-center"><span class="material-symbols-outlined text-outline-variant text-[20px]">cancel</span></td>
+</tr>
+<tr class="border-b border-surface-container h-row-height hover:bg-surface-container-low transition-colors">
+<td class="py-2 px-3">Reassign Leads</td>
+<td class="text-center"><span class="material-symbols-outlined text-secondary text-[20px]">check_circle</span></td>
+<td class="text-center"><span class="material-symbols-outlined text-secondary text-[20px]">check_circle</span></td>
+<td class="text-center"><span class="material-symbols-outlined text-outline-variant text-[20px]">cancel</span></td>
+<td class="text-center"><span class="material-symbols-outlined text-outline-variant text-[20px]">cancel</span></td>
+</tr>
+<tr class="border-b border-surface-container h-row-height hover:bg-surface-container-low transition-colors">
+<td class="py-2 px-3">Edit Commission Splits</td>
+<td class="text-center"><span class="material-symbols-outlined text-secondary text-[20px]">check_circle</span></td>
+<td class="text-center"><span class="material-symbols-outlined text-outline-variant text-[20px]">cancel</span></td>
+<td class="text-center"><span class="material-symbols-outlined text-outline-variant text-[20px]">cancel</span></td>
+<td class="text-center"><span class="material-symbols-outlined text-outline-variant text-[20px]">cancel</span></td>
+</tr>
+<tr class="h-row-height hover:bg-surface-container-low transition-colors">
+<td class="py-2 px-3">View Company P&amp;L</td>
+<td class="text-center"><span class="material-symbols-outlined text-secondary text-[20px]">check_circle</span></td>
+<td class="text-center"><span class="material-symbols-outlined text-outline-variant text-[20px]">cancel</span></td>
+<td class="text-center"><span class="material-symbols-outlined text-outline-variant text-[20px]">cancel</span></td>
+<td class="text-center"><span class="material-symbols-outlined text-outline-variant text-[20px]">cancel</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Cloud Telephony & Number Pool -->
+<div class="lg:col-span-1 flex flex-col gap-gutter">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm p-4">
+<h3 class="font-headline-sm text-headline-sm text-primary flex items-center mb-4">
+<span class="material-symbols-outlined mr-2">cell_tower</span> Telephony Config
+               </h3>
+<div class="space-y-4">
+<div>
+<label class="block font-label-bold text-label-bold text-on-surface-variant mb-1">Primary Virtual Number</label>
+<div class="flex items-center justify-between bg-surface-container-low p-2 border border-outline-variant rounded h-row-height">
+<span class="font-data-mono text-data-mono text-primary">+91 98200 11223</span>
+<span class="bg-secondary-container text-on-secondary-container font-label-bold text-[10px] px-2 py-1 rounded">Exotel</span>
+</div>
+</div>
+<div>
+<label class="block font-label-bold text-label-bold text-on-surface-variant mb-1">Assigned Queue</label>
+<div class="flex items-center bg-surface-container-low p-2 border border-outline-variant rounded h-row-height">
+<span class="material-symbols-outlined text-outline mr-2 text-[18px]">queue_play_next</span>
+<span>Instagram Inbound Kharghar</span>
+</div>
+</div>
+<div class="flex items-center justify-between py-2 border-t border-outline-variant">
+<span class="font-label-bold text-label-bold text-on-surface-variant">Active Telecallers</span>
+<span class="font-data-mono text-data-mono bg-surface-container-high px-2 py-1 rounded">4 Active</span>
+</div>
+<div class="flex items-center justify-between py-2 border-t border-outline-variant">
+<div>
+<span class="block font-label-bold text-label-bold text-on-surface">Daily Call Recording Storage</span>
+<span class="text-[11px] text-on-surface-variant">Syncs to AWS S3 nightly</span>
+</div>
+<!-- Toggle Switch -->
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-9 h-5 bg-outline-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-secondary"></div>
+</label>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Security Audit Log (Full Width below) -->
+<div class="mt-gutter bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm p-4">
+<div class="flex justify-between items-center mb-4">
+<h3 class="font-headline-sm text-headline-sm text-primary flex items-center">
+<span class="material-symbols-outlined mr-2 text-error">security</span> Real-time Security Audit Log
+            </h3>
+<div class="flex items-center space-x-2">
+<span class="relative flex h-3 w-3">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-error opacity-75"></span>
+<span class="relative inline-flex rounded-full h-3 w-3 bg-error"></span>
+</span>
+<span class="font-label-bold text-label-bold text-on-surface-variant">Live Feed</span>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-outline-variant bg-surface-container-low">
+<th class="py-2 px-3 font-label-bold text-label-bold text-on-surface-variant">Timestamp</th>
+<th class="py-2 px-3 font-label-bold text-label-bold text-on-surface-variant">User</th>
+<th class="py-2 px-3 font-label-bold text-label-bold text-on-surface-variant">Action</th>
+<th class="py-2 px-3 font-label-bold text-label-bold text-on-surface-variant">IP Address</th>
+<th class="py-2 px-3 font-label-bold text-label-bold text-on-surface-variant">Risk Score</th>
+</tr>
+</thead>
+<tbody class="font-body-sm font-data-mono text-data-mono text-[13px]">
+<tr class="border-b border-surface-container hover:bg-surface-container-low transition-colors">
+<td class="py-2 px-3 text-on-surface-variant">10:42:15 AM</td>
+<td class="py-2 px-3 text-primary">Aman S. (Broker Mgr)</td>
+<td class="py-2 px-3">Unmasked Phone for Lead #4092</td>
+<td class="py-2 px-3 text-outline">192.168.1.104</td>
+<td class="py-2 px-3">
+<span class="bg-tertiary-fixed text-on-tertiary-fixed px-2 py-1 rounded text-[11px] uppercase">Medium</span>
+</td>
+</tr>
+<tr class="border-b border-surface-container hover:bg-surface-container-low transition-colors">
+<td class="py-2 px-3 text-on-surface-variant">10:38:02 AM</td>
+<td class="py-2 px-3 text-primary">System Admin</td>
+<td class="py-2 px-3 font-bold text-error">Exported 50 Leads to CSV</td>
+<td class="py-2 px-3 text-outline">203.0.113.45</td>
+<td class="py-2 px-3">
+<span class="bg-error text-on-error px-2 py-1 rounded text-[11px] uppercase">High</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-2 px-3 text-on-surface-variant">10:15:44 AM</td>
+<td class="py-2 px-3 text-primary">Rahul K. (Sales Exec)</td>
+<td class="py-2 px-3">Logged In</td>
+<td class="py-2 px-3 text-outline">192.168.1.55</td>
+<td class="py-2 px-3">
+<span class="bg-secondary-container text-on-secondary-container px-2 py-1 rounded text-[11px] uppercase">Low</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="fixed bottom-0 left-[280px] right-0 h-row-height bg-primary dark:bg-primary-container text-on-primary dark:text-on-primary-container border-t border-primary-container dark:border-outline shadow-md flex items-center justify-between px-margin-page z-40">
+<div class="font-data-mono text-data-mono opacity-80 text-[12px]">
+      © 2024 ZamZam Realty Ops. Connected to Exotel Cluster A.
+    </div>
+<div class="flex space-x-6">
+<a class="font-label-bold text-label-bold text-on-primary-container opacity-80 hover:underline cursor-pointer transition-opacity duration-200" href="#">SLA Policy</a>
+<a class="font-label-bold text-label-bold text-on-primary-container opacity-80 hover:underline cursor-pointer transition-opacity duration-200" href="#">Agent Guidelines</a>
+<a class="font-label-bold text-label-bold text-on-primary-container opacity-80 hover:underline cursor-pointer transition-opacity duration-200" href="#">Privacy</a>
+</div>
+</footer>
+</body></html>

@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Consultative Matchmaker Console - ZamZam Realty</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "secondary-fixed": "#b1f0ce",
+                      "outline-variant": "#c1c8c2",
+                      "tertiary": "#3e1e00",
+                      "inverse-surface": "#32302b",
+                      "surface-variant": "#e7e2da",
+                      "on-tertiary": "#ffffff",
+                      "surface-container-lowest": "#ffffff",
+                      "primary-fixed-dim": "#a5d0b9",
+                      "surface-tint": "#3f6653",
+                      "on-error-container": "#93000a",
+                      "inverse-on-surface": "#f5f0e8",
+                      "on-primary": "#ffffff",
+                      "surface-container-highest": "#e7e2da",
+                      "surface-container-low": "#f8f3eb",
+                      "secondary-container": "#aeeecb",
+                      "on-surface": "#1d1c17",
+                      "on-secondary-container": "#316e52",
+                      "surface-container-high": "#ede7df",
+                      "on-surface-variant": "#414844",
+                      "secondary-fixed-dim": "#95d4b3",
+                      "on-tertiary-fixed": "#2f1500",
+                      "on-primary-fixed-variant": "#274e3d",
+                      "tertiary-container": "#5e3000",
+                      "on-primary-fixed": "#002114",
+                      "on-tertiary-fixed-variant": "#6e3900",
+                      "on-secondary": "#ffffff",
+                      "on-primary-container": "#86af99",
+                      "surface-dim": "#ded9d1",
+                      "surface-container": "#f2ede5",
+                      "inverse-primary": "#a5d0b9",
+                      "error-container": "#ffdad6",
+                      "on-error": "#ffffff",
+                      "on-background": "#1d1c17",
+                      "primary-fixed": "#c1ecd4",
+                      "background": "#fef9f0",
+                      "primary": "#012d1d",
+                      "error": "#ba1a1a",
+                      "tertiary-fixed": "#ffdcc3",
+                      "outline": "#717973",
+                      "on-tertiary-container": "#f48c24",
+                      "on-secondary-fixed-variant": "#0e5138",
+                      "secondary": "#2c694e",
+                      "surface": "#fef9f0",
+                      "tertiary-fixed-dim": "#ffb77d",
+                      "surface-bright": "#fef9f0",
+                      "primary-container": "#1b4332",
+                      "on-secondary-fixed": "#002114"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "stack-md": "12px",
+                      "row-height": "40px",
+                      "stack-xs": "4px",
+                      "stack-sm": "8px",
+                      "gutter": "16px",
+                      "margin-page": "24px"
+              },
+              "fontFamily": {
+                      "label-bold": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "timer-lg": [
+                              "JetBrains Mono"
+                      ],
+                      "display-sm": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-sm": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-sm": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "data-mono": [
+                              "JetBrains Mono"
+                      ],
+                      "body-md": [
+                              "Plus Jakarta Sans"
+                      ]
+              },
+              "fontSize": {
+                      "label-bold": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "timer-lg": [
+                              "20px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-sm": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-sm": [
+                              "13px",
+                              {
+                                      "lineHeight": "18px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-sm": [
+                              "18px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "data-mono": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        body {
+            background-color: theme('colors.background');
+            color: theme('colors.on-background');
+        }
+        /* Custom Scrollbar for dense data views */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: theme('colors.surface-container'); 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: theme('colors.outline-variant'); 
+            border-radius: theme('borderRadius.full');
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: theme('colors.outline'); 
+        }
+        
+        .score-circle {
+            transition: stroke-dasharray 1s ease-out;
+        }
+    </style>
+</head>
+<body class="flex flex-col h-screen overflow-hidden text-body-md font-body-md antialiased bg-surface">
+<!-- TopNavBar -->
+<header class="flex justify-between items-center w-full px-margin-page h-[64px] z-50 sticky top-0 bg-surface border-b border-outline-variant flat no shadows">
+<div class="flex items-center gap-6 h-full">
+<div class="font-display-sm text-display-sm font-bold text-primary flex items-center gap-2">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">real_estate_agent</span>
+                ZamZam Realty
+            </div>
+<nav class="hidden md:flex h-full items-end gap-6 ml-4">
+<a class="font-label-bold text-label-bold text-on-surface-variant hover:bg-surface-container-low transition-colors h-full flex items-center px-2" href="#">All</a>
+<a class="font-label-bold text-label-bold text-on-surface-variant hover:bg-surface-container-low transition-colors h-full flex items-center px-2" href="#">Fresh Inbound</a>
+<a class="font-label-bold text-label-bold text-on-surface-variant hover:bg-surface-container-low transition-colors h-full flex items-center px-2" href="#">Scheduled Callback</a>
+<!-- Active State Example (High Intent for this view's context) -->
+<a class="font-label-bold text-label-bold text-primary border-b-2 border-primary pb-1 h-full flex items-center px-2 opacity-80 scale-95 transition-all" href="#">High Intent</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="font-timer-lg text-timer-lg text-primary mr-4 hidden lg:block border border-outline-variant rounded px-3 py-1 bg-surface-container-lowest">
+                04:12 <span class="text-label-bold font-label-bold text-on-surface-variant ml-1 align-middle">ON CALL</span>
+</div>
+<button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-container-low transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-container-low transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-label-bold text-label-bold overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a real estate agent in a modern office setting. The lighting is bright and even, highlighting a friendly but focused expression. The background is a slightly blurred light-filled office space. The image is cropped in a tight circle suitable for a small avatar." src="https://lh3.googleusercontent.com/aida-public/AB6AXuByrmzNqdRE94YUte5LyM5v58bKIvaMD0nmNRSjOpmBL_rESgwoUTG3eULBMYHfHUHBYie4FW45PXtXsGyctG9MbimlrjGmThANI2ELBN7q7JiSecXrrfeImM9M6Dpb-7SaqwpXQ_7aGAUOMMY04GGtbJZMQG5rXo1M448pgwZ-PIEVUjmUQedObd0XY26UH_lZ25qm5NbqS3G2BMdMx5jJQdJu-gAMT62ydeLgjftUrsWzEfxtzq_i3TqezzAlKhrhHQS6ZvSENbHY"/>
+</div>
+</div>
+</header>
+<div class="flex flex-1 overflow-hidden">
+<!-- SideNavBar -->
+<aside class="hidden md:flex flex-col h-full py-gutter space-y-stack-md w-[280px] bg-surface-container border-r border-outline-variant flex-shrink-0 z-40">
+<div class="px-gutter pb-4">
+<h2 class="font-headline-sm text-headline-sm font-black text-on-surface">Tele-Ops Console</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Exotel Cluster A</p>
+<button class="mt-6 w-full h-[40px] bg-primary-container text-on-primary font-label-bold text-label-bold rounded-lg flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined" style="font-size: 18px;">add</span>
+                    New Lead
+                </button>
+</div>
+<nav class="flex-1 flex flex-col gap-1 px-2">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-bold text-label-bold">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-secondary-container text-on-secondary-container border-l-4 border-secondary translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined">person_search</span>
+<span class="font-label-bold text-label-bold">Leads</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined">phone_callback</span>
+<span class="font-label-bold text-label-bold">Callbacks</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-label-bold text-label-bold">Performance</span>
+</a>
+</nav>
+<div class="px-2 pb-4 mt-auto border-t border-outline-variant pt-4 flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-label-bold text-label-bold">Support</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-label-bold text-label-bold">Logout</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area - 2 Column Layout -->
+<main class="flex-1 flex overflow-hidden bg-background">
+<!-- Left Column: Buyer Profile (35%) -->
+<div class="w-[35%] min-w-[320px] max-w-[450px] flex flex-col border-r border-outline-variant bg-surface-container-lowest h-full relative z-10">
+<div class="p-gutter border-b border-outline-variant bg-surface sticky top-0 z-20">
+<div class="flex items-center justify-between mb-1">
+<span class="text-xs font-label-bold text-on-surface-variant uppercase tracking-wider">Client Profile</span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-label-bold bg-secondary-container text-on-secondary-container">
+<span class="material-symbols-outlined" style="font-size: 12px; font-variation-settings: 'FILL' 1;">local_fire_department</span>
+                            HOT LEAD
+                        </span>
+</div>
+<h1 class="font-headline-sm text-headline-sm text-primary font-bold">Dr. Sameer Deshmukh</h1>
+<div class="flex items-center gap-4 mt-2 text-on-surface-variant font-data-mono text-xs">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined" style="font-size: 14px;">call</span> +91 98200 12345</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined" style="font-size: 14px;">badge</span> CRM-8842</span>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto p-gutter space-y-6">
+<!-- Requirement Block -->
+<section>
+<div class="flex items-center gap-2 mb-3">
+<span class="material-symbols-outlined text-primary" style="font-size: 18px;">payments</span>
+<h3 class="font-label-bold text-label-bold text-on-surface">Budget Constraints</h3>
+</div>
+<div class="bg-surface border border-outline-variant rounded-lg p-3 relative overflow-hidden group">
+<div class="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<label class="block font-label-bold text-label-bold text-on-surface-variant mb-1">Hard Ceiling</label>
+<div class="font-data-mono text-data-mono font-bold text-primary">₹1.10 Cr</div>
+<div class="mt-3 pt-3 border-t border-outline-variant border-dashed flex justify-between items-center">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Flexibility</span>
+<span class="font-data-mono text-xs text-on-secondary-fixed-variant bg-secondary-fixed px-2 py-0.5 rounded">+5% Max Limit</span>
+</div>
+</div>
+</section>
+<section>
+<div class="flex items-center gap-2 mb-3">
+<span class="material-symbols-outlined text-primary" style="font-size: 18px;">floor_lamp</span>
+<h3 class="font-label-bold text-label-bold text-on-surface">Property Specifications</h3>
+</div>
+<div class="space-y-3">
+<div class="bg-surface border border-outline-variant rounded-lg p-3">
+<label class="block font-label-bold text-[10px] text-on-surface-variant mb-1 uppercase">Preferred Configuration</label>
+<div class="font-body-md text-on-surface font-medium">2 BHK Large Carpet</div>
+</div>
+<div class="bg-surface border border-outline-variant rounded-lg p-3">
+<label class="block font-label-bold text-[10px] text-on-surface-variant mb-1 uppercase">Possession Timeline</label>
+<div class="font-body-md text-on-surface font-medium flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary" style="font-size: 16px;">check_circle</span>
+                                    Ready Possession with OC
+                                </div>
+</div>
+</div>
+</section>
+<section>
+<div class="flex items-center gap-2 mb-3">
+<span class="material-symbols-outlined text-primary" style="font-size: 18px;">map</span>
+<h3 class="font-label-bold text-label-bold text-on-surface">Location &amp; Transit</h3>
+</div>
+<div class="bg-surface border border-outline-variant rounded-lg p-3 space-y-4">
+<div>
+<label class="block font-label-bold text-[10px] text-on-surface-variant mb-2 uppercase">Target Micro-Markets</label>
+<div class="flex flex-wrap gap-2">
+<span class="px-2 py-1 rounded bg-surface-container-high border border-outline-variant font-label-bold text-xs text-on-surface">Kharghar Sec 19</span>
+<span class="px-2 py-1 rounded bg-surface-container-high border border-outline-variant font-label-bold text-xs text-on-surface">Kharghar Sec 20</span>
+<span class="px-2 py-1 rounded bg-surface-container-high border border-outline-variant font-label-bold text-xs text-on-surface">Kharghar Sec 35</span>
+</div>
+</div>
+<div class="pt-3 border-t border-outline-variant border-dashed">
+<label class="block font-label-bold text-[10px] text-on-surface-variant mb-1 uppercase">Transit Requirement</label>
+<div class="font-body-md text-on-surface font-medium flex items-center gap-2">
+<span class="material-symbols-outlined text-on-surface-variant" style="font-size: 16px;">train</span>
+                                    &lt; 10 mins to Metro / Highway
+                                </div>
+</div>
+</div>
+</section>
+</div>
+<div class="p-gutter border-t border-outline-variant bg-surface">
+<button class="w-full h-row-height bg-surface text-primary-container border border-outline-variant font-label-bold text-label-bold rounded-lg flex items-center justify-center gap-2 hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined" style="font-size: 18px;">edit_document</span>
+                        Edit Profile Requirements
+                    </button>
+</div>
+</div>
+<!-- Right Column: Ranked Matches (65%) -->
+<div class="flex-1 flex flex-col bg-background h-full relative">
+<div class="p-gutter border-b border-outline-variant bg-surface sticky top-0 z-20 flex justify-between items-center">
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Ranked Match Results</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Algorithmically scored against Dr. Sameer's requirements.</p>
+</div>
+<div class="flex items-center gap-3">
+<span class="font-label-bold text-xs text-on-surface-variant">Sort by:</span>
+<select class="h-8 pl-3 pr-8 rounded-lg border-outline-variant bg-surface-container-lowest text-body-sm text-on-surface focus:ring-secondary focus:border-secondary">
+<option>Match % (Highest)</option>
+<option>Price (Lowest)</option>
+<option>Carpet Area (Largest)</option>
+</select>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto p-gutter space-y-4 pb-24">
+<!-- Match Card 1: 94% -->
+<article class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm hover:border-secondary transition-colors group">
+<!-- Card Header -->
+<div class="p-4 flex items-start justify-between border-b border-outline-variant/50 bg-gradient-to-r from-secondary-container/20 to-transparent">
+<div class="flex gap-4">
+<!-- Score Gauge -->
+<div class="relative w-16 h-16 flex items-center justify-center shrink-0">
+<svg class="w-full h-full transform -rotate-90" viewbox="0 0 36 36">
+<path class="text-surface-variant stroke-current" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-width="3"></path>
+<path class="text-secondary stroke-current score-circle" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-dasharray="94, 100" stroke-linecap="round" stroke-width="3"></path>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="font-data-mono text-[16px] font-bold text-secondary">94<span class="text-[10px]">%</span></span>
+</div>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-primary font-bold">Paradise Sai Symphony</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined" style="font-size: 14px;">location_on</span>
+                                        Sector 20, Kharghar
+                                    </p>
+<div class="mt-2 flex gap-2">
+<span class="px-2 py-0.5 rounded-sm bg-surface-container-high border border-outline-variant font-label-bold text-[10px] text-on-surface">2 BHK</span>
+<span class="px-2 py-0.5 rounded-sm bg-secondary/10 border border-secondary/20 font-label-bold text-[10px] text-secondary">READY TO MOVE</span>
+</div>
+</div>
+</div>
+<div class="text-right">
+<div class="font-label-bold text-xs text-on-surface-variant mb-1 uppercase tracking-wide">All-in Cost</div>
+<div class="font-data-mono text-[20px] font-bold text-primary">₹1.05 Cr</div>
+</div>
+</div>
+<!-- Breakdown -->
+<div class="px-4 py-3 bg-surface border-b border-outline-variant/50">
+<div class="grid grid-cols-5 gap-4">
+<div>
+<div class="flex justify-between font-data-mono text-[10px] text-on-surface-variant mb-1">
+<span>Budget</span> <span>30/30</span>
+</div>
+<div class="h-1.5 w-full bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-full"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between font-data-mono text-[10px] text-on-surface-variant mb-1">
+<span>Location</span> <span>25/25</span>
+</div>
+<div class="h-1.5 w-full bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-full"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between font-data-mono text-[10px] text-on-surface-variant mb-1">
+<span>Transit</span> <span>18/20</span>
+</div>
+<div class="h-1.5 w-full bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-[90%]"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between font-data-mono text-[10px] text-on-surface-variant mb-1">
+<span>OC Status</span> <span>15/15</span>
+</div>
+<div class="h-1.5 w-full bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-full"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between font-data-mono text-[10px] text-on-surface-variant mb-1">
+<span>Carpet</span> <span class="text-on-error-container font-bold">6/10</span>
+</div>
+<div class="h-1.5 w-full bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-on-error-container w-[60%]"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Actions -->
+<div class="p-3 bg-surface-container-lowest flex items-center justify-end gap-2">
+<button class="h-8 px-3 bg-surface border border-outline-variant text-on-surface-variant font-label-bold text-xs rounded hover:bg-surface-container-high transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined" style="font-size: 14px;">content_copy</span>
+                                Link
+                            </button>
+<button class="h-8 px-3 bg-surface border border-outline-variant text-[#25D366] font-label-bold text-xs rounded hover:bg-surface-container-high transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined" style="font-size: 14px;">chat</span>
+                                WhatsApp
+                            </button>
+<button class="h-8 px-4 bg-primary-container text-on-primary font-label-bold text-xs rounded hover:opacity-90 transition-opacity flex items-center gap-1 ml-2">
+<span class="material-symbols-outlined" style="font-size: 14px;">add_location</span>
+                                Add to Tour
+                            </button>
+</div>
+</article>
+<!-- Match Card 2: 88% -->
+<article class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm hover:border-secondary transition-colors group">
+<div class="p-4 flex items-start justify-between border-b border-outline-variant/50">
+<div class="flex gap-4">
+<div class="relative w-16 h-16 flex items-center justify-center shrink-0">
+<svg class="w-full h-full transform -rotate-90" viewbox="0 0 36 36">
+<path class="text-surface-variant stroke-current" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-width="3"></path>
+<path class="text-primary stroke-current score-circle" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-dasharray="88, 100" stroke-linecap="round" stroke-width="3"></path>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="font-data-mono text-[16px] font-bold text-primary">88<span class="text-[10px]">%</span></span>
+</div>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">Crown Greens</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined" style="font-size: 14px;">location_on</span>
+                                        Sector 35, Kharghar
+                                    </p>
+<div class="mt-2 flex gap-2">
+<span class="px-2 py-0.5 rounded-sm bg-surface-container-high border border-outline-variant font-label-bold text-[10px] text-on-surface">2 BHK</span>
+</div>
+</div>
+</div>
+<div class="text-right">
+<div class="font-label-bold text-xs text-on-surface-variant mb-1 uppercase tracking-wide">All-in Cost</div>
+<div class="font-data-mono text-[20px] font-bold text-primary">₹98 Lakhs</div>
+</div>
+</div>
+<div class="p-3 bg-surface-container-lowest flex items-center justify-end gap-2">
+<button class="h-8 px-3 bg-surface border border-outline-variant text-on-surface-variant font-label-bold text-xs rounded hover:bg-surface-container-high transition-colors flex items-center gap-1">Link</button>
+<button class="h-8 px-3 bg-surface border border-outline-variant text-[#25D366] font-label-bold text-xs rounded hover:bg-surface-container-high transition-colors flex items-center gap-1">WhatsApp</button>
+<button class="h-8 px-4 bg-surface border border-outline-variant text-primary-container font-label-bold text-xs rounded hover:bg-surface-container-high transition-colors flex items-center gap-1 ml-2">Add to Tour</button>
+</div>
+</article>
+<!-- Match Card 3: 79% -->
+<article class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm hover:border-secondary transition-colors group opacity-80">
+<div class="p-4 flex items-start justify-between border-b border-outline-variant/50">
+<div class="flex gap-4">
+<div class="relative w-16 h-16 flex items-center justify-center shrink-0">
+<svg class="w-full h-full transform -rotate-90" viewbox="0 0 36 36">
+<path class="text-surface-variant stroke-current" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-width="3"></path>
+<path class="text-on-surface-variant stroke-current score-circle" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-dasharray="79, 100" stroke-linecap="round" stroke-width="3"></path>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="font-data-mono text-[16px] font-bold text-on-surface-variant">79<span class="text-[10px]">%</span></span>
+</div>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">Gami Aster</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined" style="font-size: 14px;">location_on</span>
+                                        Taloja Phase 1
+                                    </p>
+<div class="mt-2 flex gap-2">
+<span class="px-2 py-0.5 rounded-sm bg-surface-container-high border border-outline-variant font-label-bold text-[10px] text-on-surface">2 BHK</span>
+<span class="px-2 py-0.5 rounded-sm bg-error-container/50 border border-error-container font-label-bold text-[10px] text-on-error-container">OUT OF ZONE</span>
+</div>
+</div>
+</div>
+<div class="text-right">
+<div class="font-label-bold text-xs text-on-surface-variant mb-1 uppercase tracking-wide">All-in Cost</div>
+<div class="font-data-mono text-[20px] font-bold text-on-surface-variant">₹82 Lakhs</div>
+</div>
+</div>
+<div class="p-3 bg-surface-container-lowest flex items-center justify-end gap-2">
+<button class="h-8 px-3 bg-surface border border-outline-variant text-on-surface-variant font-label-bold text-xs rounded hover:bg-surface-container-high transition-colors flex items-center gap-1">Link</button>
+<button class="h-8 px-4 bg-surface border border-outline-variant text-primary-container font-label-bold text-xs rounded hover:bg-surface-container-high transition-colors flex items-center gap-1 ml-2">Add to Tour</button>
+</div>
+</article>
+</div>
+</div>
+</main>
+</div>
+<!-- Footer -->
+<footer class="fixed bottom-0 left-0 md:left-[280px] right-0 h-[40px] bg-primary text-on-primary border-t border-primary-container shadow-md flex items-center justify-between px-margin-page z-40 text-xs font-data-mono">
+<div>© 2024 ZamZam Realty Ops. Connected to Exotel Cluster A.</div>
+<div class="flex items-center gap-6 font-label-bold">
+<a class="opacity-80 hover:underline hover:opacity-100 transition-opacity" href="#">SLA Policy</a>
+<a class="opacity-80 hover:underline hover:opacity-100 transition-opacity" href="#">Agent Guidelines</a>
+<a class="opacity-80 hover:underline hover:opacity-100 transition-opacity" href="#">Privacy</a>
+</div>
+</footer>
+<script>
+        // Simple animation trigger for SVG gauges on load
+        document.addEventListener("DOMContentLoaded", () => {
+            setTimeout(() => {
+                const circles = document.querySelectorAll('.score-circle');
+                circles.forEach(c => {
+                    // Force a reflow to trigger transition if it was modified dynamically,
+                    // though here it's static in HTML, the transition class ensures it animates if values change.
+                });
+            }, 100);
+        });
+    </script>
+</body></html>
