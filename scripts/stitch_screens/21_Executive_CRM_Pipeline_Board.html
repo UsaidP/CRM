@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ZamZam Realty - Pipeline</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-dim": "#ded9d1",
+                    "on-secondary": "#ffffff",
+                    "on-error": "#ffffff",
+                    "on-primary-fixed-variant": "#274e3d",
+                    "tertiary-fixed": "#ffdcc3",
+                    "secondary": "#2c694e",
+                    "on-tertiary-fixed": "#2f1500",
+                    "inverse-primary": "#a5d0b9",
+                    "on-primary-container": "#86af99",
+                    "secondary-fixed": "#b1f0ce",
+                    "primary-fixed": "#c1ecd4",
+                    "outline": "#717973",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-fixed-dim": "#a5d0b9",
+                    "on-surface": "#1d1c17",
+                    "on-primary-fixed": "#002114",
+                    "on-secondary-container": "#316e52",
+                    "on-secondary-fixed": "#002114",
+                    "surface-bright": "#fef9f0",
+                    "secondary-fixed-dim": "#95d4b3",
+                    "on-background": "#1d1c17",
+                    "primary-container": "#1b4332",
+                    "on-secondary-fixed-variant": "#0e5138",
+                    "tertiary-container": "#5e3000",
+                    "surface-variant": "#e7e2da",
+                    "inverse-surface": "#32302b",
+                    "secondary-container": "#aeeecb",
+                    "surface": "#fef9f0",
+                    "on-primary": "#ffffff",
+                    "surface-container-highest": "#e7e2da",
+                    "on-tertiary-container": "#f48c24",
+                    "on-error-container": "#93000a",
+                    "surface-tint": "#3f6653",
+                    "error-container": "#ffdad6",
+                    "error": "#ba1a1a",
+                    "surface-container-high": "#ede7df",
+                    "tertiary": "#3e1e00",
+                    "outline-variant": "#c1c8c2",
+                    "primary": "#012d1d",
+                    "background": "#fef9f0",
+                    "inverse-on-surface": "#f5f0e8",
+                    "tertiary-fixed-dim": "#ffb77d",
+                    "on-tertiary-fixed-variant": "#6e3900",
+                    "on-surface-variant": "#414844",
+                    "surface-container-low": "#f8f3eb",
+                    "surface-container": "#f2ede5",
+                    "on-tertiary": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "stack-xs": "4px",
+                    "stack-sm": "8px",
+                    "margin-page": "24px",
+                    "stack-md": "12px",
+                    "row-height": "40px",
+                    "gutter": "16px"
+            },
+            "fontFamily": {
+                    "label-bold": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "headline-sm": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "display-sm": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "data-mono": [
+                            "JetBrains Mono"
+                    ],
+                    "timer-lg": [
+                            "JetBrains Mono"
+                    ],
+                    "body-sm": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "body-md": [
+                            "Plus Jakarta Sans"
+                    ]
+            },
+            "fontSize": {
+                    "label-bold": [
+                            "12px",
+                            {
+                                    "lineHeight": "16px",
+                                    "letterSpacing": "0.05em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "headline-sm": [
+                            "18px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "display-sm": [
+                            "24px",
+                            {
+                                    "lineHeight": "32px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "data-mono": [
+                            "14px",
+                            {
+                                    "lineHeight": "20px",
+                                    "fontWeight": "500"
+                            }
+                    ],
+                    "timer-lg": [
+                            "20px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "body-sm": [
+                            "13px",
+                            {
+                                    "lineHeight": "18px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "body-md": [
+                            "14px",
+                            {
+                                    "lineHeight": "20px",
+                                    "fontWeight": "400"
+                            }
+                    ]
+            }
+          },
+        }
+      }
+    </script>
+<style>
+        .kanban-scroll::-webkit-scrollbar {
+            height: 8px;
+            width: 8px;
+        }
+        .kanban-scroll::-webkit-scrollbar-track {
+            background: #f8f3eb; 
+        }
+        .kanban-scroll::-webkit-scrollbar-thumb {
+            background-color: #c1c8c2; 
+            border-radius: 4px;
+        }
+        .col-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+        .col-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .col-scroll::-webkit-scrollbar-thumb {
+            background-color: #e7e2da;
+            border-radius: 4px;
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid #e7e2da;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex">
+<!-- SideNavBar -->
+<nav class="hidden md:flex flex-col h-full py-stack-md fixed left-0 top-0 w-[280px] bg-surface-container-low dark:bg-surface-container-lowest border-r border-outline-variant dark:border-outline z-40">
+<div class="px-margin-page mb-8">
+<h1 class="font-headline-sm text-headline-sm text-primary">Lead Command</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Active Session: 4h 12m</p>
+</div>
+<button class="mx-margin-page mb-6 bg-primary-container text-on-primary rounded flex items-center justify-center py-2 px-4 hover:bg-surface-tint transition-colors">
+<span class="material-symbols-outlined mr-2 text-[20px]">add</span>
+<span class="font-label-bold text-label-bold">New Lead [Alt+N]</span>
+</button>
+<ul class="flex-1 overflow-y-auto">
+<li>
+<a class="flex items-center px-margin-page py-3 text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant hover:text-primary transition-colors duration-200" href="#">
+<span class="material-symbols-outlined mr-3 text-[20px]" data-icon="dashboard">dashboard</span>
+<span class="font-label-bold text-label-bold">Dashboard</span>
+</a>
+</li>
+<li>
+<a class="flex items-center px-margin-page py-3 bg-secondary-container dark:bg-primary-container text-on-secondary-container dark:text-on-primary-container border-l-4 border-secondary dark:border-secondary-fixed transition-colors duration-200" href="#">
+<span class="material-symbols-outlined mr-3 text-[20px]" data-icon="person_search" style="font-variation-settings: 'FILL' 1;">person_search</span>
+<span class="font-label-bold text-label-bold">Active Leads</span>
+</a>
+</li>
+<li>
+<a class="flex items-center px-margin-page py-3 text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant hover:text-primary transition-colors duration-200" href="#">
+<span class="material-symbols-outlined mr-3 text-[20px]" data-icon="home_work">home_work</span>
+<span class="font-label-bold text-label-bold">Inventory</span>
+</a>
+</li>
+<li>
+<a class="flex items-center px-margin-page py-3 text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant hover:text-primary transition-colors duration-200" href="#">
+<span class="material-symbols-outlined mr-3 text-[20px]" data-icon="campaign">campaign</span>
+<span class="font-label-bold text-label-bold">Marketing</span>
+</a>
+</li>
+<li>
+<a class="flex items-center px-margin-page py-3 text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant hover:text-primary transition-colors duration-200" href="#">
+<span class="material-symbols-outlined mr-3 text-[20px]" data-icon="insert_chart">insert_chart</span>
+<span class="font-label-bold text-label-bold">Reports</span>
+</a>
+</li>
+</ul>
+<div class="mt-auto px-margin-page pt-4 border-t border-outline-variant">
+<a class="flex items-center py-2 text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined mr-3 text-[20px]" data-icon="help_outline">help_outline</span>
+<span class="font-label-bold text-label-bold">Support</span>
+</a>
+<a class="flex items-center py-2 text-on-surface-variant hover:text-primary transition-colors mt-2" href="#">
+<span class="material-symbols-outlined mr-3 text-[20px]" data-icon="dark_mode">dark_mode</span>
+<span class="font-label-bold text-label-bold">Dark Mode</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 md:ml-[280px] flex flex-col h-screen overflow-hidden">
+<!-- Top Navigation Bar & Action Bar (Replacing default TopNavBar) -->
+<header class="bg-surface dark:bg-surface-container-low border-b border-outline-variant flex-shrink-0 z-30 pt-4 pb-2 px-margin-page">
+<div class="flex justify-between items-center mb-4">
+<div class="flex items-center space-x-2 text-on-surface-variant">
+<span class="font-body-sm text-body-sm hover:text-primary cursor-pointer">Pipeline</span>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+<span class="font-label-bold text-label-bold text-primary">Executive Dashboard</span>
+</div>
+<div class="flex items-center space-x-4">
+<button class="p-2 text-on-surface-variant hover:text-primary rounded-full hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-primary rounded-full hover:bg-surface-variant transition-colors relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-1 right-1 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<img alt="Executive Profile" class="w-8 h-8 rounded-full object-cover border border-outline-variant" data-alt="A professional headshot of a real estate executive, sharply dressed in a dark green blazer against a clean, bright minimalist background. The lighting is soft but high-contrast, emphasizing a clean, authoritative corporate aesthetic suitable for a high-end CRM platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCnnHgu_SBC8IPVErppS0qqjRjv1LjrQoOt-1KUY-PsxIpJHE6gsnmmxF3qB7FsxkyKSKonVJsu4hNSIzm1qrNUpNPkk_EALNfq0zBaWiKuKzhrFIRvi0f0b3jtWVQyW5HaFfftqs9OhmfEXe9Xpu15R9ix_04Xv1VctAb-gN2FQpqaBWXvMsHA3Za_5A0lRc8N14A6VxLOZNlaspQkPE2U7I_KTv2b1j7Cto1qqHq2fZEWS0VCAcodQMypxsFZJfjD_HGuyRdAW1-R"/>
+</div>
+</div>
+<div class="flex flex-wrap items-center justify-between gap-4">
+<div class="flex items-center space-x-3 bg-surface-container-low rounded-lg p-1 border border-outline-variant">
+<button class="flex items-center space-x-2 px-3 py-1.5 bg-surface rounded shadow-sm border border-outline-variant text-primary font-label-bold text-label-bold">
+<span class="material-symbols-outlined text-[18px]">view_kanban</span>
+<span>Kanban</span>
+</button>
+<button class="flex items-center space-x-2 px-3 py-1.5 text-on-surface-variant hover:text-primary font-label-bold text-label-bold transition-colors">
+<span class="material-symbols-outlined text-[18px]">table_rows</span>
+<span>Grid</span>
+</button>
+</div>
+<div class="flex items-center space-x-3">
+<div class="relative">
+<select class="appearance-none bg-surface border border-outline-variant rounded px-3 py-1.5 pr-8 font-label-bold text-label-bold text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary h-[32px]">
+<option>Micro-market: Kharghar</option>
+<option>Micro-market: Taloja</option>
+<option>All Markets</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-1.5 text-[18px] text-on-surface-variant pointer-events-none">arrow_drop_down</span>
+</div>
+<div class="flex items-center space-x-2 bg-surface border border-outline-variant rounded px-3 py-1.5 h-[32px] cursor-pointer hover:border-primary transition-colors">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">calendar_today</span>
+<span class="font-label-bold text-label-bold text-on-surface">This Quarter</span>
+</div>
+</div>
+</div>
+</header>
+<!-- Metrics Bar -->
+<section class="px-margin-page py-4 bg-surface-container-low border-b border-outline-variant flex-shrink-0 overflow-x-auto">
+<div class="flex space-x-4 min-w-max">
+<!-- Metric Card 1 -->
+<div class="bg-surface rounded-lg p-3 border border-outline-variant w-[200px] flex flex-col justify-between">
+<span class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider text-[10px]">Total Inbound Leads</span>
+<div class="mt-2 flex items-baseline space-x-2">
+<span class="font-display-sm text-display-sm text-primary">1,248</span>
+<span class="text-[12px] font-label-bold text-secondary flex items-center"><span class="material-symbols-outlined text-[14px]">trending_up</span> 12%</span>
+</div>
+</div>
+<!-- Metric Card 2 -->
+<div class="bg-surface rounded-lg p-3 border border-outline-variant w-[200px] flex flex-col justify-between">
+<span class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider text-[10px]">Qualified Brixi Leads</span>
+<div class="mt-2 flex items-baseline space-x-2">
+<span class="font-display-sm text-display-sm text-primary">412</span>
+<span class="text-[10px] font-label-bold bg-secondary-container text-on-secondary-container px-1.5 py-0.5 rounded">33% Conv</span>
+</div>
+</div>
+<!-- Metric Card 3 -->
+<div class="bg-surface rounded-lg p-3 border border-outline-variant w-[200px] flex flex-col justify-between">
+<span class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider text-[10px]">Site Visits Scheduled</span>
+<div class="mt-2 flex items-baseline space-x-2">
+<span class="font-display-sm text-display-sm text-primary">86</span>
+<span class="text-[12px] font-label-bold text-on-tertiary-container flex items-center">This Week</span>
+</div>
+</div>
+<!-- Metric Card 4 -->
+<div class="bg-surface rounded-lg p-3 border border-outline-variant w-[200px] flex flex-col justify-between relative overflow-hidden">
+<div class="absolute inset-0 bg-surface-tint opacity-5"></div>
+<span class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider text-[10px] relative z-10">Won Revenue (Brokerage)</span>
+<div class="mt-2 flex items-baseline space-x-1 relative z-10">
+<span class="font-timer-lg text-timer-lg font-data-mono text-primary">₹42.5L</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Kanban Board -->
+<section class="flex-1 overflow-hidden p-margin-page bg-background">
+<div class="flex h-full space-x-gutter overflow-x-auto kanban-scroll pb-4">
+<!-- Column 1: New Inbound -->
+<div class="flex flex-col flex-shrink-0 w-[300px] bg-surface-container-low rounded-lg border border-outline-variant h-full">
+<div class="p-3 border-b border-outline-variant flex justify-between items-center bg-surface-container rounded-t-lg">
+<h3 class="font-label-bold text-label-bold text-primary flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-error"></div> New Inbound
+                        </h3>
+<span class="bg-surface text-on-surface-variant font-data-mono text-[12px] px-2 py-0.5 rounded border border-outline-variant">24</span>
+</div>
+<div class="flex-1 overflow-y-auto col-scroll p-2 space-y-3">
+<!-- Lead Card -->
+<div class="glass-card rounded p-3 cursor-pointer hover:border-primary transition-colors group">
+<div class="flex justify-between items-start mb-2">
+<div>
+<h4 class="font-body-md font-semibold text-on-surface">Rajeev Sharma</h4>
+<p class="font-data-mono text-[12px] text-on-surface-variant">+91 98765 43210</p>
+</div>
+<span class="material-symbols-outlined text-[16px] text-error" title="YouTube Source">play_circle</span>
+</div>
+<div class="font-data-mono text-[13px] text-primary mb-3 bg-surface-variant inline-block px-2 py-0.5 rounded">₹1.2Cr - ₹1.8Cr</div>
+<div class="flex justify-between items-center mt-2 pt-2 border-t border-outline-variant">
+<div class="flex items-center space-x-2">
+<img alt="Broker" class="w-5 h-5 rounded-full object-cover" data-alt="A very small, crisp circular avatar of a real estate broker wearing a headset, professional high-key lighting, corporate minimalist style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBPffFQQ8sjsLOJiejxXyV-8QzqEEtCKGHUKOwEwyHTY9hqYLPY3NVTeYk5buIySxpJzFGc-q-XuMPWifRPATqCRO4qy2eSBbRhPdWdnWyOKulk_snqgdznEkJVj8QIJwLVDWeCFbb6GMCk7T484n0hQLOlZtsTeILdBlTN3b5pq9ouZ6YVXNPx0ZLWwS5bJiD4Z3bRveK4yh1Ad656GOCwGiNycKtsDrTxce6eztmYUisqaKLj1CH3B612HjI_PuS02wldnXfRu5ve"/>
+<span class="text-[10px] font-label-bold text-error bg-error-container px-1 rounded">4m response</span>
+</div>
+<button class="text-on-tertiary-container hover:text-tertiary-container transition-colors">
+<span class="material-symbols-outlined text-[18px]">chat</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Column 2: Contacted & Qualified -->
+<div class="flex flex-col flex-shrink-0 w-[300px] bg-surface-container-low rounded-lg border border-outline-variant h-full">
+<div class="p-3 border-b border-outline-variant flex justify-between items-center bg-surface-container rounded-t-lg">
+<h3 class="font-label-bold text-label-bold text-primary flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-[#f48c24]"></div> Contacted
+                        </h3>
+<span class="bg-surface text-on-surface-variant font-data-mono text-[12px] px-2 py-0.5 rounded border border-outline-variant">12</span>
+</div>
+<div class="flex-1 overflow-y-auto col-scroll p-2 space-y-3">
+<!-- Lead Card -->
+<div class="glass-card rounded p-3 cursor-pointer hover:border-primary transition-colors border-l-2 border-l-secondary">
+<div class="flex justify-between items-start mb-2">
+<div>
+<h4 class="font-body-md font-semibold text-on-surface">Anita Desai</h4>
+<p class="font-data-mono text-[12px] text-on-surface-variant">+91 91234 56789</p>
+</div>
+<span class="text-[10px] font-label-bold bg-secondary-container text-on-secondary-container px-1.5 py-0.5 rounded">Brixi 82%</span>
+</div>
+<div class="font-data-mono text-[13px] text-primary mb-3 bg-surface-variant inline-block px-2 py-0.5 rounded">₹2.5Cr+</div>
+<div class="flex justify-between items-center mt-2 pt-2 border-t border-outline-variant">
+<div class="flex items-center space-x-2">
+<img alt="Broker" class="w-5 h-5 rounded-full object-cover" data-alt="A very small, crisp circular avatar of a female real estate broker, smiling, professional high-key lighting, corporate minimalist style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC5BD5XgjzYlwqxQJvj4KSOvlRVGRTpaA4XrvBDm3w63l-IngMTK_1_vd3V7bhFtiYYhA9quXQR4A6finhvUM6EmUIYs-Ctaxu1hhm9w3j1kdPQxeSzFhkgjTW748CvI0D2r-rdstUNyt7iDAczCFlE-gjixGam-IXBDADNDU64sNTY6T663bNr3_wvyD0yRZcUBleYWuuA3Lolg24zTHY8S-wTRMafwnX03Ln3B01kbg1inJasMm_lKOuA3FH1kU0_eObAxbIdxEug"/>
+</div>
+<button class="text-on-tertiary-container hover:text-tertiary-container transition-colors">
+<span class="material-symbols-outlined text-[18px]">chat</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Column 3: Site Visit Scheduled -->
+<div class="flex flex-col flex-shrink-0 w-[300px] bg-surface-container-low rounded-lg border border-outline-variant h-full opacity-70">
+<div class="p-3 border-b border-outline-variant flex justify-between items-center bg-surface-container rounded-t-lg">
+<h3 class="font-label-bold text-label-bold text-primary flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-secondary"></div> Site Visit
+                        </h3>
+<span class="bg-surface text-on-surface-variant font-data-mono text-[12px] px-2 py-0.5 rounded border border-outline-variant">3</span>
+</div>
+<div class="flex-1 overflow-y-auto col-scroll p-2 space-y-3">
+<div class="text-center text-on-surface-variant font-body-sm py-4 italic">
+                             Simulated empty state for demonstration
+                         </div>
+</div>
+</div>
+</div>
+</section>
+</main>
+</body></html>

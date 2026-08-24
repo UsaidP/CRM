@@ -1,0 +1,396 @@
+<!DOCTYPE html><html lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>ZamZam Realty Console - Cost Engine</title>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-low": "#f8f3eb",
+                        "on-primary-fixed": "#002114",
+                        "surface-container": "#f2ede5",
+                        "outline-variant": "#c1c8c2",
+                        "background": "#fef9f0",
+                        "on-secondary-container": "#316e52",
+                        "surface-variant": "#e7e2da",
+                        "inverse-primary": "#a5d0b9",
+                        "secondary": "#2c694e",
+                        "surface-container-highest": "#e7e2da",
+                        "surface-container-high": "#ede7df",
+                        "primary-fixed": "#c1ecd4",
+                        "on-surface": "#1d1c17",
+                        "on-tertiary-fixed-variant": "#6e3900",
+                        "on-error": "#ffffff",
+                        "inverse-on-surface": "#f5f0e8",
+                        "on-secondary-fixed": "#002114",
+                        "error": "#ba1a1a",
+                        "on-tertiary": "#ffffff",
+                        "primary": "#012d1d",
+                        "on-tertiary-container": "#f48c24",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed-variant": "#274e3d",
+                        "on-tertiary-fixed": "#2f1500",
+                        "outline": "#717973",
+                        "on-surface-variant": "#414844",
+                        "on-secondary": "#ffffff",
+                        "secondary-fixed-dim": "#95d4b3",
+                        "primary-container": "#1b4332",
+                        "surface": "#fef9f0",
+                        "error-container": "#ffdad6",
+                        "tertiary-fixed-dim": "#ffb77d",
+                        "tertiary-container": "#5e3000",
+                        "tertiary-fixed": "#ffdcc3",
+                        "on-primary-container": "#86af99",
+                        "primary-fixed-dim": "#a5d0b9",
+                        "secondary-fixed": "#b1f0ce",
+                        "surface-tint": "#3f6653",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary": "#3e1e00",
+                        "surface-bright": "#fef9f0",
+                        "on-primary": "#ffffff",
+                        "on-background": "#1d1c17",
+                        "secondary-container": "#aeeecb",
+                        "inverse-surface": "#32302b",
+                        "surface-dim": "#ded9d1",
+                        "on-secondary-fixed-variant": "#0e5138"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "row-height": "40px",
+                        "margin-page": "24px",
+                        "stack-sm": "8px",
+                        "gutter": "16px",
+                        "stack-xs": "4px",
+                        "stack-md": "12px"
+                    },
+                    "fontFamily": {
+                        "body-sm": ["Plus Jakarta Sans"],
+                        "headline-sm": ["Plus Jakarta Sans"],
+                        "timer-lg": ["JetBrains Mono"],
+                        "label-bold": ["Plus Jakarta Sans"],
+                        "data-mono": ["JetBrains Mono"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "display-sm": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "body-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+                        "headline-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }],
+                        "timer-lg": ["20px", { "lineHeight": "24px", "fontWeight": "600" }],
+                        "label-bold": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "data-mono": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "display-sm": ["24px", { "lineHeight": "32px", "fontWeight": "700" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md antialiased flex h-screen">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-surface-container-low text-secondary font-body-md border-r border-outline-variant flex flex-col py-stack-md z-20 hidden md:flex">
+<div class="px-margin-page pb-margin-page mb-stack-md">
+<h1 class="font-headline-sm text-headline-sm font-extrabold text-primary">ZamZam Realty Console</h1>
+<p class="text-on-surface-variant font-body-sm mt-1">Inventory Ops - Mumbai Division</p>
+</div>
+<nav class="flex-1 flex flex-col gap-1 px-stack-md">
+<a class="flex items-center gap-stack-md text-on-surface-variant px-stack-md py-2 hover:bg-surface-container-high transition-all rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="domain">domain</span>
+<span class="">Inventory</span>
+</a>
+<a class="flex items-center gap-stack-md bg-secondary-container text-on-secondary-container rounded-lg px-stack-md py-2 border-l-4 border-secondary transition-transform active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="calculate" data-weight="fill" style="font-variation-settings: 'FILL' 1;">calculate</span>
+<span class="font-bold">Cost Engine</span>
+</a>
+<a class="flex items-center gap-stack-md text-on-surface-variant px-stack-md py-2 hover:bg-surface-container-high transition-all rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="">Leads</span>
+</a>
+<a class="flex items-center gap-stack-md text-on-surface-variant px-stack-md py-2 hover:bg-surface-container-high transition-all rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span class="">Reports</span>
+</a>
+<a class="flex items-center gap-stack-md text-on-surface-variant px-stack-md py-2 hover:bg-surface-container-high transition-all rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+<span class="">Archive</span>
+</a>
+</nav>
+<div class="px-stack-md mt-auto pt-margin-page border-t border-outline-variant/30">
+<button class="w-full bg-primary-container text-white py-2 rounded-lg font-label-bold flex items-center justify-center gap-2 hover:bg-primary transition-colors">
+<span class="material-symbols-outlined text-[18px]">add</span> Quick Calc
+            </button>
+</div>
+<div class="px-stack-md mt-stack-md flex flex-col gap-1">
+<a class="flex items-center gap-stack-md text-on-surface-variant px-stack-md py-2 hover:bg-surface-container-high transition-all rounded-lg text-sm" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="headset_mic">headset_mic</span>
+<span class="">Support</span>
+</a>
+<a class="flex items-center gap-stack-md text-on-surface-variant px-stack-md py-2 hover:bg-surface-container-high transition-all rounded-lg text-sm" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="help_outline">help_outline</span>
+<span class="">Help</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<div class="flex-1 flex flex-col md:ml-[280px] h-full overflow-hidden">
+<!-- TopNavBar (Web) -->
+<header class="bg-surface text-primary font-headline-sm border-b border-outline-variant flex justify-between items-center w-full px-margin-page h-row-height shrink-0 z-10 hidden md:flex">
+<nav class="flex gap-6 h-full items-end">
+<a class="text-on-surface-variant hover:bg-surface-container-high transition-colors px-2 py-1 h-full flex items-center cursor-pointer active:opacity-80 transition-opacity" href="#">Mumbai</a>
+<a class="text-on-surface-variant hover:bg-surface-container-high transition-colors px-2 py-1 h-full flex items-center cursor-pointer active:opacity-80 transition-opacity" href="#">Navi Mumbai</a>
+<a class="text-primary font-bold border-b-2 border-primary pb-1 h-full flex items-center cursor-pointer active:opacity-80 transition-opacity" href="#">Kharghar</a>
+<a class="text-on-surface-variant hover:bg-surface-container-high transition-colors px-2 py-1 h-full flex items-center cursor-pointer active:opacity-80 transition-opacity" href="#">Taloja</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="bg-primary-container text-white px-4 py-1.5 rounded text-sm font-label-bold hover:bg-primary transition-colors">New Inventory</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors cursor-pointer active:opacity-80 transition-opacity"><span class="material-symbols-outlined" data-icon="notifications">notifications</span></button>
+<button class="text-on-surface-variant hover:text-primary transition-colors cursor-pointer active:opacity-80 transition-opacity"><span class="material-symbols-outlined" data-icon="settings">settings</span></button>
+<div class="w-8 h-8 rounded-full bg-surface-variant border border-outline-variant overflow-hidden cursor-pointer active:opacity-80 transition-opacity">
+<img alt="Agent Profile" class="w-full h-full object-cover" data-alt="A professional headshot of a real estate agent in a modern corporate setting, soft lighting, sharp focus, business attire, conveying trust and expertise, high resolution, 4k quality, subtle alabaster white background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCUOhSEi_q9tO8rzNWRzFhaSN6cFHYnJNFSen5sKGng_q2AEr85j2HuAzAGGGoXWEBA-C14CRoc4tT2fkJwoKD7T3GUWWIEY0oUuxo8FJrFFd50sylbgaK-zGEq0tOSTG9PmAzOpIR1EH27T6yEn1wKTAoW8wrwN_X9XGT5EaIBIggOsDORlhhIDvji3XbnfCqhDPk68lIoI5qhqiFss-KkSEMjU72BSEICEGIhCM6ypQyE7EZpmEp8MJxfk1vmkQjS-F3RetAy-WOI">
+</div>
+</div>
+</header>
+<!-- TopAppBar (Mobile) -->
+<header class="md:hidden bg-surface border-b border-outline-variant px-4 py-3 flex items-center justify-between shrink-0">
+<span class="font-headline-sm font-bold text-primary">ZamZam Realty</span>
+<button class="text-on-surface-variant"><span class="material-symbols-outlined">menu</span></button>
+</header>
+<!-- Scrollable Canvas -->
+<main class="flex-1 overflow-y-auto p-gutter bg-surface-bright bg-gradient-to-br from-surface-bright to-surface-container-low">
+<div class="max-w-7xl mx-auto">
+<!-- Header Section -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-gutter gap-4">
+<div>
+<h2 class="font-display-sm text-display-sm text-primary mb-1">Cost Engine</h2>
+<p class="font-body-sm text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+                            Crown Greens, Kharghar Sector 35
+                        </p>
+</div>
+<!-- Action Toolbar -->
+<div class="flex flex-wrap gap-2 w-full md:w-auto"><button class="flex items-center gap-2 bg-surface-container-lowest text-on-surface border border-outline-variant px-4 py-2 rounded-full font-label-bold text-label-bold hover:bg-surface-container transition-all shadow-sm active:scale-95"><span class="material-symbols-outlined text-[20px]">picture_as_pdf</span>Export PDF</button><button class="flex items-center gap-2 bg-[#25D366]/5 text-[#075E54] border border-[#25D366]/20 px-4 py-2 rounded-full font-label-bold text-label-bold hover:bg-[#25D366]/10 transition-all shadow-sm active:scale-95"><span class="material-symbols-outlined text-[20px]">chat</span>WhatsApp</button><button class="flex items-center gap-2 bg-primary text-white px-5 py-2 rounded-full font-label-bold text-label-bold hover:bg-primary-container transition-all shadow-md active:scale-95"><span class="material-symbols-outlined text-[20px]">save</span>Save Lead<span class="ml-1 px-1.5 py-0.5 bg-white/10 rounded text-[10px] text-white/80 hidden lg:inline-block">[Ctrl+S]</span></button></div>
+</div>
+<!-- Main Grid Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Left Column: Input Form (Bento Style) -->
+<div class="lg:col-span-5 flex flex-col gap-gutter">
+<!-- Unit Details Card -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-3 shadow-sm flex flex-col gap-4 p-6 gap-6 overflow-visible">
+<div class="flex items-center justify-between border-b border-outline-variant/50 pb-2">
+<h3 class="font-label-bold text-label-bold text-on-surface uppercase tracking-wider flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-secondary">apartment</span>
+                                    Unit Configuration
+                                </h3>
+<span class="bg-tertiary-fixed text-on-tertiary-fixed-variant font-label-bold text-[10px] px-2.5 py-1 rounded-full border border-outline-variant/30 uppercase tracking-widest">Premium</span>
+</div>
+<div class="grid grid-cols-2 gap-3">
+<div>
+<label class="font-label-bold text-label-bold text-on-surface-variant block mb-1">Typology</label>
+<select class="w-full bg-surface border border-outline-variant rounded px-2 font-body-sm text-on-surface focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-colors h-10">
+<option>2 BHK Premium</option>
+<option>3 BHK Luxury</option>
+</select>
+</div>
+<div>
+<label class="font-label-bold text-label-bold text-on-surface-variant block mb-1">Carpet Area</label>
+<div class="relative">
+<input class="w-full h-8 bg-surface border border-outline-variant rounded px-2 font-data-mono text-data-mono text-on-surface focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-colors" type="text" value="740">
+<span class="absolute right-2 top-1/2 -translate-y-1/2 text-on-surface-variant font-body-sm text-xs">sq.ft</span>
+</div>
+</div>
+<div>
+<label class="font-label-bold text-label-bold text-on-surface-variant block mb-1">Floor Selection</label>
+<div class="relative">
+<input class="w-full h-8 bg-surface border border-outline-variant rounded px-2 font-data-mono text-data-mono text-on-surface focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-colors" type="number" value="14">
+</div>
+</div>
+<div>
+<label class="font-label-bold text-label-bold text-on-surface-variant block mb-1">Agreement Rate</label>
+<div class="relative">
+<span class="absolute left-2 top-1/2 -translate-y-1/2 text-on-surface-variant font-body-sm text-xs">₹</span>
+<input class="w-full h-8 bg-surface border border-outline-variant rounded pl-5 pr-2 font-data-mono text-data-mono text-on-surface focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-colors" type="text" value="11,500">
+</div>
+</div>
+</div>
+</div>
+<!-- Add-ons Card -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-3 shadow-sm flex flex-col gap-4 p-6 gap-6 overflow-visible">
+<h3 class="font-label-bold text-label-bold text-on-surface uppercase tracking-wider border-b border-outline-variant/50 pb-2 flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-secondary">add_circle</span>
+                                Add-ons &amp; Variables
+                            </h3>
+<div class="space-y-3">
+<div>
+<label class="font-label-bold text-label-bold text-on-surface-variant block mb-1">Parking Selection</label>
+<select class="w-full h-8 bg-surface border border-outline-variant rounded px-2 font-body-sm text-on-surface focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-colors">
+<option>1 Covered Stilt (₹4,00,000)</option>
+<option>2 Covered Tandem (₹6,50,000)</option>
+<option>No Parking</option>
+</select>
+</div>
+<div>
+<label class="font-label-bold text-label-bold text-on-surface-variant block mb-1">Development Charges</label>
+<div class="relative">
+<span class="absolute left-2 top-1/2 -translate-y-1/2 text-on-surface-variant font-body-sm text-xs">₹</span>
+<input class="w-full h-8 bg-surface border border-outline-variant rounded pl-5 pr-2 font-data-mono text-data-mono text-on-surface focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-colors" type="text" value="2,50,000">
+</div>
+</div>
+<div>
+<label class="font-label-bold text-label-bold text-on-surface-variant block mb-2">Construction Stage (GST Impact)</label>
+<div class="flex rounded bg-surface-container border border-outline-variant p-0.5 h-9 relative">
+<div class="w-1/2 absolute top-0.5 bottom-0.5 left-0.5 bg-white border border-outline-variant rounded shadow-sm z-0 transition-transform"></div>
+<button class="flex-1 text-center font-label-bold text-label-bold z-10 text-primary relative">Under Construction (5%)</button>
+<button class="flex-1 text-center font-label-bold text-label-bold z-10 text-on-surface-variant relative">Ready OC (0%)</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Statutory Breakdown (Glass/Technical Sheet) -->
+<div class="lg:col-span-7">
+<div class="bg-surface-container-lowest border-2 border-outline-variant rounded-xl overflow-hidden shadow-sm flex flex-col h-full">
+<!-- Header -->
+<div class="bg-surface-container-low px-4 py-3 border-b border-outline-variant flex justify-between items-center">
+<h3 class="font-headline-sm text-headline-sm text-primary flex items-center gap-2">
+<span class="material-symbols-outlined">receipt_long</span>
+                                    Statutory Breakdown
+                                </h3>
+<span class="bg-surface-container-highest text-on-surface-variant border border-outline-variant/50 px-3 py-1 rounded-full text-[10px] font-label-bold tracking-widest uppercase">Confidential</span>
+</div>
+<!-- Table Area -->
+<div class="flex-1 p-0 overflow-x-auto">
+<table class="w-full text-left border-collapse divide-y divide-outline-variant/20">
+<thead>
+<tr class="bg-surface-container border-b border-outline-variant font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider">
+<th class="p-3 font-normal">Component</th>
+<th class="p-3 font-normal text-right">Calculation</th>
+<th class="p-3 font-normal text-right">Amount (₹)</th>
+</tr>
+</thead>
+<tbody class="font-body-md text-on-surface">
+<!-- Row 1 -->
+<tr class="border-b border-outline-variant/30 hover:bg-surface-bright transition-colors h-[40px]">
+<td class="p-3 flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+                                                Base Property Cost
+                                            </td>
+<td class="p-3 text-right text-on-surface-variant font-data-mono text-xs">740 sq.ft × ₹11,500</td>
+<td class="p-3 text-right font-data-mono text-data-mono font-medium">85,10,000</td>
+</tr>
+<!-- Row 2 -->
+<tr class="border-b border-outline-variant/30 hover:bg-surface-bright transition-colors h-[40px]">
+<td class="p-3 flex items-center gap-2 pl-6 text-on-surface-variant">
+                                                Floor Rise Premium
+                                            </td>
+<td class="p-3 text-right text-on-surface-variant font-data-mono text-xs">₹50 × 9 flrs × 740</td>
+<td class="p-3 text-right font-data-mono text-data-mono text-on-surface-variant">3,33,000</td>
+</tr>
+<!-- Row 3 -->
+<tr class="border-b border-outline-variant/30 hover:bg-surface-bright transition-colors h-[40px]">
+<td class="p-3 flex items-center gap-2 pl-6 text-on-surface-variant">
+                                                Covered Parking
+                                            </td>
+<td class="p-3 text-right text-on-surface-variant font-data-mono text-xs">1 Stilt</td>
+<td class="p-3 text-right font-data-mono text-data-mono text-on-surface-variant">4,00,000</td>
+</tr>
+<!-- Subtotal 1 -->
+<tr class="border-b-2 border-outline-variant bg-surface-container-low h-[40px]">
+<td class="p-3 font-label-bold text-label-bold uppercase text-primary">Taxable Agreement Value</td>
+<td class="p-3"></td>
+<td class="p-3 text-right font-data-mono text-data-mono font-bold text-primary">92,43,000</td>
+</tr>
+<!-- Row 4 -->
+<tr class="border-b border-outline-variant/30 hover:bg-surface-bright transition-colors h-[40px]">
+<td class="p-3 flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-[#D97706]"></span>
+                                                Maharashtra Stamp Duty
+                                            </td>
+<td class="p-3 text-right text-on-surface-variant font-data-mono text-xs">6% of AV</td>
+<td class="p-3 text-right font-data-mono text-data-mono">5,54,580</td>
+</tr>
+<!-- Row 5 -->
+<tr class="border-b border-outline-variant/30 hover:bg-surface-bright transition-colors h-[40px]">
+<td class="p-3 flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-[#D97706]"></span>
+                                                Registration Fee
+                                            </td>
+<td class="p-3 text-right text-on-surface-variant font-data-mono text-xs">Fixed</td>
+<td class="p-3 text-right font-data-mono text-data-mono">30,000</td>
+</tr>
+<!-- Row 6 -->
+<tr class="border-b border-outline-variant/30 hover:bg-surface-bright transition-colors h-[40px] bg-secondary/5 border-l-2 border-l-secondary">
+<td class="p-3 flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                                                Statutory GST (5%)
+                                            </td>
+<td class="p-3 text-right text-secondary font-data-mono text-xs">5% of AV</td>
+<td class="p-3 text-right font-data-mono text-data-mono text-secondary">4,62,150</td>
+</tr>
+<!-- Row 7 -->
+<tr class="border-b border-outline-variant/30 hover:bg-surface-bright transition-colors h-[40px]">
+<td class="p-3 flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+                                                Society Formation &amp; Legal
+                                            </td>
+<td class="p-3 text-right text-on-surface-variant font-data-mono text-xs">Lump sum</td>
+<td class="p-3 text-right font-data-mono text-data-mono">1,50,000</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Grand Total Banner -->
+<div class="bg-primary p-6 flex justify-between items-center mt-auto border-t border-outline-variant/30 shadow-[0_-4px_20px_rgba(0,0,0,0.1)]"><div class="text-white"><h4 class="font-label-bold text-label-bold uppercase tracking-widest text-primary-fixed opacity-90 mb-1">Grand All-In Net Total</h4><p class="font-body-sm text-white/60">Inclusive of all taxes and development charges</p></div><div class="font-timer-lg text-[28px] text-secondary-fixed tracking-tight drop-shadow-sm">₹1,04,39,730</div></div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- BottomNavBar (Mobile) -->
+<nav class="md:hidden bg-surface border-t border-outline-variant flex justify-around items-center h-[60px] pb-safe shrink-0 z-20">
+<a class="flex flex-col items-center justify-center w-full h-full text-on-surface-variant" href="#">
+<span class="material-symbols-outlined text-[24px]" data-icon="domain">domain</span>
+<span class="font-label-bold text-[10px] mt-1">Inventory</span>
+</a>
+<a class="flex flex-col items-center justify-center w-full h-full text-primary border-t-2 border-primary" href="#">
+<span class="material-symbols-outlined text-[24px]" data-icon="calculate" data-weight="fill" style="font-variation-settings: 'FILL' 1;">calculate</span>
+<span class="font-label-bold text-[10px] mt-1">Cost Engine</span>
+</a>
+<a class="flex flex-col items-center justify-center w-full h-full text-on-surface-variant" href="#">
+<span class="material-symbols-outlined text-[24px]" data-icon="group">group</span>
+<span class="font-label-bold text-[10px] mt-1">Leads</span>
+</a>
+</nav>
+
+
+</body></html>

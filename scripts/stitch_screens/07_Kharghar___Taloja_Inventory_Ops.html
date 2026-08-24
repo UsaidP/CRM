@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ZamZam Realty Console - Inventory &amp; Cost Engine</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Design System Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "background": "#fef9f0",
+                      "surface-dim": "#ded9d1",
+                      "inverse-on-surface": "#f5f0e8",
+                      "on-primary": "#ffffff",
+                      "on-surface": "#1d1c17",
+                      "on-primary-fixed-variant": "#274e3d",
+                      "error-container": "#ffdad6",
+                      "on-secondary-fixed": "#002114",
+                      "surface-container-lowest": "#ffffff",
+                      "secondary-fixed": "#b1f0ce",
+                      "outline": "#717973",
+                      "inverse-surface": "#32302b",
+                      "surface-container-highest": "#e7e2da",
+                      "on-tertiary-fixed-variant": "#6e3900",
+                      "on-secondary-fixed-variant": "#0e5138",
+                      "tertiary-container": "#5e3000",
+                      "surface-container-high": "#ede7df",
+                      "secondary-container": "#aeeecb",
+                      "tertiary": "#3e1e00",
+                      "tertiary-fixed-dim": "#ffb77d",
+                      "tertiary-fixed": "#ffdcc3",
+                      "secondary": "#2c694e",
+                      "surface-variant": "#e7e2da",
+                      "on-surface-variant": "#414844",
+                      "on-error": "#ffffff",
+                      "on-tertiary-container": "#f48c24",
+                      "inverse-primary": "#a5d0b9",
+                      "primary-container": "#1b4332",
+                      "surface": "#fef9f0",
+                      "on-primary-fixed": "#002114",
+                      "primary-fixed": "#c1ecd4",
+                      "primary-fixed-dim": "#a5d0b9",
+                      "surface-bright": "#fef9f0",
+                      "surface-container": "#f2ede5",
+                      "error": "#ba1a1a",
+                      "on-tertiary-fixed": "#2f1500",
+                      "surface-tint": "#3f6653",
+                      "primary": "#012d1d",
+                      "outline-variant": "#c1c8c2",
+                      "on-secondary-container": "#316e52",
+                      "on-tertiary": "#ffffff",
+                      "on-secondary": "#ffffff",
+                      "on-error-container": "#93000a",
+                      "secondary-fixed-dim": "#95d4b3",
+                      "on-background": "#1d1c17",
+                      "surface-container-low": "#f8f3eb",
+                      "on-primary-container": "#86af99"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "stack-xs": "4px",
+                      "stack-sm": "8px",
+                      "gutter": "16px",
+                      "stack-md": "12px",
+                      "row-height": "40px",
+                      "margin-page": "24px"
+              },
+              "fontFamily": {
+                      "timer-lg": [
+                              "JetBrains Mono"
+                      ],
+                      "data-mono": [
+                              "JetBrains Mono"
+                      ],
+                      "headline-sm": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "label-bold": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-sm": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "display-sm": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-md": [
+                              "Plus Jakarta Sans"
+                      ]
+              },
+              "fontSize": {
+                      "timer-lg": [
+                              "20px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "data-mono": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "headline-sm": [
+                              "18px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-bold": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-sm": [
+                              "13px",
+                              {
+                                      "lineHeight": "18px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-sm": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        body {
+            background-color: #FBFBF9; /* Defined as lowest layer */
+            color: #1d1c17;
+        }
+        
+        .card-raised {
+            background-color: #ffffff;
+            border: 1px solid #E5E0D8;
+        }
+
+        .border-active {
+            border: 2px solid #2D6A4F;
+        }
+
+        .input-active {
+            border: 2px solid #2D6A4F;
+        }
+        
+        /* Custom scrollbar for better density feel */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #fef9f0; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #ded9d1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #c1c8c2; 
+        }
+    </style>
+</head>
+<body class="h-full flex overflow-hidden font-body-md text-body-md">
+<!-- SideNavBar (Injected from Shared Components) -->
+<nav class="hidden md:flex fixed left-0 top-0 h-full w-[280px] flex-col py-stack-md border-r border-outline-variant bg-surface-container-low z-20">
+<!-- Header -->
+<div class="px-gutter mb-stack-md flex items-center gap-stack-sm">
+<div class="w-8 h-8 bg-primary rounded flex items-center justify-center text-on-primary font-headline-sm">Z</div>
+<div>
+<h1 class="font-headline-sm text-headline-sm font-extrabold text-primary">Inventory Ops</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Mumbai Division</p>
+</div>
+</div>
+<!-- CTA -->
+<div class="px-stack-md mb-stack-md">
+<button class="w-full flex items-center justify-center gap-stack-sm bg-primary-container text-on-primary rounded-lg py-2 font-label-bold text-label-bold hover:bg-surface-tint transition-colors">
+<span class="material-symbols-outlined" style="font-size: 18px;">calculate</span>
+                Quick Calc
+            </button>
+</div>
+<!-- Navigation Links -->
+<div class="flex-1 overflow-y-auto px-stack-xs flex flex-col gap-stack-xs">
+<!-- Active Tab: Inventory -->
+<a class="flex items-center gap-stack-md bg-secondary-container text-on-secondary-container rounded-lg px-stack-md py-2 border-l-4 border-secondary transition-transform active:scale-95" href="#">
+<span class="material-symbols-outlined" data-weight="fill" style="font-variation-settings: 'FILL' 1;">domain</span>
+<span class="font-body-md text-body-md font-semibold">Inventory</span>
+</a>
+<a class="flex items-center gap-stack-md text-on-surface-variant px-stack-md py-2 hover:bg-surface-container-high transition-all rounded-lg active:scale-95 border-l-4 border-transparent" href="#">
+<span class="material-symbols-outlined">calculate</span>
+<span class="font-body-md text-body-md">Cost Engine</span>
+</a>
+<a class="flex items-center gap-stack-md text-on-surface-variant px-stack-md py-2 hover:bg-surface-container-high transition-all rounded-lg active:scale-95 border-l-4 border-transparent" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-body-md text-body-md">Leads</span>
+</a>
+<a class="flex items-center gap-stack-md text-on-surface-variant px-stack-md py-2 hover:bg-surface-container-high transition-all rounded-lg active:scale-95 border-l-4 border-transparent" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-body-md text-body-md">Reports</span>
+</a>
+<a class="flex items-center gap-stack-md text-on-surface-variant px-stack-md py-2 hover:bg-surface-container-high transition-all rounded-lg active:scale-95 border-l-4 border-transparent" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="font-body-md text-body-md">Archive</span>
+</a>
+</div>
+<!-- Footer Links -->
+<div class="px-stack-xs flex flex-col gap-stack-xs mt-auto">
+<a class="flex items-center gap-stack-md text-on-surface-variant px-stack-md py-2 hover:bg-surface-container-high transition-all rounded-lg active:scale-95 border-l-4 border-transparent" href="#">
+<span class="material-symbols-outlined">headset_mic</span>
+<span class="font-body-md text-body-md">Support</span>
+</a>
+<a class="flex items-center gap-stack-md text-on-surface-variant px-stack-md py-2 hover:bg-surface-container-high transition-all rounded-lg active:scale-95 border-l-4 border-transparent" href="#">
+<span class="material-symbols-outlined">help_outline</span>
+<span class="font-body-md text-body-md">Help</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col md:ml-[280px] h-full overflow-hidden bg-background">
+<!-- TopAppBar (Mobile Only - Simplified) -->
+<header class="md:hidden flex items-center justify-between px-gutter h-[64px] border-b border-outline-variant bg-surface">
+<div class="flex items-center gap-stack-sm">
+<span class="material-symbols-outlined cursor-pointer text-on-surface">menu</span>
+<h1 class="font-headline-sm text-headline-sm font-bold text-primary">ZamZam Realty Console</h1>
+</div>
+<span class="material-symbols-outlined text-on-surface">search</span>
+</header>
+<!-- Header & Filter Strip -->
+<div class="px-margin-page py-stack-md border-b border-outline-variant bg-surface-container-lowest shrink-0 z-10 flex flex-col gap-stack-md">
+<div class="flex items-center justify-between">
+<h2 class="font-display-sm text-display-sm text-primary tracking-tight">Inventory Catalogue</h2>
+<div class="flex items-center gap-stack-sm bg-surface-container py-1 px-3 rounded-full text-on-surface-variant font-label-bold text-label-bold border border-outline-variant">
+<span class="w-2 h-2 rounded-full bg-[#2D6A4F]"></span>
+                    Live Sync Active
+                </div>
+</div>
+<div class="flex flex-wrap items-center justify-between gap-gutter">
+<!-- Location Tabs -->
+<div class="flex gap-stack-sm overflow-x-auto pb-1 hide-scrollbar">
+<button class="px-4 py-1.5 rounded-full bg-secondary-container text-on-secondary-container font-label-bold text-label-bold border border-secondary transition-colors whitespace-nowrap">All</button>
+<button class="px-4 py-1.5 rounded-full bg-surface text-on-surface-variant font-label-bold text-label-bold border border-outline-variant hover:bg-surface-container-high transition-colors whitespace-nowrap">Kharghar Sectors 1-20</button>
+<button class="px-4 py-1.5 rounded-full bg-surface text-on-surface-variant font-label-bold text-label-bold border border-outline-variant hover:bg-surface-container-high transition-colors whitespace-nowrap">Kharghar Sectors 34-36</button>
+<button class="px-4 py-1.5 rounded-full bg-surface text-on-surface-variant font-label-bold text-label-bold border border-outline-variant hover:bg-surface-container-high transition-colors whitespace-nowrap">Taloja Phase 1 &amp; 2</button>
+</div>
+<!-- Dropdowns -->
+<div class="flex items-center gap-stack-md">
+<div class="relative">
+<select class="appearance-none bg-surface border border-outline-variant rounded-lg pl-3 pr-8 py-1.5 font-label-bold text-label-bold text-on-surface focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary h-[32px]">
+<option>1 BHK</option>
+<option>2 BHK</option>
+<option>3 BHK</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant" style="font-size: 16px;">arrow_drop_down</span>
+</div>
+<div class="relative">
+<select class="appearance-none bg-surface border border-outline-variant rounded-lg pl-3 pr-8 py-1.5 font-label-bold text-label-bold text-on-surface focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary h-[32px]">
+<option>Possession</option>
+<option>Ready OC</option>
+<option>Dec 2026</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant" style="font-size: 16px;">arrow_drop_down</span>
+</div>
+<div class="h-6 w-px bg-outline-variant mx-1 hidden sm:block"></div>
+<button class="hidden sm:flex items-center justify-center w-[32px] h-[32px] rounded border border-outline-variant bg-surface hover:bg-surface-container-high transition-colors text-on-surface-variant" title="Grid View">
+<span class="material-symbols-outlined" style="font-size: 18px;">grid_view</span>
+</button>
+<button class="hidden sm:flex items-center justify-center w-[32px] h-[32px] rounded border border-outline-variant bg-surface-container-high hover:bg-surface-container-highest transition-colors text-primary" title="List View">
+<span class="material-symbols-outlined" style="font-size: 18px;">view_list</span>
+</button>
+</div>
+</div>
+</div>
+<!-- 65/35 Split Layout Area -->
+<div class="flex-1 overflow-hidden flex flex-col lg:flex-row">
+<!-- Left Column: Inventory List (65%) -->
+<div class="flex-[0_0_100%] lg:flex-[0_0_65%] border-r border-outline-variant overflow-y-auto p-margin-page bg-background flex flex-col gap-gutter">
+<!-- Project Card 1: Selected State -->
+<div class="card-raised rounded-xl p-stack-md flex flex-col sm:flex-row gap-gutter relative overflow-hidden transition-all duration-200 border-active bg-[#F9FCFA]">
+<!-- Subtle active indicator line -->
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-[#2D6A4F]"></div>
+<!-- Thumbnail -->
+<div class="w-full sm:w-[120px] shrink-0 flex flex-col gap-stack-xs">
+<div class="w-full aspect-video sm:aspect-square bg-surface-container-high rounded-lg overflow-hidden border border-outline-variant relative group">
+<img alt="Floor Plan Thumbnail" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" data-alt="A clean, high-contrast, technical architectural floor plan for a 2 BHK apartment in a high-rise building. Designed in a professional CAD style with sharp black lines on a crisp white background. Features clear room demarcations, minor dimensional text annotations in a technical sans-serif font, and subtle blue tinting in the bathroom areas. Lighting is flat and uniform, conveying a highly precise, utilitarian, and premium real estate operational aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAj-Mg7h0RK76FDdQwCSpP4GWa2FOFPOAxrQgVO8l-8ZEcbrcxoOOXhYzrwrW4hfVdg8GmdXdQ3MZ0jigjovdw1loqasxCuZdx-fkluMi7034nvrGM2SiujxtHZ1Gyznq_CJEmWWuNdTvPcghX3eHv_V_rIEDt3gUF5e9Nkeq9E__FyUhGVCGBMz-xcimxbjCyaEv_ZFcHwe7IXaKEC50dAcLfazvIL4FLiz99ZZy03YcdEo-lwgTjHD-nKI2qLbyqNAyRrXxKGfAC9"/>
+<div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+<span class="material-symbols-outlined text-white">zoom_in</span>
+</div>
+</div>
+<div class="text-center font-label-bold text-label-bold text-on-surface-variant">PLAN A - 2BHK</div>
+</div>
+<!-- Details -->
+<div class="flex-1 flex flex-col min-w-0">
+<div class="flex justify-between items-start gap-stack-sm mb-1">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-primary truncate">Codename Navi Oasis</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">Premium Developers Ltd. • Kharghar Sec 34</p>
+</div>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-sm bg-[#e8f5e9] text-[#1b5e20] font-label-bold text-[10px] uppercase border border-[#c8e6c9] shrink-0">
+<span class="material-symbols-outlined" style="font-size: 12px;">verified</span>
+                                Verified 2d ago
+                            </span>
+</div>
+<div class="font-data-mono text-data-mono text-on-surface-variant mb-stack-md flex items-center gap-2">
+<span class="material-symbols-outlined text-outline" style="font-size: 16px;">shield</span>
+                            MahaRERA: P52000031245
+                        </div>
+<!-- Key Metrics Grid -->
+<div class="grid grid-cols-2 gap-stack-md mt-auto pt-stack-sm border-t border-outline-variant">
+<div>
+<div class="font-label-bold text-label-bold text-on-surface-variant mb-1 uppercase tracking-wider text-[10px]">Carpet Area</div>
+<div class="font-data-mono text-[15px] font-semibold text-on-surface">745 sq.ft</div>
+</div>
+<div>
+<div class="font-label-bold text-label-bold text-on-surface-variant mb-1 uppercase tracking-wider text-[10px]">Agreement Value</div>
+<div class="font-data-mono text-[15px] font-bold text-primary">₹85.00 Lakhs</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Project Card 2: Default State -->
+<div class="card-raised rounded-xl p-stack-md flex flex-col sm:flex-row gap-gutter hover:bg-[#FDFDFC] transition-colors cursor-pointer group">
+<!-- Thumbnail -->
+<div class="w-full sm:w-[120px] shrink-0 flex flex-col gap-stack-xs">
+<div class="w-full aspect-video sm:aspect-square bg-surface-container-high rounded-lg overflow-hidden border border-outline-variant relative">
+<img alt="Floor Plan Thumbnail" class="w-full h-full object-cover grayscale opacity-90 group-hover:grayscale-0 transition-all duration-300" data-alt="A detailed, modern architectural floor plan of a spacious 3 BHK apartment. Rendered in a high-fidelity drafting style with precise black linework on an off-white background. The plan includes subtle textural details for flooring types, clear labels for living spaces, and precise wall thicknesses. The aesthetic is clean, professional, and optimized for high-end real estate presentations, featuring soft, diffused ambient lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCr49i8iK5AbfrPIgGX1aQYDso0VFh2DS1wUwD31wNA4nvoL2Ux2inNEOiKQ1gkQ6yQJy6COLiP0rCAuuhTtWAWWSgUNUL-WhLm0dww2TYPXLKLXROCyRNVzl8lC4vJ2bQAzCmat51rIRUmjg9f5bV_jRQuV1J5z3ImDuOB_LgH0ZVOQU1Wtfr2GvHCbZtGMD8E_gZJ-kDicceP9m_Ij04BCnNF7DtZ-3WmZ3_i-f9lMij4cpnSlh9BxGYLYXDeCRNzW7X9eS7jXCG_"/>
+</div>
+<div class="text-center font-label-bold text-label-bold text-on-surface-variant">PLAN C - 3BHK</div>
+</div>
+<!-- Details -->
+<div class="flex-1 flex flex-col min-w-0">
+<div class="flex justify-between items-start gap-stack-sm mb-1">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface group-hover:text-primary transition-colors truncate">Hillside Residency</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">Apex Buildcon • Taloja Phase 1</p>
+</div>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-sm bg-surface-variant text-on-surface-variant font-label-bold text-[10px] uppercase border border-outline-variant shrink-0">
+<span class="material-symbols-outlined" style="font-size: 12px;">history</span>
+                                Updated 5d ago
+                            </span>
+</div>
+<div class="font-data-mono text-data-mono text-on-surface-variant mb-stack-md flex items-center gap-2">
+<span class="material-symbols-outlined text-outline" style="font-size: 16px;">shield</span>
+                            MahaRERA: P52000044192
+                        </div>
+<!-- Key Metrics Grid -->
+<div class="grid grid-cols-2 gap-stack-md mt-auto pt-stack-sm border-t border-outline-variant">
+<div>
+<div class="font-label-bold text-label-bold text-on-surface-variant mb-1 uppercase tracking-wider text-[10px]">Carpet Area</div>
+<div class="font-data-mono text-[15px] font-medium text-on-surface">920 sq.ft</div>
+</div>
+<div>
+<div class="font-label-bold text-label-bold text-on-surface-variant mb-1 uppercase tracking-wider text-[10px]">Agreement Value</div>
+<div class="font-data-mono text-[15px] font-bold text-on-surface">₹1.12 Cr</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Subtle End of List Indicator -->
+<div class="py-stack-md text-center">
+<p class="font-body-sm text-body-sm text-outline">End of matching inventory</p>
+</div>
+</div>
+<!-- Right Column: Sticky Calculator (35%) -->
+<div class="flex-[0_0_100%] lg:flex-[0_0_35%] bg-surface-container-low overflow-y-auto relative">
+<!-- Sticky Container inside right column to simulate 'sticky' behavior if content was longer -->
+<div class="p-margin-page sticky top-0">
+<div class="card-raised rounded-xl overflow-hidden flex flex-col shadow-sm">
+<!-- Calc Header -->
+<div class="bg-surface-variant px-stack-md py-3 border-b border-outline-variant flex items-center justify-between">
+<h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">calculate</span>
+                                Statutory Cost Engine
+                            </h3>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" style="font-size: 18px;">refresh</span>
+</button>
+</div>
+<!-- Selected Unit Context -->
+<div class="px-stack-md py-2 bg-surface-container-lowest border-b border-outline-variant text-[11px] font-label-bold text-on-surface-variant flex justify-between items-center">
+<span>Target: Codename Navi Oasis (2BHK)</span>
+<span class="px-1.5 py-0.5 bg-surface-container rounded border border-outline-variant text-[9px] uppercase">Draft</span>
+</div>
+<!-- Calculation Breakdown -->
+<div class="p-stack-md flex flex-col gap-2 font-data-mono text-data-mono">
+<!-- Base Value Input (Editable look) -->
+<div class="flex justify-between items-center py-1 group">
+<span class="text-on-surface-variant flex items-center gap-2 cursor-help" title="Agreement Value">
+                                    Base Value
+                                    <span class="material-symbols-outlined text-outline" style="font-size: 12px;">info</span>
+</span>
+<div class="relative">
+<span class="absolute left-2 top-1/2 -translate-y-1/2 text-on-surface-variant">₹</span>
+<input class="w-[120px] text-right bg-surface border border-outline-variant rounded px-2 py-1 focus:outline-none input-active text-on-surface font-semibold transition-all transition-colors h-[28px] text-[13px]" type="text" value="85,00,000"/>
+</div>
+</div>
+<div class="h-px bg-outline-variant/50 my-1"></div>
+<!-- Statutory Costs -->
+<div class="flex justify-between items-center py-1">
+<span class="text-on-surface-variant">Stamp Duty (6%)</span>
+<span class="text-on-surface">₹ 5,10,000</span>
+</div>
+<div class="flex justify-between items-center py-1">
+<span class="text-on-surface-variant">Registration</span>
+<span class="text-on-surface">₹ 30,000</span>
+</div>
+<div class="flex justify-between items-center py-1">
+<span class="text-on-surface-variant">GST (5%)</span>
+<span class="text-on-surface">₹ 4,25,000</span>
+</div>
+<div class="h-px bg-outline-variant/50 my-1 border-dashed"></div>
+<!-- Additional Charges -->
+<div class="flex justify-between items-center py-1 group cursor-pointer hover:bg-surface-container-low rounded px-1 -mx-1 transition-colors">
+<span class="text-on-surface-variant flex items-center gap-1">
+                                    Floor/Parking
+                                    <span class="material-symbols-outlined text-outline opacity-0 group-hover:opacity-100" style="font-size: 14px;">edit</span>
+</span>
+<span class="text-on-surface">₹ 3,50,000</span>
+</div>
+<div class="flex justify-between items-center py-1 group cursor-pointer hover:bg-surface-container-low rounded px-1 -mx-1 transition-colors">
+<span class="text-on-surface-variant flex items-center gap-1">
+                                    Society Dep.
+                                    <span class="material-symbols-outlined text-outline opacity-0 group-hover:opacity-100" style="font-size: 14px;">edit</span>
+</span>
+<span class="text-on-surface">₹ 1,50,000</span>
+</div>
+</div>
+<!-- Grand Total Banner -->
+<div class="bg-[#2D6A4F] p-stack-md text-white flex flex-col gap-1">
+<div class="font-label-bold text-label-bold text-[#b1f0ce] uppercase tracking-wider flex justify-between items-center">
+                                Estimated Total Landing
+                                <span class="text-[10px] opacity-80">(Incl. Taxes)</span>
+</div>
+<div class="font-data-mono text-[24px] font-bold tracking-tight">
+                                ₹ 99,65,000
+                            </div>
+</div>
+<!-- Action Area -->
+<div class="p-stack-md flex flex-col gap-stack-sm bg-surface-container-lowest">
+<button class="w-full flex items-center justify-center gap-2 bg-primary-container text-on-primary rounded border border-transparent py-2 font-label-bold text-label-bold hover:bg-surface-tint transition-colors h-[40px]">
+<span class="material-symbols-outlined" style="font-size: 18px;">picture_as_pdf</span>
+                                Generate PDF Cost Sheet
+                            </button>
+<button class="w-full flex items-center justify-center gap-2 bg-surface text-primary rounded border border-[#E5E0D8] py-2 font-label-bold text-label-bold hover:bg-surface-container-low transition-colors h-[40px] relative">
+<span class="material-symbols-outlined text-[#25D366]" style="font-size: 18px;">chat</span>
+                                Send to Buyer via WhatsApp
+                                <!-- Keyboard shortcut hint -->
+<div class="absolute right-2 top-1/2 -translate-y-1/2 bg-surface-variant text-on-surface-variant border border-outline-variant rounded px-1.5 py-0.5 text-[9px] font-data-mono hidden xl:block">
+                                    [Alt+W]
+                                </div>
+</button>
+</div>
+</div>
+<!-- Contextual Help / Info Note -->
+<div class="mt-stack-md p-stack-md bg-surface border border-outline-variant rounded-lg flex items-start gap-stack-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-primary shrink-0" style="font-size: 16px; margin-top: 2px;">lightbulb</span>
+<p class="font-body-sm text-[12px] leading-relaxed">Stamp duty is calculated at current state slab (6%) for MMR region. GST input credit not applicable for ready possession.</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

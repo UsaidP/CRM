@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Broker Command: Engagement Telemetry</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-primary": "#a5d0b9",
+                        "on-tertiary-container": "#f48c24",
+                        "on-secondary-container": "#316e52",
+                        "surface-container-highest": "#e7e2da",
+                        "primary": "#012d1d",
+                        "tertiary-fixed-dim": "#ffb77d",
+                        "tertiary": "#3e1e00",
+                        "surface-tint": "#3f6653",
+                        "outline": "#717973",
+                        "on-tertiary": "#ffffff",
+                        "surface-bright": "#fef9f0",
+                        "inverse-surface": "#32302b",
+                        "error-container": "#ffdad6",
+                        "secondary-container": "#aeeecb",
+                        "error": "#ba1a1a",
+                        "on-secondary-fixed": "#002114",
+                        "surface-container-lowest": "#ffffff",
+                        "outline-variant": "#c1c8c2",
+                        "primary-fixed-dim": "#a5d0b9",
+                        "on-secondary": "#ffffff",
+                        "on-background": "#1d1c17",
+                        "surface-dim": "#ded9d1",
+                        "secondary-fixed": "#b1f0ce",
+                        "on-error": "#ffffff",
+                        "primary-container": "#1b4332",
+                        "surface-variant": "#e7e2da",
+                        "surface": "#fef9f0",
+                        "secondary-fixed-dim": "#95d4b3",
+                        "secondary": "#2c694e",
+                        "surface-container": "#f2ede5",
+                        "on-primary-container": "#86af99",
+                        "inverse-on-surface": "#f5f0e8",
+                        "surface-container-low": "#f8f3eb",
+                        "surface-container-high": "#ede7df",
+                        "on-tertiary-fixed": "#2f1500",
+                        "on-secondary-fixed-variant": "#0e5138",
+                        "background": "#fef9f0",
+                        "on-surface": "#1d1c17",
+                        "on-primary": "#ffffff",
+                        "tertiary-fixed": "#ffdcc3",
+                        "on-primary-fixed-variant": "#274e3d",
+                        "on-error-container": "#93000a",
+                        "tertiary-container": "#5e3000",
+                        "on-tertiary-fixed-variant": "#6e3900",
+                        "on-surface-variant": "#414844",
+                        "primary-fixed": "#c1ecd4",
+                        "on-primary-fixed": "#002114"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "stack-md": "12px",
+                        "stack-sm": "8px",
+                        "stack-xs": "4px",
+                        "margin-page": "24px",
+                        "row-height": "40px",
+                        "gutter": "16px"
+                    },
+                    "fontFamily": {
+                        "display-sm": ["Plus Jakarta Sans"],
+                        "data-mono": ["JetBrains Mono"],
+                        "headline-sm": ["Plus Jakarta Sans"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "body-sm": ["Plus Jakarta Sans"],
+                        "label-bold": ["Plus Jakarta Sans"],
+                        "timer-lg": ["JetBrains Mono"]
+                    },
+                    "fontSize": {
+                        "display-sm": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "data-mono": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+                        "headline-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "body-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+                        "label-bold": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "timer-lg": ["20px", { "lineHeight": "24px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: #FBFBF9; }
+        .custom-border { border: 1px solid #E5E0D8; }
+        .active-border { border-left: 2px solid #2D6A4F; }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md h-screen flex overflow-hidden">
+<!-- Sidebar Navigation -->
+<nav class="bg-surface-container dark:bg-surface-container-low border-r border-outline-variant dark:border-outline fixed left-0 top-0 h-full w-[280px] flex flex-col py-margin-page hidden md:flex">
+<div class="px-margin-page mb-stack-md">
+<h1 class="font-headline-sm text-headline-sm font-bold text-primary">Broker Hub</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Managing 12 Active Visits</p>
+</div>
+<div class="flex-1 overflow-y-auto">
+<ul class="flex flex-col space-y-stack-xs mt-stack-md">
+<li class="flex items-center gap-stack-md text-on-surface-variant px-4 py-2 cursor-pointer hover:bg-surface-container-high transition-all">
+<span class="material-symbols-outlined">location_on</span>
+<span class="font-label-bold text-label-bold">Site Visits</span>
+</li>
+<li class="flex items-center gap-stack-md bg-secondary-container text-on-secondary-container border-l-4 border-secondary px-4 py-2 cursor-pointer">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-label-bold text-label-bold">Analytics</span>
+</li>
+<li class="flex items-center gap-stack-md text-on-surface-variant px-4 py-2 cursor-pointer hover:bg-surface-container-high transition-all">
+<span class="material-symbols-outlined">rate_review</span>
+<span class="font-label-bold text-label-bold">Feedback</span>
+</li>
+<li class="flex items-center gap-stack-md text-on-surface-variant px-4 py-2 cursor-pointer hover:bg-surface-container-high transition-all">
+<span class="material-symbols-outlined">map</span>
+<span class="font-label-bold text-label-bold">Route Map</span>
+</li>
+<li class="flex items-center gap-stack-md text-on-surface-variant px-4 py-2 cursor-pointer hover:bg-surface-container-high transition-all">
+<span class="material-symbols-outlined">description</span>
+<span class="font-label-bold text-label-bold">Documents</span>
+</li>
+</ul>
+</div>
+<div class="px-margin-page mt-auto flex flex-col gap-stack-md">
+<button class="w-full bg-primary-container text-on-primary font-label-bold text-label-bold py-2 px-4 rounded hover:opacity-90 transition-opacity">
+                New Dispatch
+            </button>
+<ul class="flex flex-col space-y-stack-xs mt-stack-sm">
+<li class="flex items-center gap-stack-md text-on-surface-variant px-4 py-2 cursor-pointer hover:bg-surface-container-high transition-all">
+<span class="material-symbols-outlined">help</span>
+<span class="font-label-bold text-label-bold">Support</span>
+</li>
+</ul>
+</div>
+</nav>
+<!-- Main Workspace -->
+<main class="flex-1 ml-[280px] flex flex-col h-full mr-[320px]">
+<!-- Top App Bar -->
+<header class="bg-surface dark:bg-surface-dim border-b border-outline-variant dark:border-outline flex justify-between items-center w-full px-margin-page h-row-height flex-shrink-0">
+<div class="flex items-center gap-stack-md">
+<h1 class="font-display-sm text-display-sm font-bold text-primary dark:text-primary-fixed-dim">EstateOps Console</h1>
+<div class="hidden lg:flex gap-stack-md ml-stack-md">
+<span class="text-on-surface-variant dark:text-outline-variant cursor-pointer hover:bg-surface-container dark:hover:bg-surface-container-high px-2 py-1 transition-colors">Dashboard</span>
+<span class="text-on-surface-variant dark:text-outline-variant cursor-pointer hover:bg-surface-container dark:hover:bg-surface-container-high px-2 py-1 transition-colors">Inventory</span>
+<span class="text-on-surface-variant dark:text-outline-variant cursor-pointer hover:bg-surface-container dark:hover:bg-surface-container-high px-2 py-1 transition-colors">Leads</span>
+<span class="text-secondary dark:text-secondary-fixed border-b-2 border-secondary dark:border-secondary-fixed pb-1 cursor-pointer">Logistics</span>
+</div>
+</div>
+<div class="flex items-center gap-stack-md">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-2 top-1/2 transform -translate-y-1/2 text-outline-variant text-sm">search</span>
+<input class="bg-surface-container-low border border-outline-variant rounded-full pl-8 pr-4 py-1 text-sm focus:outline-none focus:border-primary w-48 text-data-mono" placeholder="Search..." type="text"/>
+</div>
+<div class="flex items-center gap-stack-sm text-primary">
+<span class="material-symbols-outlined cursor-pointer hover:opacity-80 transition-opacity">notifications</span>
+<span class="material-symbols-outlined cursor-pointer hover:opacity-80 transition-opacity">settings</span>
+</div>
+<button class="bg-primary-container text-on-primary font-label-bold text-label-bold py-1 px-3 rounded text-xs hidden sm:block">
+                    Dispatch Team
+                </button>
+<img alt="Broker Profile" class="w-8 h-8 rounded-full object-cover custom-border" data-alt="A professional headshot of a real estate broker in a modern, well-lit office setting. The lighting is soft and bright, emphasizing a trustworthy and competent demeanor. The background is slightly blurred showing modern architectural elements. The image style is clean, corporate, and high-quality photography suitable for a business dashboard profile picture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAyxLArUWTubrlCHv5Nxs5nsGXj4HgoH1s5im4v4N9Vmm6MAxKWZC6crlKkaX5QWNQL7KeFtWD-wLJaTw6yyiRioVxSZDwYfGdBh8qlWyysL8zCdIWn2bIquntmhq3YGhU7Z2lQQTfijwW_mmG1pKrxAV8PXdurSAYO56EcKsIIDV75eLmWqFSqlkigCqna08v6g-6bWINA6sP66X2CqkvZxXPIFE94OCYuiGQRH_g8vYwwrwrxaY6B3SFcZHNICtAGeNxAmWMSxzRY"/>
+</div>
+</header>
+<!-- Content Area -->
+<div class="flex-1 overflow-auto p-margin-page flex gap-gutter">
+<!-- Live Activity Stream (1/3) -->
+<section class="w-1/3 flex flex-col gap-stack-md">
+<div class="flex items-center justify-between mb-stack-sm">
+<h2 class="font-headline-sm text-headline-sm text-primary">Live Telemetry</h2>
+<span class="flex h-2 w-2 relative">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-secondary"></span>
+</span>
+</div>
+<div class="bg-surface-container-lowest custom-border rounded-lg p-3 flex flex-col gap-stack-sm active-border bg-opacity-50">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="font-label-bold text-label-bold text-secondary">JUST NOW</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface">
+<span class="font-semibold">Dr. Sameer Deshmukh</span> opened Floor Plan 2BHK - Sai Symphony
+                    </p>
+<div class="flex items-center justify-between text-on-surface-variant font-data-mono text-[11px]">
+<span>Dwell Time: <span class="text-primary font-bold">3m 12s</span></span>
+<span class="material-symbols-outlined text-[14px]">visibility</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest custom-border rounded-lg p-3 flex flex-col gap-stack-sm">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-[#D97706]"></span>
+<span class="font-label-bold text-label-bold text-[#D97706]">4m ago</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface">
+<span class="font-semibold">Mr. Amit Verma</span> downloaded Statutory Cost Sheet PDF
+                    </p>
+<div class="flex items-center justify-between text-on-surface-variant font-data-mono text-[11px]">
+<span>File: cost_sheet_final.pdf</span>
+<span class="material-symbols-outlined text-[14px]">download</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest custom-border rounded-lg p-3 flex flex-col gap-stack-sm">
+<div class="flex items-center gap-2">
+<span class="text-error text-[12px]">🔥</span>
+<span class="font-label-bold text-label-bold text-error">12m ago</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface">
+<span class="font-semibold">Rajesh Nair</span> shared Portal link with 2 secondary viewers (Spouse/Family)
+                    </p>
+<div class="flex items-center justify-between text-on-surface-variant font-data-mono text-[11px]">
+<span>Engagement Spike</span>
+<span class="material-symbols-outlined text-[14px]">share</span>
+</div>
+</div>
+</section>
+<!-- Active Portals Management (2/3) -->
+<section class="w-2/3 flex flex-col">
+<div class="flex justify-between items-end mb-stack-md">
+<h2 class="font-headline-sm text-headline-sm text-primary">Active Presentations</h2>
+<div class="flex gap-stack-sm">
+<span class="font-label-bold text-label-bold text-on-surface-variant bg-surface-container px-2 py-1 rounded">24 ACTIVE</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest custom-border rounded-lg overflow-hidden flex-1 flex flex-col">
+<div class="grid grid-cols-12 gap-2 bg-surface-container-low p-3 border-b border-outline-variant font-label-bold text-label-bold text-on-surface-variant">
+<div class="col-span-3">Client</div>
+<div class="col-span-3">Projects</div>
+<div class="col-span-2 text-center">Dwell Avg</div>
+<div class="col-span-2 text-center">Intent</div>
+<div class="col-span-2 text-right">Action</div>
+</div>
+<div class="flex-1 overflow-y-auto">
+<!-- Row 1 -->
+<div class="grid grid-cols-12 gap-2 p-3 items-center border-b border-outline-variant hover:bg-surface-container-low transition-colors h-row-height">
+<div class="col-span-3 font-data-mono text-primary font-bold text-sm truncate">Dr. S. Deshmukh</div>
+<div class="col-span-3 flex gap-1">
+<span class="bg-surface-container-high text-[10px] px-1.5 py-0.5 rounded font-label-bold">Sai Symp</span>
+<span class="bg-surface-container-high text-[10px] px-1.5 py-0.5 rounded font-label-bold">Vertex</span>
+</div>
+<div class="col-span-2 text-center font-data-mono text-sm">4m 12s</div>
+<div class="col-span-2 flex justify-center">
+<span class="bg-error-container text-on-error-container text-[10px] px-2 py-0.5 rounded-full font-label-bold">HOT (94)</span>
+</div>
+<div class="col-span-2 flex justify-end">
+<button class="bg-surface-container text-primary p-1 rounded hover:bg-surface-container-highest transition-colors">
+<span class="material-symbols-outlined text-[16px]">chat</span>
+</button>
+</div>
+</div>
+<!-- Row 2 -->
+<div class="grid grid-cols-12 gap-2 p-3 items-center border-b border-outline-variant hover:bg-surface-container-low transition-colors h-row-height active-border bg-[#F5F9F7]">
+<div class="col-span-3 font-data-mono text-primary font-bold text-sm truncate">Amit Verma</div>
+<div class="col-span-3 flex gap-1">
+<span class="bg-surface-container-high text-[10px] px-1.5 py-0.5 rounded font-label-bold">Vertex</span>
+</div>
+<div class="col-span-2 text-center font-data-mono text-sm">2m 45s</div>
+<div class="col-span-2 flex justify-center">
+<span class="bg-[#FEF08A] text-[#854D0E] text-[10px] px-2 py-0.5 rounded-full font-label-bold">WARM (72)</span>
+</div>
+<div class="col-span-2 flex justify-end">
+<button class="bg-surface-container text-primary p-1 rounded hover:bg-surface-container-highest transition-colors">
+<span class="material-symbols-outlined text-[16px]">chat</span>
+</button>
+</div>
+</div>
+<!-- Row 3 -->
+<div class="grid grid-cols-12 gap-2 p-3 items-center border-b border-outline-variant hover:bg-surface-container-low transition-colors h-row-height">
+<div class="col-span-3 font-data-mono text-on-surface-variant font-bold text-sm truncate">Priya Sharma</div>
+<div class="col-span-3 flex gap-1">
+<span class="bg-surface-container-high text-[10px] px-1.5 py-0.5 rounded font-label-bold">Oasis</span>
+</div>
+<div class="col-span-2 text-center font-data-mono text-sm text-outline">0m 45s</div>
+<div class="col-span-2 flex justify-center">
+<span class="bg-surface-container-high text-on-surface-variant text-[10px] px-2 py-0.5 rounded-full font-label-bold">EXPIRED</span>
+</div>
+<div class="col-span-2 flex justify-end">
+<button class="text-outline-variant p-1 cursor-not-allowed">
+<span class="material-symbols-outlined text-[16px]">chat</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Right Sidebar (Fixed Analytics) -->
+<aside class="w-[320px] fixed right-0 top-0 h-full bg-surface-container-lowest border-l border-outline-variant p-margin-page flex flex-col gap-gutter shadow-[-4px_0_15px_rgba(0,0,0,0.03)] z-10 hidden lg:flex">
+<div class="border-b border-outline-variant pb-stack-sm mt-row-height">
+<h3 class="font-headline-sm text-headline-sm text-primary">Insight Panel</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Live aggregated data</p>
+</div>
+<div class="flex flex-col gap-stack-sm">
+<h4 class="font-label-bold text-label-bold text-outline">TOP VIEWED FLOOR PLANS</h4>
+<div class="flex justify-between items-center text-sm font-data-mono">
+<span class="text-primary">2BHK - Sai Symphony</span>
+<span class="text-secondary font-bold">42%</span>
+</div>
+<div class="w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
+<div class="bg-secondary h-full" style="width: 42%"></div>
+</div>
+<div class="flex justify-between items-center text-sm font-data-mono mt-2">
+<span class="text-primary">3BHK - Vertex H.</span>
+<span class="text-secondary font-bold">28%</span>
+</div>
+<div class="w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
+<div class="bg-secondary h-full opacity-70" style="width: 28%"></div>
+</div>
+</div>
+<div class="flex flex-col gap-stack-sm mt-stack-md">
+<h4 class="font-label-bold text-label-bold text-outline">MOST DEBATED OBJECTIONS</h4>
+<div class="flex flex-wrap gap-2">
+<span class="bg-surface-container border border-outline-variant px-2 py-1 rounded text-xs font-label-bold text-on-surface-variant flex items-center gap-1">
+                    Price <span class="text-error">↑</span>
+</span>
+<span class="bg-surface-container border border-outline-variant px-2 py-1 rounded text-xs font-label-bold text-on-surface-variant flex items-center gap-1">
+                    Location <span class="text-secondary">↓</span>
+</span>
+<span class="bg-surface-container border border-outline-variant px-2 py-1 rounded text-xs font-label-bold text-on-surface-variant flex items-center gap-1">
+                    Amenities <span class="text-outline">-</span>
+</span>
+</div>
+</div>
+<div class="mt-auto flex flex-col gap-stack-sm pt-stack-md border-t border-outline-variant">
+<h4 class="font-label-bold text-label-bold text-outline mb-1">QUICK ACTIONS</h4>
+<button class="w-full bg-primary-container text-on-primary font-body-sm font-semibold py-2 rounded custom-border hover:opacity-90 flex justify-center items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">refresh</span>
+                Refresh Portal Token
+            </button>
+<button class="w-full bg-surface-container-lowest text-primary font-body-sm font-semibold py-2 rounded custom-border hover:bg-surface-container transition-colors flex justify-center items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">timer_off</span>
+                Expire Link
+            </button>
+<div class="text-center mt-2">
+<span class="bg-surface-container-high px-1.5 py-0.5 rounded text-[10px] font-label-bold text-outline-variant">[Alt + R]</span>
+</div>
+</div>
+</aside>
+</body></html>

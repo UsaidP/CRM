@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ZamZam Realty - Telecaller Console</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-background": "#1d1c17",
+                        "inverse-primary": "#a5d0b9",
+                        "on-tertiary-container": "#f48c24",
+                        "on-error": "#ffffff",
+                        "tertiary-fixed-dim": "#ffb77d",
+                        "surface-container-highest": "#e7e2da",
+                        "on-secondary-fixed": "#002114",
+                        "surface-container-lowest": "#ffffff",
+                        "outline-variant": "#c1c8c2",
+                        "on-surface-variant": "#414844",
+                        "outline": "#717973",
+                        "primary-container": "#1b4332",
+                        "secondary-fixed": "#b1f0ce",
+                        "on-secondary": "#ffffff",
+                        "on-primary-container": "#86af99",
+                        "primary-fixed-dim": "#a5d0b9",
+                        "error-container": "#ffdad6",
+                        "surface-dim": "#ded9d1",
+                        "secondary": "#2c694e",
+                        "surface": "#fef9f0",
+                        "surface-container-low": "#f8f3eb",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed-dim": "#95d4b3",
+                        "on-tertiary": "#ffffff",
+                        "primary-fixed": "#c1ecd4",
+                        "tertiary-fixed": "#ffdcc3",
+                        "on-tertiary-fixed-variant": "#6e3900",
+                        "surface-bright": "#fef9f0",
+                        "on-secondary-container": "#316e52",
+                        "on-error-container": "#93000a",
+                        "background": "#fef9f0",
+                        "secondary-container": "#aeeecb",
+                        "surface-variant": "#e7e2da",
+                        "surface-container": "#f2ede5",
+                        "on-tertiary-fixed": "#2f1500",
+                        "tertiary-container": "#5e3000",
+                        "on-primary-fixed": "#002114",
+                        "error": "#ba1a1a",
+                        "on-primary-fixed-variant": "#274e3d",
+                        "tertiary": "#3e1e00",
+                        "primary": "#012d1d",
+                        "surface-container-high": "#ede7df",
+                        "on-surface": "#1d1c17",
+                        "inverse-surface": "#32302b",
+                        "inverse-on-surface": "#f5f0e8",
+                        "surface-tint": "#3f6653",
+                        "on-secondary-fixed-variant": "#0e5138"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "stack-md": "12px",
+                        "stack-xs": "4px",
+                        "margin-page": "24px",
+                        "row-height": "40px",
+                        "stack-sm": "8px"
+                    },
+                    "fontFamily": {
+                        "body-sm": ["Plus Jakarta Sans"],
+                        "timer-lg": ["JetBrains Mono"],
+                        "display-sm": ["Plus Jakarta Sans"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "headline-sm": ["Plus Jakarta Sans"],
+                        "label-bold": ["Plus Jakarta Sans"],
+                        "data-mono": ["JetBrains Mono"]
+                    },
+                    "fontSize": {
+                        "body-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+                        "timer-lg": ["20px", { "lineHeight": "24px", "fontWeight": "600" }],
+                        "display-sm": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }],
+                        "label-bold": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "data-mono": ["14px", { "lineHeight": "20px", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: #FBFBF9; }
+        .border-sandstone { border-color: #E5E0D8; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="text-on-surface flex flex-col h-screen overflow-hidden antialiased font-body-md">
+<!-- Top Navigation Bar -->
+<nav class="bg-surface text-primary font-headline-sm text-headline-sm docked full-width top-0 border-b border-outline-variant flat no shadows flex justify-between items-center w-full px-margin-page h-[64px] z-50 sticky top-0 shrink-0">
+<div class="flex items-center gap-6 h-full">
+<div class="font-display-sm text-display-sm font-bold text-primary mr-4">ZamZam Realty</div>
+<div class="flex gap-6 h-full items-end pb-1">
+<button class="text-on-surface-variant hover:bg-surface-container-low transition-colors h-full flex items-center px-2 font-label-bold text-label-bold">All</button>
+<button class="text-primary border-b-2 border-primary pb-1 h-full flex items-center px-2 font-label-bold text-label-bold hover:bg-surface-container-low transition-colors">Fresh Inbound</button>
+<button class="text-on-surface-variant hover:bg-surface-container-low transition-colors h-full flex items-center px-2 font-label-bold text-label-bold">Scheduled Callback</button>
+<button class="text-on-surface-variant hover:bg-surface-container-low transition-colors h-full flex items-center px-2 font-label-bold text-label-bold">High Intent</button>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="font-timer-lg text-timer-lg text-primary mr-4">42/100 Calls Completed</div>
+<button class="text-on-surface-variant hover:bg-surface-container-low transition-colors p-2 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:bg-surface-container-low transition-colors p-2 rounded-full flex items-center justify-center mr-2">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant">
+<img alt="Agent Profile" class="w-full h-full object-cover" data-alt="A highly detailed close-up portrait of a professional real estate agent wearing a modern headset, set against a pristine white studio background with soft studio lighting. Corporate professional style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBiBj1bOCvzJc-UvhPhTEW_QquDpTKpYdeACU70aK9jjSFtgMuBBd1hE2sqqtfLYN8iM8qpp6PJ0UyHUU_gBHmGC9mmiJaZCaw-9qJ7KY302XrcrOyxDaqi6RI-84ZDfe5kzfrkJ78MJdl8yA2W0WVzC87bypqEYAhW21QTsoxilsPjCY-1Qnr8NUgJF7U5QJR_Sb0QXtdff9eIle3A-gy7kFFjyjV3stFV4X2iCsfwXW3c3tyERs3F9BlRAEN6gOyQeXmWIls6lgu8"/>
+</div>
+</div>
+</nav>
+<!-- Main Workspace -->
+<main class="flex flex-1 overflow-hidden pl-[280px]">
+<!-- Side Navigation Bar -->
+<aside class="bg-surface-container text-primary font-label-bold text-label-bold fixed left-0 top-0 h-full w-[280px] border-r border-outline-variant flat no shadows flex flex-col h-full py-gutter space-y-stack-md pt-[80px] z-40">
+<div class="px-margin-page mb-6">
+<div class="flex items-center gap-3 mb-2">
+<div class="w-10 h-10 rounded-full bg-surface border border-outline-variant overflow-hidden">
+<img alt="ZamZam Logo" class="w-full h-full object-cover" data-alt="A minimalist logo for a premium real estate agency featuring interlocking geometric Z shapes in dark cypress green against a clean white background. High end corporate branding." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC9wuOqeEZmMquUkgh6AkE3HxLDeLc6ABbB7z0WAMT4J3Sj0cmbmsDk2noY1MUS5UbpiE5vrXLKhQqlccpGOKTxQA8ep8Ll9kKz4D9jzuzwJXbhCjULTqdV-KFMeHynEMm7qhno8_WvwE_kKX10bxobpXxpotxypwIvNzkA2AidLhycP6sImfyqIjF-kls7zbRAJjmPFGD4xwHmuwTl7NDhmRNryvGi6MLlEoYJW9qVL1XZgwi64QWKyu_AUumfWt-oKniCBin48h-k"/>
+</div>
+<div>
+<div class="font-headline-sm text-headline-sm font-black text-on-surface">ZamZam Realty</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">Tele-Ops Console</div>
+</div>
+</div>
+<button class="w-full bg-primary-container text-on-primary-container font-label-bold text-label-bold h-10 rounded mt-4 hover:opacity-90 transition-opacity">New Lead</button>
+</div>
+<div class="flex-1 overflow-y-auto px-4 space-y-2">
+<a class="flex items-center gap-3 px-4 py-3 rounded text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded bg-secondary-container text-on-secondary-container border-l-4 border-secondary translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="person_search">person_search</span>
+<span>Leads</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="phone_callback">phone_callback</span>
+<span>Callbacks</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span>Performance</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span>Settings</span>
+</a>
+</div>
+<div class="px-4 pb-margin-page space-y-2">
+<a class="flex items-center gap-3 px-4 py-2 rounded text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="help">help</span>
+<span>Support</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 rounded text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="logout">logout</span>
+<span>Logout</span>
+</a>
+</div>
+</aside>
+<!-- Left Pane: Lead Table (60%) -->
+<section class="w-[60%] flex flex-col border-r border-sandstone bg-surface-container-lowest relative z-10">
+<!-- Table Header -->
+<div class="h-row-height border-b border-sandstone flex items-center px-gutter bg-surface-container-lowest font-label-bold text-label-bold text-on-surface-variant shrink-0 sticky top-0 z-20">
+<div class="w-8 flex justify-center"><input class="rounded border-outline-variant text-primary-container focus:ring-primary-container w-4 h-4" type="checkbox"/></div>
+<div class="flex-1 ml-4">Lead Name</div>
+<div class="w-32">Source</div>
+<div class="w-24 text-right">Inbound</div>
+<div class="w-24 text-right">Timer</div>
+<div class="w-24 text-center">Intent</div>
+<div class="w-36 text-right">Phone</div>
+<div class="w-12"></div>
+</div>
+<!-- Table Body -->
+<div class="flex-1 overflow-y-auto scrollbar-hide pb-row-height">
+<!-- Lead Row (Active/Highlighted) -->
+<div class="h-row-height border-b border-sandstone flex items-center px-gutter bg-[#F2F9F5] border-l-[3px] border-l-[#1B4332] cursor-pointer hover:bg-surface-container-low transition-colors group">
+<div class="w-8 flex justify-center"><input checked="" class="rounded border-outline-variant text-primary-container focus:ring-primary-container w-4 h-4" type="checkbox"/></div>
+<div class="flex-1 ml-4 flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-variant overflow-hidden flex items-center justify-center font-label-bold text-[10px] text-on-surface">SD</div>
+<span class="font-body-md text-on-surface font-medium truncate">Dr. Sameer Deshmukh</span>
+</div>
+<div class="w-32 truncate"><span class="bg-surface-variant px-2 py-1 rounded-sm text-[10px] font-label-bold uppercase text-on-surface-variant">YouTube Shorts</span></div>
+<div class="w-24 text-right font-data-mono text-data-mono text-on-surface-variant">10:45 AM</div>
+<div class="w-24 text-right font-data-mono text-data-mono text-[#D97706] font-semibold">02:45</div>
+<div class="w-24 flex justify-center"><span class="bg-[#FEE2E2] text-[#991B1B] px-2 py-0.5 rounded-sm text-[10px] font-label-bold uppercase tracking-wider border border-[#FCA5A5]">Hot</span></div>
+<div class="w-36 text-right font-data-mono text-data-mono text-on-surface tracking-tight">+91 98201 XXXXX</div>
+<div class="w-12 flex justify-end">
+<button class="w-6 h-6 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center hover:bg-[#1B4332] hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[16px]" data-icon="call" data-weight="fill">call</span>
+</button>
+</div>
+</div>
+<!-- Standard Row -->
+<div class="h-row-height border-b border-sandstone flex items-center px-gutter bg-surface-container-lowest border-l-[3px] border-l-transparent hover:bg-surface-container-low transition-colors group">
+<div class="w-8 flex justify-center"><input class="rounded border-outline-variant text-primary-container focus:ring-primary-container w-4 h-4" type="checkbox"/></div>
+<div class="flex-1 ml-4 flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-variant overflow-hidden flex items-center justify-center font-label-bold text-[10px] text-on-surface">AP</div>
+<span class="font-body-md text-on-surface truncate">Aisha Patel</span>
+</div>
+<div class="w-32 truncate"><span class="bg-surface-variant px-2 py-1 rounded-sm text-[10px] font-label-bold uppercase text-on-surface-variant">Google Ads</span></div>
+<div class="w-24 text-right font-data-mono text-data-mono text-on-surface-variant">10:48 AM</div>
+<div class="w-24 text-right font-data-mono text-data-mono text-on-surface-variant">00:15</div>
+<div class="w-24 flex justify-center"><span class="bg-[#FEF3C7] text-[#92400E] px-2 py-0.5 rounded-sm text-[10px] font-label-bold uppercase tracking-wider border border-[#FDE68A]">Warm</span></div>
+<div class="w-36 text-right font-data-mono text-data-mono text-on-surface tracking-tight">+91 99304 XXXXX</div>
+<div class="w-12 flex justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="w-6 h-6 rounded-full bg-surface-variant text-on-surface-variant flex items-center justify-center hover:bg-[#1B4332] hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[16px]" data-icon="call" data-weight="fill">call</span>
+</button>
+</div>
+</div>
+<!-- Standard Row -->
+<div class="h-row-height border-b border-sandstone flex items-center px-gutter bg-surface-container-lowest border-l-[3px] border-l-transparent hover:bg-surface-container-low transition-colors group">
+<div class="w-8 flex justify-center"><input class="rounded border-outline-variant text-primary-container focus:ring-primary-container w-4 h-4" type="checkbox"/></div>
+<div class="flex-1 ml-4 flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-variant overflow-hidden flex items-center justify-center font-label-bold text-[10px] text-on-surface">RS</div>
+<span class="font-body-md text-on-surface truncate">Rahul Sharma</span>
+</div>
+<div class="w-32 truncate"><span class="bg-surface-variant px-2 py-1 rounded-sm text-[10px] font-label-bold uppercase text-on-surface-variant">Facebook Lead</span></div>
+<div class="w-24 text-right font-data-mono text-data-mono text-on-surface-variant">10:52 AM</div>
+<div class="w-24 text-right font-data-mono text-data-mono text-on-surface-variant">00:00</div>
+<div class="w-24 flex justify-center"><span class="bg-surface-variant text-on-surface-variant px-2 py-0.5 rounded-sm text-[10px] font-label-bold uppercase tracking-wider border border-outline-variant">Cold</span></div>
+<div class="w-36 text-right font-data-mono text-data-mono text-on-surface tracking-tight">+91 91672 XXXXX</div>
+<div class="w-12 flex justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="w-6 h-6 rounded-full bg-surface-variant text-on-surface-variant flex items-center justify-center hover:bg-[#1B4332] hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[16px]" data-icon="call" data-weight="fill">call</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Right Pane: Action Drawer (40%) -->
+<section class="w-[40%] bg-surface-container-lowest flex flex-col h-full z-10 relative pb-row-height">
+<!-- Drawer Header -->
+<div class="p-gutter border-b border-sandstone bg-surface-bright flex flex-col gap-2 shrink-0">
+<div class="flex justify-between items-start">
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface mb-1 flex items-center gap-2">
+                            Dr. Sameer Deshmukh
+                            <span class="bg-[#ECFDF5] text-[#065F46] border border-[#A7F3D0] px-1.5 py-0.5 rounded text-[10px] font-label-bold uppercase flex items-center gap-1">
+<div class="w-1.5 h-1.5 rounded-full bg-[#059669]"></div> Live Call
+                            </span>
+</h2>
+<div class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-[14px]" data-icon="youtube_activity">youtube_activity</span>
+                            Inbound from YouTube Kharghar Review
+                        </div>
+</div>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Scrollable Content -->
+<div class="flex-1 overflow-y-auto p-gutter space-y-6 scrollbar-hide">
+<!-- Qualification Matrix -->
+<div>
+<h3 class="font-label-bold text-label-bold text-on-surface-variant mb-4 uppercase tracking-wider flex justify-between items-center">
+                        Qualification Matrix
+                        <span class="bg-surface-variant text-on-surface-variant px-1.5 py-0.5 rounded text-[10px] font-normal">Brixi AI Assistant</span>
+</h3>
+<div class="space-y-4">
+<!-- Intent -->
+<div>
+<div class="font-label-bold text-[10px] text-outline mb-1.5">01 INTENT</div>
+<div class="flex flex-wrap gap-2">
+<button class="px-3 py-1.5 rounded-md border border-sandstone text-on-surface-variant font-body-sm text-body-sm hover:bg-surface-container-low transition-colors">Exploring</button>
+<button class="px-3 py-1.5 rounded-md border border-sandstone text-on-surface-variant font-body-sm text-body-sm hover:bg-surface-container-low transition-colors">Comparing</button>
+<button class="px-3 py-1.5 rounded-md border-[2px] border-[#2D6A4F] bg-[#F2F9F5] text-[#1B4332] font-body-sm text-body-sm font-medium flex items-center gap-1">
+                                    Ready to Buy (Hot)
+                                    <span class="material-symbols-outlined text-[14px]" data-icon="check_circle" data-weight="fill">check_circle</span>
+</button>
+</div>
+</div>
+<!-- Budget -->
+<div>
+<div class="font-label-bold text-[10px] text-outline mb-1.5">02 BUDGET</div>
+<div class="flex flex-wrap gap-2">
+<button class="px-3 py-1.5 rounded-md border border-sandstone text-on-surface-variant font-data-mono text-data-mono text-[12px] hover:bg-surface-container-low transition-colors">₹40L-₹65L Taloja</button>
+<button class="px-3 py-1.5 rounded-md border-[2px] border-[#2D6A4F] bg-[#F2F9F5] text-[#1B4332] font-data-mono text-data-mono text-[12px] font-medium flex items-center gap-1">
+                                    ₹85L-₹1.75Cr Kharghar
+                                    <span class="material-symbols-outlined text-[14px]" data-icon="check_circle" data-weight="fill">check_circle</span>
+</button>
+<button class="px-3 py-1.5 rounded-md border border-sandstone text-on-surface-variant font-body-sm text-body-sm hover:bg-surface-container-low transition-colors">Stretch</button>
+</div>
+</div>
+<!-- Location -->
+<div>
+<div class="font-label-bold text-[10px] text-outline mb-1.5">03 LOCATION</div>
+<div class="flex flex-wrap gap-2">
+<button class="px-3 py-1.5 rounded-md border-[2px] border-[#2D6A4F] bg-[#F2F9F5] text-[#1B4332] font-body-sm text-body-sm font-medium flex items-center gap-1">
+                                    Kharghar Sec 1-20
+                                    <span class="material-symbols-outlined text-[14px]" data-icon="check_circle" data-weight="fill">check_circle</span>
+</button>
+<button class="px-3 py-1.5 rounded-md border border-sandstone text-on-surface-variant font-body-sm text-body-sm hover:bg-surface-container-low transition-colors">Kharghar Sec 34-36</button>
+<button class="px-3 py-1.5 rounded-md border border-sandstone text-on-surface-variant font-body-sm text-body-sm hover:bg-surface-container-low transition-colors">Taloja P1/P2</button>
+</div>
+</div>
+<!-- Timeline -->
+<div>
+<div class="font-label-bold text-[10px] text-outline mb-1.5">04 TIMELINE</div>
+<div class="flex flex-wrap gap-2">
+<button class="px-3 py-1.5 rounded-md border-[2px] border-[#2D6A4F] bg-[#F2F9F5] text-[#1B4332] font-body-sm text-body-sm font-medium flex items-center gap-1">
+                                    0-30 Days (Assign Broker)
+                                    <span class="material-symbols-outlined text-[14px]" data-icon="check_circle" data-weight="fill">check_circle</span>
+</button>
+<button class="px-3 py-1.5 rounded-md border border-sandstone text-on-surface-variant font-body-sm text-body-sm hover:bg-surface-container-low transition-colors">31-90 Days</button>
+<button class="px-3 py-1.5 rounded-md border border-sandstone text-on-surface-variant font-body-sm text-body-sm hover:bg-surface-container-low transition-colors">90+ Days</button>
+</div>
+</div>
+</div>
+</div>
+<hr class="border-sandstone"/>
+<!-- Disposition -->
+<div>
+<h3 class="font-label-bold text-label-bold text-on-surface-variant mb-3 uppercase tracking-wider">Call Disposition</h3>
+<div class="grid grid-cols-2 gap-2">
+<button class="bg-[#1B4332] text-white py-2 px-3 rounded text-left font-body-sm text-body-sm font-medium flex items-center justify-between col-span-2">
+                            Connected - High Intent
+                            <span class="material-symbols-outlined text-[16px]" data-icon="task_alt">task_alt</span>
+</button>
+<button class="border border-[#F59E0B] bg-[#FFFBEB] text-[#B45309] py-2 px-3 rounded text-left font-body-sm text-body-sm hover:bg-[#FEF3C7] transition-colors">Visit Booked</button>
+<button class="border border-[#F59E0B] bg-[#FFFBEB] text-[#B45309] py-2 px-3 rounded text-left font-body-sm text-body-sm hover:bg-[#FEF3C7] transition-colors">WhatsApp Shared</button>
+<button class="border border-outline-variant bg-surface-container-lowest text-on-surface-variant py-2 px-3 rounded text-left font-body-sm text-body-sm hover:bg-surface-container-low transition-colors">No Answer</button>
+<button class="border border-outline-variant bg-surface-container-lowest text-on-surface-variant py-2 px-3 rounded text-left font-body-sm text-body-sm hover:bg-surface-container-low transition-colors">Busy / Callback</button>
+<button class="border border-[#FCA5A5] bg-[#FEF2F2] text-[#B91C1C] py-2 px-3 rounded text-left font-body-sm text-body-sm hover:bg-[#FEE2E2] transition-colors col-span-2 flex justify-between items-center">
+                            Price Objection / Drop
+                            <span class="material-symbols-outlined text-[16px]" data-icon="cancel">cancel</span>
+</button>
+</div>
+</div>
+<!-- Notes Input -->
+<div class="relative">
+<label class="block font-label-bold text-label-bold text-on-surface-variant mb-2" for="call_notes">Agent Notes <span class="bg-surface-variant text-on-surface-variant px-1 rounded text-[9px] ml-2 font-normal">[Alt + N]</span></label>
+<textarea class="w-full rounded border-sandstone bg-surface-container-lowest text-body-sm font-body-sm p-3 focus:border-[#2D6A4F] focus:ring-[#2D6A4F] resize-none" id="call_notes" placeholder="Enter details..." rows="3">Buyer interested in 2 BHK near Sector 20 Metro station. Budget ₹1.10 Cr. Requested Sunday 11 AM site visit.</textarea>
+</div>
+</div>
+<!-- Drawer Footer (Sticky Action) -->
+<div class="p-gutter border-t border-sandstone bg-surface-container-lowest shrink-0">
+<button class="w-full bg-[#1B4332] hover:bg-[#0F291E] text-white font-label-bold text-label-bold py-3 rounded transition-colors flex items-center justify-center gap-2">
+                    Save &amp; Next Lead
+                    <span class="material-symbols-outlined text-[16px]" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-primary text-on-primary font-label-bold text-label-bold fixed bottom-0 left-[280px] right-0 h-row-height border-t border-primary-container shadow-md flex items-center justify-between px-margin-page z-40 shrink-0">
+<div class="font-data-mono text-data-mono text-on-primary-container opacity-80 text-[12px]">© 2024 ZamZam Realty Ops. Connected to Exotel Cluster A.</div>
+<div class="flex gap-6">
+<a class="text-on-primary-container opacity-80 hover:underline cursor-pointer Transition-opacity duration-200" href="#">SLA Policy</a>
+<a class="text-on-primary-container opacity-80 hover:underline cursor-pointer Transition-opacity duration-200" href="#">Agent Guidelines</a>
+<a class="text-on-primary-container opacity-80 hover:underline cursor-pointer Transition-opacity duration-200" href="#">Privacy</a>
+</div>
+</footer>
+</body></html>

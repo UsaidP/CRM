@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Curated Advisory Presentation - Dr. Sameer Deshmukh</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-variant": "#e7e2da",
+                        "error": "#ba1a1a",
+                        "surface-bright": "#fef9f0",
+                        "on-surface-variant": "#414844",
+                        "surface-dim": "#ded9d1",
+                        "primary-fixed-dim": "#a5d0b9",
+                        "outline": "#717973",
+                        "on-secondary-fixed": "#002114",
+                        "inverse-primary": "#a5d0b9",
+                        "on-tertiary-container": "#f48c24",
+                        "primary": "#012d1d",
+                        "surface-tint": "#3f6653",
+                        "surface-container-high": "#ede7df",
+                        "secondary": "#2c694e",
+                        "on-primary-fixed": "#002114",
+                        "surface-container-low": "#f8f3eb",
+                        "inverse-surface": "#32302b",
+                        "on-tertiary-fixed": "#2f1500",
+                        "surface": "#fef9f0",
+                        "on-primary-container": "#86af99",
+                        "on-tertiary-fixed-variant": "#6e3900",
+                        "on-primary-fixed-variant": "#274e3d",
+                        "background": "#fef9f0",
+                        "secondary-fixed": "#b1f0ce",
+                        "secondary-fixed-dim": "#95d4b3",
+                        "tertiary": "#3e1e00",
+                        "primary-container": "#1b4332",
+                        "on-error": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-fixed": "#c1ecd4",
+                        "inverse-on-surface": "#f5f0e8",
+                        "on-surface": "#1d1c17",
+                        "outline-variant": "#c1c8c2",
+                        "on-secondary-fixed-variant": "#0e5138",
+                        "error-container": "#ffdad6",
+                        "tertiary-container": "#5e3000",
+                        "surface-container": "#f2ede5",
+                        "on-background": "#1d1c17",
+                        "on-secondary": "#ffffff",
+                        "tertiary-fixed-dim": "#ffb77d",
+                        "tertiary-fixed": "#ffdcc3",
+                        "on-secondary-container": "#316e52",
+                        "on-error-container": "#93000a",
+                        "surface-container-highest": "#e7e2da",
+                        "on-primary": "#ffffff",
+                        "secondary-container": "#aeeecb",
+                        "on-tertiary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "stack-md": "12px",
+                        "row-height": "40px",
+                        "stack-xs": "4px",
+                        "margin-page": "24px",
+                        "stack-sm": "8px"
+                    },
+                    "fontFamily": {
+                        "data-mono": ["JetBrains Mono"],
+                        "display-sm": ["Plus Jakarta Sans"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "timer-lg": ["JetBrains Mono"],
+                        "label-bold": ["Plus Jakarta Sans"],
+                        "headline-sm": ["Plus Jakarta Sans"],
+                        "body-sm": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "data-mono": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+                        "display-sm": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "timer-lg": ["20px", { "lineHeight": "24px", "fontWeight": "600" }],
+                        "label-bold": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "headline-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }],
+                        "body-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .icon-fill {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col relative pb-[100px]">
+<!-- TopNavBar: Active "Portfolio" -->
+<header class="bg-surface dark:bg-surface w-full z-50 sticky top-0 border-b border-outline-variant dark:border-outline">
+<div class="flex justify-between items-center px-margin-page h-row-height w-full max-w-7xl mx-auto">
+<div class="flex items-center gap-gutter">
+<span class="font-display-sm text-display-sm font-bold text-primary dark:text-primary-fixed">ZamZam Realty</span>
+</div>
+<nav class="hidden md:flex items-center gap-gutter h-full">
+<a class="h-full flex items-center text-primary dark:text-primary-fixed font-bold border-b-2 border-primary dark:border-primary-fixed pb-1 font-headline-sm text-headline-sm hover:text-primary dark:hover:text-primary-fixed transition-colors duration-200 scale-95 active:scale-90 transition-transform" href="#">Portfolio</a>
+<a class="h-full flex items-center text-on-surface-variant dark:text-on-surface-variant font-headline-sm text-headline-sm hover:text-primary dark:hover:text-primary-fixed transition-colors duration-200 scale-95 active:scale-90 transition-transform" href="#">Collections</a>
+<a class="h-full flex items-center text-on-surface-variant dark:text-on-surface-variant font-headline-sm text-headline-sm hover:text-primary dark:hover:text-primary-fixed transition-colors duration-200 scale-95 active:scale-90 transition-transform" href="#">Concierge</a>
+<a class="h-full flex items-center text-on-surface-variant dark:text-on-surface-variant font-headline-sm text-headline-sm hover:text-primary dark:hover:text-primary-fixed transition-colors duration-200 scale-95 active:scale-90 transition-transform" href="#">Advisor</a>
+</nav>
+<div class="flex items-center gap-stack-md">
+<button class="text-primary dark:text-primary-fixed hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="text-primary dark:text-primary-fixed hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+</button>
+<button class="hidden md:flex items-center justify-center bg-primary-container text-on-primary px-4 py-1 rounded font-label-bold text-label-bold hover:opacity-90 transition-opacity">
+                    Private Access
+                </button>
+</div>
+</div>
+</header>
+<div class="flex flex-1 max-w-[1600px] mx-auto w-full">
+<!-- Main Canvas -->
+<main class="flex-1 flex flex-col p-margin-page gap-margin-page">
+<!-- Hero Section -->
+<section class="relative rounded-xl overflow-hidden h-[400px] border border-outline-variant flex flex-col justify-end p-margin-page">
+<div class="absolute inset-0 bg-cover bg-center z-0" data-alt="A breathtaking, cinematic ultra-high-definition photograph of a luxurious modern city skyline at golden hour, specifically capturing the essence of Navi Mumbai or Kharghar. The sky is ablaze with warm, sophisticated hues of gold, amber, and deep emerald, reflecting off sleek glass skyscrapers. A sense of exclusivity, immense wealth, and high-end real estate potential pervades the scene, bathed in soft, professional light-mode illumination." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuB72ed7dBm8PwJz3rA7PmXuyMH7a9RMIdATOUuEQR4Ln0B0IlnZWamrR1Dk3fl_NuD8B5BtIGsnWDlkhtgPbrrE6nOSOCql7sKz_ezaRMyfgBYipL0mklW3ALNOVCefE4nKIC3IV1dwRIcqwhqOt_OEAyLD-oht3oDJjYz7gSQ7TqM-G_2poRNen8pllxuNk-fhARfKOSS-PgQ7qp7K4H_b8q6i_xkVEALbpq44g-5iU2S2DWr3SuZA0TJ2lIMjjwYk2ehveOW39GPN')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/90 to-transparent z-10"></div>
+<div class="relative z-20 text-on-primary">
+<p class="font-label-bold text-label-bold uppercase tracking-widest mb-stack-xs text-secondary-fixed">ZamZam Properties Luxury Division</p>
+<h1 class="font-display-sm text-display-sm mb-stack-md">Curated Advisory Presentation for Dr. Sameer Deshmukh</h1>
+<p class="font-body-md text-body-md max-w-2xl text-surface-variant">Exclusive real estate portfolio tailored to your investment and lifestyle preferences in Navi Mumbai.</p>
+</div>
+</section>
+<!-- Project Showcase -->
+<section class="flex flex-col gap-stack-md">
+<h2 class="font-headline-sm text-headline-sm text-primary border-b border-outline-variant pb-stack-xs">Project Showcase</h2>
+<!-- Tab Headers -->
+<div class="flex gap-stack-md border-b border-outline-variant">
+<button class="px-4 py-2 border-b-2 border-primary text-primary font-label-bold text-label-bold">Paradise Sai Symphony</button>
+<button class="px-4 py-2 text-on-surface-variant hover:text-primary font-label-bold text-label-bold transition-colors">Crown Greens</button>
+</div>
+<!-- Bento Grid Content (Paradise Sai Symphony Active) -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
+<!-- Video/Main Visual -->
+<div class="col-span-1 lg:col-span-2 rounded-lg border border-outline-variant bg-surface-container overflow-hidden flex flex-col relative min-h-[300px]">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="A hyper-realistic 4K architectural render of the 'Paradise Sai Symphony' luxury apartment complex exterior, showcasing stunning modern design, expansive balconies, and lush landscaping. The building is bathed in bright, crisp sunlight against a clear blue sky, emphasizing clean lines and high-end materials like glass and polished stone. The aesthetic is extremely polished, professional, and sophisticated, aligning perfectly with a premium light-mode UI." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDmYXVDJDSnXOoiJs54fXpIds6uFGGHO4aNuI8jeGb_kwOrkwhnsDDnaOrS7shDT5x2qMf4YVY37Fv1tzOmy8viRS_cCKgCNNeYgWTCRKlFyrimhCrQ1vyh55jdtXhsXe7qcRj7y3YAocmN0KiLaJwjktkLTQ3Ko2znGklzs31kfmxTWfyuOjXwYxavmI415dgY852URmvKQAGqXIDcDWElYBtW-SKns-YWFo2wmdNZ5SVRLLq5v011C-nMImVmXI8LihODXtjqcvjw')"></div>
+<div class="absolute inset-0 bg-black/20 flex items-center justify-center cursor-pointer hover:bg-black/30 transition-colors">
+<div class="w-16 h-16 bg-surface/90 rounded-full flex items-center justify-center backdrop-blur-sm border border-outline-variant">
+<span class="material-symbols-outlined text-primary text-[32px] icon-fill" data-icon="play_arrow">play_arrow</span>
+</div>
+</div>
+<div class="absolute bottom-4 left-4 right-4 flex justify-between items-end">
+<div class="bg-surface/90 backdrop-blur-md px-3 py-1.5 rounded border border-outline-variant">
+<p class="font-label-bold text-label-bold text-primary">4K Walkthrough</p>
+</div>
+<div class="bg-surface/90 backdrop-blur-md p-2 rounded border border-outline-variant flex items-center gap-2">
+<img class="w-12 h-12 object-cover" data-alt="A highly detailed, ultra-crisp vector-style QR code, representing a MahaRERA verification seal. The QR code should be sharp black on a pristine white background, framed subtly by a sophisticated emerald green accent line to denote authenticity and premium status. Ensure the image is perfectly square and highly legible, suitable for a professional corporate dashboard UI." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdnC2xZAWOkl7Y5-uYiz_p5Xo2SxRcSGO6sQoE9WjNk0M9QD4TP1Z7vCzrb61ka6oAXTYwEkCKIWlp610T5_Rwuoqtxyz3CxBgO28ZbCHtImB6caOUAF9rube5ASSdt7YDg4QQPMDrOEDbMgtiFt7aiqhiu0EdIbStL_vaURczXZpXqoaR9P5WNW5J_lX_2ET4yuQC3H-_2HzkoDi9JibGk8bp_NyGQNQ1rxiZjtdKrSQ3PMfirbTh60C3ppnzLcUP3eY3PL45KJxM"/>
+<div class="flex flex-col">
+<span class="font-label-bold text-label-bold text-primary text-[10px]">MahaRERA</span>
+<span class="font-label-bold text-label-bold text-primary text-[10px]">Verified</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Side Panel: Floor Plans & Transit -->
+<div class="col-span-1 flex flex-col gap-gutter">
+<!-- Floor Plans -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-stack-md flex flex-col gap-stack-sm flex-1">
+<div class="flex items-center justify-between">
+<h3 class="font-label-bold text-label-bold text-primary">Verified Floor Plans</h3>
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]" data-icon="architecture">architecture</span>
+</div>
+<div class="flex-1 border border-outline-variant rounded bg-surface relative overflow-hidden group cursor-pointer">
+<div class="absolute inset-0 bg-cover bg-center opacity-70 group-hover:opacity-100 transition-opacity" data-alt="A clean, minimalist 2D architectural floor plan blueprint of a luxury 3BHK apartment. The drawing features crisp, precise lines on a stark white background, with subtle shading to indicate depth and flow. The layout includes spacious living areas, multiple balconies, and modern amenities, rendered in a highly professional, technical style suitable for high-end real estate presentations." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAoo0s1tbN_NczM-cMZc7SU81Kri2nJIqyz6v8aJsrCmfgcrCqEXdlSt1gLepxh7OZKXAgtSfUwsy9T6llXkhvbcC28eNhKbR8Ho9zO-f4L5WxnGH76fSZID-cFm2kyNK35lxGXAkeOHuw1OCR7xDnX-ETkvcJBoPMbG2N21GdrRypIGOb9GtDsLwMU7pWvb46-PR_p4RFHSOr0U1HC2eQApAHmAhv3gh1PaQk3EqzCKTEY8N45XvsV1MtP3Ngv7htaDe4JUrpTjhGP')"></div>
+<div class="absolute bottom-2 left-2 bg-surface/90 px-2 py-1 rounded border border-outline-variant">
+<span class="font-label-bold text-label-bold text-primary text-[10px]">3 BHK Premium - 1450 sqft</span>
+</div>
+<div class="absolute top-2 right-2 bg-surface/90 p-1 rounded border border-outline-variant opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-primary text-[16px]" data-icon="open_in_full">open_in_full</span>
+</div>
+</div>
+</div>
+<!-- Transit Widget -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-stack-md flex flex-col gap-stack-sm">
+<div class="flex items-center justify-between mb-stack-xs">
+<h3 class="font-label-bold text-label-bold text-primary">Transit &amp; Location</h3>
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]" data-icon="map">map</span>
+</div>
+<div class="h-24 bg-surface-variant rounded border border-outline-variant relative overflow-hidden flex items-center justify-center">
+<!-- Simulated map placeholder -->
+<span class="text-on-surface-variant font-label-bold text-label-bold">Map Data: Kharghar</span>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex justify-between items-center bg-surface p-1.5 rounded border border-outline-variant">
+<span class="font-body-sm text-body-sm text-on-surface flex items-center gap-1"><span class="material-symbols-outlined text-[14px] text-primary" data-icon="directions_subway">directions_subway</span> Metro Station</span>
+<span class="font-data-mono text-data-mono text-primary">5 mins</span>
+</div>
+<div class="flex justify-between items-center bg-surface p-1.5 rounded border border-outline-variant">
+<span class="font-body-sm text-body-sm text-on-surface flex items-center gap-1"><span class="material-symbols-outlined text-[14px] text-primary" data-icon="local_airport">local_airport</span> Intl Airport</span>
+<span class="font-data-mono text-data-mono text-primary">35 mins</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Statutory Cost Sheet -->
+<section class="flex flex-col gap-stack-md">
+<h2 class="font-headline-sm text-headline-sm text-primary border-b border-outline-variant pb-stack-xs">Statutory Cost Sheet</h2>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg overflow-hidden">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-variant border-b border-outline-variant">
+<th class="p-stack-md font-label-bold text-label-bold text-primary">Component</th>
+<th class="p-stack-md font-label-bold text-label-bold text-primary text-right">Amount (INR)</th>
+</tr>
+</thead>
+<tbody class="font-data-mono text-data-mono text-on-surface">
+<tr class="border-b border-outline-variant h-row-height hover:bg-surface-container-low transition-colors">
+<td class="px-stack-md">Base Property Value</td>
+<td class="px-stack-md text-right">2,50,00,000</td>
+</tr>
+<tr class="border-b border-outline-variant h-row-height hover:bg-surface-container-low transition-colors">
+<td class="px-stack-md">Stamp Duty (6%)</td>
+<td class="px-stack-md text-right">15,00,000</td>
+</tr>
+<tr class="border-b border-outline-variant h-row-height hover:bg-surface-container-low transition-colors">
+<td class="px-stack-md">GST (5%)</td>
+<td class="px-stack-md text-right">12,50,000</td>
+</tr>
+<tr class="border-b border-outline-variant h-row-height hover:bg-surface-container-low transition-colors">
+<td class="px-stack-md">Registration Fees</td>
+<td class="px-stack-md text-right">30,000</td>
+</tr>
+<tr class="border-b border-outline-variant h-row-height hover:bg-surface-container-low transition-colors">
+<td class="px-stack-md">Advance Society Charges</td>
+<td class="px-stack-md text-right">1,50,000</td>
+</tr>
+</tbody>
+<tfoot>
+<tr class="bg-primary/5 border-t-2 border-primary">
+<td class="p-stack-md font-headline-sm text-headline-sm text-primary font-bold">Total Landing Cost</td>
+<td class="p-stack-md font-headline-sm text-headline-sm text-primary font-bold text-right">2,79,30,000</td>
+</tr>
+</tfoot>
+</table>
+</div>
+</section>
+</main>
+<!-- Broker Telemetry Overlay (Right Sidebar Desktop) -->
+<aside class="hidden xl:flex flex-col w-[320px] border-l border-outline-variant bg-surface-container-low p-stack-md gap-stack-md shrink-0">
+<div class="flex items-center gap-2 mb-2 pb-2 border-b border-outline-variant">
+<span class="material-symbols-outlined text-primary" data-icon="radar">radar</span>
+<h2 class="font-label-bold text-label-bold text-primary tracking-widest uppercase">Live Telemetry</h2>
+</div>
+<!-- Prospect Score -->
+<div class="bg-surface-container-lowest border-2 border-secondary rounded-lg p-stack-md flex flex-col items-center gap-2 relative overflow-hidden">
+<div class="absolute top-0 right-0 w-16 h-16 bg-secondary/10 rounded-bl-full z-0"></div>
+<span class="font-label-bold text-label-bold text-secondary uppercase z-10">Hot Prospect</span>
+<div class="text-display-sm font-display-sm text-primary z-10">92<span class="text-headline-sm text-on-surface-variant">/100</span></div>
+</div>
+<!-- Activity Feed -->
+<div class="flex flex-col gap-stack-sm flex-1">
+<h3 class="font-label-bold text-label-bold text-on-surface-variant">Session Activity</h3>
+<div class="flex gap-2 items-start relative pl-4 border-l-2 border-outline-variant">
+<div class="absolute -left-[5px] top-1 w-2 h-2 rounded-full bg-primary-container"></div>
+<div class="flex flex-col gap-1 w-full bg-surface-container-lowest p-2 rounded border border-outline-variant">
+<span class="font-body-sm text-body-sm text-on-surface">Dr. Sameer spent <span class="font-data-mono text-secondary font-bold">3m 45s</span> viewing Floor Plan B.</span>
+<span class="font-label-bold text-label-bold text-on-surface-variant text-[10px]">Just now</span>
+</div>
+</div>
+<div class="flex gap-2 items-start relative pl-4 border-l-2 border-outline-variant">
+<div class="absolute -left-[5px] top-1 w-2 h-2 rounded-full bg-surface-variant border border-outline"></div>
+<div class="flex flex-col gap-1 w-full bg-surface-container-lowest p-2 rounded border border-outline-variant">
+<span class="font-body-sm text-body-sm text-on-surface">Downloaded Cost Sheet PDF</span>
+<span class="font-label-bold text-label-bold text-on-surface-variant text-[10px]">12 mins ago</span>
+</div>
+</div>
+<div class="flex gap-2 items-start relative pl-4 border-l-2 border-outline-variant border-transparent">
+<div class="absolute -left-[5px] top-1 w-2 h-2 rounded-full bg-surface-variant border border-outline"></div>
+<div class="flex flex-col gap-1 w-full bg-surface-container-lowest p-2 rounded border border-outline-variant">
+<span class="font-body-sm text-body-sm text-on-surface">Opened Presentation Link</span>
+<span class="font-label-bold text-label-bold text-on-surface-variant text-[10px]">24 mins ago</span>
+</div>
+</div>
+</div>
+</aside>
+</div>
+<!-- Sticky Floating Action Bar -->
+<div class="fixed bottom-0 left-0 w-full bg-surface/95 backdrop-blur-md border-t border-outline-variant py-stack-sm px-margin-page z-50 flex justify-center items-center shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+<div class="max-w-4xl w-full flex flex-wrap gap-stack-md justify-center md:justify-between items-center">
+<button class="bg-primary-container text-on-primary font-headline-sm text-headline-sm px-6 py-3 rounded-lg flex items-center gap-2 hover:opacity-90 transition-opacity whitespace-nowrap shadow-sm">
+<span class="material-symbols-outlined" data-icon="directions_car">directions_car</span>
+                Request Private Site Visit
+            </button>
+<div class="flex gap-stack-sm">
+<button class="bg-[#25D366]/10 border border-[#25D366]/30 text-[#075E54] font-label-bold text-label-bold px-4 py-2 rounded flex items-center gap-2 hover:bg-[#25D366]/20 transition-colors whitespace-nowrap">
+<span class="material-symbols-outlined" data-icon="chat">chat</span>
+                    WhatsApp Senior Advisor
+                </button>
+<button class="bg-surface-container-lowest border border-outline-variant text-primary font-label-bold text-label-bold px-4 py-2 rounded flex items-center gap-2 hover:bg-surface-variant transition-colors whitespace-nowrap">
+<span class="material-symbols-outlined" data-icon="download">download</span>
+                    Verified Brochure
+                </button>
+</div>
+</div>
+</div>
+<!-- Footer -->
+<footer class="bg-surface-dim dark:bg-surface-container-lowest w-full border-t border-outline-variant mt-auto">
+<div class="flex flex-col md:flex-row justify-between items-center px-margin-page py-stack-md w-full max-w-7xl mx-auto gap-stack-md">
+<span class="font-label-bold text-label-bold uppercase tracking-widest text-primary">ZamZam Realty</span>
+<div class="flex flex-wrap gap-stack-md justify-center font-body-sm text-body-sm text-on-surface-variant">
+<a class="hover:text-primary transition-colors" href="#">RERA Registered</a>
+<a class="hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="hover:text-primary transition-colors" href="#">Terms of Service</a>
+<a class="hover:text-primary transition-colors" href="#">Cookie Policy</a>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">© 2024 ZamZam Realty. All rights reserved.</span>
+</div>
+</footer>
+</body></html>
