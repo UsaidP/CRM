@@ -1,13 +1,17 @@
 import { NextResponse } from 'next/server';
+import { requireSession } from '@/lib/services/api-auth';
 import { prisma } from '@/lib/db/prisma';
 import { updateProjectSchema } from '@/lib/validators/inventory-schemas';
 import { validateReraNumber } from '@/lib/domain/verification-engine';
 import { parseInventoryContent } from '@/lib/inventory-media';
+import { parseSafeDate } from '@/lib/date-utils';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const auth = await requireSession(req);
+    if (!auth.ok) return auth.response;
     const { id } = await params;
     const project = await prisma.developerProject.findUnique({
       where: { id },
@@ -36,6 +40,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const auth = await requireSession(req);
+    if (!auth.ok) return auth.response;
     const { id } = await params;
     const body = await req.json();
     const validated = updateProjectSchema.parse(body);
@@ -57,17 +63,24 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       'shortDescription', 'description', 'locationDescription', 'latitude', 'longitude',
       'distanceToMetroKm', 'hasOccupancyCertificate', 'totalTowers', 'totalFloors',
       'basePricePerSqft', 'developerSalesPocName', 'developerSalesPocPhone',
-      'standardCommissionPercent',
+      'standardCommissionPercent', 'reraCertificateUrl', 'reraRegisteredName',
+      'reraProjectStatus', 'reraCertDataJson',
     ] as const;
     for (const field of scalarFields) {
       if (field in validated) data[field] = validated[field];
     }
     if ('reraNumber' in validated) data.reraNumber = reraValidation.normalized || nextRera;
     if ('commencementCertificateDate' in validated) {
-      data.commencementCertificateDate = validated.commencementCertificateDate ? new Date(validated.commencementCertificateDate) : null;
+      data.commencementCertificateDate = parseSafeDate(validated.commencementCertificateDate);
     }
     if ('expectedPossessionDate' in validated) {
-      data.expectedPossessionDate = validated.expectedPossessionDate ? new Date(validated.expectedPossessionDate) : null;
+      data.expectedPossessionDate = parseSafeDate(validated.expectedPossessionDate);
+    }
+    if ('reraValidUntil' in validated) {
+      data.reraValidUntil = parseSafeDate(validated.reraValidUntil);
+    }
+    if ('reraVerificationDate' in validated) {
+      data.reraVerificationDate = parseSafeDate(validated.reraVerificationDate);
     }
     if ('brochureUrl' in validated) data.brochureUrl = validated.brochureUrl || null;
     if ('youtubeWalkthroughUrl' in validated) data.youtubeWalkthroughUrl = validated.youtubeWalkthroughUrl || null;
@@ -93,11 +106,27 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const auth = await requireSession(req);
+    if (!auth.ok) return auth.response;
     const { id } = await params;
+
+    const existing = await prisma.developerProject.findUnique({
+      where: { id },
+      include: { units: true },
+    });
+
+    if (!existing) {
+      return NextResponse.json({ success: false, error: 'Project not found' }, { status: 404 });
+    }
+
     await prisma.developerProject.delete({
       where: { id },
     });
-    return NextResponse.json({ success: true, message: 'Project deleted successfully' });
+
+    return NextResponse.json({
+      success: true,
+      message: `Project "${existing.projectName}" and its associated units were deleted successfully`,
+    });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }

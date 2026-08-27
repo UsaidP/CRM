@@ -1,5 +1,6 @@
 import React from 'react';
 import { formatDateFull } from '@/lib/date-utils';
+import { validateReraNumber } from '@/lib/domain/verification-engine';
 
 interface HallmarkStampProps {
   type?: 'rera' | 'audit' | 'ledger' | 'source' | 'verified';
@@ -24,6 +25,8 @@ export function HallmarkStamp({
       : formatDateFull(date)
     : undefined;
 
+  const reraMeta = type === 'rera' && code ? validateReraNumber(code) : null;
+
   const defaultLabels = {
     rera: 'RERA ID recorded',
     audit: 'Broker review recorded',
@@ -33,10 +36,13 @@ export function HallmarkStamp({
   };
 
   const displayLabel = label || defaultLabels[type];
+  const tooltipText = type === 'rera' && reraMeta?.isValid
+    ? `${reraMeta.authority || 'MahaRERA'} [${reraMeta.normalized || code}] ${reraMeta.districtName ? `• ${reraMeta.districtName}` : ''}`
+    : `${displayLabel} ${code ? `[${code}]` : ''} ${formattedDate ? `• Recorded on ${formattedDate}` : ''}`;
 
   return (
     <div
-      title={`${displayLabel} ${code ? `[${code}]` : ''} ${formattedDate ? `• Recorded on ${formattedDate}` : ''}`}
+      title={tooltipText}
       className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md font-mono transition-all duration-200 select-none group cursor-help ${
         type === 'rera'
           ? 'bg-surface-subtle text-accent-text border border-accent/40 hover:border-accent shadow-[0_0_8px_rgba(37,99,235,0.15)]'

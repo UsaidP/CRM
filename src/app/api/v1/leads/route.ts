@@ -6,11 +6,16 @@ import { evaluate24HourMessagingWindow, findOrCreateContact } from '@/lib/domain
 import { resolveBrokerByInboundIdentifier, OFFICIAL_BROKER_NUMBERS } from '@/lib/domain/broker-resolver';
 import { analyzeInboundAttribution } from '@/lib/domain/campaign-attribution';
 import { ensureLeadFallbackReminder } from '@/lib/services/lead-reminder-service';
+import { requireSession, orgScope } from '@/lib/services/api-auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
   try {
+    const auth = await requireSession(req);
+    if (!auth.ok) return auth.response;
+    const { session } = auth;
+
     const { searchParams } = new URL(req.url);
     const leadSource = searchParams.get('leadSource');
     const sourceConfidence = searchParams.get('sourceConfidence');
@@ -23,7 +28,8 @@ export async function GET(req: Request) {
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '50', 10)));
     const skip = (page - 1) * limit;
 
-    const where: any = {};
+    // Multi-tenant: always restrict to the caller's organization
+    const where: any = orgScope(session);
     if (leadSource && leadSource !== 'ALL') {
       where.leadSource = leadSource;
     }
@@ -114,6 +120,10 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
+    const auth = await requireSession(req);
+    if (!auth.ok) return auth.response;
+    const { session } = auth;
+
     const body = await req.json();
     const {
       fullName,
@@ -127,9 +137,10 @@ export async function POST(req: Request) {
       notes,
     } = body;
 
-    const org = await prisma.organization.findFirst();
+    // Multi-tenant: create within the caller's organization
+    const org = await prisma.organization.findUnique({ where: { id: session.organizationId } });
     if (!org) {
-      return NextResponse.json({ error: 'Organization not found' }, { status: 500 });
+      return NextResponse.json({ success: false, error: 'Organization not found' }, { status: 404 });
     }
 
     let phoneE164: string | null = null;

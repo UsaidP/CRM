@@ -22,15 +22,19 @@ export default async function InventoryPage() {
       }),
     ]);
 
-    initialUnits = rawUnits.map((u) => {
-      const freshness = assessUnitFreshness(u.verificationStatus, u.lastVerifiedAt);
-      return {
-        ...u,
-        freshness,
-      };
-    });
+    initialUnits = JSON.parse(
+      JSON.stringify(
+        rawUnits.map((u) => {
+          const freshness = assessUnitFreshness(u.verificationStatus, u.lastVerifiedAt);
+          return {
+            ...u,
+            freshness,
+          };
+        })
+      )
+    );
 
-    initialProjects = projects;
+    initialProjects = JSON.parse(JSON.stringify(projects));
   } catch (err) {
     console.error('Error loading initial inventory:', err);
   }

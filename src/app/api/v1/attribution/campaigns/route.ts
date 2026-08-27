@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { requireSession } from '@/lib/services/api-auth';
 import { prisma } from '@/lib/db/prisma';
 import { generateCampaignDeepLink } from '@/lib/domain/campaign-attribution';
 import { OFFICIAL_BROKER_NUMBERS } from '@/lib/domain/broker-resolver';
@@ -55,6 +56,8 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    const auth = await requireSession(req);
+    if (!auth.ok) return auth.response;
     const body = await req.json();
     const {
       campaignName,

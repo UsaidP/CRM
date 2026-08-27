@@ -8,6 +8,7 @@ async function main() {
   console.log('🌱 Starting Master Real-World ZamZam Properties Real Estate CRM Seed...');
 
   // 1. Clean existing records in reverse dependency order
+  await prisma.leadReminder.deleteMany({});
   await prisma.portalTelemetryLog.deleteMany({});
   await prisma.clientPortalUnit.deleteMany({});
   await prisma.clientPortal.deleteMany({});
@@ -66,6 +67,15 @@ async function main() {
     },
   });
 
+  const crypto = require('crypto');
+  function hashPasswordSync(password) {
+    const salt = crypto.randomBytes(16);
+    const derivedKey = crypto.pbkdf2Sync(password, salt, 100000, 64, 'sha512');
+    return `pbkdf2:sha512:100000:${salt.toString('hex')}:${derivedKey.toString('hex')}`;
+  }
+
+  const defaultPasswordHash = hashPasswordSync('ZamZam@2026');
+
   // 3. Create Staff Users & Real Broker Identities (Safwan Diwan & Suhel Patel)
   const adminUser = await prisma.user.create({
     data: {
@@ -74,6 +84,7 @@ async function main() {
       email: 'usaid@zamzamproperties.in',
       phoneE164: '+919820123456',
       role: 'SUPER_ADMIN',
+      passwordHash: defaultPasswordHash,
     },
   });
 
@@ -84,6 +95,7 @@ async function main() {
       email: 'safwan@zamzamproperties.in',
       phoneE164: '+917977552011',
       role: 'BROKER_MANAGER',
+      passwordHash: defaultPasswordHash,
     },
   });
 
@@ -94,16 +106,18 @@ async function main() {
       email: 'suhel@zamzamproperties.in',
       phoneE164: '+919967731071',
       role: 'SALES_EXECUTIVE',
+      passwordHash: defaultPasswordHash,
     },
   });
 
-  const telecallerAisha = await prisma.user.create({
+  const telecallerSamrin = await prisma.user.create({
     data: {
       organizationId: org.id,
-      fullName: 'Aisha Merchant',
-      email: 'aisha@zamzamproperties.in',
+      fullName: 'Samrin Merchant',
+      email: 'samrin@zamzamproperties.in',
       phoneE164: '+919820112233',
       role: 'TELECALLER',
+      passwordHash: defaultPasswordHash,
     },
   });
 

@@ -35,6 +35,15 @@ export async function POST(req: Request, { params }: { params: Promise<{ token: 
       },
     });
 
+    // Update portal views and last viewed timestamp
+    await prisma.clientPortal.update({
+      where: { id: portal.id },
+      data: {
+        totalViews: actionType === 'PORTAL_OPEN' ? { increment: 1 } : undefined,
+        lastViewedAt: new Date(),
+      },
+    });
+
     // If hot action like visit booking click or whatsapp inquiry, log communication record
     if (['VISIT_BOOKING_CLICK', 'WHATSAPP_CLICK', 'CALL_CLICK'].includes(actionType)) {
       await prisma.communicationLog.create({
@@ -91,7 +100,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ token: s
         totalViews: portal.totalViews,
         lastViewedAt: portal.lastViewedAt,
         engagement,
-        recentLogs: portal.telemetryLogs.slice(0, 10),
+        telemetryLogs: portal.telemetryLogs,
+        recentLogs: portal.telemetryLogs.slice(0, 50),
       },
     });
   } catch (error: any) {

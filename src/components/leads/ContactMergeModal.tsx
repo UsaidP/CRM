@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { GitMerge, AlertCircle, Check, X, ShieldAlert } from 'lucide-react';
+import { CustomSelect } from '@/components/ui/CustomSelect';
 
 interface ContactMergeModalProps {
   isOpen: boolean;
@@ -110,19 +111,17 @@ export function ContactMergeModal({
             <label className="block text-xs font-medium text-content mb-1.5">
               Select Primary Target Contact Record <span className="text-accent">*</span>
             </label>
-            <select
-              required
+            <CustomSelect
+              options={candidateLeads.map((l) => ({
+                value: l.contactId || l.id,
+                label: `${l.fullName || 'Prospect'} (${l.phoneE164 || l.leadSource}) - ID: ${(l.contactId || l.id).substring(0, 8)}`,
+              }))}
               value={targetContactId}
-              onChange={(e) => setTargetContactId(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-surface-inset border border-border rounded-xl text-sm text-content focus:outline-none focus:border-accent"
-            >
-              <option value="">-- Choose Canonical Contact --</option>
-              {candidateLeads.map((l) => (
-                <option key={l.id} value={l.contactId || l.id}>
-                  {l.fullName || 'Prospect'} ({l.phoneE164 || l.leadSource}) - ID: {(l.contactId || l.id).substring(0, 8)}
-                </option>
-              ))}
-            </select>
+              onChange={(val) => setTargetContactId(val)}
+              placeholder="-- Choose Canonical Contact --"
+              className="w-full"
+              triggerClassName="bg-surface-inset border-border rounded-xl text-xs font-semibold"
+            />
           </div>
 
           {/* Reason */}

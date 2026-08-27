@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { requireSession } from '@/lib/services/api-auth';
 import { prisma } from '@/lib/db/prisma';
 import { evaluateEngagementTier } from '@/lib/domain/portal-generator';
 
@@ -6,6 +7,8 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
   try {
+    const auth = await requireSession(req);
+    if (!auth.ok) return auth.response;
     const { searchParams } = new URL(req.url);
     const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '50', 10)));
@@ -66,6 +69,8 @@ export async function GET(req: Request) {
         lead: portal.lead,
         createdBy: portal.createdBy,
         propertyCount: portal.portalUnits.length,
+        portalUnits: portal.portalUnits,
+        telemetryLogs: portal.telemetryLogs || [],
         projects: portal.portalUnits.map((pu) => ({
           unitId: pu.propertyUnit.id,
           unitNumber: pu.propertyUnit.unitNumber,

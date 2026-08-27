@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-const optionalUrl = z.string().url().optional().or(z.literal(''));
+const optionalUrl = z.string().trim().optional().nullable().or(z.literal(''));
 
 export const inventoryMediaAssetSchema = z.object({
   id: z.string().min(1),
@@ -17,24 +17,24 @@ export const inventoryMediaAssetSchema = z.object({
 });
 
 const mediaGallery = z.array(inventoryMediaAssetSchema).max(40).default([]);
-const highlights = z.array(z.string().trim().min(2).max(120)).max(12).default([]);
+const highlights = z.array(z.string().trim().min(2).max(240)).max(20).default([]);
 
 export const createProjectSchema = z.object({
-  organizationId: z.string().uuid().optional(),
+  organizationId: z.string().uuid().optional().nullable(),
   developerName: z.string().min(2, 'Developer name must be at least 2 characters'),
   projectName: z.string().min(2, 'Project name must be at least 2 characters'),
   reraNumber: z.string().min(8, 'Valid MahaRERA registration number is required'),
   microMarket: z.string().min(2, 'Micro market locality is required'),
-  subLocality: z.string().optional(),
-  shortDescription: z.string().trim().max(240).optional(),
-  description: z.string().trim().max(4000).optional(),
-  locationDescription: z.string().trim().max(1000).optional(),
+  subLocality: z.string().optional().nullable(),
+  shortDescription: z.string().trim().max(1000).optional().nullable(),
+  description: z.string().trim().max(10000).optional().nullable(),
+  locationDescription: z.string().trim().max(2000).optional().nullable(),
   keyHighlights: highlights,
   mediaGallery,
   coverImageUrl: optionalUrl,
-  latitude: z.number().optional(),
-  longitude: z.number().optional(),
-  distanceToMetroKm: z.number().min(0).optional(),
+  latitude: z.number().optional().nullable(),
+  longitude: z.number().optional().nullable(),
+  distanceToMetroKm: z.number().min(0).optional().nullable(),
   hasOccupancyCertificate: z.boolean().default(false),
   commencementCertificateDate: z.string().optional().nullable(),
   expectedPossessionDate: z.string().optional().nullable(),
@@ -45,9 +45,15 @@ export const createProjectSchema = z.object({
   youtubeWalkthroughUrl: optionalUrl,
   masterPlanUrl: optionalUrl,
   amenities: z.array(z.string()).default([]),
-  developerSalesPocName: z.string().optional(),
-  developerSalesPocPhone: z.string().optional(),
+  developerSalesPocName: z.string().optional().nullable(),
+  developerSalesPocPhone: z.string().optional().nullable(),
   standardCommissionPercent: z.number().min(0).max(10).default(2.0),
+  reraCertificateUrl: optionalUrl,
+  reraRegisteredName: z.string().optional().nullable(),
+  reraProjectStatus: z.string().optional().nullable(),
+  reraValidUntil: z.string().optional().nullable(),
+  reraVerificationDate: z.string().optional().nullable(),
+  reraCertDataJson: z.string().optional().nullable(),
 });
 
 export const createUnitSchema = z.object({

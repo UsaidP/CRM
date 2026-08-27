@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireSession } from '@/lib/services/api-auth';
 import { prisma } from '@/lib/db/prisma';
 import { parseProjectsCSV } from '@/lib/domain/inventory-csv-parser';
 
@@ -6,6 +7,8 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await requireSession(request);
+    if (!auth.ok) return auth.response;
     const contentType = request.headers.get('content-type') || '';
     let csvText = '';
     let requireProjectFilter = true;

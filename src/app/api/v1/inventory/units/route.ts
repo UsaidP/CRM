@@ -1,14 +1,18 @@
 import { NextResponse } from 'next/server';
+import { requireSession } from '@/lib/services/api-auth';
 import { prisma } from '@/lib/db/prisma';
 import { createUnitSchema } from '@/lib/validators/inventory-schemas';
 import { calculateAllInCost } from '@/lib/domain/cost-calculator';
 import { assessUnitFreshness, validateReraNumber } from '@/lib/domain/verification-engine';
 import { parseInventoryContent } from '@/lib/inventory-media';
+import { parseSafeDate } from '@/lib/date-utils';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
   try {
+    const auth = await requireSession(req);
+    if (!auth.ok) return auth.response;
     const { searchParams } = new URL(req.url);
     const bhk = searchParams.get('bhk');
     const microMarket = searchParams.get('microMarket');
@@ -95,6 +99,8 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
+    const auth = await requireSession(req);
+    if (!auth.ok) return auth.response;
     const body = await req.json();
     const validated = createUnitSchema.parse(body);
 
@@ -139,7 +145,7 @@ export async function POST(req: Request) {
         carpetAreaSqft: validated.carpetAreaSqft,
         facing: validated.facing,
         possessionStatus: validated.possessionStatus,
-        possessionDate: validated.possessionDate ? new Date(validated.possessionDate) : null,
+        possessionDate: parseSafeDate(validated.possessionDate),
         description: validated.description,
         featureHighlightsJson: JSON.stringify(validated.featureHighlights || []),
         floorPlanUrl: validated.floorPlanUrl || null,

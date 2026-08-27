@@ -9,9 +9,12 @@ import {
   BarChart3, 
   RefreshCw, 
   Target,
+  Download,
+  Printer
 } from 'lucide-react';
 import { YoutubeIcon, InstagramIcon } from '@/components/icons/SocialIcons';
 import { HallmarkStamp } from '@/components/ui/HallmarkStamp';
+import { exportAnalyticsToCsv } from '@/lib/export-utils';
 
 export function AnalyticsClient({
   initialRoi = [],
@@ -113,13 +116,33 @@ export function AnalyticsClient({
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            type="button"
+            onClick={() => exportAnalyticsToCsv(contentRoi, leaderboard)}
+            className="min-h-10 px-3.5 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-bold shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
+            title="Export full campaign ROI & broker incentive report to CSV"
+          >
+            <Download className="w-3.5 h-3.5 text-accent" />
+            <span>Export CSV</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className="min-h-10 px-3.5 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-bold shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
+            title="Print Executive BI Report"
+          >
+            <Printer className="w-3.5 h-3.5 text-accent" />
+            <span>Print Report</span>
+          </button>
+
           <button
             type="button"
             onClick={fetchAllAnalytics}
             disabled={loading}
             aria-label="Refresh analytics"
-            className="min-h-10 min-w-10 px-3 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-semibold shadow-xs transition-all flex items-center justify-center"
+            className="min-h-10 min-w-10 px-3 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-semibold shadow-xs transition-all flex items-center justify-center cursor-pointer"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-accent' : 'text-content-secondary'}`} />
           </button>

@@ -156,6 +156,46 @@ async function runPhase4Tests() {
     assert.ok(res.brokerAlertMessage.includes('HOT LEAD'));
   });
 
+  // --- SUITE 3: Interactive Portal EMI Calculator Engine ---
+  function computePortalEmi(cost, downPaymentPct, tenureYears, annualRate) {
+    const downPayment = cost * (downPaymentPct / 100);
+    const principal = cost - downPayment;
+    const monthlyRate = annualRate / 12 / 100;
+    const totalMonths = tenureYears * 12;
+    const emi = (principal * monthlyRate * Math.pow(1 + monthlyRate, totalMonths)) /
+      (Math.pow(1 + monthlyRate, totalMonths) - 1);
+    const roundedEmi = Math.round(emi);
+    const totalPayable = Math.round(roundedEmi * totalMonths);
+    const totalInterest = totalPayable - principal;
+    const minIncome = Math.round((roundedEmi / 0.45) / 1000) * 1000;
+    return {
+      loanAmount: principal,
+      downPaymentAmount: downPayment,
+      monthlyEmi: roundedEmi,
+      totalPayable,
+      totalInterest,
+      minIncome,
+    };
+  }
+
+  test('Test 3.1: Calculate Monthly EMI for ₹50.36L City Avenue with 20% down payment at 8.5% p.a. (20 Yrs)', () => {
+    const res = computePortalEmi(5036500, 20, 20, 8.50);
+    assert.strictEqual(res.downPaymentAmount, 1007300);
+    assert.strictEqual(res.loanAmount, 4029200);
+    // At 8.5% on 40.292L for 240 months, monthly EMI is ~₹34,946
+    assert.ok(res.monthlyEmi >= 34000 && res.monthlyEmi <= 36000, `Expected EMI ~34946, got ${res.monthlyEmi}`);
+    assert.ok(res.minIncome >= 75000 && res.minIncome <= 80000, `Expected income ~78000, got ${res.minIncome}`);
+  });
+
+  test('Test 3.2: Verify Bank Benchmark Rates impact on EMI (SBI 8.50% vs HDFC 8.60% vs ICICI 8.65%)', () => {
+    const sbi = computePortalEmi(4000000, 20, 20, 8.50);
+    const hdfc = computePortalEmi(4000000, 20, 20, 8.60);
+    const icici = computePortalEmi(4000000, 20, 20, 8.65);
+
+    assert.ok(hdfc.monthlyEmi > sbi.monthlyEmi, 'Higher rate must result in higher EMI');
+    assert.ok(icici.monthlyEmi >= hdfc.monthlyEmi, 'ICICI rate must produce higher or equal EMI than HDFC');
+  });
+
   console.log(`\n================================`);
   console.log(`Phase 4 Test Results: ${passed} Passed, ${failed} Failed`);
   console.log(`================================\n`);

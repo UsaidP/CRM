@@ -36,7 +36,17 @@ model User {
   email             String               @unique
   phoneE164         String
   role              String               @default("SALES_EXECUTIVE") // SUPER_ADMIN, BROKER_MANAGER, SALES_EXECUTIVE, TELECALLER
+  customPermissionsJson String             @default("[]") // Custom overrides granted by Super Admin
   isActive          Boolean              @default(true)
+  
+  // Authentication & Security
+  passwordHash          String?
+  resetToken            String?
+  resetTokenExpiresAt   DateTime?
+  inviteToken           String?
+  inviteTokenExpiresAt  DateTime?
+  lastLoginAt           DateTime?
+
   phoneNumbers      BrokerPhoneNumber[]  @relation("BrokerNumbers")
   assignedContacts  Contact[]            @relation("AssignedContactBroker")
   assignedLeads     Lead[]               @relation("AssignedBroker")
@@ -153,6 +163,15 @@ model DeveloperProject {
   developerSalesPocName       String?
   developerSalesPocPhone      String?
   standardCommissionPercent   Float              @default(2.0)
+  
+  // Official MahaRERA Statutory Certificate & Verification
+  reraCertificateUrl          String?            // Path to official/downloaded RERA Certificate PDF
+  reraRegisteredName          String?            // Exact registered title on MahaRERA portal
+  reraProjectStatus           String?            @default("REGISTERED") // REGISTERED, APPROVED, EXTENDED, OC_RECEIVED
+  reraValidUntil              DateTime?          // Certificate validity date
+  reraVerificationDate        DateTime?          // Timestamp when certificate was synced
+  reraCertDataJson            String             @default("{}") // Full statutory profile from MahaRERA registry
+  
   units                       PropertyUnit[]
   campaigns                   InboundCampaign[]
   deals                       DealTransaction[]

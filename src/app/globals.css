@@ -72,7 +72,7 @@
 }
 
 /* ============================================================================
-   LIGHT THEME TOKENS — Architectural Botanical Ledger
+   LIGHT THEME TOKENS — Modern Executive Real Estate SaaS System
    WCAG AAA / AA Compliant High-Contrast Light Mode
    ============================================================================ */
 :root,
@@ -82,99 +82,101 @@ html[data-theme="light"],
 .theme-root[data-theme="light"] {
   color-scheme: light;
 
-  /* Surfaces & Canvas (Tactile Alabaster & Warm Linen) */
-  --color-canvas: #FBFBF9;                         /* Tactile Alabaster Canvas */
+  /* Surfaces & Canvas (Crisp Slate-50 & Pure White) */
+  --color-canvas: #F8FAFC;                         /* Crisp Slate-50 Canvas */
   --color-surface: #FFFFFF;                        /* Pure White Card Surface */
-  --color-surface-subtle: #F3EFEA;                 /* Warm Linen Tint Fill */
-  --color-surface-muted: #EFEAE1;                  /* Muted Sand Fill */
+  --color-surface-subtle: #F1F5F9;                 /* Slate-100 Container Fill */
+  --color-surface-muted: #E2E8F0;                  /* Slate-200 Fill */
   --color-surface-raised: #FFFFFF;                 /* Elevated Card Surface */
-  --color-surface-inset: #F8F6F0;                  /* Inset Well / Input Background */
+  --color-surface-inset: #F8FAFC;                  /* Inset Well / Input Background */
 
-  /* Primary Brand Tokens (Deep Cypress Forest Green) */
-  --color-primary: #1B4332;
-  --color-primary-light: #2D6A4F;
-  --color-primary-dark: #081C15;
-  --color-primary-surface: #E8F5E9;
-  --color-primary-border: #A3D9B1;
+  /* Primary Brand Tokens (Executive Slate Navy) */
+  --color-primary: #0F172A;
+  --color-primary-light: #1E293B;
+  --color-primary-dark: #020617;
+  --color-primary-surface: #F1F5F9;
+  --color-primary-border: #CBD5E1;
 
-  /* Accent Tokens (Warm Terracotta & Amber Ochre) */
-  --color-accent: #D97706;                         /* Amber Ochre Accent */
-  --color-accent-hover: #B45309;                   /* Deep Terracotta Hover */
-  --color-accent-active: #92400E;                  /* Dark Ochre Active */
-  --color-accent-subtle: #FEF3C7;                  /* Pale Amber Tint */
-  --color-accent-soft: #FEF3C7;                    /* Soft Ochre Pill Fill */
-  --color-accent-text: #B45309;                    /* Legible Ochre Text */
+  /* Accent Tokens (Electric Royal Blue / Indigo) */
+  --color-accent: #2563EB;                         /* Royal Blue Accent */
+  --color-accent-hover: #1D4ED8;                   /* Deep Blue Hover */
+  --color-accent-active: #1E40AF;                  /* Dark Blue Active */
+  --color-accent-subtle: #EFF6FF;                  /* Pale Blue Tint */
+  --color-accent-soft: #DBEAFE;                    /* Soft Blue Pill Fill */
+  --color-accent-text: #1D4ED8;                    /* Legible Blue Text */
   --color-on-accent: #FFFFFF;                      /* Pure White on Accent */
-  --color-action-primary: #1B4332;                 /* Primary Button = Cypress Green */
-  --color-action-primary-hover: #2D6A4F;
+  --color-action-primary: #2563EB;                 /* Primary Button = Royal Blue */
+  --color-action-primary-hover: #1D4ED8;
   --color-action-on-primary: #FFFFFF;
-  --color-focus-ring: #1B4332;
-  --color-focus: #1B4332;
+  --color-focus-ring: #2563EB;
+  --color-focus: #2563EB;
 
   /* Text & Foreground Hierarchy */
-  --color-ink: #111827;                            /* Deep Obsidian Charcoal */
-  --color-text: #374151;                           /* Slate Grey Body */
-  --color-text-muted: #6B7280;                     /* Medium Slate */
-  --color-text-disabled: #9CA3AF;                  /* Disabled Text */
-  --color-text-primary: #111827;                   /* Primary Text */
-  --color-text-secondary: #4B5563;                 /* Secondary Text */
+  --color-ink: #0F172A;                            /* Deep Slate 900 */
+  --color-text: #1E293B;                           /* Slate 800 Body */
+  --color-text-muted: #64748B;                     /* Medium Slate 500 */
+  --color-text-disabled: #94A3B8;                  /* Disabled Text Slate 400 */
+  --color-text-primary: #0F172A;                   /* Primary Text */
+  --color-text-secondary: #475569;                 /* Secondary Text Slate 600 */
   --color-text-inverse: #FFFFFF;                   /* Text on Dark/Accent */
 
   /* Hairlines & Borders */
-  --color-border: #E5E0D8;                         /* Architectural 1px Hairline */
-  --color-border-default: #E5E0D8;                 /* Default Border */
-  --color-border-subtle: #F0EBE1;                  /* Subtle Subdivider */
-  --color-border-strong: #D1C7B7;                  /* Strong Perimeter */
-  --color-overlay: rgba(8, 28, 21, 0.45);          /* Cypress Backdrop Overlay */
+  --color-border: #E2E8F0;                         /* Crisp 1px Hairline */
+  --color-border-default: #E2E8F0;                 /* Default Border */
+  --color-border-subtle: #F1F5F9;                  /* Subtle Subdivider */
+  --color-border-strong: #CBD5E1;                  /* Strong Perimeter */
+  --color-overlay: rgba(15, 23, 42, 0.55);         /* Slate Backdrop Overlay */
 
   /* Semantic Feedback & Statuses */
-  --color-status-success: #15803D;                 /* Emerald Verified MahaRERA */
-  --color-status-success-surface: #DCFCE7;
-  --color-status-warning: #B45309;                 /* Amber Ochre Warning */
-  --color-status-warning-surface: #FEF3C7;
-  --color-status-danger: #B91C1C;                  /* Crimson Danger / Stale */
-  --color-status-danger-surface: #FEE2E2;
-  --color-status-info: #1D4ED8;                    /* Blue Info / Telemetry */
-  --color-status-info-surface: #DBEAFE;
+  --color-status-success: #10B981;                 /* Emerald Verified MahaRERA */
+  --color-status-success-surface: #ECFDF5;
+  --color-status-warning: #F59E0B;                 /* Amber Warning */
+  --color-status-warning-surface: #FFFBEB;
+  --color-status-danger: #EF4444;                  /* Crimson Danger / Stale */
+  --color-status-danger-surface: #FEF2F2;
+  --color-status-error: #EF4444;                   /* Error alias */
+  --color-status-error-surface: #FEF2F2;
+  --color-status-info: #3B82F6;                    /* Blue Info / Telemetry */
+  --color-status-info-surface: #EFF6FF;
 
-  --color-success: #15803D;
-  --color-success-soft: #DCFCE7;
-  --color-success-text: #166534;
-  --color-warning: #B45309;
-  --color-warning-soft: #FEF3C7;
-  --color-warning-text: #78350F;
-  --color-danger: #B91C1C;
-  --color-danger-soft: #FEE2E2;
-  --color-danger-text: #991B1B;
-  --color-info: #1D4ED8;
-  --color-info-soft: #DBEAFE;
-  --color-info-text: #1E40AF;
+  --color-success: #10B981;
+  --color-success-soft: #ECFDF5;
+  --color-success-text: #047857;
+  --color-warning: #F59E0B;
+  --color-warning-soft: #FFFBEB;
+  --color-warning-text: #B45309;
+  --color-danger: #EF4444;
+  --color-danger-soft: #FEF2F2;
+  --color-danger-text: #B91C1C;
+  --color-info: #3B82F6;
+  --color-info-soft: #EFF6FF;
+  --color-info-text: #1D4ED8;
 
   /* Channel & Workflow Accents */
-  --color-stage-new: #1B4332;
-  --color-stage-qualified: #2D6A4F;
-  --color-stage-matched: #0D9488;
-  --color-stage-visit: #D97706;
-  --color-stage-negotiation: #B45309;
-  --color-stage-won: #15803D;
-  --color-stage-lost: #6B7280;
-  --color-whatsapp: #15803D;
-  --color-instagram: #BE185D;
-  --color-youtube: #DC2626;
-  --color-phone: #0369A1;
-  --color-web: #4F46E5;
+  --color-stage-new: #EF4444;
+  --color-stage-qualified: #F59E0B;
+  --color-stage-matched: #06B6D4;
+  --color-stage-visit: #3B82F6;
+  --color-stage-negotiation: #8B5CF6;
+  --color-stage-won: #10B981;
+  --color-stage-lost: #64748B;
+  --color-whatsapp: #10B981;
+  --color-instagram: #E1306C;
+  --color-youtube: #EF4444;
+  --color-phone: #0284C7;
+  --color-web: #6366F1;
 
   /* Data Visualization Series */
-  --color-chart-1: #1B4332;
-  --color-chart-2: #2D6A4F;
-  --color-chart-3: #D97706;
-  --color-chart-4: #0D9488;
-  --color-chart-5: #15803D;
-  --color-chart-6: #B45309;
+  --color-chart-1: #2563EB;
+  --color-chart-2: #10B981;
+  --color-chart-3: #F59E0B;
+  --color-chart-4: #06B6D4;
+  --color-chart-5: #8B5CF6;
+  --color-chart-6: #EC4899;
 
   /* Elevation & Shadows (Light Mode) */
-  --shadow-raised: 0 1px 3px 0 rgba(27, 67, 50, 0.05), 0 1px 2px -1px rgba(27, 67, 50, 0.04);
-  --shadow-overlay: 0 20px 25px -5px rgba(27, 67, 50, 0.12), 0 8px 10px -6px rgba(27, 67, 50, 0.08);
+  --shadow-raised: 0 1px 3px 0 rgba(15, 23, 42, 0.06), 0 1px 2px -1px rgba(15, 23, 42, 0.04);
+  --shadow-overlay: 0 20px 25px -5px rgba(15, 23, 42, 0.12), 0 8px 10px -6px rgba(15, 23, 42, 0.08);
 
   /* App Semantic Token Compatibility Mappings */
   --bg-primary: var(--color-canvas);
@@ -187,14 +189,14 @@ html[data-theme="light"],
   --panel-backdrop: var(--color-surface);
 
   /* Brand Aliases */
-  --color-gold: var(--color-accent);
-  --color-gold-bright: var(--color-accent-hover);
-  --color-gold-deep: var(--color-accent-active);
-  --color-gold-ink: var(--color-accent-soft);
+  --color-gold: #D97706;
+  --color-gold-bright: #F59E0B;
+  --color-gold-deep: #B45309;
+  --color-gold-ink: #FEF3C7;
 }
 
 /* ============================================================================
-   DARK THEME TOKENS — Cypress Forest Botanical Workbench
+   DARK THEME TOKENS — Obsidian & Midnight Slate Workbench
    ============================================================================ */
 html.dark,
 html[data-theme="dark"],
@@ -202,42 +204,43 @@ html[data-theme="dark"],
 .theme-root[data-theme="dark"] {
   color-scheme: dark;
 
-  /* Core Neutral Surfaces (Deep Cypress Dark Mode) */
-  --color-canvas: #081C15;                         /* Midnight Cypress Canvas */
-  --color-surface: #0E281F;                        /* Deep Green Card Surface */
-  --color-surface-subtle: #173A2E;                 /* Raised Subtle Panel Fill */
-  --color-surface-muted: #204C3D;                  /* Muted Forest Fill */
-  --color-surface-raised: #1A3E31;                 /* Elevated Surface */
-  --color-surface-inset: #05140F;                  /* Deep Inset Well / Input Fill */
+  /* Core Neutral Surfaces (Deep Obsidian Dark Mode) */
+  --color-canvas: #090D16;                         /* Midnight Obsidian Canvas */
+  --color-surface: #0F172A;                        /* Deep Slate Card Surface */
+  --color-surface-subtle: #1E293B;                 /* Raised Subtle Panel Fill */
+  --color-surface-muted: #334155;                  /* Muted Slate Fill */
+  --color-surface-raised: #1E293B;                 /* Elevated Surface */
+  --color-surface-inset: #0B0F19;                  /* Deep Inset Well / Input Fill */
 
   /* Text & Foreground Hierarchy */
-  --color-ink: #F9FAF6;                            /* Ivory Text */
-  --color-text: #E5E7EB;                           /* Slate Light Body */
-  --color-text-muted: #9CA3AF;                     /* Medium Slate */
-  --color-text-disabled: #6B7280;                  /* Disabled Text */
-  --color-text-primary: #F9FAF6;                   /* Primary high-contrast text */
-  --color-text-secondary: #D1D5DB;                 /* Secondary body text */
-  --color-text-inverse: #081C15;                   /* Inverse text on accent */
+  --color-ink: #F8FAFC;                            /* Crisp White Text */
+  --color-text: #F1F5F9;                           /* Slate Light Body */
+  --color-text-muted: #94A3B8;                     /* Medium Slate */
+  --color-text-disabled: #64748B;                  /* Disabled Text */
+  --color-text-primary: #F8FAFC;                   /* Primary high-contrast text */
+  --color-text-secondary: #CBD5E1;                 /* Secondary body text */
+  --color-text-inverse: #0F172A;                   /* Inverse text on accent */
 
   /* Hairlines & Borders */
-  --color-border: #1E4D3D;
-  --color-border-default: #1E4D3D;
-  --color-border-subtle: #15382D;
-  --color-border-strong: #2D6A4F;
-  --color-overlay: rgba(4, 14, 10, 0.85);
+  --color-border: #1E293B;
+  --color-border-default: #1E293B;
+  --color-border-subtle: #131B2E;
+  --color-border-strong: #334155;
+  --color-overlay: rgba(0, 0, 0, 0.8);
 
-  /* Primary Action & Selection (Amber Ochre / Cypress Green Dark) */
-  --color-accent: #D97706;                         /* Amber Ochre */
-  --color-accent-hover: #F59E0B;                   /* Bright Amber Hover */
-  --color-accent-active: #B45309;                  /* Terracotta Active */
-  --color-accent-soft: rgba(217, 119, 6, 0.2);     /* Ochre Tint Fill */
-  --color-accent-text: #FCD34D;                    /* Amber Legible Text */
-  --color-on-accent: #081C15;                      /* Deep Charcoal on Accent */
-  --color-action-primary: #2D6A4F;                 /* Pine Green Action */
-  --color-action-primary-hover: #40916C;
+  /* Primary Action & Selection (Electric Indigo / Blue Dark) */
+  --color-accent: #3B82F6;                         /* Electric Blue */
+  --color-accent-hover: #60A5FA;                   /* Bright Blue Hover */
+  --color-accent-active: #2563EB;                  /* Deep Blue Active */
+  --color-accent-subtle: rgba(59, 130, 246, 0.15); /* Blue Tint Fill */
+  --color-accent-soft: rgba(59, 130, 246, 0.2);
+  --color-accent-text: #93C5FD;                    /* Blue Legible Text */
+  --color-on-accent: #FFFFFF;                      /* White on Accent */
+  --color-action-primary: #2563EB;                 /* Blue Action */
+  --color-action-primary-hover: #3B82F6;
   --color-action-on-primary: #FFFFFF;
-  --color-focus-ring: #D97706;
-  --color-focus: #D97706;
+  --color-focus-ring: #3B82F6;
+  --color-focus: #3B82F6;
 
   /* Semantic Feedback & Statuses */
   --color-status-success: #34D399;
@@ -246,6 +249,8 @@ html[data-theme="dark"],
   --color-status-warning-surface: rgba(251, 191, 36, 0.15);
   --color-status-danger: #F87171;
   --color-status-danger-surface: rgba(248, 113, 113, 0.15);
+  --color-status-error: #F87171;
+  --color-status-error-surface: rgba(248, 113, 113, 0.15);
   --color-status-info: #60A5FA;
   --color-status-info-surface: rgba(96, 165, 250, 0.15);
 
@@ -263,13 +268,13 @@ html[data-theme="dark"],
   --color-info-text: #BFDBFE;
 
   /* Channel & Workflow Accents */
-  --color-stage-new: #40916C;
-  --color-stage-qualified: #52B788;
-  --color-stage-matched: #2DD4BF;
-  --color-stage-visit: #F59E0B;
-  --color-stage-negotiation: #FB923C;
+  --color-stage-new: #F87171;
+  --color-stage-qualified: #FBBF24;
+  --color-stage-matched: #22D3EE;
+  --color-stage-visit: #60A5FA;
+  --color-stage-negotiation: #A78BFA;
   --color-stage-won: #34D399;
-  --color-stage-lost: #9CA3AF;
+  --color-stage-lost: #94A3B8;
   --color-whatsapp: #34D399;
   --color-instagram: #F472B6;
   --color-youtube: #EF4444;
@@ -277,12 +282,12 @@ html[data-theme="dark"],
   --color-web: #818CF8;
 
   /* Data Visualization Series */
-  --color-chart-1: #40916C;
-  --color-chart-2: #2DD4BF;
-  --color-chart-3: #F59E0B;
-  --color-chart-4: #34D399;
-  --color-chart-5: #818CF8;
-  --color-chart-6: #FB923C;
+  --color-chart-1: #60A5FA;
+  --color-chart-2: #34D399;
+  --color-chart-3: #FBBF24;
+  --color-chart-4: #22D3EE;
+  --color-chart-5: #A78BFA;
+  --color-chart-6: #F472B6;
 
   /* Elevation & Shadows (Dark Mode) */
   --shadow-raised: 0 1px 2px rgba(0, 0, 0, 0.4);
@@ -299,10 +304,10 @@ html[data-theme="dark"],
   --panel-backdrop: var(--color-surface);
 
   /* Brand Aliases */
-  --color-gold: var(--color-accent);
-  --color-gold-bright: var(--color-accent-hover);
-  --color-gold-deep: var(--color-accent-active);
-  --color-gold-ink: var(--color-accent-soft);
+  --color-gold: #F59E0B;
+  --color-gold-bright: #FBBF24;
+  --color-gold-deep: #D97706;
+  --color-gold-ink: rgba(245, 158, 11, 0.2);
 }
 
 body {
@@ -578,11 +583,12 @@ body {
   height: 100vh;
   max-height: 100dvh;
   margin: 0;
-  padding: 1rem;
+  padding: 3rem 1rem 2rem 1rem;
   border: 0;
   background: transparent;
   overflow-y: auto;
   overscroll-behavior: contain;
+  z-index: 60;
 }
 
 .app-dialog[open] {
@@ -599,8 +605,7 @@ body {
 
 .app-dialog__panel {
   width: 100%;
-  max-width: 38rem;
-  max-height: calc(100dvh - 3rem);
+  max-height: calc(100dvh - 5rem);
   overflow-y: auto;
   overscroll-behavior: contain;
   color: var(--color-text-primary);
@@ -609,6 +614,7 @@ body {
   border-radius: var(--radius-panel);
   padding: 1.5rem;
   box-shadow: var(--shadow-overlay);
+  margin: auto;
 }
 
 /* ============================================================================
@@ -716,23 +722,243 @@ body {
   border-radius: var(--radius-card);
 }
 
-/* Input Fields */
-.input-theme,
-.input-cobalt {
+/* ============================================================================
+   GLOBAL SELECT & DROPDOWN ENHANCED STYLING
+   ============================================================================ */
+
+select,
+.select-theme {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  cursor: pointer;
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-control);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  padding: 0.55rem 2.25rem 0.55rem 0.85rem;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%232563EB' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 0.95rem;
+  box-shadow: var(--shadow-raised);
+  transition: border-color var(--motion-fast) var(--ease-out),
+              background-color var(--motion-fast) var(--ease-out),
+              box-shadow var(--motion-fast) var(--ease-out),
+              transform var(--motion-fast) var(--ease-out);
+}
+
+html.dark select,
+html.dark .select-theme,
+[data-theme="dark"] select,
+[data-theme="dark"] .select-theme {
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2360A5FA' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-color: var(--color-surface);
+}
+
+/* Dropdown Hover Highlight Effect */
+select:hover:not(:disabled),
+.select-theme:hover:not(:disabled) {
+  border-color: var(--color-accent) !important;
+  background-color: var(--color-surface) !important;
+  box-shadow: 0 3px 10px -2px rgba(37, 99, 235, 0.2), 0 0 0 1px var(--color-accent) !important;
+  transform: translateY(-1px);
+}
+
+/* Dropdown Focus & Active Highlight */
+select:focus,
+select:focus-visible,
+.select-theme:focus,
+.select-theme:focus-visible {
+  outline: none !important;
+  border-color: var(--color-accent) !important;
+  box-shadow: 0 0 0 3px var(--color-accent-soft), 0 2px 6px 0 rgba(37, 99, 235, 0.15) !important;
+  background-color: var(--color-surface) !important;
+}
+
+select:disabled,
+.select-theme:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+select option {
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
+  padding: 0.65rem 1rem;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+select optgroup {
+  background-color: var(--color-surface-subtle);
+  color: var(--color-text-muted);
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.5rem 0.75rem;
+}
+
+/* ============================================================================
+   UNIVERSAL INTERACTIVE HOVER & FOCUS ELEVATION
+   ============================================================================ */
+
+/* Generic Button Hover Physics */
+button:not(:disabled),
+a[role="button"]:not(:disabled) {
+  transition: transform var(--motion-fast) var(--ease-out),
+              box-shadow var(--motion-fast) var(--ease-out),
+              background-color var(--motion-fast) var(--ease-out),
+              border-color var(--motion-fast) var(--ease-out),
+              color var(--motion-fast) var(--ease-out);
+}
+
+button:hover:not(:disabled),
+a[role="button"]:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+button:active:not(:disabled),
+a[role="button"]:active:not(:disabled) {
+  transform: translateY(0.5px);
+}
+
+/* Primary Action Buttons */
+.btn-cobalt,
+button.bg-accent,
+a.bg-accent {
+  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.25);
+}
+
+.btn-cobalt:hover,
+button.bg-accent:hover,
+a.bg-accent:hover {
+  box-shadow: 0 4px 14px -1px rgba(37, 99, 235, 0.35), 0 2px 4px -1px rgba(37, 99, 235, 0.2) !important;
+  transform: translateY(-1.5px) !important;
+}
+
+.btn-cobalt:active,
+button.bg-accent:active,
+a.bg-accent:active {
+  transform: translateY(0.5px) !important;
+  box-shadow: 0 1px 2px rgba(37, 99, 235, 0.2) !important;
+}
+
+/* Secondary & Surface Buttons */
+.btn-secondary,
+button.bg-surface,
+button.bg-surface-subtle,
+a.bg-surface,
+a.bg-surface-subtle {
+  transition: all var(--motion-fast) var(--ease-out);
+}
+
+.btn-secondary:hover,
+button.bg-surface:hover,
+button.bg-surface-subtle:hover {
+  border-color: var(--color-border-strong);
+  box-shadow: 0 3px 8px -2px rgba(15, 23, 42, 0.08);
+}
+
+/* Clickable Cards & Containers */
+.glass-card,
+.card-cobalt,
+div[onClick],
+div.cursor-pointer,
+a.group {
+  transition: transform var(--motion-fast) var(--ease-out),
+              border-color var(--motion-fast) var(--ease-out),
+              box-shadow var(--motion-fast) var(--ease-out);
+}
+
+div.cursor-pointer:hover,
+div[onClick]:hover {
+  border-color: var(--color-accent) !important;
+}
+
+/* Table Row Hover Highlight */
+table tbody tr {
+  transition: background-color var(--dur-short) var(--ease-out),
+              box-shadow var(--dur-short) var(--ease-out);
+}
+
+table tbody tr:hover {
+  background-color: var(--color-surface-subtle) !important;
+  cursor: pointer;
+}
+
+/* ============================================================================
+   UNIVERSAL TEXT INPUT & FORM CONTROL STYLING
+   ============================================================================ */
+
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="number"],
+input[type="search"],
+input[type="url"],
+input[type="date"],
+textarea {
   background-color: var(--color-surface-inset);
   border: 1px solid var(--color-border-default);
   color: var(--color-text-primary);
   border-radius: var(--radius-control);
   font-size: 0.8125rem;
-  padding: 0.5rem 0.75rem;
-  transition: border-color var(--motion-fast) var(--ease-out), box-shadow var(--motion-fast) var(--ease-out);
+  padding: 0.625rem 0.875rem;
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.02);
+  transition: border-color var(--motion-fast) var(--ease-out),
+              box-shadow var(--motion-fast) var(--ease-out),
+              background-color var(--motion-fast) var(--ease-out);
 }
 
-.input-theme:focus,
-.input-cobalt:focus {
-  outline: none;
+/* Any search input containing an icon */
+.search-input,
+.search-field,
+div:has(> svg.absolute) > input,
+div:has(> svg.pointer-events-none) > input {
+  padding-left: 2.75rem !important; /* 44px clearance for 16px icon at left-3.5 (14px) */
+  padding-right: 1rem !important;
+}
+
+input:hover:not(:disabled),
+textarea:hover:not(:disabled) {
+  border-color: var(--color-border-strong);
+  background-color: var(--color-surface);
+}
+
+input:focus,
+textarea:focus {
+  outline: none !important;
+  border-color: var(--color-accent) !important;
+  box-shadow: 0 0 0 3px var(--color-accent-soft), 0 1px 3px rgba(37, 99, 235, 0.1) !important;
+  background-color: var(--color-surface) !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--color-text-muted) !important;
+  opacity: 0.75;
+  font-weight: 400;
+}
+
+/* Chips, Tags & Badges */
+.badge-cobalt,
+.pillar-chip,
+.zamzam-chip,
+.brixi-chip,
+.tag-pill {
+  transition: all var(--dur-short) var(--ease-out);
+}
+
+.badge-cobalt:hover,
+.pillar-chip:hover,
+.zamzam-chip:hover,
+.brixi-chip:hover {
   border-color: var(--color-accent);
-  box-shadow: 0 0 0 2px var(--color-accent-soft);
+  transform: translateY(-0.5px);
 }
 
 /* Semantic Status Badges */
@@ -1054,7 +1280,9 @@ html:not(.dark) [class*="via-[#171d2e]"] {
   50% { opacity: 0.6; }
 }
 
-/* Brixi AI Qualification Selector Chip */
+/* ZamZam Qualification Selector Chip */
+.pillar-chip,
+.zamzam-chip,
 .brixi-chip {
   padding: 6px 10px;
   border-radius: var(--radius-sm);
@@ -1067,11 +1295,15 @@ html:not(.dark) [class*="via-[#171d2e]"] {
   transition: all var(--dur-short) ease;
 }
 
+.pillar-chip:hover,
+.zamzam-chip:hover,
 .brixi-chip:hover {
   border-color: var(--color-primary);
   color: var(--color-primary);
 }
 
+.pillar-chip.is-active,
+.zamzam-chip.is-active,
 .brixi-chip.is-active {
   background-color: var(--color-primary);
   color: #FFFFFF;
@@ -1105,6 +1337,178 @@ html:not(.dark) [class*="via-[#171d2e]"] {
   color: var(--color-primary);
 }
 
+/* Custom Slim Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-strong);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
+
+/* ============================================================================
+   ZAMZAM THEME PRINT & EXPORT STYLESHEET
+   Supports High-Resolution A4 PDF & Print Export with Official Crest & Branding
+   ============================================================================ */
+@media screen {
+  .print-only {
+    display: none !important;
+  }
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm 14mm 14mm 14mm;
+  }
+
+  html, body {
+    background: #FFFFFF !important;
+    color: #0F172A !important;
+    font-size: 11pt !important;
+    line-height: 1.4 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hide Web Chrome & Interactive Controls */
+  #app-navigation,
+  aside,
+  header,
+  nav,
+  .no-print,
+  button,
+  .search-input,
+  input[type="text"],
+  input[type="range"],
+  .theme-toggle,
+  .fixed,
+  .modal-backdrop,
+  [data-dialog-close] {
+    display: none !important;
+  }
+
+  /* Show Print-Only Content */
+  .print-only {
+    display: block !important;
+  }
+
+  /* Page Break Rules */
+  .page-break-before {
+    page-break-before: always !important;
+    break-before: page !important;
+  }
+
+  .page-break-after {
+    page-break-after: always !important;
+    break-after: page !important;
+  }
+
+  .no-break-inside,
+  .cost-card,
+  table,
+  tr,
+  .print-card {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* Main Container Full Width */
+  main, .main-content, .container {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* ZamZam Official Letterhead Print Header */
+  .zamzam-print-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: flex-start !important;
+    border-bottom: 2pt solid #1B4332 !important;
+    padding-bottom: 12pt !important;
+    margin-bottom: 16pt !important;
+  }
+
+  .zamzam-print-brand {
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-size: 18pt !important;
+    font-weight: 800 !important;
+    color: #1B4332 !important;
+    letter-spacing: -0.5px !important;
+  }
+
+  .zamzam-print-badge {
+    display: inline-block !important;
+    padding: 2pt 6pt !important;
+    background-color: #ECFDF5 !important;
+    color: #047857 !important;
+    border: 1pt solid #A7F3D0 !important;
+    border-radius: 4pt !important;
+    font-size: 8pt !important;
+    font-weight: 700 !important;
+    font-family: 'JetBrains Mono', monospace !important;
+  }
+
+  /* High Contrast Data Tables for Print */
+  .zamzam-print-table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    margin-top: 8pt !important;
+    margin-bottom: 12pt !important;
+  }
+
+  .zamzam-print-table th {
+    background-color: #F8FAFC !important;
+    color: #1E293B !important;
+    border-top: 1pt solid #CBD5E1 !important;
+    border-bottom: 1.5pt solid #1B4332 !important;
+    padding: 6pt 8pt !important;
+    font-size: 9pt !important;
+    text-transform: uppercase !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.5px !important;
+  }
+
+  .zamzam-print-table td {
+    padding: 6pt 8pt !important;
+    border-bottom: 1pt solid #E2E8F0 !important;
+    font-size: 9.5pt !important;
+    color: #1E293B !important;
+  }
+
+  .zamzam-print-table tr.total-row td {
+    background-color: #F1F5F9 !important;
+    border-top: 1.5pt solid #1B4332 !important;
+    border-bottom: 2pt solid #1B4332 !important;
+    font-weight: 800 !important;
+    font-size: 11pt !important;
+    color: #1B4332 !important;
+  }
+
+  /* Formal Statutory Footer */
+  .zamzam-print-footer {
+    margin-top: 20pt !important;
+    padding-top: 10pt !important;
+    border-top: 1pt solid #E2E8F0 !important;
+    font-size: 7.5pt !important;
+    color: #64748B !important;
+    text-align: center !important;
+  }
+}
+
 /* Hallmark Pre-emit critique verification stamp */
 /* Hallmark · pre-emit critique: P5 H5 E5 S5 R5 V5 */
+
 

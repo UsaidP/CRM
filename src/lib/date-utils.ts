@@ -53,3 +53,61 @@ export function formatDateTime(dateInput: string | number | Date | null | undefi
   if (isNaN(d.getTime())) return '';
   return `${formatDateShort(d)}, ${formatTimeShort(d)}`;
 }
+
+/**
+ * Safely parses any date string, ISO date, month-year format ("December 2026"), or number into a valid Date object or null.
+ * Never throws "Invalid time value".
+ */
+export function parseSafeDate(dateInput: string | number | Date | null | undefined): Date | null {
+  if (!dateInput) return null;
+  if (dateInput instanceof Date) {
+    return isNaN(dateInput.getTime()) ? null : dateInput;
+  }
+  if (typeof dateInput !== 'string' && typeof dateInput !== 'number') return null;
+
+  const str = String(dateInput).trim();
+  if (!str || str.toLowerCase() === 'null' || str.toLowerCase() === 'undefined' || str.toLowerCase() === 'n/a') {
+    return null;
+  }
+
+  // 1. Direct standard parse (ISO, YYYY-MM-DD, etc.)
+  const direct = new Date(str);
+  if (!isNaN(direct.getTime())) {
+    return direct;
+  }
+
+  // 2. Format: "December 2026" or "Dec 2026"
+  const monthYearMatch = str.match(/^([a-zA-Z]+)[,\s]+(\d{4})$/);
+  if (monthYearMatch) {
+    const d = new Date(`1 ${monthYearMatch[1]} ${monthYearMatch[2]}`);
+    if (!isNaN(d.getTime())) {
+      return d;
+    }
+  }
+
+  // 3. Format: "MM/YYYY" or "MM-YYYY"
+  const myMatch = str.match(/^(\d{1,2})[\/-](\d{4})$/);
+  if (myMatch) {
+    const d = new Date(`${myMatch[2]}-${myMatch[1].padStart(2, '0')}-01`);
+    if (!isNaN(d.getTime())) {
+      return d;
+    }
+  }
+
+  // 4. Format: Just year e.g. "2026"
+  const yearMatch = str.match(/^(\d{4})$/);
+  if (yearMatch) {
+    return new Date(`${yearMatch[1]}-12-31`);
+  }
+
+  // 5. Format: DD/MM/YYYY or DD-MM-YYYY
+  const dmyMatch = str.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);
+  if (dmyMatch) {
+    const d = new Date(`${dmyMatch[3]}-${dmyMatch[2].padStart(2, '0')}-${dmyMatch[1].padStart(2, '0')}`);
+    if (!isNaN(d.getTime())) {
+      return d;
+    }
+  }
+
+  return null;
+}

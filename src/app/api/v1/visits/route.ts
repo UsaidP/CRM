@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { requireSession } from '@/lib/services/api-auth';
 import { prisma } from '@/lib/db/prisma';
 import { buildWhatsAppSiteVisitItinerary, ItineraryStopInput } from '@/lib/domain/visit-dispatcher';
 
@@ -6,6 +7,8 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
   try {
+    const auth = await requireSession(req);
+    if (!auth.ok) return auth.response;
     const { searchParams } = new URL(req.url);
     const status = searchParams.get('status');
     const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
@@ -65,6 +68,8 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
+    const auth = await requireSession(req);
+    if (!auth.ok) return auth.response;
     const body = await req.json();
     const {
       leadId,

@@ -23,11 +23,13 @@ import {
 } from 'lucide-react';
 import { PrioritizedLeadScore } from '@/lib/domain/prioritization-engine';
 import { formatDateShort } from '@/lib/date-utils';
+import { CustomSelect, type CustomSelectOption } from '@/components/ui/CustomSelect';
 
 export interface KanbanStageDef {
   id: string;
   label: string;
   shortLabel: string;
+  dotColor: string;
   colorClass: string;
   badgeClass: string;
   description: string;
@@ -36,67 +38,75 @@ export interface KanbanStageDef {
 export const KANBAN_STAGES: KanbanStageDef[] = [
   {
     id: 'new_uncontacted',
-    label: '🔴 New Inbound (Sub-15m SLA)',
+    label: 'New Inbound (Sub-15m SLA)',
     shortLabel: 'New Leads',
+    dotColor: 'bg-status-danger',
     colorClass: 'border-l-status-danger',
     badgeClass: 'bg-status-danger-surface text-status-danger border-status-danger/30',
-    description: 'Fresh speed-to-lead qualification pending',
+    description: 'Fresh speed-to-lead qualification',
   },
   {
     id: 'discovery_call',
-    label: '📞 Discovery & Qualifying',
+    label: 'Discovery & Qualifying',
     shortLabel: 'Discovery',
+    dotColor: 'bg-status-warning',
     colorClass: 'border-l-status-warning',
     badgeClass: 'bg-status-warning-surface text-status-warning border-status-warning/30',
-    description: 'Budget, BHK & micro-market preferences',
+    description: 'Budget, BHK & micro-market check',
   },
   {
     id: 'portal_shared',
-    label: '📑 Shortlist / Deck Sent',
+    label: 'Shortlist / Deck Sent',
     shortLabel: 'Deck Sent',
+    dotColor: 'bg-accent',
     colorClass: 'border-l-accent',
     badgeClass: 'bg-accent-soft text-accent-text border-accent/30',
     description: 'Portal telemetry & unit inspection',
   },
   {
     id: 'visit_scheduled',
-    label: '🚗 Site Visit Scheduled',
+    label: 'Site Visit Scheduled',
     shortLabel: 'Visit Fixed',
-    colorClass: 'border-l-status-warning',
-    badgeClass: 'bg-status-warning-surface text-status-warning border-status-warning/30',
-    description: 'Cab logistics & developer POC check',
+    dotColor: 'bg-sky-500',
+    colorClass: 'border-l-sky-500',
+    badgeClass: 'bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 border-sky-200 dark:border-sky-800',
+    description: 'Cab logistics & developer POC',
   },
   {
     id: 'visit_done',
-    label: '🏢 Site Visit Completed',
+    label: 'Site Visit Completed',
     shortLabel: 'Tour Done',
-    colorClass: 'border-l-status-success',
-    badgeClass: 'bg-status-success-surface text-status-success border-status-success/30',
+    dotColor: 'bg-emerald-500',
+    colorClass: 'border-l-emerald-500',
+    badgeClass: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800',
     description: 'Post-visit feedback & token offer',
   },
   {
     id: 'negotiation_token',
-    label: '💰 Negotiation & Token',
+    label: 'Negotiation & Token',
     shortLabel: 'Negotiating',
-    colorClass: 'border-l-status-success',
-    badgeClass: 'bg-status-success-surface text-status-success border-status-success/30',
+    dotColor: 'bg-purple-500',
+    colorClass: 'border-l-purple-500',
+    badgeClass: 'bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-800',
     description: 'Price revision & booking slip',
   },
   {
     id: 'closed_won',
-    label: '🏆 Booking Done (Closed Won)',
+    label: 'Booking Done (Closed Won)',
     shortLabel: 'Closed Won',
-    colorClass: 'border-l-status-success',
+    dotColor: 'bg-emerald-600',
+    colorClass: 'border-l-emerald-600',
     badgeClass: 'bg-status-success-surface text-status-success border-status-success/30',
-    description: 'Registered & commission ledger booked',
+    description: 'Commission ledger booked',
   },
   {
     id: 'on_hold_nurture',
-    label: '⏳ Nurture / Follow-Up Later',
+    label: 'Nurture / Follow-Up Later',
     shortLabel: 'Nurture',
+    dotColor: 'bg-slate-400',
     colorClass: 'border-l-border',
     badgeClass: 'bg-surface-subtle text-content-secondary border-border',
-    description: 'Long term market cadence updates',
+    description: 'Long term market updates',
   },
 ];
 
@@ -190,24 +200,25 @@ export function LeadsKanbanBoard({
               onDragOver={(e) => handleDragOver(stage.id, e)}
               onDragLeave={(e) => handleDragLeave(stage.id, e)}
               onDrop={(e) => handleDrop(stage.id, e)}
-              className={`w-80 flex flex-col rounded-2xl bg-surface-subtle border shadow-xs overflow-hidden transition-all duration-200 ${
+              className={`w-80 flex flex-col rounded-2xl bg-surface border shadow-2xs overflow-hidden transition-all duration-200 ${
                 isTargetedByDrag
                   ? 'border-accent ring-2 ring-accent/30 bg-accent-soft/10 shadow-md scale-[1.01]'
                   : 'border-border'
               }`}
             >
               {/* Stage Column Header */}
-              <div className="p-3.5 border-b border-border bg-surface flex items-center justify-between gap-2">
-                <div className="space-y-0.5">
+              <div className="p-3.5 border-b border-border bg-surface-subtle/50 flex items-center justify-between gap-2">
+                <div className="space-y-0.5 min-w-0">
                   <div className="flex items-center gap-2">
-                    <h3 className="font-bold text-xs text-content font-display tracking-tight">
+                    <span className={`w-2.5 h-2.5 rounded-full ${stage.dotColor} shrink-0`} />
+                    <h3 className="font-bold text-xs text-content font-display tracking-tight truncate">
                       {stage.shortLabel}
                     </h3>
-                    <span className="px-2 py-0.5 rounded-full text-[11px] font-mono font-bold bg-surface-subtle text-content border border-border">
+                    <span className="px-2 py-0.2 text-[11px] font-mono font-bold bg-surface text-content border border-border rounded-full shadow-2xs">
                       {stageLeads.length}
                     </span>
                   </div>
-                  <p className="text-[10px] text-content-muted">{stage.description}</p>
+                  <p className="text-[10px] text-content-muted truncate">{stage.description}</p>
                 </div>
               </div>
 
@@ -222,9 +233,12 @@ export function LeadsKanbanBoard({
                 )}
 
                 {stageLeads.length === 0 && !isTargetedByDrag ? (
-                  <div className="h-32 rounded-xl border border-dashed border-border/80 flex flex-col items-center justify-center text-center p-3 text-content-muted text-xs space-y-1">
-                    <span>No leads in {stage.shortLabel}</span>
-                    <span className="text-[10px] opacity-70">Drag cards here to update stage</span>
+                  <div className="h-36 rounded-xl border border-dashed border-border/80 bg-surface-subtle/30 flex flex-col items-center justify-center text-center p-4 text-content-muted text-xs space-y-1.5">
+                    <div className="w-8 h-8 rounded-full bg-surface border border-border flex items-center justify-center text-content-muted">
+                      <Building2 className="w-4 h-4" />
+                    </div>
+                    <span className="font-medium text-content-secondary">No leads in {stage.shortLabel}</span>
+                    <span className="text-[10px] text-content-muted">Drag cards here to update stage</span>
                   </div>
                 ) : (
                   stageLeads.map((lead) => {
@@ -326,7 +340,7 @@ export function LeadsKanbanBoard({
 
                             {lead.portals?.[0] && (
                               <a
-                                href={`/portal/${lead.portals[0].token}`}
+                                href={`/p/${lead.portals[0].token}`}
                                 target="_blank"
                                 rel="noreferrer"
                                 onClick={(e) => e.stopPropagation()}
@@ -439,21 +453,20 @@ export function LeadsKanbanBoard({
                           </div>
 
                           {/* Quick Stage Mover Dropdown */}
-                          <div className="relative">
-                            <select
+                          <div className="relative" onClick={(e) => e.stopPropagation()}>
+                            <CustomSelect
+                              options={KANBAN_STAGES.map((s) => ({
+                                value: s.id,
+                                label: s.shortLabel,
+                                dotColor: s.dotColor,
+                              }))}
                               value={lead.currentStage || 'new_uncontacted'}
                               disabled={isUpdating}
-                              onChange={(e) => handleMoveStage(lead.id, e.target.value, e)}
-                              onClick={(e) => e.stopPropagation()}
-                              className="px-2 py-1 bg-surface border border-border rounded-lg text-[10px] font-bold text-content focus:outline-none focus:border-accent cursor-pointer disabled:opacity-50"
-                              title="Advance Pipeline Stage"
-                            >
-                              {KANBAN_STAGES.map((s) => (
-                                <option key={s.id} value={s.id}>
-                                  {s.shortLabel}
-                                </option>
-                              ))}
-                            </select>
+                              onChange={(val) => handleMoveStage(lead.id, val)}
+                              size="xs"
+                              align="right"
+                              menuClassName="w-48"
+                            />
                           </div>
                         </div>
                       </div>

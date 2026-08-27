@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireSession } from '@/lib/services/api-auth';
 import { prisma } from '@/lib/db/prisma';
 import { 
   parseExcelBuffer, 
@@ -14,6 +15,8 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await requireSession(request);
+    if (!auth.ok) return auth.response;
     const contentType = request.headers.get('content-type') || '';
     let customMapping: ColumnMapping | undefined;
     let organizationId = '';

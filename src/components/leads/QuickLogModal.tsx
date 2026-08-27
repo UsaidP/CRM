@@ -14,6 +14,30 @@ import {
   Calendar,
 } from 'lucide-react';
 import { AccessibleDialog } from '@/components/ui/AccessibleDialog';
+import { CustomSelect, type CustomSelectOption } from '@/components/ui/CustomSelect';
+
+const OUTCOME_OPTIONS: CustomSelectOption[] = [
+  { value: 'CONNECTED_INTERESTED', label: '✅ Connected & Interested' },
+  { value: 'VISIT_REQUESTED', label: '🚗 Site Visit Requested' },
+  { value: 'BUDGET_DISCUSSED', label: '💰 Budget / Price Discussed' },
+  { value: 'TOKEN_OFFER', label: '🏷️ Token / Booking Offer' },
+  { value: 'RINGING_NO_ANSWER', label: '🔕 Ringing / No Answer' },
+  { value: 'BUSY_CALL_LATER', label: '⏳ Busy / Call Back Later' },
+  { value: 'NOTE_LOGGED', label: '📝 General Remark / Audit Note' },
+  { value: 'NOT_INTERESTED', label: '❌ Not Interested / Dropped' },
+];
+
+const STAGE_OPTIONS: CustomSelectOption[] = [
+  { value: '', label: 'Keep current stage' },
+  { value: 'new_uncontacted', label: '🔴 New Lead (Uncontacted)' },
+  { value: 'discovery_call', label: '📞 Discovery & Qualifying' },
+  { value: 'portal_shared', label: '📑 Shortlist / Deck Sent' },
+  { value: 'visit_scheduled', label: '🚗 Site Visit Scheduled' },
+  { value: 'visit_done', label: '🏢 Site Visit Completed' },
+  { value: 'negotiation_token', label: '💰 Price Negotiation & Token' },
+  { value: 'closed_won', label: '🏆 Booking Done (Closed Won)' },
+  { value: 'on_hold_nurture', label: '⏳ Nurture / Follow-Up Later' },
+];
 
 interface QuickLogModalProps {
   open: boolean;
@@ -253,24 +277,16 @@ export function QuickLogModal({
             {/* Outcome & Duration */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label htmlFor="log-outcome" className="text-content-secondary font-medium block mb-1">
+                <label className="text-content-secondary font-medium block mb-1 text-xs">
                   Outcome / Status:
                 </label>
-                <select
-                  id="log-outcome"
+                <CustomSelect
+                  options={OUTCOME_OPTIONS}
                   value={outcome}
-                  onChange={(e) => setOutcome(e.target.value)}
-                  className="w-full bg-surface-inset border border-border rounded-xl p-2.5 text-xs text-content font-bold focus:outline-none focus:border-accent cursor-pointer"
-                >
-                  <option value="CONNECTED_INTERESTED">✅ Connected &amp; Interested</option>
-                  <option value="VISIT_REQUESTED">🚗 Site Visit Requested</option>
-                  <option value="BUDGET_DISCUSSED">💰 Budget / Price Discussed</option>
-                  <option value="TOKEN_OFFER">🏷️ Token / Booking Offer</option>
-                  <option value="RINGING_NO_ANSWER">🔕 Ringing / No Answer</option>
-                  <option value="BUSY_CALL_LATER">⏳ Busy / Call Back Later</option>
-                  <option value="NOTE_LOGGED">📝 General Remark / Audit Note</option>
-                  <option value="NOT_INTERESTED">❌ Not Interested / Dropped</option>
-                </select>
+                  onChange={(val) => setOutcome(val)}
+                  className="w-full"
+                  triggerClassName="bg-surface-inset border-border rounded-xl text-xs font-bold"
+                />
               </div>
 
               {channel === 'PHONE_CALL' ? (
@@ -290,25 +306,17 @@ export function QuickLogModal({
                 </div>
               ) : (
                 <div>
-                  <label htmlFor="log-stage" className="text-content-secondary font-medium block mb-1">
+                  <label className="text-content-secondary font-medium block mb-1 text-xs">
                     Update Pipeline Stage:
                   </label>
-                  <select
-                    id="log-stage"
+                  <CustomSelect
+                    options={STAGE_OPTIONS}
                     value={stageUpdate}
-                    onChange={(e) => setStageUpdate(e.target.value)}
-                    className="w-full bg-surface-inset border border-border rounded-xl p-2.5 text-xs text-content font-bold focus:outline-none focus:border-accent cursor-pointer"
-                  >
-                    <option value="">Keep current stage ({lead.currentStage || 'new'})</option>
-                    <option value="new_uncontacted">🔴 New Lead (Uncontacted)</option>
-                    <option value="discovery_call">📞 Discovery &amp; Qualifying</option>
-                    <option value="portal_shared">📑 Shortlist / Deck Sent</option>
-                    <option value="visit_scheduled">🚗 Site Visit Scheduled</option>
-                    <option value="visit_done">🏢 Site Visit Completed</option>
-                    <option value="negotiation_token">💰 Price Negotiation &amp; Token</option>
-                    <option value="closed_won">🏆 Booking Done (Closed Won)</option>
-                    <option value="on_hold_nurture">⏳ Nurture / Follow-Up Later</option>
-                  </select>
+                    onChange={(val) => setStageUpdate(val)}
+                    placeholder={`Keep current stage (${lead.currentStage || 'new'})`}
+                    className="w-full"
+                    triggerClassName="bg-surface-inset border-border rounded-xl text-xs font-bold"
+                  />
                 </div>
               )}
             </div>

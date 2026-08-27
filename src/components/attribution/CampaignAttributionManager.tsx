@@ -20,6 +20,20 @@ import {
 } from 'lucide-react';
 import { YoutubeIcon, InstagramIcon } from '@/components/icons/SocialIcons';
 import { OFFICIAL_BROKER_NUMBERS } from '@/lib/constants/broker-constants';
+import { CustomSelect, type CustomSelectOption } from '@/components/ui/CustomSelect';
+
+const CAMPAIGN_CHANNEL_OPTIONS: CustomSelectOption[] = [
+  { value: 'YOUTUBE_SHORT', label: 'YouTube Short' },
+  { value: 'YOUTUBE_VIDEO', label: 'YouTube Video' },
+  { value: 'INSTAGRAM_REEL', label: 'Instagram Reel' },
+  { value: 'WHATSAPP_DIRECT', label: 'WhatsApp Direct' },
+  { value: 'DIRECT_CALL', label: 'Direct Phone Call' },
+];
+
+const CAMPAIGN_BROKER_OPTIONS: CustomSelectOption[] = [
+  { value: OFFICIAL_BROKER_NUMBERS.SAFWAN.e164, label: `Safwan Diwan (${OFFICIAL_BROKER_NUMBERS.SAFWAN.e164})` },
+  { value: OFFICIAL_BROKER_NUMBERS.SUHEL.e164, label: `Suhel Patel (${OFFICIAL_BROKER_NUMBERS.SUHEL.e164})` },
+];
 
 export function CampaignAttributionManager({ initialCampaigns = [] }: { initialCampaigns?: any[] }) {
   const [campaigns, setCampaigns] = useState<any[]>(initialCampaigns);
@@ -270,17 +284,14 @@ export function CampaignAttributionManager({ initialCampaigns = [] }: { initialC
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="block text-xs font-medium text-content mb-1">Channel Platform</label>
-                  <select
+                  <CustomSelect
+                    options={CAMPAIGN_CHANNEL_OPTIONS}
                     value={formChannel}
-                    onChange={(e) => setFormChannel(e.target.value)}
-                    className="w-full px-3 py-2 bg-surface-inset border border-border rounded-xl text-xs text-content focus:outline-none focus:border-accent"
-                  >
-                    <option value="YOUTUBE_SHORT">YouTube Short</option>
-                    <option value="YOUTUBE_VIDEO">YouTube Video</option>
-                    <option value="INSTAGRAM_REEL">Instagram Reel</option>
-                    <option value="WHATSAPP_DIRECT">WhatsApp Direct</option>
-                    <option value="DIRECT_CALL">Direct Phone Call</option>
-                  </select>
+                    onChange={(val) => setFormChannel(val)}
+                    className="w-full"
+                    size="xs"
+                    triggerClassName="bg-surface-inset border-border rounded-xl text-xs font-semibold"
+                  />
                 </div>
 
                 <div>
@@ -298,18 +309,14 @@ export function CampaignAttributionManager({ initialCampaigns = [] }: { initialC
 
               <div>
                 <label className="block text-xs font-medium text-content mb-1">Assigned Broker Line</label>
-                <select
+                <CustomSelect
+                  options={CAMPAIGN_BROKER_OPTIONS}
                   value={formBroker}
-                  onChange={(e) => setFormBroker(e.target.value)}
-                  className="w-full px-3 py-2 bg-surface-inset border border-border rounded-xl text-xs text-content focus:outline-none focus:border-accent"
-                >
-                  <option value={OFFICIAL_BROKER_NUMBERS.SAFWAN.e164}>
-                    Safwan Diwan ({OFFICIAL_BROKER_NUMBERS.SAFWAN.e164})
-                  </option>
-                  <option value={OFFICIAL_BROKER_NUMBERS.SUHEL.e164}>
-                    Suhel Patel ({OFFICIAL_BROKER_NUMBERS.SUHEL.e164})
-                  </option>
-                </select>
+                  onChange={(val) => setFormBroker(val)}
+                  className="w-full"
+                  size="xs"
+                  triggerClassName="bg-surface-inset border-border rounded-xl text-xs font-semibold"
+                />
               </div>
 
               <div>

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { AppShell } from '@/components/layout/AppShell';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
+import { AgentationToolbar } from '@/components/dev/AgentationToolbar';
 
 export const metadata: Metadata = {
   title: {
@@ -44,9 +45,10 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="antialiased bg-[#FBFBF9] dark:bg-[#081C15] text-[#1d1c17] dark:text-[#f5f0e8] font-body-md" suppressHydrationWarning>
+      <body className="antialiased bg-canvas text-content font-body-md min-h-screen" suppressHydrationWarning>
         <ThemeProvider>
           <AppShell>{children}</AppShell>
+          <AgentationToolbar />
         </ThemeProvider>
       </body>
     </html>

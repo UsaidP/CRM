@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireSession } from '@/lib/services/api-auth';
 import { syncAllLeadFallbacks, escalateOverdueReminders } from '@/lib/services/lead-reminder-service';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   try {
+    const auth = await requireSession(req);
+    if (!auth.ok) return auth.response;
     let organizationId: string | undefined;
 
     try {

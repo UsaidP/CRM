@@ -1,11 +1,14 @@
 import { NextResponse } from 'next/server';
+import { requireSession } from '@/lib/services/api-auth';
 import { prisma } from '@/lib/db/prisma';
 import { computeFunnelMetrics } from '@/lib/domain/analytics-engine';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
+    const auth = await requireSession(req);
+    if (!auth.ok) return auth.response;
     const [leads, portals, visits, deals] = await Promise.all([
       prisma.lead.findMany(),
       prisma.clientPortal.findMany(),

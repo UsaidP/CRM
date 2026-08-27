@@ -17,9 +17,15 @@ export async function GET(req: Request) {
   const challenge = url.searchParams.get('hub.challenge');
 
   const expectedToken =
-    process.env.INSTAGRAM_VERIFY_TOKEN ||
-    process.env.META_WEBHOOK_VERIFY_TOKEN ||
-    'zamzam_meta_webhook_secret_2026';
+    process.env.INSTAGRAM_VERIFY_TOKEN || process.env.META_WEBHOOK_VERIFY_TOKEN;
+
+  if (!expectedToken) {
+    console.error('[WEBHOOK] INSTAGRAM_VERIFY_TOKEN / META_WEBHOOK_VERIFY_TOKEN not configured');
+    return NextResponse.json(
+      { error: 'Instagram webhook verification token not configured' },
+      { status: 500 }
+    );
+  }
 
   if (mode === 'subscribe' && token === expectedToken) {
     return new Response(challenge || '', { status: 200 });
@@ -29,7 +35,13 @@ export async function GET(req: Request) {
 }
 
 function verifyInstagramSignature(rawBody: string, signatureHeader: string | null, appSecret: string): boolean {
-  if (!signatureHeader || !appSecret) return true;
+  // Fail CLOSED when the secret isn't configured (dev bypass via env flag).
+  if (!appSecret) {
+    if (process.env.ALLOW_INSECURE_WEBHOOKS === '1') return true;
+    console.error('[WEBHOOK] META_APP_SECRET not configured — rejecting webhook');
+    return false;
+  }
+  if (!signatureHeader) return false;
   try {
     const parts = signatureHeader.split('=');
     const signature = parts[1];

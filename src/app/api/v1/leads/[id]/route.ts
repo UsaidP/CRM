@@ -1,10 +1,13 @@
 import { NextResponse } from 'next/server';
+import { requireSession } from '@/lib/services/api-auth';
 import { prisma } from '@/lib/db/prisma';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const auth = await requireSession(req);
+    if (!auth.ok) return auth.response;
     const { id } = await params;
     const lead = await prisma.lead.findUnique({
       where: { id },
@@ -30,6 +33,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const auth = await requireSession(req);
+    if (!auth.ok) return auth.response;
     const { id } = await params;
     const body = await req.json();
     const { currentStage, assignedBrokerId, notes, fullName, email } = body;

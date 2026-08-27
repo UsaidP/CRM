@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
-import { rankMatchingProperties, BuyerRequirementInput } from '@/lib/domain/matching-engine';
+import { rankMatchingProperties, BuyerRequirementInput, PropertyUnitForMatching } from '@/lib/domain/matching-engine';
+import { generateWhatsAppPitchWithAI } from '@/lib/services/gemini-service';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,6 +17,8 @@ export async function POST(req: Request) {
       minCarpetSqft,
       purpose = 'self_use',
       floorPreference = 'any',
+      clientName = 'Valued Home Buyer',
+      generateAiPitch = false,
     } = body;
 
     if (!budgetMax || Number(budgetMax) <= 0) {
@@ -42,20 +45,32 @@ export async function POST(req: Request) {
       },
     });
 
-    const formattedUnits = units.map((u) => ({
+    const formattedUnits: PropertyUnitForMatching[] = units.map((u) => ({
       ...u,
       photoGallery: JSON.parse(u.photoGalleryJson || '[]'),
     }));
 
     const rankedMatches = rankMatchingProperties(requirement, formattedUnits);
 
+    let aiPitch = null;
+    if (generateAiPitch && rankedMatches.length > 0) {
+      try {
+        const topUnits = rankedMatches.slice(0, 3).map((m) => m.unit);
+        aiPitch = await generateWhatsAppPitchWithAI(clientName, requirement, topUnits);
+      } catch (err) {
+        console.warn('Simulation AI pitch generation skipped:', err);
+      }
+    }
+
     return NextResponse.json({
       success: true,
       matchCount: rankedMatches.length,
       requirement,
+      aiPitch,
       data: rankedMatches,
     });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
+

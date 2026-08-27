@@ -12,3 +12,5 @@ build/
 prisma/dev.db
 prisma/dev.db-journal
 public/uploads/
+backups/
+*.pre-restore-*

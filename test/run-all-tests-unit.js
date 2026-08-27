@@ -68,15 +68,83 @@ function assessUnitFreshness(currentStatus, lastVerifiedAt) {
   };
 }
 
+const MAHARERA_DISTRICTS = {
+  '517': 'Thane (Kalyan, Dombivli, Mira-Bhayandar, Thane City)',
+  '518': 'Mumbai Suburban (Bandra, Andheri, Borivali, Goregaon)',
+  '519': 'Mumbai City (South Mumbai, Worli, Dadar)',
+  '520': 'Raigad / Navi Mumbai (Kharghar, Panvel, Ulwe, Taloja, Dronagiri)',
+  '521': 'Pune (Hinjawadi, Wakad, Baner, Kharadi, Pimpri-Chinchwad)',
+  '522': 'Palghar (Vasai, Virar, Nalasopara, Boisar)',
+};
+
 function validateReraNumber(reraNumber) {
   if (!reraNumber || typeof reraNumber !== 'string') {
-    return { isValid: false, error: 'MahaRERA registration number is required.' };
+    return { isValid: false, error: 'MahaRERA registration number is required.', formatType: 'INVALID' };
   }
-  const cleaned = reraNumber.trim().toUpperCase();
-  if (cleaned.length < 8) {
-    return { isValid: false, error: 'MahaRERA registration number must be at least 8 characters.' };
+
+  let cleaned = reraNumber.trim().toUpperCase();
+  cleaned = cleaned.replace(/^(?:MAHARERA|RERA|REGISTRATION|REG|NUMBER|NUM|NO|ID|BROKER|CERTIFICATE|PROJECT|PRJ|[:\s.#/-])+/gi, '');
+  cleaned = cleaned.replace(/[\s-]+/g, '');
+
+  if (!cleaned || cleaned.length < 8) {
+    return { isValid: false, error: 'RERA registration number must be at least 8 alphanumeric characters.', formatType: 'INVALID' };
   }
-  return { isValid: true, normalized: cleaned };
+
+  // 1. MahaRERA Project Format: P followed by 11 digits
+  const mahaProjectMatch = cleaned.match(/^P([0-9]{3})[0-9]{8}$/);
+  if (mahaProjectMatch) {
+    const districtCode = mahaProjectMatch[1];
+    const districtName = MAHARERA_DISTRICTS[districtCode] || `Maharashtra District (${districtCode})`;
+    return {
+      isValid: true,
+      normalized: cleaned,
+      formatType: 'MAHARERA_PROJECT',
+      state: 'Maharashtra',
+      authority: 'MahaRERA (Maharashtra Real Estate Regulatory Authority)',
+      entityType: 'PROJECT',
+      districtCode,
+      districtName,
+      officialPortalUrl: 'https://maharera.maharashtra.gov.in',
+      directSearchUrl: 'https://maharera.maharashtra.gov.in/projects-search-result',
+    };
+  }
+
+  // 2. MahaRERA Agent Format: A followed by 11 digits
+  const mahaAgentMatch = cleaned.match(/^[AR]([0-9]{3})[0-9]{8}$/);
+  if (mahaAgentMatch) {
+    const districtCode = mahaAgentMatch[1];
+    const districtName = MAHARERA_DISTRICTS[districtCode] || `Maharashtra District (${districtCode})`;
+    return {
+      isValid: true,
+      normalized: cleaned,
+      formatType: 'MAHARERA_AGENT',
+      state: 'Maharashtra',
+      authority: 'MahaRERA (Maharashtra Real Estate Regulatory Authority)',
+      entityType: 'AGENT',
+      districtCode,
+      districtName,
+      officialPortalUrl: 'https://maharera.maharashtra.gov.in',
+    };
+  }
+
+  // 3. Indian State RERA
+  const nationalReraRegex = /^(?:PRM\/[A-Z]{2}\/RERA\/[A-Z0-9/_-]+|UPRERA[A-Z0-9]+|HRERA[A-Z0-9/_-]+|PR\/[A-Z]{2}\/[A-Z0-9/_-]+|[A-Z]{2,4}[0-9]{6,16}|[A-Z0-9/_-]{8,30})$/;
+  if (nationalReraRegex.test(cleaned)) {
+    return {
+      isValid: true,
+      normalized: cleaned,
+      formatType: 'NATIONAL_RERA',
+      state: 'India (Inter-State RERA)',
+      officialPortalUrl: 'https://maharera.maharashtra.gov.in',
+    };
+  }
+
+  return {
+    isValid: false,
+    normalized: cleaned,
+    formatType: 'INVALID',
+    error: 'Invalid RERA format.',
+  };
 }
 
 function canTransitionStatus(currentStatus, targetStatus, hasValidRera) {
@@ -157,16 +225,35 @@ async function runTests() {
     const res = validateReraNumber('P52000018920');
     assert.strictEqual(res.isValid, true);
     assert.strictEqual(res.normalized, 'P52000018920');
+    assert.strictEqual(res.districtCode, '520');
+    assert.strictEqual(res.formatType, 'MAHARERA_PROJECT');
   });
 
-  test('Test 2.2: Reject invalid/empty RERA number', () => {
+  test('Test 2.2: Reject invalid/empty RERA number and non-matching formats', () => {
     const res = validateReraNumber('');
     assert.strictEqual(res.isValid, false);
     const shortRes = validateReraNumber('ABC');
     assert.strictEqual(shortRes.isValid, false);
   });
 
-  test('Test 2.3: Block ACTIVE_MARKETABLE transition if RERA is invalid', () => {
+  test('Test 2.3: MahaRERA Agent and Broker license validation', () => {
+    const agentRes = validateReraNumber('A52000029381');
+    assert.strictEqual(agentRes.isValid, true);
+    assert.strictEqual(agentRes.formatType, 'MAHARERA_AGENT');
+    assert.strictEqual(agentRes.entityType, 'AGENT');
+  });
+
+  test('Test 2.4: Auto-sanitize prefix labels and hyphens (e.g. MahaRERA: P52000028714)', () => {
+    const prefixed = validateReraNumber('MahaRERA Reg No: P52000028714');
+    assert.strictEqual(prefixed.isValid, true);
+    assert.strictEqual(prefixed.normalized, 'P52000028714');
+
+    const hyphenated = validateReraNumber('P-52000028714');
+    assert.strictEqual(hyphenated.isValid, true);
+    assert.strictEqual(hyphenated.normalized, 'P52000028714');
+  });
+
+  test('Test 2.5: Block ACTIVE_MARKETABLE transition if RERA is invalid', () => {
     const transition = canTransitionStatus('DRAFT', 'ACTIVE_MARKETABLE', false);
     assert.strictEqual(transition.allowed, false, 'Must block activation without valid RERA');
   });

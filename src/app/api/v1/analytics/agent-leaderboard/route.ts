@@ -1,11 +1,14 @@
 import { NextResponse } from 'next/server';
+import { requireSession } from '@/lib/services/api-auth';
 import { prisma } from '@/lib/db/prisma';
 import { computeAgentLeaderboard } from '@/lib/domain/analytics-engine';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
+    const auth = await requireSession(req);
+    if (!auth.ok) return auth.response;
     const [users, deals, visits, portals, leads] = await Promise.all([
       prisma.user.findMany({
         where: { isActive: true },

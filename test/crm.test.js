@@ -47,8 +47,21 @@ describe('Phase 1: Inventory & Cost Engine', () => {
   });
 
   test('MahaRERA format validation', () => {
-    expect(validateReraNumber('P52000018920').isValid).toBe(true);
+    const valid = validateReraNumber('P52000018920');
+    expect(valid.isValid).toBe(true);
+    expect(valid.districtCode).toBe('520');
+    expect(valid.formatType).toBe('MAHARERA_PROJECT');
+
+    const agent = validateReraNumber('A52000029381');
+    expect(agent.isValid).toBe(true);
+    expect(agent.entityType).toBe('AGENT');
+
+    const prefixed = validateReraNumber('MahaRERA: P52000028714');
+    expect(prefixed.isValid).toBe(true);
+    expect(prefixed.normalized).toBe('P52000028714');
+
     expect(validateReraNumber('INVALID').isValid).toBe(false);
+    expect(validateReraNumber('').isValid).toBe(false);
   });
 
   test('Freshness circuit breaker (<14 days vs >14 days)', () => {
@@ -286,6 +299,6 @@ describe('UI regression contracts', () => {
     expect(mediaRoute).toContain('MAX_IMAGE_BYTES');
     expect(mediaRoute).toContain('MAX_VIDEO_BYTES');
     expect(portalPage).toContain('iframe');
-    expect(portalPage).toContain('Verified photos being uploaded');
+    expect(portalPage).toContain('Verified photos');
   });
 });

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { requireSession, orgScope } from '@/lib/services/api-auth';
 import { prisma } from '@/lib/db/prisma';
 import { calculateDealCommission } from '@/lib/domain/commission-calculator';
 import { createDealSchema } from '@/lib/validators/deal-schemas';
@@ -7,13 +8,18 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
   try {
+    const auth = await requireSession(req);
+    if (!auth.ok) return auth.response;
+    const { session } = auth;
+
     const { searchParams } = new URL(req.url);
     const status = searchParams.get('status');
     const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '50', 10)));
     const skip = (page - 1) * limit;
 
-    const where: any = {};
+    // Multi-tenant: restrict to caller's organization
+    const where: any = orgScope(session);
     if (status && status !== 'ALL') {
       where.dealStatus = status;
     }
@@ -91,6 +97,8 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
+    const auth = await requireSession(req);
+    if (!auth.ok) return auth.response;
     const body = await req.json();
     const parsed = createDealSchema.safeParse(body);
 

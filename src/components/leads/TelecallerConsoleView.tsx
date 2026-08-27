@@ -24,17 +24,23 @@ import {
   User,
   SlidersHorizontal,
   ChevronRight,
-  Volume2,
-  Mic,
   ShieldCheck,
-  Tag
+  Tag,
+  Copy,
+  Check,
+  Share2,
+  DollarSign,
+  Compass,
+  CheckSquare
 } from 'lucide-react';
 import { YoutubeIcon, InstagramIcon } from '@/components/icons/SocialIcons';
+import { BackupModal } from '@/components/admin/BackupModal';
 
 interface LeadItem {
   id: string;
   fullName?: string | null;
   phoneE164?: string | null;
+  email?: string | null;
   leadSource?: string;
   sourceConfidence?: string;
   sourceContentId?: string | null;
@@ -45,6 +51,10 @@ interface LeadItem {
   reminders?: any[];
   requirements?: any[];
   portals?: any[];
+  city?: string | null;
+  preferredBhk?: number | string | null;
+  budgetCeiling?: number | null;
+  preferredMicroMarket?: string | null;
   [key: string]: any;
 }
 
@@ -68,12 +78,21 @@ export function TelecallerConsoleView({
   const [activeQueueFilter, setActiveQueueFilter] = useState<'ALL' | 'UNCONTACTED' | 'HOT' | 'OVERDUE'>('UNCONTACTED');
   const [isSaving, setIsSaving] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [isBackupModalOpen, setIsBackupModalOpen] = useState(false);
+  const [backupMode, setBackupMode] = useState<'BACKUP' | 'DUTY_END'>('DUTY_END');
+  const [copiedPhone, setCopiedPhone] = useState(false);
 
-  // Brixi AI 4-Pillar Scorecard State for Active Lead
-  const [brixiIntent, setBrixiIntent] = useState<'IMMEDIATE' | 'EXPLORING' | 'CURIOUS'>('IMMEDIATE');
-  const [brixiBudget, setBrixiBudget] = useState<'VERIFIED_HIGH' | 'STRETCHED' | 'LOW'>('VERIFIED_HIGH');
-  const [brixiLocation, setBrixiLocation] = useState<'PRIME_SEC35' | 'KHARGHAR_GEN' | 'TALOJA_OUTER'>('PRIME_SEC35');
-  const [brixiTimeline, setBrixiTimeline] = useState<'HOT_30D' | 'WARM_90D' | 'EARLY_90D'>('HOT_30D');
+  // ZamZam 4-Pillar Qualification Scorecard State
+  const [qualificationIntent, setQualificationIntent] = useState<'IMMEDIATE' | 'EXPLORING' | 'CURIOUS'>('IMMEDIATE');
+  const [qualificationBudget, setQualificationBudget] = useState<'LUXURY_125CR' | 'MID_60L_125CR' | 'AFFORDABLE_60L'>('MID_60L_125CR');
+  const [qualificationLocation, setQualificationLocation] = useState<'KHARGHAR_PRIME' | 'TALOJA_METRO' | 'ULWE_PANVEL'>('KHARGHAR_PRIME');
+  const [qualificationTimeline, setQualificationTimeline] = useState<'READY_30D' | 'UNDER_CONST_90D' | 'INVESTOR_90D'>('READY_30D');
+
+  // Discovery Checklist State
+  const [loanApproved, setLoanApproved] = useState(true);
+  const [selfUse, setSelfUse] = useState(true);
+  const [weekendVisitReady, setWeekendVisitReady] = useState(false);
+
   const [callNotes, setCallNotes] = useState('');
   const [callDurationSec, setCallDurationSec] = useState(0);
   const [isCallTimerRunning, setIsCallTimerRunning] = useState(false);
@@ -89,6 +108,18 @@ export function TelecallerConsoleView({
       setCallNotes(selectedLead.notes || '');
       setCallDurationSec(0);
       setIsCallTimerRunning(false);
+      setCopiedPhone(false);
+
+      // Auto-set qualification pillars if lead has preferences
+      const budget = selectedLead.budgetCeiling || (selectedLead.requirements?.[0]?.maxBudget);
+      if (budget && budget >= 12500000) setQualificationBudget('LUXURY_125CR');
+      else if (budget && budget >= 6000000) setQualificationBudget('MID_60L_125CR');
+      else setQualificationBudget('AFFORDABLE_60L');
+
+      const loc = (selectedLead.preferredMicroMarket || selectedLead.requirements?.[0]?.preferredMicroMarket || '').toLowerCase();
+      if (loc.includes('taloja')) setQualificationLocation('TALOJA_METRO');
+      else if (loc.includes('ulwe') || loc.includes('panvel')) setQualificationLocation('ULWE_PANVEL');
+      else setQualificationLocation('KHARGHAR_PRIME');
     }
   }, [selectedLead?.id]);
 
@@ -118,7 +149,8 @@ export function TelecallerConsoleView({
         !searchQuery ||
         (lead.fullName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
         (lead.phoneE164 || '').includes(searchQuery) ||
-        (lead.sourceCode || '').toLowerCase().includes(searchQuery.toLowerCase());
+        (lead.sourceCode || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (lead.email || '').toLowerCase().includes(searchQuery.toLowerCase());
 
       if (!matchesSearch) return false;
 
@@ -127,7 +159,7 @@ export function TelecallerConsoleView({
         return lead.currentStage === 'new_uncontacted';
       }
       if (activeQueueFilter === 'HOT') {
-        return lead.currentStage === 'discovery_call' || lead.currentStage === 'visit_scheduled';
+        return lead.currentStage === 'discovery_call' || lead.currentStage === 'visit_scheduled' || lead.currentStage === 'negotiation_costing';
       }
       if (activeQueueFilter === 'OVERDUE') {
         return (lead.reminders || []).some(
@@ -138,43 +170,51 @@ export function TelecallerConsoleView({
     });
   }, [leads, searchQuery, activeQueueFilter]);
 
-  // Brixi Total Score Calculation (0 - 100)
-  const brixiScore = useMemo(() => {
+  // ZamZam 4-Pillar Scorecard Calculation (0 - 100)
+  const qualificationScore = useMemo(() => {
     let score = 0;
     // 01 Intent (30 pts max)
-    if (brixiIntent === 'IMMEDIATE') score += 30;
-    else if (brixiIntent === 'EXPLORING') score += 18;
+    if (qualificationIntent === 'IMMEDIATE') score += 30;
+    else if (qualificationIntent === 'EXPLORING') score += 18;
     else score += 6;
 
     // 02 Budget (25 pts max)
-    if (brixiBudget === 'VERIFIED_HIGH') score += 25;
-    else if (brixiBudget === 'STRETCHED') score += 18;
-    else score += 7;
+    if (qualificationBudget === 'LUXURY_125CR') score += 25;
+    else if (qualificationBudget === 'MID_60L_125CR') score += 20;
+    else score += 12;
 
     // 03 Location (20 pts max)
-    if (brixiLocation === 'PRIME_SEC35') score += 20;
-    else if (brixiLocation === 'KHARGHAR_GEN') score += 15;
-    else score += 8;
+    if (qualificationLocation === 'KHARGHAR_PRIME') score += 20;
+    else if (qualificationLocation === 'TALOJA_METRO') score += 16;
+    else score += 10;
 
     // 04 Timeline (25 pts max)
-    if (brixiTimeline === 'HOT_30D') score += 25;
-    else if (brixiTimeline === 'WARM_90D') score += 15;
-    else score += 5;
+    if (qualificationTimeline === 'READY_30D') score += 25;
+    else if (qualificationTimeline === 'UNDER_CONST_90D') score += 16;
+    else score += 8;
 
     return score;
-  }, [brixiIntent, brixiBudget, brixiLocation, brixiTimeline]);
+  }, [qualificationIntent, qualificationBudget, qualificationLocation, qualificationTimeline]);
 
-  // Brixi Badge Details
-  const brixiGrade = useMemo(() => {
-    if (brixiScore >= 80) return { label: '🔥 HOT PROSPECT', class: 'bg-status-danger-surface text-status-danger border-status-danger/30' };
-    if (brixiScore >= 55) return { label: '⚡ WARM INTENT', class: 'bg-status-warning-surface text-status-warning border-status-warning/30' };
-    return { label: '🌱 EARLY NURTURE', class: 'bg-surface-subtle text-content-secondary border-border' };
-  }, [brixiScore]);
+  // Qualification Grade Details
+  const qualificationGrade = useMemo(() => {
+    if (qualificationScore >= 80) return { label: '🔥 HOT PROSPECT', class: 'bg-status-danger-surface text-status-danger border-status-danger/30' };
+    if (qualificationScore >= 55) return { label: '⚡ QUALIFIED BUYER', class: 'bg-status-warning-surface text-status-warning border-status-warning/30' };
+    return { label: '🌱 NURTURE PIPELINE', class: 'bg-surface-subtle text-content-secondary border-border' };
+  }, [qualificationScore]);
 
   // Speed-to-lead calculation (elapsed minutes since creation)
   const getElapsedMins = (createdAt: string) => {
     const elapsed = Math.max(0, Math.floor((Date.now() - new Date(createdAt).getTime()) / 60000));
     return elapsed;
+  };
+
+  // Copy phone number
+  const handleCopyPhone = () => {
+    if (!selectedLead?.phoneE164) return;
+    navigator.clipboard.writeText(selectedLead.phoneE164);
+    setCopiedPhone(true);
+    setTimeout(() => setCopiedPhone(false), 2000);
   };
 
   // 1-Click Rapid Call Disposition Handler
@@ -184,22 +224,24 @@ export function TelecallerConsoleView({
     setStatusMessage(`Recording disposition: ${dispositionLabel}...`);
 
     try {
-      // 1. Update stage and notes
+      const summaryNotes = callNotes
+        ? `${callNotes} [ZamZam Score: ${qualificationScore}/100 - ${dispositionLabel}]`
+        : `[ZamZam Score: ${qualificationScore}/100 - ${dispositionLabel}]`;
+
       await fetch(`/api/v1/leads/${selectedLead.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           currentStage: stage,
-          notes: callNotes ? `${callNotes} [Brixi Score: ${brixiScore}/100 - ${dispositionLabel}]` : undefined,
+          notes: summaryNotes,
           ...(selectedLead.currentStage === 'new_uncontacted' ? { firstResponseAt: new Date() } : {}),
         }),
       });
 
-      // 2. Refresh parent leads
       await onRefresh();
       setStatusMessage(`✓ Logged: ${dispositionLabel}`);
 
-      // 3. Move to next uncontacted lead automatically for high-velocity caller flow
+      // Advance to next lead in filtered queue
       const currentIndex = filteredQueue.findIndex((l) => l.id === selectedLead.id);
       if (currentIndex !== -1 && currentIndex + 1 < filteredQueue.length) {
         setSelectedLeadId(filteredQueue[currentIndex + 1].id);
@@ -216,8 +258,15 @@ export function TelecallerConsoleView({
   const getWhatsAppUrl = () => {
     if (!selectedLead?.phoneE164) return '#';
     const cleanPhone = selectedLead.phoneE164.replace(/\D/g, '');
-    const prefill = `Hello ${selectedLead.fullName || 'Sir/Madam'}, this is ZamZam Properties following up on your inquiry for ${selectedLead.sourceCode || 'Navi Mumbai luxury properties'}. Here are our MahaRERA verified project floor plans and details:`;
+    const prefill = `Assalamu Alaikum / Hello ${selectedLead.fullName || 'Sir/Madam'}, this is ZamZam Properties following up on your inquiry for ${selectedLead.sourceCode || selectedLead.preferredMicroMarket || 'Navi Mumbai luxury projects'}. Here are our MahaRERA verified project brochures and all-in cost sheets:`;
     return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(prefill)}`;
+  };
+
+  const getPortalLink = () => {
+    if (selectedLead?.portals && selectedLead.portals.length > 0) {
+      return `/p/${selectedLead.portals[0].shareToken}`;
+    }
+    return null;
   };
 
   return (
@@ -225,24 +274,24 @@ export function TelecallerConsoleView({
       {/* Console Header Bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-2xl bg-surface border border-border shadow-xs">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-accent-soft text-accent-text">
-            <Zap className="w-5 h-5" />
+          <div className="p-2.5 rounded-xl bg-accent text-white shadow-xs">
+            <Zap className="w-5 h-5 fill-white" />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-content flex items-center gap-2">
-              Telecaller High-Velocity Calling Console
+            <h2 className="text-lg font-bold text-content font-display flex items-center gap-2">
+              <span>Telecaller High-Velocity Calling Console</span>
               <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-status-success-surface text-status-success border border-status-success/30">
                 ⚡ 40px Speed Mode
               </span>
             </h2>
             <p className="text-xs text-content-secondary">
-              Zero-latency lead disposition • Brixi AI 4-pillar qualification • Speed-to-Lead SLA tracking
+              Zero-latency lead disposition • ZamZam 4-Pillar Buyer Qualification • Speed-to-Lead SLA tracking
             </p>
           </div>
         </div>
 
-        {/* Quick Filter Tabs */}
-        <div className="flex items-center gap-2">
+        {/* Quick Filter Tabs & Duty End Action */}
+        <div className="flex flex-wrap items-center gap-2">
           {(['UNCONTACTED', 'HOT', 'OVERDUE', 'ALL'] as const).map((filterKey) => (
             <button
               key={filterKey}
@@ -255,16 +304,30 @@ export function TelecallerConsoleView({
               }`}
             >
               {filterKey === 'UNCONTACTED' && `🔥 Uncontacted (${leads.filter((l) => l.currentStage === 'new_uncontacted').length})`}
-              {filterKey === 'HOT' && '⚡ Hot Leads'}
+              {filterKey === 'HOT' && `⚡ Hot Leads (${leads.filter((l) => ['discovery_call', 'visit_scheduled', 'negotiation_costing'].includes(l.currentStage)).length})`}
               {filterKey === 'OVERDUE' && '⏰ Due Reminders'}
               {filterKey === 'ALL' && `All (${leads.length})`}
             </button>
           ))}
+
+          {/* End of Duty & Backup to Google Drive */}
+          <button
+            type="button"
+            onClick={() => {
+              setBackupMode('DUTY_END');
+              setIsBackupModalOpen(true);
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-extrabold bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white shadow-xs transition-all active:scale-98 cursor-pointer ml-1"
+            title="End calling shift & create Google Drive backup"
+          >
+            <Flame className="w-3.5 h-3.5 text-amber-200" />
+            <span>End Duty &amp; Backup</span>
+          </button>
         </div>
       </div>
 
       {statusMessage && (
-        <div className="p-3 bg-accent-soft border border-accent/30 rounded-xl text-accent-text text-xs font-bold flex items-center justify-between animate-fadeIn">
+        <div className="p-3 bg-accent-soft border border-accent/30 rounded-xl text-accent-text text-xs font-bold flex items-center justify-between animate-fadeIn shadow-xs">
           <span>{statusMessage}</span>
           <button onClick={() => setStatusMessage(null)} className="text-accent-text font-bold">✕</button>
         </div>
@@ -275,17 +338,17 @@ export function TelecallerConsoleView({
         {/* =========================================================================
             LEFT PANE: 40px SPREADSHEET-SPEED CALL QUEUE (5 cols on lg)
             ========================================================================= */}
-        <div className="lg:col-span-5 flex flex-col rounded-2xl bg-surface border border-border shadow-xs overflow-hidden h-[740px]">
+        <div className="lg:col-span-5 flex flex-col rounded-2xl bg-surface border border-border shadow-xs overflow-hidden h-[760px]">
           {/* Search Header */}
           <div className="p-3 border-b border-border bg-surface-subtle flex items-center gap-2">
-            <div className="relative flex-1">
-              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 transform -translate-y-1/2 text-content-muted" />
+            <div className="relative flex-1 flex items-center">
+              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 transform -translate-y-1/2 text-content-muted pointer-events-none" />
               <input
                 type="text"
-                placeholder="Filter by name, phone, or code..."
+                placeholder="Filter by name, phone, campaign, or code..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg bg-surface border border-border text-content placeholder:text-content-muted focus:outline-none focus:ring-1 focus:ring-accent"
+                className="search-input w-full pr-3.5 pl-8 py-2 text-xs rounded-xl bg-surface border border-border text-content placeholder:text-content-muted focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent"
               />
             </div>
             <span className="text-xs font-mono font-bold text-content-muted shrink-0">
@@ -303,14 +366,14 @@ export function TelecallerConsoleView({
               filteredQueue.map((lead) => {
                 const isSelected = lead.id === selectedLead?.id;
                 const elapsedMins = getElapsedMins(lead.createdAt);
-                const isUrgent = lead.currentStage === 'new_uncontacted' && elapsedMins <= 10;
+                const isUrgent = lead.currentStage === 'new_uncontacted' && elapsedMins <= 15;
 
                 return (
                   <div
                     key={lead.id}
                     onClick={() => setSelectedLeadId(lead.id)}
-                    className={`spreadsheet-row px-3 cursor-pointer select-none ${
-                      isSelected ? 'is-selected' : ''
+                    className={`spreadsheet-row px-3 cursor-pointer select-none transition-colors ${
+                      isSelected ? 'is-selected bg-accent-soft/60' : 'hover:bg-surface-subtle/70'
                     }`}
                   >
                     {/* Source Icon */}
@@ -357,7 +420,7 @@ export function TelecallerConsoleView({
                         </span>
                       ) : (
                         <span className="font-mono text-[10px] text-content-muted uppercase">
-                          {lead.currentStage.replace('_', ' ')}
+                          {lead.currentStage.replace(/_/g, ' ')}
                         </span>
                       )}
                     </div>
@@ -378,22 +441,45 @@ export function TelecallerConsoleView({
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
                 <div className="space-y-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="text-xl font-bold text-content tracking-tight">
+                    <h3 className="text-xl font-bold text-content font-display tracking-tight">
                       {selectedLead.fullName || 'Anonymous Inbound Lead'}
                     </h3>
-                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${brixiGrade.class}`}>
-                      {brixiGrade.label} ({brixiScore}/100)
+                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${qualificationGrade.class}`}>
+                      {qualificationGrade.label} ({qualificationScore}/100)
                     </span>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-3 text-xs font-mono text-content-secondary">
+                  <div className="flex flex-wrap items-center gap-2.5 text-xs font-mono text-content-secondary">
                     <span className="font-bold text-content">{selectedLead.phoneE164 || 'No Phone Number'}</span>
+                    {selectedLead.phoneE164 && (
+                      <button
+                        type="button"
+                        onClick={handleCopyPhone}
+                        className="p-1 rounded hover:bg-surface-subtle text-content-muted hover:text-content transition-colors cursor-pointer"
+                        title="Copy phone number"
+                      >
+                        {copiedPhone ? <Check className="w-3.5 h-3.5 text-status-success" /> : <Copy className="w-3.5 h-3.5" />}
+                      </button>
+                    )}
                     <span>•</span>
                     <span className="capitalize">{selectedLead.city || 'Navi Mumbai'}</span>
                     {selectedLead.sourceCode && (
                       <>
                         <span>•</span>
                         <span className="text-accent-text font-bold">Campaign: {selectedLead.sourceCode}</span>
+                      </>
+                    )}
+                    {getPortalLink() && (
+                      <>
+                        <span>•</span>
+                        <a
+                          href={getPortalLink()!}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1 text-accent font-bold hover:underline"
+                        >
+                          <ExternalLink className="w-3 h-3" /> Client Portal
+                        </a>
                       </>
                     )}
                   </div>
@@ -448,7 +534,7 @@ export function TelecallerConsoleView({
                       target="_blank"
                       rel="noreferrer"
                       className="p-2 rounded-xl bg-status-success hover:opacity-90 text-white font-bold transition-all shadow-xs cursor-pointer"
-                      title="Open WhatsApp with Verified Brochure Template"
+                      title="Open WhatsApp with Verified Brochure & Cost Sheet"
                     >
                       <MessageSquare className="w-4 h-4" />
                     </a>
@@ -456,17 +542,40 @@ export function TelecallerConsoleView({
                 </div>
               </div>
 
+              {/* Requirement & Inbound Context Pill Bar */}
+              <div className="p-3 bg-surface-subtle/80 rounded-xl border border-border flex flex-wrap items-center gap-3 text-xs">
+                <div className="flex items-center gap-1.5 text-content">
+                  <Building2 className="w-3.5 h-3.5 text-accent" />
+                  <span className="font-bold">Pref: </span>
+                  <span className="font-semibold text-accent-text">
+                    {selectedLead.preferredBhk ? `${selectedLead.preferredBhk} BHK` : '1 & 2 BHK'}
+                  </span>
+                </div>
+                <span className="text-border">|</span>
+                <div className="flex items-center gap-1.5 text-content">
+                  <MapPin className="w-3.5 h-3.5 text-status-success" />
+                  <span className="font-bold">Market: </span>
+                  <span>{selectedLead.preferredMicroMarket || 'Kharghar / Taloja Corridor'}</span>
+                </div>
+                <span className="text-border">|</span>
+                <div className="flex items-center gap-1.5 text-content">
+                  <DollarSign className="w-3.5 h-3.5 text-amber-500" />
+                  <span className="font-bold">Budget: </span>
+                  <span>{selectedLead.budgetCeiling ? `₹${(selectedLead.budgetCeiling / 100000).toFixed(1)} Lakhs` : '₹45L - ₹85L'}</span>
+                </div>
+              </div>
+
               {/* =====================================================================
-                  BRIXI AI 4-PILLAR QUALIFICATION SCORECARD
+                  ZAMZAM 4-PILLAR BUYER QUALIFICATION SCORECARD
                   ===================================================================== */}
               <div className="p-4 rounded-xl bg-surface-subtle border border-border space-y-3.5">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold uppercase tracking-wider text-content flex items-center gap-1.5">
                     <Sparkles className="w-3.5 h-3.5 text-accent" />
-                    Brixi AI 4-Pillar Scorecard
+                    ZamZam 4-Pillar Buyer Qualification
                   </span>
                   <span className="font-mono text-xs font-extrabold text-accent-text">
-                    Total Score: {brixiScore}/100
+                    Total Score: {qualificationScore}/100
                   </span>
                 </div>
 
@@ -480,59 +589,62 @@ export function TelecallerConsoleView({
                     <div className="flex items-center gap-1.5">
                       <button
                         type="button"
-                        onClick={() => setBrixiIntent('IMMEDIATE')}
-                        className={`brixi-chip flex-1 text-center ${brixiIntent === 'IMMEDIATE' ? 'is-active' : ''}`}
+                        onClick={() => setQualificationIntent('IMMEDIATE')}
+                        className={`pillar-chip flex-1 text-center ${qualificationIntent === 'IMMEDIATE' ? 'is-active' : ''}`}
                       >
                         Immediate (30)
                       </button>
                       <button
                         type="button"
-                        onClick={() => setBrixiIntent('EXPLORING')}
-                        className={`brixi-chip flex-1 text-center ${brixiIntent === 'EXPLORING' ? 'is-active' : ''}`}
+                        onClick={() => setQualificationIntent('EXPLORING')}
+                        className={`pillar-chip flex-1 text-center ${qualificationIntent === 'EXPLORING' ? 'is-active' : ''}`}
                       >
                         Exploring (18)
                       </button>
                       <button
                         type="button"
-                        onClick={() => setBrixiIntent('CURIOUS')}
-                        className={`brixi-chip flex-1 text-center ${brixiIntent === 'CURIOUS' ? 'is-active' : ''}`}
+                        onClick={() => setQualificationIntent('CURIOUS')}
+                        className={`pillar-chip flex-1 text-center ${qualificationIntent === 'CURIOUS' ? 'is-active' : ''}`}
                       >
                         Curious (6)
                       </button>
                     </div>
                   </div>
 
-                  {/* Pillar 02: BUDGET */}
+                  {/* Pillar 02: BUDGET FIT */}
                   <div className="space-y-1.5">
                     <span className="text-[11px] font-bold text-content-secondary uppercase">
-                      02 · Budget Fit (25 pts)
+                      02 · Budget Segment (25 pts)
                     </span>
                     <div className="flex items-center gap-1.5">
                       <button
                         type="button"
-                        onClick={() => setBrixiBudget('VERIFIED_HIGH')}
-                        className={`brixi-chip flex-1 text-center ${brixiBudget === 'VERIFIED_HIGH' ? 'is-active' : ''}`}
+                        onClick={() => setQualificationBudget('LUXURY_125CR')}
+                        className={`pillar-chip flex-1 text-center ${qualificationBudget === 'LUXURY_125CR' ? 'is-active' : ''}`}
+                        title="₹1.25 Cr+ (Luxury Kharghar / Seawoods / Vashi)"
                       >
-                        ₹1.5 Cr+ (25)
+                        ₹1.25 Cr+ (25)
                       </button>
                       <button
                         type="button"
-                        onClick={() => setBrixiBudget('STRETCHED')}
-                        className={`brixi-chip flex-1 text-center ${brixiBudget === 'STRETCHED' ? 'is-active' : ''}`}
+                        onClick={() => setQualificationBudget('MID_60L_125CR')}
+                        className={`pillar-chip flex-1 text-center ${qualificationBudget === 'MID_60L_125CR' ? 'is-active' : ''}`}
+                        title="₹60 Lakhs - ₹1.25 Cr (Mid-segment Kharghar / Ulwe)"
                       >
-                        ₹1-1.5 Cr (18)
+                        ₹60L-1.25Cr (20)
                       </button>
                       <button
                         type="button"
-                        onClick={() => setBrixiBudget('LOW')}
-                        className={`brixi-chip flex-1 text-center ${brixiBudget === 'LOW' ? 'is-active' : ''}`}
+                        onClick={() => setQualificationBudget('AFFORDABLE_60L')}
+                        className={`pillar-chip flex-1 text-center ${qualificationBudget === 'AFFORDABLE_60L' ? 'is-active' : ''}`}
+                        title="<₹60 Lakhs (Affordable Taloja Phase 1 & 2 / Panvel)"
                       >
-                        &lt;₹1 Cr (7)
+                        &lt;₹60L (12)
                       </button>
                     </div>
                   </div>
 
-                  {/* Pillar 03: LOCATION */}
+                  {/* Pillar 03: MICRO-MARKET */}
                   <div className="space-y-1.5">
                     <span className="text-[11px] font-bold text-content-secondary uppercase">
                       03 · Micro-Market (20 pts)
@@ -540,24 +652,24 @@ export function TelecallerConsoleView({
                     <div className="flex items-center gap-1.5">
                       <button
                         type="button"
-                        onClick={() => setBrixiLocation('PRIME_SEC35')}
-                        className={`brixi-chip flex-1 text-center ${brixiLocation === 'PRIME_SEC35' ? 'is-active' : ''}`}
+                        onClick={() => setQualificationLocation('KHARGHAR_PRIME')}
+                        className={`pillar-chip flex-1 text-center ${qualificationLocation === 'KHARGHAR_PRIME' ? 'is-active' : ''}`}
                       >
-                        Sec 34-36 (20)
+                        Kharghar Prime (20)
                       </button>
                       <button
                         type="button"
-                        onClick={() => setBrixiLocation('KHARGHAR_GEN')}
-                        className={`brixi-chip flex-1 text-center ${brixiLocation === 'KHARGHAR_GEN' ? 'is-active' : ''}`}
+                        onClick={() => setQualificationLocation('TALOJA_METRO')}
+                        className={`pillar-chip flex-1 text-center ${qualificationLocation === 'TALOJA_METRO' ? 'is-active' : ''}`}
                       >
-                        Kharghar (15)
+                        Taloja Metro (16)
                       </button>
                       <button
                         type="button"
-                        onClick={() => setBrixiLocation('TALOJA_OUTER')}
-                        className={`brixi-chip flex-1 text-center ${brixiLocation === 'TALOJA_OUTER' ? 'is-active' : ''}`}
+                        onClick={() => setQualificationLocation('ULWE_PANVEL')}
+                        className={`pillar-chip flex-1 text-center ${qualificationLocation === 'ULWE_PANVEL' ? 'is-active' : ''}`}
                       >
-                        Taloja (8)
+                        Ulwe / Panvel (10)
                       </button>
                     </div>
                   </div>
@@ -570,31 +682,65 @@ export function TelecallerConsoleView({
                     <div className="flex items-center gap-1.5">
                       <button
                         type="button"
-                        onClick={() => setBrixiTimeline('HOT_30D')}
-                        className={`brixi-chip flex-1 text-center ${brixiTimeline === 'HOT_30D' ? 'is-active' : ''}`}
+                        onClick={() => setQualificationTimeline('READY_30D')}
+                        className={`pillar-chip flex-1 text-center ${qualificationTimeline === 'READY_30D' ? 'is-active' : ''}`}
                       >
                         &lt;30 Days (25)
                       </button>
                       <button
                         type="button"
-                        onClick={() => setBrixiTimeline('WARM_90D')}
-                        className={`brixi-chip flex-1 text-center ${brixiTimeline === 'WARM_90D' ? 'is-active' : ''}`}
+                        onClick={() => setQualificationTimeline('UNDER_CONST_90D')}
+                        className={`pillar-chip flex-1 text-center ${qualificationTimeline === 'UNDER_CONST_90D' ? 'is-active' : ''}`}
                       >
-                        31-90d (15)
+                        30–90d (16)
                       </button>
                       <button
                         type="button"
-                        onClick={() => setBrixiTimeline('EARLY_90D')}
-                        className={`brixi-chip flex-1 text-center ${brixiTimeline === 'EARLY_90D' ? 'is-active' : ''}`}
+                        onClick={() => setQualificationTimeline('INVESTOR_90D')}
+                        className={`pillar-chip flex-1 text-center ${qualificationTimeline === 'INVESTOR_90D' ? 'is-active' : ''}`}
                       >
-                        90d+ (5)
+                        90d+ (8)
                       </button>
                     </div>
                   </div>
                 </div>
+
+                {/* Quick Discovery Checkchips */}
+                <div className="pt-2 border-t border-border/60 flex flex-wrap items-center gap-2">
+                  <span className="text-[10px] font-bold uppercase text-content-muted">Quick Discovery:</span>
+                  <button
+                    type="button"
+                    onClick={() => setLoanApproved(!loanApproved)}
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition-all cursor-pointer ${
+                      loanApproved ? 'bg-status-success-surface text-status-success border-status-success/40' : 'bg-surface text-content-muted border-border'
+                    }`}
+                  >
+                    {loanApproved ? '✓ Home Loan Ready / Self-Fund' : 'Loan Needs Assistance'}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setSelfUse(!selfUse)}
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition-all cursor-pointer ${
+                      selfUse ? 'bg-accent-soft text-accent-text border-accent/30' : 'bg-surface text-content-muted border-border'
+                    }`}
+                  >
+                    {selfUse ? '🏠 End-User (Self-Use)' : '💼 Investor (Rental Yield)'}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setWeekendVisitReady(!weekendVisitReady)}
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition-all cursor-pointer ${
+                      weekendVisitReady ? 'bg-status-warning-surface text-status-warning border-status-warning/40' : 'bg-surface text-content-muted border-border'
+                    }`}
+                  >
+                    {weekendVisitReady ? '📅 Weekend Visit Ready' : 'Weekend Visit Pending'}
+                  </button>
+                </div>
               </div>
 
-              {/* Real-Time Call Notes & Audio Memo */}
+              {/* Real-Time Call Notes */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-bold uppercase tracking-wider text-content flex items-center gap-1.5">
@@ -677,6 +823,13 @@ export function TelecallerConsoleView({
           )}
         </div>
       </div>
+
+      {/* Google Drive Cloud Backup Modal */}
+      <BackupModal
+        isOpen={isBackupModalOpen}
+        onClose={() => setIsBackupModalOpen(false)}
+        initialMode={backupMode}
+      />
     </div>
   );
 }

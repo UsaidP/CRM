@@ -1,15 +1,19 @@
 import { NextResponse } from 'next/server';
+import { requireSession } from '@/lib/services/api-auth';
 import { prisma } from '@/lib/db/prisma';
 import { assessUnitFreshness } from '@/lib/domain/verification-engine';
 import { updateUnitSchema } from '@/lib/validators/inventory-schemas';
 import { calculateAllInCost } from '@/lib/domain/cost-calculator';
 import { validateReraNumber } from '@/lib/domain/verification-engine';
 import { parseInventoryContent } from '@/lib/inventory-media';
+import { parseSafeDate } from '@/lib/date-utils';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const auth = await requireSession(req);
+    if (!auth.ok) return auth.response;
     const { id } = await params;
     const unit = await prisma.propertyUnit.findUnique({
       where: { id },
@@ -49,6 +53,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const auth = await requireSession(req);
+    if (!auth.ok) return auth.response;
     const { id } = await params;
     const body = await req.json();
     const validated = updateUnitSchema.parse(body);
@@ -93,7 +99,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       if (field in validated) data[field] = validated[field];
     }
     if ('projectId' in validated) data.projectId = nextProjectId;
-    if ('possessionDate' in validated) data.possessionDate = validated.possessionDate ? new Date(validated.possessionDate) : null;
+    if ('possessionDate' in validated) data.possessionDate = parseSafeDate(validated.possessionDate);
     if ('featureHighlights' in validated) data.featureHighlightsJson = JSON.stringify(validated.featureHighlights || []);
     if ('floorPlanUrl' in validated) data.floorPlanUrl = validated.floorPlanUrl || null;
     if ('mediaGallery' in validated) data.mediaGalleryJson = JSON.stringify(validated.mediaGallery || []);
@@ -125,6 +131,8 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const auth = await requireSession(req);
+    if (!auth.ok) return auth.response;
     const { id } = await params;
     await prisma.propertyUnit.delete({
       where: { id },

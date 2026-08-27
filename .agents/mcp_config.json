@@ -2,6 +2,16 @@
   "mcpServers": {
     "notebooklm": {
       "command": "/Users/usaidpatel/.local/bin/notebooklm-mcp"
+    },
+    "agentation": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "agentation-mcp",
+        "server",
+        "--port",
+        "4747"
+      ]
     }
   }
 }

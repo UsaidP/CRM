@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { requireSession } from '@/lib/services/api-auth';
 import { prisma } from '@/lib/db/prisma';
 import { generatePortalToken, buildWhatsAppPortalShareText } from '@/lib/domain/portal-generator';
 
@@ -6,6 +7,8 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   try {
+    const auth = await requireSession(req);
+    if (!auth.ok) return auth.response;
     const body = await req.json();
     const {
       leadId,

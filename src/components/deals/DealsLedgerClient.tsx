@@ -24,11 +24,14 @@ import {
   Table,
   ArrowRight,
   ChevronRight,
-  AlertTriangle
+  AlertTriangle,
+  Download,
+  Printer
 } from 'lucide-react';
 import { HallmarkStamp } from '@/components/ui/HallmarkStamp';
 import { AccessibleDialog } from '@/components/ui/AccessibleDialog';
 import { formatDateFull, formatTimeShort } from '@/lib/date-utils';
+import { exportDealsToCsv } from '@/lib/export-utils';
 
 export function DealsLedgerClient({
   initialDeals = [],
@@ -66,6 +69,7 @@ export function DealsLedgerClient({
 
   // Status Update Modal State
   const [updateDeal, setUpdateDeal] = useState<any | null>(null);
+  const [invoiceDeal, setInvoiceDeal] = useState<any | null>(null);
   const [newStatus, setNewStatus] = useState('INVOICE_SENT');
   const [invoiceNumber, setInvoiceNumber] = useState('ZP-INV-2026-08');
   const [savingStatus, setSavingStatus] = useState(false);
@@ -309,18 +313,28 @@ export function DealsLedgerClient({
 
           <button
             type="button"
+            onClick={() => exportDealsToCsv(filteredDeals, summary, { status: selectedStatus, search: searchQuery })}
+            title="Export deals ledger to CSV spreadsheet"
+            className="min-h-10 px-3.5 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-bold shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
+          >
+            <Download className="w-3.5 h-3.5 text-accent" />
+            <span>Export CSV</span>
+          </button>
+
+          <button
+            type="button"
             onClick={() => { setActionError(null); setShowRegisterModal(true); }}
-            className="min-h-10 px-4 py-2 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold flex items-center gap-2 shadow-xs transition-all"
+            className="min-h-10 px-4 py-2 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold flex items-center gap-2 shadow-xs transition-all cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            Register Closed Deal
+            <span>Register Closed Deal</span>
           </button>
           <button
             type="button"
             onClick={fetchDealsAndData}
             disabled={loading}
             aria-label="Refresh deal records"
-            className="min-h-10 min-w-10 px-3 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-semibold shadow-xs transition-all flex items-center justify-center"
+            className="min-h-10 min-w-10 px-3 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-semibold shadow-xs transition-all flex items-center justify-center cursor-pointer"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-accent' : 'text-content-secondary'}`} />
           </button>
@@ -378,8 +392,8 @@ export function DealsLedgerClient({
 
       {/* Filter and Search Bar */}
       <div className="p-3 rounded-2xl bg-surface border border-border shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-        <div className="relative flex-1 w-full">
-          <Search className="w-4 h-4 text-content-muted absolute left-3.5 top-1/2 -translate-y-1/2" />
+        <div className="relative flex-1 w-full flex items-center">
+          <Search className="w-4 h-4 text-content-muted absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <label htmlFor="deals-search" className="sr-only">Search deal records</label>
           <input
             id="deals-search"
@@ -388,7 +402,7 @@ export function DealsLedgerClient({
             placeholder="Search deals by project, purchaser, advisor, or unit…"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-surface-inset border border-border rounded-xl pl-10 pr-4 py-2.5 text-xs text-content placeholder:text-content-muted focus:outline-none focus:border-accent"
+            className="search-input w-full bg-surface-inset border border-border rounded-xl pr-4 py-2.5 text-xs text-content placeholder:text-content-muted focus:outline-none focus:border-accent shadow-2xs"
           />
         </div>
 
@@ -523,12 +537,21 @@ export function DealsLedgerClient({
 
                             <button
                               type="button"
+                              onClick={() => setInvoiceDeal(deal)}
+                              className="p-1.5 rounded-lg hover:bg-surface-subtle text-content-muted hover:text-accent transition-colors cursor-pointer"
+                              title="View & Print Official Commission Invoice"
+                            >
+                              <Printer className="w-3.5 h-3.5" />
+                            </button>
+
+                            <button
+                              type="button"
                               onClick={() => {
                                 setUpdateDeal(deal);
                                 setNewStatus(deal.dealStatus);
                                 setInvoiceNumber(deal.developerInvoiceNumber || 'ZP-INV-2026-08');
                               }}
-                              className="p-1.5 rounded-lg hover:bg-surface-subtle text-content-muted hover:text-content transition-colors"
+                              className="p-1.5 rounded-lg hover:bg-surface-subtle text-content-muted hover:text-content transition-colors cursor-pointer"
                               title="Edit milestone or invoice details"
                             >
                               <FileText className="w-3.5 h-3.5" />
@@ -635,19 +658,30 @@ export function DealsLedgerClient({
                       </td>
 
                       <td className="p-3.5 pr-4 text-right">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setUpdateDeal(deal);
-                            setNewStatus(deal.dealStatus);
-                            setInvoiceNumber(deal.developerInvoiceNumber || 'ZP-INV-2026-08');
-                          }}
-                          aria-label={`Edit milestone for ${deal.lead?.fullName || 'deal'}`}
-                          className="px-3 py-1.5 rounded-xl bg-surface hover:bg-surface-subtle text-accent-text hover:text-accent border border-border hover:border-accent/40 text-xs font-bold flex items-center gap-1.5 ml-auto shadow-2xs transition-all"
-                        >
-                          <FileText className="w-3.5 h-3.5" />
-                          Update
-                        </button>
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => setInvoiceDeal(deal)}
+                            className="px-2.5 py-1.5 rounded-xl bg-surface hover:bg-surface-subtle text-content-secondary hover:text-content border border-border text-xs font-bold flex items-center gap-1 shadow-2xs transition-all cursor-pointer"
+                            title="View & Print Official Commission Invoice"
+                          >
+                            <Printer className="w-3.5 h-3.5 text-accent" />
+                            <span>Invoice</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setUpdateDeal(deal);
+                              setNewStatus(deal.dealStatus);
+                              setInvoiceNumber(deal.developerInvoiceNumber || 'ZP-INV-2026-08');
+                            }}
+                            aria-label={`Edit milestone for ${deal.lead?.fullName || 'deal'}`}
+                            className="px-3 py-1.5 rounded-xl bg-surface hover:bg-surface-subtle text-accent-text hover:text-accent border border-border hover:border-accent/40 text-xs font-bold flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer"
+                          >
+                            <FileText className="w-3.5 h-3.5" />
+                            <span>Update</span>
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -913,6 +947,137 @@ export function DealsLedgerClient({
               </div>
             </form>
           </>
+        )}
+      </AccessibleDialog>
+
+      {/* MODAL 3: OFFICIAL ZAMZAM REAL ESTATE COMMISSION TAX INVOICE */}
+      <AccessibleDialog
+        open={Boolean(invoiceDeal)}
+        onClose={() => setInvoiceDeal(null)}
+        titleId="deal-invoice-title"
+        size="lg"
+      >
+        {invoiceDeal && (
+          <div className="space-y-4 text-xs font-sans">
+            <div className="flex items-center justify-between pb-3 border-b border-border">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-accent text-white flex items-center justify-center font-bold font-mono">
+                  ZP
+                </div>
+                <div>
+                  <h2 id="deal-invoice-title" className="text-base font-bold text-content font-display">
+                    ZamZam Properties — Commission Tax Invoice
+                  </h2>
+                  <p className="text-[10px] text-content-muted font-mono">
+                    Official Brokerage Billing Document • MahaRERA Reg: A52000028714
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                data-dialog-close
+                aria-label="Close invoice"
+                onClick={() => setInvoiceDeal(null)}
+                className="p-1 rounded-lg text-content-muted hover:text-content cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Printable Invoice Card */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-surface border border-border space-y-4 text-slate-900 bg-white">
+              {/* Letterhead */}
+              <div className="flex justify-between items-start border-b border-slate-200 pb-3">
+                <div>
+                  <h3 className="font-extrabold text-lg text-[#1B4332] font-display">ZAMZAM REAL ESTATE</h3>
+                  <p className="text-[10px] text-slate-500 font-mono">GSTIN: 27AABCZ1234F1Z5 • MahaRERA: A52000028714</p>
+                  <p className="text-[10px] text-slate-500">Sector 35, Kharghar &amp; Sector 14, Taloja, Navi Mumbai</p>
+                </div>
+                <div className="text-right font-mono text-[10px] space-y-0.5">
+                  <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-300 font-bold">
+                    TAX INVOICE
+                  </span>
+                  <p className="mt-1 font-bold text-slate-800">Inv #: {invoiceDeal.developerInvoiceNumber || 'ZP-INV-2026-08'}</p>
+                  <p className="text-slate-500">Date: {new Date().toLocaleDateString('en-IN')}</p>
+                </div>
+              </div>
+
+              {/* Billed To & Transaction Details */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200 text-[10px]">
+                <div>
+                  <span className="text-[9px] uppercase font-bold text-slate-400 font-mono">Billed To (Developer / Builder):</span>
+                  <p className="font-bold text-slate-800 text-xs mt-0.5">{invoiceDeal.developerProject?.developerName || 'Developer Partner'}</p>
+                  <p className="text-slate-600">Project: {invoiceDeal.developerProject?.projectName || invoiceDeal.projectName || 'Navi Mumbai Project'}</p>
+                  <p className="text-slate-600">Allotted Unit: {invoiceDeal.propertyUnit?.unitNumber || invoiceDeal.unitNo || 'Standard Unit'}</p>
+                </div>
+                <div>
+                  <span className="text-[9px] uppercase font-bold text-slate-400 font-mono">Purchaser &amp; Brokerage Reference:</span>
+                  <p className="font-bold text-slate-800 text-xs mt-0.5">Buyer: {invoiceDeal.lead?.fullName || 'Client'}</p>
+                  <p className="text-slate-600">Agreement Value: <strong>{formatINR(invoiceDeal.agreementValue)}</strong></p>
+                  <p className="text-slate-600">Agreed Brokerage Rate: <strong>{invoiceDeal.brokeragePercent}%</strong></p>
+                </div>
+              </div>
+
+              {/* Financial Calculation Table */}
+              <table className="w-full text-[11px] border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-200 bg-slate-100 text-slate-700 uppercase font-mono text-[9px]">
+                    <th className="py-2 px-3 text-left">Description</th>
+                    <th className="py-2 px-3 text-right">Taxable Value</th>
+                    <th className="py-2 px-3 text-right">GST Rate</th>
+                    <th className="py-2 px-3 text-right">Total Amount (INR)</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  <tr>
+                    <td className="py-2 px-3">
+                      <strong>Real Estate Brokerage Professional Fees</strong>
+                      <div className="text-[9px] text-slate-500">Service for facilitating acquisition of {invoiceDeal.developerProject?.projectName} Unit {invoiceDeal.propertyUnit?.unitNumber}</div>
+                    </td>
+                    <td className="py-2 px-3 text-right font-mono">{formatINR(invoiceDeal.grossBrokerageAmount)}</td>
+                    <td className="py-2 px-3 text-right font-mono">18.0%</td>
+                    <td className="py-2 px-3 text-right font-mono font-bold">{formatINR(invoiceDeal.grossBrokerageAmount * 1.18)}</td>
+                  </tr>
+                  <tr className="bg-slate-50 font-bold">
+                    <td colSpan={3} className="py-2 px-3 text-right text-slate-700">Net Receivable Commission (Incl GST 18%):</td>
+                    <td className="py-2 px-3 text-right font-mono text-[#1B4332] text-xs">
+                      {formatINR(invoiceDeal.grossBrokerageAmount * 1.18)}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+              {/* Payout & Banking Details */}
+              <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-[10px] space-y-1 text-slate-700">
+                <div className="font-bold text-[#1B4332] flex items-center justify-between">
+                  <span>RTGS / NEFT Direct Settlement Details:</span>
+                  <span className="font-mono text-emerald-800">Current A/C • HDFC Bank Kharghar</span>
+                </div>
+                <p className="font-mono">Account Name: <strong>ZAMZAM REAL ESTATE SERVICES LLP</strong></p>
+                <p className="font-mono">Account No: <strong>50200084920194</strong> • IFSC Code: <strong>HDFC0001234</strong></p>
+              </div>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex items-center justify-between pt-3 border-t border-border">
+              <button
+                type="button"
+                onClick={() => setInvoiceDeal(null)}
+                className="px-4 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-bold transition-colors cursor-pointer"
+              >
+                Close
+              </button>
+
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="px-5 py-2 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                <span>Print / Save PDF Invoice</span>
+              </button>
+            </div>
+          </div>
         )}
       </AccessibleDialog>
     </div>

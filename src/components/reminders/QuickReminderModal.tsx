@@ -14,6 +14,14 @@ import {
   Check,
 } from 'lucide-react';
 import { AccessibleDialog } from '@/components/ui/AccessibleDialog';
+import { CustomSelect, type CustomSelectOption } from '@/components/ui/CustomSelect';
+
+const URGENCY_OPTIONS: CustomSelectOption[] = [
+  { value: 'URGENT', label: '🔴 URGENT (Immediate Connect Next)', dotColor: 'bg-red-500' },
+  { value: 'HIGH', label: '🟡 HIGH (Standard Pipeline)', dotColor: 'bg-amber-500' },
+  { value: 'MEDIUM', label: '🔵 MEDIUM (Nurture Task)', dotColor: 'bg-blue-500' },
+  { value: 'LOW', label: '⚪ LOW (General)', dotColor: 'bg-emerald-500' },
+];
 
 interface QuickReminderModalProps {
   open: boolean;
@@ -287,21 +295,16 @@ export function QuickReminderModal({
               </div>
 
               <div>
-                <label htmlFor="reminder-priority" className="text-content-secondary font-medium block mb-1">
+                <label className="text-content-secondary font-medium block mb-1 text-xs">
                   Urgency Tier:
                 </label>
-                <select
-                  id="reminder-priority"
-                  name="priority"
+                <CustomSelect
+                  options={URGENCY_OPTIONS}
                   value={priority}
-                  onChange={(e) => setPriority(e.target.value)}
-                  className="w-full bg-surface-inset border border-border rounded-xl p-2.5 text-xs text-content font-bold focus:outline-none focus:border-accent cursor-pointer"
-                >
-                  <option value="URGENT">🔴 URGENT (Immediate Connect Next)</option>
-                  <option value="HIGH">🟡 HIGH (Standard Pipeline)</option>
-                  <option value="MEDIUM">🔵 MEDIUM (Nurture Task)</option>
-                  <option value="LOW">⚪ LOW (General)</option>
-                </select>
+                  onChange={(val) => setPriority(val)}
+                  className="w-full"
+                  triggerClassName="bg-surface-inset border-border rounded-xl text-xs font-bold"
+                />
               </div>
             </div>
 

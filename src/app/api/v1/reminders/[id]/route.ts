@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireSession } from '@/lib/services/api-auth';
 import { prisma } from '@/lib/db/prisma';
 import { completeReminderAndScheduleNext } from '@/lib/services/lead-reminder-service';
 
@@ -9,6 +10,8 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await requireSession(req);
+    if (!auth.ok) return auth.response;
     const { id } = await params;
     const reminder = await prisma.leadReminder.findUnique({
       where: { id },
@@ -40,6 +43,8 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await requireSession(req);
+    if (!auth.ok) return auth.response;
     const { id } = await params;
     const body = await req.json();
 
@@ -139,6 +144,8 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await requireSession(req);
+    if (!auth.ok) return auth.response;
     const { id } = await params;
     await prisma.leadReminder.delete({
       where: { id },

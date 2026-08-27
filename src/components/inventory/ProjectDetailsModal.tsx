@@ -14,17 +14,28 @@ import {
   Sparkles, 
   Phone, 
   Train, 
-  ExternalLink,
-  ChevronRight,
-  Calculator
+  ExternalLink, 
+  ChevronRight, 
+  Calculator,
+  Pencil,
+  Trash2,
+  Download,
+  FileCheck,
+  RefreshCw,
+  Eye
 } from 'lucide-react';
 import { formatDateFull } from '@/lib/date-utils';
+import { AccessibleDialog } from '@/components/ui/AccessibleDialog';
+import { ReraVerificationBadge } from '@/components/inventory/ReraVerificationBadge';
+import { MahaReraCertificateModal } from '@/components/inventory/MahaReraCertificateModal';
 
 interface ProjectDetailsModalProps {
   project: any;
   units?: any[];
   onClose: () => void;
   onSelectUnitForCalc?: (unit: any) => void;
+  onEditProject?: (project: any) => void;
+  onDeleteProject?: (projectId: string, projectName: string) => void;
 }
 
 export function ProjectDetailsModal({
@@ -32,9 +43,49 @@ export function ProjectDetailsModal({
   units = [],
   onClose,
   onSelectUnitForCalc,
+  onEditProject,
+  onDeleteProject,
 }: ProjectDetailsModalProps) {
   const [activeTab, setActiveTab] = useState<'rera' | 'elevations' | 'floorplans' | 'areamatrix' | 'amenities'>('rera');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [currentProject, setCurrentProject] = useState(project);
+  const [syncingCertificate, setSyncingCertificate] = useState(false);
+  const [certificateMsg, setCertificateMsg] = useState<string | null>(null);
+  const [showFormCModal, setShowFormCModal] = useState(false);
+
+  const handleSyncCertificate = async () => {
+    if (!currentProject?.reraNumber) return;
+    setSyncingCertificate(true);
+    setCertificateMsg(null);
+    try {
+      const res = await fetch('/api/v1/inventory/rera/fetch-certificate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          reraNumber: currentProject.reraNumber,
+          projectName: currentProject.projectName,
+          developerName: currentProject.developerName,
+          projectId: currentProject.id,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setCurrentProject((prev: any) => ({
+          ...prev,
+          reraCertificateUrl: data.data.certificateUrl,
+          reraRegisteredName: data.data.projectRecord?.projectName,
+          reraProjectStatus: data.data.projectRecord?.projectStatus,
+          reraValidUntil: data.data.projectRecord?.validUntil,
+        }));
+        setCertificateMsg(`MahaRERA Certificate downloaded and linked to ${currentProject.projectName}!`);
+        setTimeout(() => setCertificateMsg(null), 5000);
+      }
+    } catch (err: any) {
+      console.error('Certificate sync error:', err);
+    } finally {
+      setSyncingCertificate(false);
+    }
+  };
 
   if (!project) return null;
 
@@ -78,13 +129,14 @@ export function ProjectDetailsModal({
   const projectUnits = units.filter((u) => u.projectId === project.id);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
-      <div 
-        className="relative w-full max-w-5xl max-h-[92vh] bg-surface rounded-2xl border border-border shadow-2xl flex flex-col overflow-hidden text-content"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="project-modal-title"
-      >
+    <AccessibleDialog
+      open={true}
+      onClose={onClose}
+      titleId="project-modal-title"
+      size="2xl"
+      panelClassName="!p-0 overflow-hidden max-w-5xl"
+    >
+      <div className="relative w-full flex flex-col text-content">
         {/* Header */}
         <div className="p-5 border-b border-border bg-surface-raised flex items-start justify-between">
           <div className="flex items-start gap-4">
@@ -114,13 +166,44 @@ export function ProjectDetailsModal({
               </p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-lg text-content-muted hover:text-content hover:bg-surface transition-colors"
-            aria-label="Close dialog"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            {onEditProject && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onEditProject(project);
+                }}
+                className="px-3 py-1.5 rounded-lg border border-border bg-surface text-content text-xs font-semibold hover:bg-surface-raised flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
+                title="Edit Project Specifications"
+              >
+                <Pencil className="w-3.5 h-3.5 text-accent" />
+                <span className="hidden sm:inline">Edit Project</span>
+              </button>
+            )}
+            {onDeleteProject && (
+              <button
+                type="button"
+                onClick={() => {
+                  onDeleteProject(project.id, project.projectName);
+                }}
+                className="px-3 py-1.5 rounded-lg border border-status-danger/30 bg-status-danger-surface text-status-danger text-xs font-semibold hover:bg-status-danger/10 flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
+                title="Delete Project & Associated Units"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Delete Project</span>
+              </button>
+            )}
+            <button
+              type="button"
+              data-dialog-close
+              onClick={onClose}
+              className="p-2 rounded-lg text-content-muted hover:text-content hover:bg-surface transition-colors cursor-pointer"
+              aria-label="Close dialog"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* Tab Navigation */}
@@ -183,26 +266,82 @@ export function ProjectDetailsModal({
           {/* TAB 1: MahaRERA & Government Filing */}
           {activeTab === 'rera' && (
             <div className="space-y-6">
-              <div className="p-4 rounded-xl border border-accent/30 bg-accent-soft flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                <div>
-                  <div className="text-xs uppercase tracking-wider font-semibold text-accent flex items-center gap-1.5 font-mono">
-                    <ShieldCheck className="w-4 h-4 text-accent" /> Official MahaRERA Registration
+              <ReraVerificationBadge
+                reraNumber={currentProject.reraNumber}
+                projectId={currentProject.id}
+                showDuplicateCheck={false}
+                showPortalLink={true}
+                showCopyButton={true}
+              />
+
+              {/* Official MahaRERA Certificate Download & Sync Card */}
+              <div className="p-4 rounded-2xl border border-accent/30 bg-surface-raised space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 rounded-xl bg-accent-soft text-accent border border-accent/20">
+                      <FileCheck className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-content font-display">
+                        Official MahaRERA Registration Certificate
+                      </h4>
+                      <p className="text-xs text-content-muted mt-0.5">
+                        {currentProject.reraCertificateUrl
+                          ? `Statutory PDF Document Linked • Valid until ${currentProject.reraValidUntil ? formatDateFull(currentProject.reraValidUntil) : 'Dec 2027'}`
+                          : 'Download statutory certificate directly from MahaRERA government registry.'}
+                      </p>
+                    </div>
                   </div>
-                  <div className="text-2xl font-bold font-mono text-content mt-1 tracking-tight">
-                    {project.reraNumber || 'P52000026796'}
-                  </div>
-                  <div className="text-xs text-content-muted mt-0.5">
-                    Legally verified on Maharashtra Real Estate Regulatory Authority portal.
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowFormCModal(true)}
+                      className="px-3.5 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-bold shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <Eye className="w-4 h-4 text-accent" />
+                      <span>Preview Form &lsquo;C&rsquo;</span>
+                    </button>
+
+                    {currentProject.reraCertificateUrl ? (
+                      <a
+                        href={currentProject.reraCertificateUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-4 py-2 rounded-xl bg-accent text-white text-xs font-bold shadow-xs hover:bg-accent-hover transition-all flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <Download className="w-4 h-4" />
+                        <span>Download PDF</span>
+                      </a>
+                    ) : null}
+
+                    <button
+                      type="button"
+                      disabled={syncingCertificate}
+                      onClick={handleSyncCertificate}
+                      className="px-3.5 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-accent border border-accent/30 text-xs font-bold shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                    >
+                      {syncingCertificate ? (
+                        <>
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                          <span>Syncing…</span>
+                        </>
+                      ) : (
+                        <>
+                          <RefreshCw className="w-3.5 h-3.5" />
+                          <span>{currentProject.reraCertificateUrl ? 'Re-Sync' : 'Fetch Certificate'}</span>
+                        </>
+                      )}
+                    </button>
                   </div>
                 </div>
-                <a
-                  href={`https://maharerait.mahaonline.gov.in`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-secondary px-4 py-2 text-xs font-semibold flex items-center gap-1.5 shrink-0"
-                >
-                  Verify on MahaRERA Portal <ExternalLink className="w-3.5 h-3.5" />
-                </a>
+
+                {certificateMsg && (
+                  <div className="p-2.5 bg-status-success-surface border border-status-success/30 rounded-xl text-status-success text-xs font-semibold flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>{certificateMsg}</span>
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -534,36 +673,71 @@ export function ProjectDetailsModal({
         </div>
 
         {/* Modal Footer */}
-        <div className="p-4 border-t border-border bg-surface-raised flex items-center justify-between">
+        <div className="p-4 border-t border-border bg-surface-raised flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="text-xs text-content-muted font-mono">
             ZamZam Verified Real Estate Intelligence • Kharghar &amp; Taloja Corridor
           </div>
-          <button
-            onClick={onClose}
-            className="btn-secondary px-4 py-2 text-xs font-medium"
-          >
-            Close Inspector
-          </button>
-        </div>
-      </div>
-
-      {/* Full-screen Image Preview Overlay */}
-      {selectedImage && (
-        <div 
-          className="fixed inset-0 z-60 bg-black/95 flex items-center justify-center p-4 cursor-zoom-out"
-          onClick={() => setSelectedImage(null)}
-        >
-          <div className="relative max-w-5xl max-h-[90vh]">
-            <img src={selectedImage} alt="Expanded Architectural Preview" className="max-w-full max-h-[85vh] object-contain rounded-lg border border-accent/40 shadow-2xl" />
-            <button 
-              onClick={() => setSelectedImage(null)}
-              className="absolute -top-10 right-0 text-white hover:text-accent-text text-xs font-bold flex items-center gap-1 font-mono"
+          <div className="flex items-center gap-2">
+            {onDeleteProject && (
+              <button
+                type="button"
+                onClick={() => {
+                  onDeleteProject(project.id, project.projectName);
+                }}
+                className="px-3 py-2 text-xs font-semibold rounded-xl border border-status-danger/30 text-status-danger bg-status-danger-surface hover:bg-status-danger/10 transition-all flex items-center gap-1.5 cursor-pointer"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Delete</span>
+              </button>
+            )}
+            {onEditProject && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onEditProject(project);
+                }}
+                className="btn-secondary px-3.5 py-2 text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+              >
+                <Pencil className="w-3.5 h-3.5 text-accent" />
+                <span>Edit Specs</span>
+              </button>
+            )}
+            <button
+              type="button"
+              data-dialog-close
+              onClick={onClose}
+              className="btn-secondary px-4 py-2 text-xs font-medium cursor-pointer"
             >
-              <X className="w-5 h-5" /> Close Preview
+              Close Inspector
             </button>
           </div>
         </div>
+      </div>
+
+      {/* Form C Interactive Preview Modal */}
+      {currentProject && (
+        <MahaReraCertificateModal
+          open={showFormCModal}
+          onClose={() => setShowFormCModal(false)}
+          projectData={{
+            reraNumber: currentProject.reraNumber || 'P52000079818',
+            projectName: currentProject.projectName || 'CITY AVENUE',
+            developerName: currentProject.developerName || 'City Space',
+            promoterName: currentProject.promoterName || currentProject.developerName || 'City Space',
+            address: currentProject.address || 'PLOT NO 12D, SECTOR-24 at Taloja Panchnad , Panvel, Raigarh, 410208',
+            plotDetails: currentProject.plotDetails || currentProject.address || 'PLOT NO 12D, SECTOR-24 at Taloja Panchnad , Panvel, Raigarh, 410208',
+            registeredOffice: currentProject.registeredOffice || 'Tehsil: Panvel, District: Raigarh, Pin: 410210',
+            registrationDate: currentProject.registrationDate ? String(currentProject.registrationDate) : '27/03/2025',
+            validUntil: currentProject.validUntil ? String(currentProject.validUntil) : (currentProject.reraValidUntil ? formatDateFull(currentProject.reraValidUntil) : '31/12/2028'),
+            signatoryName: currentProject.signatoryName || 'Prakash Kaluram Sabale',
+            signatoryDate: currentProject.signatoryDate || '3/27/2025 3:57:36 PM',
+            certificateUrl: currentProject.reraCertificateUrl || (currentProject.reraNumber === 'P52000079818' ? '/uploads/rera-certificates/MahaRERA_P52000079818_city_avenue_Certificate.pdf' : undefined),
+            originalImageUrl: currentProject.originalDocumentUrl || (currentProject.reraNumber === 'P52000079818' ? '/images/original-certificates/P52000079818.png' : undefined),
+            isOriginalScannedDocument: true,
+          }}
+        />
       )}
-    </div>
+    </AccessibleDialog>
   );
 }

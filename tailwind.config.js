@@ -9,113 +9,120 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Stitch Primary Tokens
-        primary: {
-          DEFAULT: "#012d1d",
-          container: "#1b4332",
-          surface: "#E8F5E9",
-          border: "#A3D9B1",
-          fixed: "#c1ecd4",
-          "fixed-dim": "#a5d0b9",
-          light: "#2D6A4F",
-          dark: "#081C15",
+        // Dynamic Canvas & Background
+        canvas: "var(--color-canvas)",
+        background: "var(--color-canvas)",
+        "on-background": "var(--color-ink)",
+        alabaster: "var(--color-canvas)",
+        sandstone: "var(--color-border)",
+
+        // Dynamic Surfaces
+        surface: {
+          DEFAULT: "var(--color-surface)",
+          bright: "var(--color-surface-raised)",
+          dim: "var(--color-surface-muted)",
+          variant: "var(--color-surface-subtle)",
+          subtle: "var(--color-surface-subtle)",
+          muted: "var(--color-surface-muted)",
+          inset: "var(--color-surface-inset)",
+          raised: "var(--color-surface-raised)",
         },
-        "on-primary": "#ffffff",
-        "on-primary-container": "#86af99",
+        "surface-bright": "var(--color-surface-raised)",
+        "surface-dim": "var(--color-surface-muted)",
+        "surface-variant": "var(--color-surface-subtle)",
+        "surface-tint": "var(--color-primary-light)",
+        "surface-container-lowest": "var(--color-surface)",
+        "surface-container-low": "var(--color-surface-subtle)",
+        "surface-container": "var(--color-surface-subtle)",
+        "surface-container-high": "var(--color-surface-muted)",
+        "surface-container-highest": "var(--color-surface-muted)",
+
+        // Typography Content Tokens
+        content: {
+          DEFAULT: "var(--color-ink)",
+          primary: "var(--color-text-primary)",
+          secondary: "var(--color-text-secondary)",
+          muted: "var(--color-text-muted)",
+          disabled: "var(--color-text-disabled)",
+          inverse: "var(--color-text-inverse)",
+        },
+        "on-surface": "var(--color-ink)",
+        "on-surface-variant": "var(--color-text-secondary)",
+        "inverse-surface": "var(--color-surface-raised)",
+        "inverse-on-surface": "var(--color-ink)",
+
+        // Hairlines & Borders
+        outline: "var(--color-border)",
+        "outline-variant": "var(--color-border-subtle)",
+        "border-sandstone": "var(--color-border)",
+        border: {
+          DEFAULT: "var(--color-border)",
+          subtle: "var(--color-border-subtle)",
+          strong: "var(--color-border-strong)",
+        },
+
+        // Primary Brand (Cypress Forest Green)
+        primary: {
+          DEFAULT: "var(--color-primary)",
+          container: "var(--color-primary-dark)",
+          surface: "var(--color-primary-surface)",
+          border: "var(--color-primary-border)",
+          fixed: "var(--color-primary-surface)",
+          "fixed-dim": "var(--color-primary-light)",
+          light: "var(--color-primary-light)",
+          dark: "var(--color-primary-dark)",
+        },
+        "on-primary": "var(--color-action-on-primary)",
+        "on-primary-container": "var(--color-text-inverse)",
         "on-primary-fixed": "#002114",
         "on-primary-fixed-variant": "#274e3d",
-        "inverse-primary": "#a5d0b9",
+        "inverse-primary": "var(--color-primary-light)",
 
-        // Stitch Secondary Tokens
+        // Secondary Brand
         secondary: {
-          DEFAULT: "#2c694e",
-          container: "#aeeecb",
-          fixed: "#b1f0ce",
-          "fixed-dim": "#95d4b3",
-          light: "#3f6653",
+          DEFAULT: "var(--color-primary-light)",
+          container: "var(--color-primary-surface)",
+          fixed: "var(--color-primary-surface)",
+          "fixed-dim": "var(--color-primary-light)",
+          light: "var(--color-primary-light)",
         },
         "on-secondary": "#ffffff",
-        "on-secondary-container": "#316e52",
-        "on-secondary-fixed": "#002114",
-        "on-secondary-fixed-variant": "#0e5138",
+        "on-secondary-container": "var(--color-primary)",
 
-        // Stitch Tertiary / Accent Tokens (Terracotta & Amber)
-        tertiary: {
-          DEFAULT: "#3e1e00",
-          container: "#5e3000",
-          fixed: "#ffdcc3",
-          "fixed-dim": "#ffb77d",
-        },
-        "on-tertiary": "#ffffff",
-        "on-tertiary-container": "#f48c24",
-        "on-tertiary-fixed": "#2f1500",
-        "on-tertiary-fixed-variant": "#6e3900",
+        // Accent Brand (Warm Ochre & Amber)
         accent: {
-          DEFAULT: "#D97706",
-          hover: "#B45309",
-          subtle: "#FEF3C7",
-          border: "#FCD34D",
-          text: "#92400E",
+          DEFAULT: "var(--color-accent)",
+          hover: "var(--color-accent-hover)",
+          active: "var(--color-accent-active)",
+          soft: "var(--color-accent-soft)",
+          subtle: "var(--color-accent-subtle)",
+          text: "var(--color-accent-text)",
+          border: "var(--color-accent-hover)",
         },
 
-        // Stitch Neutral / Surface Tokens
-        background: "#fef9f0",
-        "on-background": "#1d1c17",
-        canvas: "#FBFBF9",
-        alabaster: "#FBFBF9",
-        sandstone: "#E5E0D8",
-
-        surface: {
-          DEFAULT: "#ffffff",
-          bright: "#fef9f0",
-          dim: "#ded9d1",
-          variant: "#e7e2da",
-          subtle: "#F3EFEA",
-          muted: "#EFEAE1",
-          inset: "#F8F6F0",
-        },
-        "surface-bright": "#fef9f0",
-        "surface-dim": "#ded9d1",
-        "surface-variant": "#e7e2da",
-        "surface-tint": "#3f6653",
-        "surface-container-lowest": "#ffffff",
-        "surface-container-low": "#f8f3eb",
-        "surface-container": "#f2ede5",
-        "surface-container-high": "#ede7df",
-        "surface-container-highest": "#e7e2da",
-
-        "on-surface": "#1d1c17",
-        "on-surface-variant": "#414844",
-        "inverse-surface": "#32302b",
-        "inverse-on-surface": "#f5f0e8",
-
-        // Stitch Outline & Borders
-        outline: "#717973",
-        "outline-variant": "#c1c8c2",
-        "border-sandstone": "#E5E0D8",
-        border: {
-          DEFAULT: "#E5E0D8",
-          subtle: "#F0EBE1",
-          strong: "#D1C7B7",
+        // Status Feedback Tokens
+        status: {
+          success: "var(--color-status-success)",
+          "success-surface": "var(--color-status-success-surface)",
+          "success-bg": "var(--color-status-success-surface)",
+          warning: "var(--color-status-warning)",
+          "warning-surface": "var(--color-status-warning-surface)",
+          "warning-bg": "var(--color-status-warning-surface)",
+          danger: "var(--color-status-danger)",
+          "danger-surface": "var(--color-status-danger-surface)",
+          "danger-bg": "var(--color-status-danger-surface)",
+          info: "var(--color-status-info)",
+          "info-surface": "var(--color-status-info-surface)",
+          "info-bg": "var(--color-status-info-surface)",
         },
 
-        // Status Colors
+        // Legacy / Fallback Status Colors
         error: {
-          DEFAULT: "#ba1a1a",
-          container: "#ffdad6",
+          DEFAULT: "var(--color-status-danger)",
+          container: "var(--color-status-danger-surface)",
         },
         "on-error": "#ffffff",
-        "on-error-container": "#93000a",
-        status: {
-          success: "#15803D",
-          "success-bg": "#DCFCE7",
-          warning: "#B45309",
-          "warning-bg": "#FEF3C7",
-          danger: "#B91C1C",
-          "danger-bg": "#FEE2E2",
-          info: "#1D4ED8",
-          "info-bg": "#DBEAFE",
-        },
+        "on-error-container": "var(--color-status-danger)",
 
         // Social / Channel Attribution
         channel: {

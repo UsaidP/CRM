@@ -168,9 +168,9 @@ export default function ClientPortalsConsolePage() {
 
       {/* Filter and Search Bar */}
       <div className="p-4 rounded-2xl bg-surface border border-border shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-sans">
-        <div className="relative flex-1 w-full">
+        <div className="relative flex-1 w-full flex items-center">
           <label htmlFor="portal-search" className="sr-only">Search client portals</label>
-          <Search className="w-4 h-4 text-content-muted absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-content-muted absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             id="portal-search"
             name="portalSearch"
@@ -178,7 +178,7 @@ export default function ClientPortalsConsolePage() {
             placeholder="Search by buyer name, phone, or token…"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-surface-inset border border-border rounded-xl pl-10 pr-4 py-2.5 text-xs text-content placeholder:text-content-muted focus:outline-none focus:border-accent"
+            className="search-input w-full bg-surface-inset border border-border rounded-xl pr-4 py-2.5 text-xs text-content placeholder:text-content-muted focus:outline-none focus:border-accent shadow-2xs"
           />
         </div>
 
@@ -239,9 +239,9 @@ export default function ClientPortalsConsolePage() {
               {filteredPortals.map((portal) => {
                 const isHot = portal.engagement?.engagementTier === 'HOT_PROSPECT';
                 const isWarm = portal.engagement?.engagementTier === 'WARM_INTEREST';
-                const unitCount = portal.portalUnits?.length || 0;
+                const unitCount = portal.propertyCount || portal.portalUnits?.length || portal.projects?.length || 0;
                 const logs = portal.telemetryLogs || [];
-                const lastLog = logs[logs.length - 1];
+                const lastLog = logs[0] || logs[logs.length - 1];
 
                 return (
                   <tr key={portal.id} className={`hover:bg-surface-subtle/80 transition-colors ${isHot ? 'bg-status-warning-surface/30' : ''}`}>
@@ -252,7 +252,14 @@ export default function ClientPortalsConsolePage() {
 
                     <td className="p-3.5">
                       <div className="flex items-center gap-1.5">
-                        <span className="font-mono text-content text-xs">{portal.token}</span>
+                        <a
+                          href={`/p/${portal.token}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="font-mono text-accent hover:underline text-xs"
+                        >
+                          {portal.token}
+                        </a>
                         <button
                           type="button"
                           onClick={() => handleCopyLink(portal.token)}
@@ -286,14 +293,16 @@ export default function ClientPortalsConsolePage() {
                     </td>
 
                     <td className="p-3.5 text-center font-mono">
-                      <div className="font-bold text-content">{portal.totalViews || 0} Views</div>
+                      <div className="font-bold text-content">{portal.totalViews || logs.length || 0} Views</div>
                       <div className="text-[11px] text-content-muted">{portal.engagement?.totalDwellSeconds || 0}s dwell</div>
                     </td>
 
                     <td className="p-3.5 text-xs font-mono">
                       {lastLog ? (
                         <div>
-                          <span className="text-status-success font-semibold">{lastLog.eventType}</span>
+                          <span className="text-status-success font-semibold">
+                            {lastLog.actionType || lastLog.eventType || 'PORTAL_OPEN'}
+                          </span>
                           <span className="text-[10px] text-content-muted block">
                             {formatTimeShort(lastLog.createdAt)}
                           </span>
@@ -310,7 +319,7 @@ export default function ClientPortalsConsolePage() {
                           onClick={() => setInspectedPortal(portal)}
                           className="px-3 py-1.5 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer"
                         >
-                          <Activity className="w-3.5 h-3.5 text-accent" /> Logs
+                          <Activity className="w-3.5 h-3.5 text-accent" /> Logs ({logs.length})
                         </button>
                         <a
                           href={`https://wa.me/${(portal.lead?.phoneE164 || '').replace(/\+/g, '')}?text=${encodeURIComponent(`Hi ${portal.lead?.fullName || 'Client'}, I noticed you were exploring your property selection on ZamZam Properties. Would you like to schedule an escorted sample flat visit this weekend?`)}`}
@@ -363,30 +372,63 @@ export default function ClientPortalsConsolePage() {
                   <Activity className="w-4 h-4 text-accent" />
                   Portal Telemetry: {inspectedPortal.lead?.fullName || 'Prospective buyer'}
                 </h2>
-                <p id="portal-telemetry-description" className="mt-1 text-xs text-content-secondary">Review engagement events recorded for this portal token.</p>
+                <p id="portal-telemetry-description" className="mt-1 text-xs text-content-secondary">
+                  Token: <code className="text-accent font-mono">{inspectedPortal.token}</code> • Engagement Tier: <strong>{inspectedPortal.engagement?.engagementTier?.replace('_', ' ')}</strong>
+                </p>
               </div>
               <button type="button" data-dialog-close aria-label="Close portal telemetry" onClick={() => setInspectedPortal(null)} className="p-1 rounded-lg text-content-muted hover:text-content">✕</button>
             </div>
 
             <div className="space-y-2">
-              <div className="text-content-secondary text-xs uppercase tracking-wider font-bold">
-                Logged Event Stream ({inspectedPortal.telemetryLogs?.length || 0} events):
+              <div className="flex items-center justify-between text-content-secondary text-xs uppercase tracking-wider font-bold">
+                <span>Logged Event Stream ({inspectedPortal.telemetryLogs?.length || 0} events):</span>
+                <span className="text-content-muted font-normal normal-case text-[11px]">Real-time visitor telemetry</span>
               </div>
-              <div className="space-y-2 max-h-60 overflow-y-auto p-3 rounded-xl bg-surface-subtle border border-border font-mono text-xs">
-                {(inspectedPortal.telemetryLogs || []).map((log: any, idx: number) => (
-                  <div key={idx} className="p-2.5 rounded-lg bg-surface border border-border flex justify-between items-center text-xs">
-                    <div>
-                      <strong className="text-status-success">{log.eventType}</strong>
-                      {log.targetUnitId && <span className="text-[10px] text-content-muted block">Target Unit: {log.targetUnitId}</span>}
+              <div className="space-y-2 max-h-72 overflow-y-auto p-3 rounded-xl bg-surface-subtle border border-border font-mono text-xs">
+                {(inspectedPortal.telemetryLogs || []).map((log: any, idx: number) => {
+                  const action = log.actionType || log.eventType || 'PORTAL_OPEN';
+                  const actionLabels: Record<string, { label: string; color: string; icon: string }> = {
+                    PORTAL_OPEN: { label: 'Portal Opened', color: 'text-status-info', icon: '👁️' },
+                    PHOTO_SWIPE: { label: 'Photo Gallery Swipe', color: 'text-accent', icon: '📸' },
+                    VIDEO_PLAY: { label: 'Video Walkthrough Played', color: 'text-status-warning', icon: '🎥' },
+                    BROCHURE_DOWNLOAD: { label: 'Brochure Downloaded', color: 'text-status-info', icon: '📄' },
+                    WHATSAPP_CLICK: { label: 'WhatsApp Inquiry Sent', color: 'text-status-success', icon: '💬' },
+                    CALL_CLICK: { label: 'Advisor Direct Call', color: 'text-status-success', icon: '📞' },
+                    VISIT_BOOKING_CLICK: { label: 'Site Visit Requested', color: 'text-status-warning', icon: '📅' },
+                    PORTAL_DWELL: { label: 'Session Dwell Recorded', color: 'text-content-secondary', icon: '⏱️' },
+                    PORTAL_SHARE: { label: 'Portal Link Shared', color: 'text-accent', icon: '🔗' },
+                  };
+                  const meta = actionLabels[action] || { label: action, color: 'text-content', icon: '⚡' };
+
+                  return (
+                    <div key={idx} className="p-3 rounded-xl bg-surface border border-border flex justify-between items-center text-xs shadow-2xs gap-3">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5 font-bold">
+                          <span>{meta.icon}</span>
+                          <strong className={meta.color}>{meta.label}</strong>
+                          <span className="text-[10px] text-content-muted font-normal">({action})</span>
+                        </div>
+                        <div className="flex items-center gap-3 text-[10px] text-content-muted mt-1 font-sans">
+                          {log.dwellTimeSec > 0 && (
+                            <span className="bg-surface-inset px-1.5 py-0.5 rounded border border-border">
+                              ⏱️ {log.dwellTimeSec}s Dwell
+                            </span>
+                          )}
+                          {(log.unitId || log.targetUnitId) && (
+                            <span>Unit: <code className="font-mono">{log.unitId || log.targetUnitId}</code></span>
+                          )}
+                        </div>
+                      </div>
+                      <span className="text-[10px] text-content-muted shrink-0 text-right">
+                        {formatTimeShort(log.createdAt)}
+                      </span>
                     </div>
-                    <span className="text-[10px] text-content-muted">
-                      {formatTimeShort(log.createdAt)}
-                    </span>
-                  </div>
-                ))}
+                  );
+                })}
                 {(inspectedPortal.telemetryLogs || []).length === 0 && (
-                  <div className="p-4 text-center text-content-muted text-xs">
-                    No granular telemetry events logged yet for this token.
+                  <div className="p-6 text-center text-content-muted text-xs space-y-1">
+                    <p className="font-medium">No granular telemetry events logged yet for this token.</p>
+                    <p className="text-[11px] text-content-muted">Telemetry events will automatically record when the client opens the link, browses photos, watches videos, or books a visit.</p>
                   </div>
                 )}
               </div>

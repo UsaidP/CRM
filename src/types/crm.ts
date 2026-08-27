@@ -12,13 +12,41 @@ export interface Organization {
   updatedAt: string;
 }
 
+export type CrmRole = 'SUPER_ADMIN' | 'BROKER_MANAGER' | 'SALES_EXECUTIVE' | 'TELECALLER';
+
+export type PermissionKey =
+  | 'leads:view_all'
+  | 'leads:create'
+  | 'leads:edit_all'
+  | 'leads:delete'
+  | 'leads:reassign'
+  | 'leads:bulk_import'
+  | 'leads:merge'
+  | 'inventory:view'
+  | 'inventory:edit'
+  | 'inventory:verify_rera'
+  | 'inventory:scraper'
+  | 'deals:view_all'
+  | 'deals:create'
+  | 'deals:advance_stage'
+  | 'deals:view_financials'
+  | 'deals:rtgs_payout'
+  | 'visits:schedule'
+  | 'visits:dispatch_cab'
+  | 'visits:record_outcome'
+  | 'portals:create'
+  | 'portals:view_telemetry'
+  | 'analytics:view_firm'
+  | 'admin:manage_rbac';
+
 export interface User {
   id: string;
   organizationId: string;
   fullName: string;
   email: string;
   phoneE164: string;
-  role: 'SUPER_ADMIN' | 'BROKER_MANAGER' | 'SALES_EXECUTIVE' | 'TELECALLER';
+  role: CrmRole;
+  customPermissionsJson?: string;
   isActive: boolean;
 }
 

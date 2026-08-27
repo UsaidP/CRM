@@ -65,7 +65,7 @@ export function ThemeToggle({ variant = 'sidebar', className = '' }: ThemeToggle
         <Zap className="w-3.5 h-3.5 text-accent shrink-0 fill-accent/20" />
         <div className="truncate flex flex-col">
           <span className="text-content font-bold font-mono text-[10px] tracking-wide uppercase leading-tight">
-            Cobalt Design
+            Stitch Console
           </span>
           <span className="text-[9px] text-content-muted font-mono capitalize">
             {theme === 'system' ? 'System Theme' : isDark ? 'Dark Workbench' : 'Light Studio'}

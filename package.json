@@ -9,11 +9,17 @@
     "lint": "next lint",
     "db:push": "bunx prisma db push",
     "db:seed": "bun prisma/seed.js",
+    "db:clean": "bun scripts/clean-db.js",
     "test": "bun test/run-all-tests.js",
+    "backup": "bun scripts/backup.ts",
+    "restore": "bun scripts/restore.ts",
     "open:brave": "open -a 'Brave Browser' http://localhost:3000"
   },
   "dependencies": {
+    "@google/genai": "^2.19.0",
     "@prisma/client": "^6.4.1",
+    "agentation": "^3.0.2",
+    "agentation-mcp": "^1.2.0",
     "clsx": "^2.1.1",
     "framer-motion": "^12.4.7",
     "lucide-react": "^1.16.0",

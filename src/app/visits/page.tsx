@@ -22,13 +22,18 @@ import {
   MessageSquare,
   ChevronRight,
   Navigation,
-  Share2
+  Share2,
+  Printer,
+  Download
 } from 'lucide-react';
 import { HallmarkStamp } from '@/components/ui/HallmarkStamp';
 import { AccessibleDialog } from '@/components/ui/AccessibleDialog';
+import { CustomSelect, type CustomSelectOption } from '@/components/ui/CustomSelect';
+import { formatSiteVisitWhatsApp } from '@/lib/export-utils';
 
 export default function SiteVisitsPage() {
   const [visits, setVisits] = useState<any[]>([]);
+  const [passportVisit, setPassportVisit] = useState<any | null>(null);
   const [leads, setLeads] = useState<any[]>([]);
   const [units, setUnits] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -274,7 +279,22 @@ export default function SiteVisitsPage() {
               month: 'short',
               year: 'numeric',
             });
-            const waShareText = `ZamZam Properties Site Tour Itinerary for ${visit.lead?.fullName}:\nDate: ${dateStr} • ${visit.timeSlot}\nPickup: ${visit.pickupLocation}\nCab: ${visit.cabDetails || 'Assigned Cab'}\nStops:\n${stops.map((s: any, idx: number) => `${idx + 1}. ${s.projectName} (${s.bhk} BHK) - ${s.expectedTime}`).join('\n')}`;
+            const waShareText = formatSiteVisitWhatsApp({
+              clientName: visit.lead?.fullName || 'Valued Purchaser',
+              clientPhone: visit.lead?.phoneE164 || '',
+              scheduledDateStr: dateStr,
+              timeSlot: visit.timeSlot,
+              pickupLocation: visit.pickupLocation,
+              cabDetails: visit.cabDetails,
+              assignedBrokerName: visit.assignedBroker?.fullName,
+              stops: stops.map((s: any) => ({
+                projectName: s.projectName,
+                bhk: s.bhk,
+                microMarket: s.microMarket || 'Kharghar / Taloja',
+                expectedTime: s.expectedTime,
+                developerPocName: s.developerPocName,
+              })),
+            });
 
             return (
               <div
@@ -303,7 +323,17 @@ export default function SiteVisitsPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <button
+                      type="button"
+                      onClick={() => setPassportVisit(visit)}
+                      className="px-3.5 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content-secondary hover:text-content border border-border hover:border-accent/40 font-bold text-xs flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer"
+                      title="View & Print Official VIP Inspection Passport"
+                    >
+                      <Printer className="w-3.5 h-3.5 text-accent" />
+                      <span>Tour Passport</span>
+                    </button>
+
                     <a
                       href={`https://wa.me/${(visit.lead?.phoneE164 || '').replace(/\+/g, '')}?text=${encodeURIComponent(waShareText)}`}
                       target="_blank"
@@ -311,7 +341,7 @@ export default function SiteVisitsPage() {
                       className="px-3.5 py-2 rounded-xl bg-status-success hover:opacity-90 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs cursor-pointer"
                     >
                       <Share2 className="w-3.5 h-3.5" />
-                      WhatsApp Itinerary
+                      <span>WhatsApp Itinerary</span>
                     </a>
 
                     {!isCompleted && (
@@ -320,7 +350,7 @@ export default function SiteVisitsPage() {
                         className="px-3.5 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-accent-text border border-border hover:border-accent/40 font-bold text-xs flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer"
                       >
                         <Star className="w-3.5 h-3.5 text-accent" />
-                        Log Outcome
+                        <span>Log Outcome</span>
                       </button>
                     )}
                   </div>
@@ -406,20 +436,16 @@ export default function SiteVisitsPage() {
           <form onSubmit={handleScheduleVisit} className="space-y-3.5 pt-2 text-xs">
             <div>
               <label htmlFor="visit-lead" className="text-content-secondary font-medium block mb-1">Purchaser Lead:</label>
-              <select
-                id="visit-lead"
-                name="leadId"
-                data-dialog-autofocus
+              <CustomSelect
+                options={leads.map((l) => ({
+                  value: l.id,
+                  label: `${l.fullName} (${l.phoneE164})`,
+                }))}
                 value={selectedLeadId}
-                onChange={(e) => setSelectedLeadId(e.target.value)}
-                className="w-full bg-surface-inset border border-border rounded-xl p-2.5 text-xs text-content focus:outline-none focus:border-accent cursor-pointer"
-              >
-                {leads.map((l) => (
-                  <option key={l.id} value={l.id}>
-                    {l.fullName} ({l.phoneE164})
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => setSelectedLeadId(val)}
+                className="w-full"
+                placeholder="Select lead for site visit..."
+              />
             </div>
 
             <fieldset>
@@ -546,19 +572,17 @@ export default function SiteVisitsPage() {
             <form onSubmit={handleSaveFeedback} className="space-y-3.5 text-xs">
               <div>
                 <label htmlFor="feedback-outcome" className="text-content-secondary font-medium block mb-1">Outcome Status:</label>
-                <select
-                  id="feedback-outcome"
-                  name="feedbackOutcome"
-                  data-dialog-autofocus
+                <CustomSelect
+                  options={[
+                    { value: 'HIGH_INTEREST', label: 'HIGH_INTEREST (Moving to Token)', dotColor: 'bg-emerald-500' },
+                    { value: 'OFFER_MADE', label: 'OFFER_MADE (Negotiating price)', dotColor: 'bg-blue-500' },
+                    { value: 'FOLLOW_UP_REQUIRED', label: 'FOLLOW_UP_REQUIRED', dotColor: 'bg-amber-500' },
+                    { value: 'REJECTED', label: 'REJECTED (Budget/layout mismatch)', dotColor: 'bg-rose-500' },
+                  ]}
                   value={feedbackOutcome}
-                  onChange={(e) => setFeedbackOutcome(e.target.value)}
-                  className="w-full bg-surface-inset border border-border rounded-xl p-2.5 text-xs text-content focus:outline-none focus:border-accent cursor-pointer"
-                >
-                  <option value="HIGH_INTEREST">HIGH_INTEREST (Moving to Token)</option>
-                  <option value="OFFER_MADE">OFFER_MADE (Negotiating price)</option>
-                  <option value="FOLLOW_UP_REQUIRED">FOLLOW_UP_REQUIRED</option>
-                  <option value="REJECTED">REJECTED (Budget/layout mismatch)</option>
-                </select>
+                  onChange={(val) => setFeedbackOutcome(val)}
+                  className="w-full"
+                />
               </div>
 
               <fieldset>
@@ -614,6 +638,163 @@ export default function SiteVisitsPage() {
             </form>
           </div>
         )}
+      </AccessibleDialog>
+
+      {/* MODAL 3: OFFICIAL ZAMZAM VIP PROPERTY TOUR PASSPORT */}
+      <AccessibleDialog
+        open={Boolean(passportVisit)}
+        onClose={() => setPassportVisit(null)}
+        titleId="tour-passport-title"
+        size="lg"
+      >
+        {passportVisit && (() => {
+          const stops = JSON.parse(passportVisit.itineraryUnitsJson || '[]');
+          const dateStr = new Date(passportVisit.scheduledDate).toLocaleDateString('en-IN', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+          });
+
+          return (
+            <div className="space-y-4 text-xs font-sans">
+              <div className="flex items-center justify-between pb-3 border-b border-border">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-accent text-white flex items-center justify-center font-bold font-mono">
+                    ZP
+                  </div>
+                  <div>
+                    <h2 id="tour-passport-title" className="text-base font-bold text-content font-display">
+                      ZamZam Properties — Escorted Property Tour Passport
+                    </h2>
+                    <p className="text-[10px] text-content-muted font-mono">
+                      VIP Inspection Dossier &amp; Route Schedule • MahaRERA Reg: A52000028714
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  data-dialog-close
+                  aria-label="Close passport"
+                  onClick={() => setPassportVisit(null)}
+                  className="p-1 rounded-lg text-content-muted hover:text-content cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Printable Tour Passport Card */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-surface border border-border space-y-4 text-slate-900 bg-white">
+                {/* Header */}
+                <div className="flex justify-between items-start border-b border-slate-200 pb-3">
+                  <div>
+                    <h3 className="font-extrabold text-lg text-[#1B4332] font-display">ZAMZAM PROPERTIES</h3>
+                    <p className="text-[10px] text-slate-500 font-mono">VIP Escorted Logistics &amp; Property Tour Protocol</p>
+                    <p className="text-[10px] text-slate-500">MahaRERA Reg: A52000028714 • Kharghar &amp; Taloja Hub</p>
+                  </div>
+                  <div className="text-right font-mono text-[10px] space-y-0.5">
+                    <span className="px-2.5 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-300 font-bold">
+                      INSPECTION PASSPORT
+                    </span>
+                    <p className="mt-1 font-bold text-slate-800">Date: {dateStr}</p>
+                    <p className="text-slate-500">Time: {passportVisit.timeSlot}</p>
+                  </div>
+                </div>
+
+                {/* Logistics & Guest Information */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200 text-[10px]">
+                  <div className="space-y-0.5">
+                    <span className="text-[9px] uppercase font-bold text-slate-400 font-mono">Guest / Purchaser:</span>
+                    <p className="font-bold text-slate-800 text-xs">{passportVisit.lead?.fullName}</p>
+                    <p className="text-slate-600 font-mono">Phone: {passportVisit.lead?.phoneE164}</p>
+                    <p className="text-slate-600">Pickup: <strong>{passportVisit.pickupLocation}</strong></p>
+                  </div>
+                  <div className="space-y-0.5">
+                    <span className="text-[9px] uppercase font-bold text-slate-400 font-mono">Escort &amp; Chauffeur Details:</span>
+                    <p className="font-bold text-slate-800 text-xs">Advisor: {passportVisit.assignedBroker?.fullName || 'Senior Consultant'}</p>
+                    <p className="text-slate-600">Assigned Vehicle: <strong>{passportVisit.cabDetails || 'ZamZam Chauffeur Vehicle'}</strong></p>
+                    <p className="text-slate-600">Emergency Support: <strong>+91 98201 23456</strong></p>
+                  </div>
+                </div>
+
+                {/* Itinerary Table */}
+                <div>
+                  <h4 className="text-[10px] font-bold uppercase text-[#1B4332] font-mono mb-1.5">
+                    Scheduled Development Inspection Stops:
+                  </h4>
+                  <table className="w-full text-[11px] border-collapse">
+                    <thead>
+                      <tr className="border-b border-slate-200 bg-slate-100 text-slate-700 uppercase font-mono text-[9px]">
+                        <th className="py-2 px-2.5 text-center" style={{ width: '8%' }}>Stop</th>
+                        <th className="py-2 px-2.5 text-left" style={{ width: '22%' }}>Arrival Time</th>
+                        <th className="py-2 px-2.5 text-left" style={{ width: '40%' }}>Project &amp; Typology</th>
+                        <th className="py-2 px-2.5 text-left" style={{ width: '30%' }}>Developer Contact</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {stops.map((stop: any, idx: number) => (
+                        <tr key={idx} className="hover:bg-slate-50">
+                          <td className="py-2.5 px-2.5 text-center font-bold text-[#1B4332]">#{idx + 1}</td>
+                          <td className="py-2.5 px-2.5 font-mono font-bold text-slate-700">{stop.expectedTime || 'As scheduled'}</td>
+                          <td className="py-2.5 px-2.5">
+                            <strong className="text-slate-800 text-xs">{stop.projectName}</strong>
+                            <div className="text-[10px] text-slate-500">{stop.bhk} BHK • {stop.microMarket || 'Kharghar/Taloja'}</div>
+                          </td>
+                          <td className="py-2.5 px-2.5 text-slate-600">
+                            {stop.developerPocName ? <span>POC: {stop.developerPocName}</span> : 'Site Sales Desk'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Physical Inspection Checklist */}
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-[9.5pt] space-y-1.5">
+                  <span className="text-[8.5pt] font-bold text-slate-700 uppercase font-mono block">On-Site Verification Checklist:</span>
+                  <div className="grid grid-cols-2 gap-2 text-[8pt] text-slate-600">
+                    <div>☑ Sanctioned RERA Carpet vs Actual Layout</div>
+                    <div>☑ Natural Sunlight &amp; Cross-Ventilation</div>
+                    <div>☑ Lift / Lobby / Fire Safety Systems</div>
+                    <div>☑ Water Pressure &amp; Overhead Tank Supply</div>
+                  </div>
+                </div>
+
+                {/* Footer Signatures */}
+                <div className="grid grid-cols-2 pt-4 gap-6 text-[8pt] border-t border-slate-200">
+                  <div>
+                    <p className="text-slate-400">Client Signature:</p>
+                    <div className="h-6 border-b border-slate-300" />
+                  </div>
+                  <div>
+                    <p className="text-slate-400">Escorting Advisor Sign &amp; Stamp:</p>
+                    <div className="h-6 border-b border-slate-300" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center justify-between pt-3 border-t border-border">
+                <button
+                  type="button"
+                  onClick={() => setPassportVisit(null)}
+                  className="px-4 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-bold transition-colors cursor-pointer"
+                >
+                  Close
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="px-5 py-2 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  <span>Print VIP Tour Passport</span>
+                </button>
+              </div>
+            </div>
+          );
+        })()}
       </AccessibleDialog>
     </div>
   );

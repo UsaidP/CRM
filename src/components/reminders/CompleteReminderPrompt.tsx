@@ -13,6 +13,15 @@ import {
   XCircle,
 } from 'lucide-react';
 import { AccessibleDialog } from '@/components/ui/AccessibleDialog';
+import { CustomSelect, type CustomSelectOption } from '@/components/ui/CustomSelect';
+
+const NEXT_CHANNEL_OPTIONS: CustomSelectOption[] = [
+  { value: 'CALL', label: '📞 Phone Call' },
+  { value: 'WHATSAPP', label: '💬 WhatsApp' },
+  { value: 'SITE_VISIT_FOLLOWUP', label: '🚗 Site Visit' },
+  { value: 'REQUIREMENT_CHECK', label: '📄 Deck Review' },
+  { value: 'TOKEN_FOLLOWUP', label: '💰 Token Check' },
+];
 
 interface CompleteReminderPromptProps {
   open: boolean;
@@ -297,21 +306,17 @@ export function CompleteReminderPrompt({
                     </div>
 
                     <div>
-                      <label htmlFor="next-type" className="text-content-secondary font-medium block mb-1 text-[11px]">
+                      <label className="text-content-secondary font-medium block mb-1 text-[11px]">
                         Channel:
                       </label>
-                      <select
-                        id="next-type"
+                      <CustomSelect
+                        options={NEXT_CHANNEL_OPTIONS}
                         value={nextType}
-                        onChange={(e) => setNextType(e.target.value)}
-                        className="w-full bg-surface-inset border border-border rounded-xl p-2 text-xs text-content font-bold focus:outline-none focus:border-accent cursor-pointer"
-                      >
-                        <option value="CALL">📞 Phone Call</option>
-                        <option value="WHATSAPP">💬 WhatsApp</option>
-                        <option value="SITE_VISIT_FOLLOWUP">🚗 Site Visit</option>
-                        <option value="REQUIREMENT_CHECK">📄 Deck Review</option>
-                        <option value="TOKEN_FOLLOWUP">💰 Token Check</option>
-                      </select>
+                        onChange={(val) => setNextType(val)}
+                        className="w-full"
+                        size="xs"
+                        triggerClassName="bg-surface-inset border-border rounded-xl text-xs font-bold"
+                      />
                     </div>
                   </div>
                 </div>

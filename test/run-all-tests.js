@@ -6,6 +6,7 @@ console.log('================================================================\n'
 
 const testSuites = [
   { name: 'Phase 1: Inventory & Cost Engine', file: 'test/run-all-tests-unit.js' },
+  { name: 'MahaRERA: Autonomous Registry Lookup & Certificate Engine', file: 'test/test-maharera-automation.js' },
   { name: 'Phase 2: Organic Lead Attribution & Ingestion', file: 'test/run-phase2-tests.js' },
   { name: 'Phase 3: Requirements-to-Property Matchmaker', file: 'test/run-phase3-tests.js' },
   { name: 'Phase 4: Client Presentation Portals & Telemetry', file: 'test/run-phase4-tests.js' },
@@ -18,7 +19,7 @@ let allPassed = true;
 for (const suite of testSuites) {
   try {
     console.log(`▶ Executing ${suite.name} (${suite.file})...`);
-    execSync(`node ${suite.file}`, { stdio: 'inherit' });
+    execSync(`bun ${suite.file}`, { stdio: 'inherit' });
   } catch (err) {
     console.error(`❌ Suite failed: ${suite.name}`);
     allPassed = false;

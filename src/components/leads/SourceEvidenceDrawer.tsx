@@ -26,6 +26,45 @@ import {
 import { YoutubeIcon, InstagramIcon } from '@/components/icons/SocialIcons';
 import { OFFICIAL_BROKER_NUMBERS } from '@/lib/constants/broker-constants';
 import { formatDateTime } from '@/lib/date-utils';
+import { CustomSelect, type CustomSelectOption } from '@/components/ui/CustomSelect';
+
+const DRAWER_CHANNEL_OPTIONS: CustomSelectOption[] = [
+  { value: 'PHONE_CALL', label: '📞 Phone Call' },
+  { value: 'WHATSAPP', label: '💬 WhatsApp Chat' },
+  { value: 'SITE_VISIT', label: '🚗 Site Visit Meeting' },
+  { value: 'IN_PERSON_MEETING', label: '🏢 In-Person Meeting' },
+  { value: 'SMS', label: '📱 SMS Message' },
+  { value: 'EMAIL', label: '✉️ Email Message' },
+];
+
+const DRAWER_DIRECTION_OPTIONS: CustomSelectOption[] = [
+  { value: 'OUTBOUND', label: 'Outbound (Broker to Buyer)' },
+  { value: 'INBOUND', label: 'Inbound (Buyer to Broker)' },
+];
+
+const DRAWER_OUTCOME_OPTIONS: CustomSelectOption[] = [
+  { value: 'CONNECTED_INTERESTED', label: '✅ Connected & Interested' },
+  { value: 'VISIT_REQUESTED', label: '🚗 Site Visit Requested' },
+  { value: 'FOLLOW_UP_SCHEDULED', label: '📅 Callback Scheduled' },
+  { value: 'BUDGET_DISCUSSED', label: '💰 Budget / Floor Rise' },
+  { value: 'TOKEN_OFFER', label: '🏷️ Token / Booking in Progress' },
+  { value: 'RINGING_NO_ANSWER', label: '🔕 Ringing / No Answer' },
+  { value: 'BUSY_CALL_LATER', label: '⏳ Busy / Call Back Later' },
+  { value: 'NOT_INTERESTED', label: '❌ Not Interested / Dropped' },
+];
+
+const DRAWER_STAGE_OPTIONS: CustomSelectOption[] = [
+  { value: 'discovery_call', label: '📞 Discovery & Qualifying' },
+  { value: 'portal_shared', label: '📑 Shortlist / Deck Sent' },
+  { value: 'visit_scheduled', label: '🚗 Site Visit Scheduled' },
+  { value: 'visit_done', label: '🏢 Site Visit Completed' },
+  { value: 'revisit_scheduled', label: '🔄 Re-Visit / Family Tour' },
+  { value: 'negotiation_token', label: '💰 Price Negotiation & Token' },
+  { value: 'under_registration', label: '📝 Agreement & Registration' },
+  { value: 'closed_won', label: '🏆 Booking Done (Closed Won)' },
+  { value: 'on_hold_nurture', label: '⏳ Nurture / Follow-Up Later' },
+  { value: 'closed_lost', label: '❌ Lost / Dropped' },
+];
 
 interface SourceEvidenceDrawerProps {
   lead: any | null;
@@ -238,12 +277,12 @@ export function SourceEvidenceDrawer({
     <>
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black/50 backdrop-blur-xs z-40 animate-in fade-in duration-200"
+        className="fixed inset-0 bg-black/60 backdrop-blur-xs z-[60] animate-in fade-in duration-200"
         onClick={onClose}
         aria-hidden="true"
       />
 
-      <div className="fixed inset-y-0 right-0 z-50 w-full max-w-2xl bg-surface border-l border-border shadow-2xl overflow-y-auto animate-in slide-in-from-right duration-200 text-content flex flex-col font-sans">
+      <div className="fixed inset-y-0 right-0 z-[70] w-full max-w-2xl bg-surface border-l border-border shadow-2xl overflow-y-auto animate-in slide-in-from-right duration-200 text-content flex flex-col font-sans">
         {/* Sticky Header */}
         <div className="sticky top-0 z-10 px-6 py-5 bg-surface/95 backdrop-blur border-b border-border flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -381,48 +420,38 @@ export function SourceEvidenceDrawer({
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
                   <div>
                     <label className="text-[11px] text-content-muted block mb-1">Channel</label>
-                    <select
+                    <CustomSelect
+                      options={DRAWER_CHANNEL_OPTIONS}
                       value={channel}
-                      onChange={(e) => setChannel(e.target.value)}
-                      className="w-full bg-surface-inset border border-border rounded-lg p-2 text-xs text-content focus:outline-none focus:border-accent"
-                    >
-                      <option value="PHONE_CALL">📞 Phone Call</option>
-                      <option value="WHATSAPP">💬 WhatsApp Chat</option>
-                      <option value="SITE_VISIT">🚗 Site Visit Meeting</option>
-                      <option value="IN_PERSON_MEETING">🏢 In-Person Meeting</option>
-                      <option value="SMS">📱 SMS Message</option>
-                      <option value="EMAIL">✉️ Email Message</option>
-                    </select>
+                      onChange={(val) => setChannel(val)}
+                      className="w-full"
+                      size="xs"
+                      triggerClassName="bg-surface-inset border-border rounded-lg text-xs"
+                    />
                   </div>
 
                   <div>
                     <label className="text-[11px] text-content-muted block mb-1">Direction</label>
-                    <select
+                    <CustomSelect
+                      options={DRAWER_DIRECTION_OPTIONS}
                       value={direction}
-                      onChange={(e) => setDirection(e.target.value)}
-                      className="w-full bg-surface-inset border border-border rounded-lg p-2 text-xs text-content focus:outline-none focus:border-accent"
-                    >
-                      <option value="OUTBOUND">Outbound (Broker to Buyer)</option>
-                      <option value="INBOUND">Inbound (Buyer to Broker)</option>
-                    </select>
+                      onChange={(val) => setDirection(val)}
+                      className="w-full"
+                      size="xs"
+                      triggerClassName="bg-surface-inset border-border rounded-lg text-xs"
+                    />
                   </div>
 
                   <div>
                     <label className="text-[11px] text-content-muted block mb-1">Call Outcome / Disposition</label>
-                    <select
+                    <CustomSelect
+                      options={DRAWER_OUTCOME_OPTIONS}
                       value={outcome}
-                      onChange={(e) => setOutcome(e.target.value)}
-                      className="w-full bg-surface-inset border border-border rounded-lg p-2 text-xs text-content focus:outline-none focus:border-accent"
-                    >
-                      <option value="CONNECTED_INTERESTED">✅ Connected &amp; Interested</option>
-                      <option value="VISIT_REQUESTED">🚗 Site Visit Requested</option>
-                      <option value="FOLLOW_UP_SCHEDULED">📅 Callback Scheduled</option>
-                      <option value="BUDGET_DISCUSSED">💰 Budget / Floor Rise Discussion</option>
-                      <option value="TOKEN_OFFER">🏷️ Token / Booking in Progress</option>
-                      <option value="RINGING_NO_ANSWER">🔕 Ringing / No Answer</option>
-                      <option value="BUSY_CALL_LATER">⏳ Busy / Call Back Later</option>
-                      <option value="NOT_INTERESTED">❌ Not Interested / Dropped</option>
-                    </select>
+                      onChange={(val) => setOutcome(val)}
+                      className="w-full"
+                      size="xs"
+                      triggerClassName="bg-surface-inset border-border rounded-lg text-xs"
+                    />
                   </div>
                 </div>
 
@@ -453,22 +482,14 @@ export function SourceEvidenceDrawer({
 
                   <div>
                     <label className="text-[11px] text-content-muted block mb-1">Sync Pipeline Stage</label>
-                    <select
+                    <CustomSelect
+                      options={DRAWER_STAGE_OPTIONS}
                       value={stageUpdate}
-                      onChange={(e) => setStageUpdate(e.target.value)}
-                      className="w-full bg-surface-inset border border-border rounded-lg p-2 text-xs text-content focus:outline-none focus:border-accent"
-                    >
-                      <option value="discovery_call">📞 Discovery &amp; Qualifying</option>
-                      <option value="portal_shared">📑 Shortlist / Deck Sent</option>
-                      <option value="visit_scheduled">🚗 Site Visit Scheduled</option>
-                      <option value="visit_done">🏢 Site Visit Completed</option>
-                      <option value="revisit_scheduled">🔄 Re-Visit / Family Tour</option>
-                      <option value="negotiation_token">💰 Price Negotiation &amp; Token</option>
-                      <option value="under_registration">📝 Agreement &amp; Registration</option>
-                      <option value="closed_won">🏆 Booking Done (Closed Won)</option>
-                      <option value="on_hold_nurture">⏳ Nurture / Follow-Up Later</option>
-                      <option value="closed_lost">❌ Lost / Dropped</option>
-                    </select>
+                      onChange={(val) => setStageUpdate(val)}
+                      className="w-full"
+                      size="xs"
+                      triggerClassName="bg-surface-inset border-border rounded-lg text-xs"
+                    />
                   </div>
                 </div>
 
@@ -590,20 +611,14 @@ export function SourceEvidenceDrawer({
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                             <div>
                               <label className="text-[11px] text-content-muted block mb-1">Outcome</label>
-                              <select
+                              <CustomSelect
+                                options={DRAWER_OUTCOME_OPTIONS}
                                 value={editOutcome}
-                                onChange={(e) => setEditOutcome(e.target.value)}
-                                className="w-full bg-surface-inset border border-border rounded-lg p-1.5 text-xs text-content"
-                              >
-                                <option value="CONNECTED_INTERESTED">✅ Connected &amp; Interested</option>
-                                <option value="VISIT_REQUESTED">🚗 Site Visit Requested</option>
-                                <option value="FOLLOW_UP_SCHEDULED">📅 Callback Scheduled</option>
-                                <option value="BUDGET_DISCUSSED">💰 Budget / Floor Rise Discussion</option>
-                                <option value="TOKEN_OFFER">🏷️ Token / Booking in Progress</option>
-                                <option value="RINGING_NO_ANSWER">🔕 Ringing / No Answer</option>
-                                <option value="BUSY_CALL_LATER">⏳ Busy / Call Back Later</option>
-                                <option value="NOT_INTERESTED">❌ Not Interested / Dropped</option>
-                              </select>
+                                onChange={(val) => setEditOutcome(val)}
+                                className="w-full"
+                                size="xs"
+                                triggerClassName="bg-surface-inset border-border rounded-lg text-xs"
+                              />
                             </div>
 
                             <div>

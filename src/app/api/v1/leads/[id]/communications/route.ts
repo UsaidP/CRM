@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireSession } from '@/lib/services/api-auth';
 import { prisma } from '@/lib/db/prisma';
 
 export const dynamic = 'force-dynamic';
@@ -8,6 +9,8 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await requireSession(req);
+    if (!auth.ok) return auth.response;
     const { id } = await params;
     const communications = await prisma.communicationLog.findMany({
       where: { leadId: id },
@@ -28,6 +31,8 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await requireSession(req);
+    if (!auth.ok) return auth.response;
     const { id } = await params;
     const body = await req.json();
 

@@ -1,12 +1,15 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
-import { rankMatchingProperties, BuyerRequirementInput } from '@/lib/domain/matching-engine';
+import { rankMatchingProperties, BuyerRequirementInput, PropertyUnitForMatching } from '@/lib/domain/matching-engine';
+import { generateWhatsAppPitchWithAI } from '@/lib/services/gemini-service';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request, { params }: { params: Promise<{ leadId: string }> }) {
   try {
     const { leadId } = await params;
+    const { searchParams } = new URL(req.url);
+    const includeAiPitch = searchParams.get('aiPitch') !== 'false';
 
     const lead = await prisma.lead.findUnique({
       where: { id: leadId },
@@ -52,12 +55,26 @@ export async function GET(req: Request, { params }: { params: Promise<{ leadId: 
       },
     });
 
-    const formattedUnits = units.map((u) => ({
+    const formattedUnits: PropertyUnitForMatching[] = units.map((u) => ({
       ...u,
       photoGallery: JSON.parse(u.photoGalleryJson || '[]'),
     }));
 
     const rankedMatches = rankMatchingProperties(buyerRequirement, formattedUnits);
+
+    let aiPitchData = null;
+    if (includeAiPitch && rankedMatches.length > 0) {
+      try {
+        const topMatchedUnits = rankedMatches.slice(0, 3).map((m) => m.unit);
+        aiPitchData = await generateWhatsAppPitchWithAI(
+          lead.fullName || 'Valued Client',
+          buyerRequirement,
+          topMatchedUnits
+        );
+      } catch (aiErr) {
+        console.warn('AI pitch generation skipped or failed:', aiErr);
+      }
+    }
 
     return NextResponse.json({
       success: true,
@@ -68,9 +85,11 @@ export async function GET(req: Request, { params }: { params: Promise<{ leadId: 
         requirements: buyerRequirement,
       },
       matchCount: rankedMatches.length,
+      aiPitch: aiPitchData,
       data: rankedMatches,
     });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
+
