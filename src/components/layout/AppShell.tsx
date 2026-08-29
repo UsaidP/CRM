@@ -160,17 +160,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   const isPublicLayout = isPublicLayoutPath(pathname);
 
-  // Fetch active session user
+  // Fetch active session user; bounce unauthenticated visitors to login so
+  // the authenticated shell (sidebar, search, etc.) is never exposed.
   useEffect(() => {
     if (isPublicLayout) return;
     fetchSession()
       .then((user) => {
         if (user) {
           setCurrentUser(user as { id: string; fullName: string; email: string; role: string; isSuperAdmin: boolean });
+        } else {
+          router.replace('/login');
         }
       })
-      .catch(() => {});
-  }, [isPublicLayout, pathname]);
+      .catch(() => router.replace('/login'));
+  }, [isPublicLayout, pathname, router]);
 
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
@@ -229,21 +232,21 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   // cannot run conditionally (Rules of Hooks).
   const visibleNavSections = useMemo(() => {
     const permissions = currentUser?.effectivePermissions || [];
-    const isSuperOrAdmin =
-      currentUser?.isSuperAdmin ||
-      currentUser?.role === 'SUPER_ADMIN' ||
-      currentUser?.role === 'ADMIN' ||
-      currentUser?.role === 'BROKER_MANAGER';
+    // Role shortcuts must NOT bypass explicit permission grants/revocations:
+    // adminOnly items always require the admin:manage_rbac permission
+    // (SUPER_ADMIN holds every permission by default).
+    const isSuperAdmin =
+      currentUser?.isSuperAdmin || currentUser?.role === 'SUPER_ADMIN';
 
     return navSections
       .map((section) => ({
         ...section,
         items: section.items.filter((item) => {
           if (item.adminOnly) {
-            return isSuperOrAdmin || permissions.includes('admin:manage_rbac');
+            return isSuperAdmin || permissions.includes('admin:manage_rbac');
           }
           if (item.permission) {
-            return isSuperOrAdmin || permissions.includes(item.permission);
+            return isSuperAdmin || permissions.includes(item.permission);
           }
           return true;
         }),
