@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { BrandLogo } from '@/components/ui/BrandLogo';
+import { login } from '@/lib/client/auth';
 
 export function LoginClient() {
   const router = useRouter();
@@ -51,13 +52,7 @@ export function LoginClient() {
           ? { type: 'SUPER_ADMIN_KEY', superAdminKey }
           : { type: 'CREDENTIALS', email, password };
 
-      const res = await fetch('/api/v1/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await res.json();
+      const data = await login(payload);
 
       if (data.success) {
         setSuccessMsg('Authentication verified. Redirecting to workspace...');
@@ -89,7 +84,7 @@ export function LoginClient() {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col justify-between bg-canvas text-content relative overflow-hidden font-sans selection:bg-accent selection:text-white">
+    <div className="min-h-screen w-full flex flex-col justify-between bg-canvas text-content relative overflow-hidden font-sans selection:bg-[#2563eb] selection:text-white">
       {/* Background Ambience Gradient */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-gradient-to-b from-accent/10 via-accent/5 to-transparent blur-3xl pointer-events-none -z-10" />
 
