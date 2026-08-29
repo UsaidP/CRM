@@ -24,6 +24,8 @@ import {
   PieChart,
   HelpCircle,
   Copy,
+  UserX,
+  UserCheck,
   Link as LinkIcon,
 } from 'lucide-react';
 import { HallmarkStamp } from '@/components/ui/HallmarkStamp';
@@ -72,6 +74,7 @@ export function RbacManagementClient() {
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [isUnauthorized, setIsUnauthorized] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRoleFilter, setSelectedRoleFilter] = useState('ALL');
@@ -96,16 +99,54 @@ export function RbacManagementClient() {
     inviteUrl: string;
   } | null>(null);
   const [copiedInvite, setCopiedInvite] = useState(false);
+  const [mutatingAccessUserId, setMutatingAccessUserId] = useState<string | null>(null);
+
+  const handleToggleActive = async (user: any) => {
+    const removing = !!user.isActive;
+    const verb = removing ? 'remove' : 'restore';
+    if (
+      !window.confirm(
+        removing
+          ? `Remove ${user.fullName}'s access? Their account will be deactivated and their leads/deals history preserved. You can restore them later.`
+          : `Restore ${user.fullName}'s access?`
+      )
+    ) {
+      return;
+    }
+    try {
+      setMutatingAccessUserId(user.id);
+      setErrorMsg(null);
+      setSuccessMsg(null);
+      const res = await fetch(`/api/v1/users/${user.id}`, {
+        method: removing ? 'DELETE' : 'PATCH',
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setSuccessMsg(data.message || `${user.fullName} ${verb}d successfully.`);
+        await fetchUsers();
+      } else {
+        setErrorMsg(data.error || `Failed to ${verb} ${user.fullName}.`);
+      }
+    } catch (err: any) {
+      setErrorMsg(err?.message || `Network error while trying to ${verb} ${user.fullName}.`);
+    } finally {
+      setMutatingAccessUserId(null);
+    }
+  };
 
   const fetchUsers = async () => {
     try {
       setLoading(true);
       setErrorMsg(null);
+      setIsUnauthorized(false);
       const res = await fetch('/api/v1/users');
       const data = await res.json();
-      if (data.success) {
-        setUsers(data.users);
+      if (res.ok && data.success) {
+        setUsers(data.users || []);
       } else {
+        if (res.status === 403 || res.status === 401) {
+          setIsUnauthorized(true);
+        }
         setErrorMsg(data.error || 'Failed to fetch team users.');
       }
     } catch (err: any) {
@@ -277,6 +318,30 @@ export function RbacManagementClient() {
   // Group permissions by category for the modal
   const categories = Array.from(new Set(ALL_PERMISSIONS.map((p) => p.category)));
 
+  if (isUnauthorized) {
+    return (
+      <div className="p-8 max-w-xl mx-auto text-center space-y-4 rounded-2xl bg-surface border border-border shadow-xs my-12">
+        <div className="w-12 h-12 rounded-2xl bg-status-danger-surface text-status-danger flex items-center justify-center mx-auto shadow-2xs">
+          <Lock className="w-6 h-6" />
+        </div>
+        <div className="space-y-1.5">
+          <h2 className="text-lg font-bold text-content">Access Restricted</h2>
+          <p className="text-xs text-content-secondary max-w-md mx-auto">
+            You do not have permission to view or manage team RBAC permissions. Contact your Super Admin or Broker Manager for access.
+          </p>
+        </div>
+        <div className="pt-2">
+          <a
+            href="/"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-accent hover:bg-accent-hover text-white text-xs font-bold rounded-xl shadow-xs transition-all"
+          >
+            Return to Dashboard
+          </a>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto font-sans text-xs">
       {/* Top Header */}
@@ -387,7 +452,7 @@ export function RbacManagementClient() {
           return (
             <div
               key={user.id}
-              className="p-5 rounded-2xl bg-surface border border-border hover:border-accent/40 shadow-2xs hover:shadow-xs transition-all space-y-4 flex flex-col justify-between"
+              className={`p-5 rounded-2xl bg-surface border border-border hover:border-accent/40 shadow-2xs hover:shadow-xs transition-all space-y-4 flex flex-col justify-between ${!user.isActive ? 'opacity-60 grayscale' : ''}`}
             >
               <div className="space-y-3">
                 {/* User Header */}
@@ -406,6 +471,12 @@ export function RbacManagementClient() {
                     {user.role}
                   </span>
                 </div>
+
+                {!user.isActive && (
+                  <div className="px-2 py-1 rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-[10px] font-bold font-mono flex items-center gap-1.5">
+                    <UserX className="w-3 h-3" /> ACCESS REMOVED
+                  </div>
+                )}
 
                 <div className="text-[11px] text-content-secondary line-clamp-1">
                   {user.email}
@@ -454,6 +525,29 @@ export function RbacManagementClient() {
                 >
                   <LinkIcon className="w-3 h-3 text-accent" />
                   <span>Generate Set-Password Link</span>
+                </button>
+
+                <button
+                  type="button"
+                  disabled={mutatingAccessUserId === user.id}
+                  onClick={() => handleToggleActive(user)}
+                  className={`w-full py-2 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-wait ${
+                    user.isActive
+                      ? 'bg-red-50 hover:bg-red-100 dark:bg-red-950/40 dark:hover:bg-red-900/60 border border-red-200 hover:border-red-400 dark:border-red-800 text-red-600 dark:text-red-400'
+                      : 'bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/60 border border-emerald-200 hover:border-emerald-400 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400'
+                  }`}
+                >
+                  {user.isActive ? (
+                    <>
+                      <UserX className="w-3 h-3" />
+                      <span>{mutatingAccessUserId === user.id ? 'Removing…' : 'Remove Access'}</span>
+                    </>
+                  ) : (
+                    <>
+                      <UserCheck className="w-3 h-3" />
+                      <span>{mutatingAccessUserId === user.id ? 'Restoring…' : 'Restore Access'}</span>
+                    </>
+                  )}
                 </button>
               </div>
             </div>
