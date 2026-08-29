@@ -12,7 +12,6 @@ import {
   EyeOff,
   ArrowRight,
   ShieldCheck,
-  Sparkles,
   AlertCircle,
   CheckCircle2,
   Phone,
@@ -226,17 +225,7 @@ export function LoginClient() {
                 <>
                   {/* Super Admin Master Key Input */}
                   <div className="space-y-2">
-                    <div className="p-3 rounded-2xl bg-accent-soft/30 border border-accent/20 text-accent-text text-xs space-y-1">
-                      <div className="font-extrabold flex items-center gap-1.5">
-                        <Sparkles className="w-3.5 h-3.5 text-accent" />
-                        <span>Master Security Bypass</span>
-                      </div>
-                      <p className="text-[11px] opacity-90 leading-relaxed">
-                        Enter the master <code className="font-mono bg-accent-soft px-1 rounded font-bold">SUPER_ADMIN_KEY</code> from your server <code className="font-mono font-bold">.env</code> to access full administrative privileges.
-                      </p>
-                    </div>
-
-                    <label className="text-xs font-bold text-content block mt-3">
+                    <label className="text-xs font-bold text-content block">
                       Super Admin Secret Key
                     </label>
                     <div className="relative">
