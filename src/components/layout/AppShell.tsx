@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
+import type { PermissionKey } from '@/types/crm';
 import {
   BarChart3,
   Building2,
@@ -44,6 +45,7 @@ import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { isPublicLayoutPath } from '@/lib/navigation';
 import { BackupModal } from '@/components/admin/BackupModal';
 import { BrandLogo } from '@/components/ui/BrandLogo';
+import { fetchSession, logout } from '@/lib/client/auth';
 
 interface NavItem {
   href: string;
@@ -51,6 +53,8 @@ interface NavItem {
   badge?: string;
   badgeType?: 'urgent' | 'count' | 'info';
   icon: any;
+  permission?: PermissionKey;
+  adminOnly?: boolean;
 }
 
 interface NavSection {
@@ -83,7 +87,7 @@ const navSections: NavSection[] = [
       { href: '/calculator', label: 'Cost Calculator', icon: Calculator },
       { href: '/attribution', label: 'Campaigns & QR', icon: QrCode },
       { href: '/analytics', label: 'Analytics', icon: BarChart3 },
-      { href: '/admin/users', label: 'Team & Access', icon: KeyRound },
+      { href: '/admin/users', label: 'Team & Access', icon: KeyRound, permission: 'admin:manage_rbac', adminOnly: true },
     ],
   },
 ];
@@ -108,6 +112,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     email: string;
     role: string;
     isSuperAdmin: boolean;
+    effectivePermissions?: string[];
   } | null>(null);
   const [isBackupModalOpen, setIsBackupModalOpen] = useState(false);
   const [backupModalMode, setBackupModalMode] = useState<'BACKUP' | 'DUTY_END'>('BACKUP');
@@ -121,10 +126,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     deals: any[];
   } | null>(null);
   const [isSearching, setIsSearching] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
   // Live Omnisearch Fetch with Debounce
   useEffect(() => {
     const trimmed = searchQuery.trim();
+    setSelectedIndex(0);
     if (!trimmed) {
       setSearchResults(null);
       setIsSearching(false);
@@ -134,7 +141,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     setIsSearching(true);
     const debounceTimer = setTimeout(async () => {
       try {
-        const res = await fetch(`/api/v1/search?q=${encodeURIComponent(trimmed)}`);
+        const res = await fetch(`/api/v1/search?q=${encodeURIComponent(trimmed)}`, {
+          credentials: 'same-origin',
+        });
         const json = await res.json();
         if (json.success) {
           setSearchResults(json.results);
@@ -144,7 +153,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       } finally {
         setIsSearching(false);
       }
-    }, 200);
+    }, 180);
 
     return () => clearTimeout(debounceTimer);
   }, [searchQuery]);
@@ -154,23 +163,26 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   // Fetch active session user
   useEffect(() => {
     if (isPublicLayout) return;
-    fetch('/api/v1/auth/session')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success && data.user) {
-          setCurrentUser(data.user);
+    fetchSession()
+      .then((user) => {
+        if (user) {
+          setCurrentUser(user as { id: string; fullName: string; email: string; role: string; isSuperAdmin: boolean });
         }
       })
       .catch(() => {});
   }, [isPublicLayout, pathname]);
 
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
   const handleLogout = async () => {
+    if (isLoggingOut) return;
+    setIsLoggingOut(true);
     try {
-      await fetch('/api/v1/auth/logout', { method: 'POST' });
-      router.push('/login');
-      router.refresh();
-    } catch {
-      router.push('/login');
+      await logout();
+    } catch (err) {
+      console.error('Logout error:', err);
+    } finally {
+      window.location.href = '/login';
     }
   };
 
@@ -212,13 +224,42 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     return () => clearInterval(interval);
   }, [callTimer, isCallActive]);
 
+  // Filter visible nav sections based on user role and permissions.
+  // NOTE: must stay ABOVE the public-portal early return — React hooks
+  // cannot run conditionally (Rules of Hooks).
+  const visibleNavSections = useMemo(() => {
+    const permissions = currentUser?.effectivePermissions || [];
+    const isSuperOrAdmin =
+      currentUser?.isSuperAdmin ||
+      currentUser?.role === 'SUPER_ADMIN' ||
+      currentUser?.role === 'ADMIN' ||
+      currentUser?.role === 'BROKER_MANAGER';
+
+    return navSections
+      .map((section) => ({
+        ...section,
+        items: section.items.filter((item) => {
+          if (item.adminOnly) {
+            return isSuperOrAdmin || permissions.includes('admin:manage_rbac');
+          }
+          if (item.permission) {
+            return isSuperOrAdmin || permissions.includes(item.permission);
+          }
+          return true;
+        }),
+      }))
+      .filter((section) => section.items.length > 0);
+  }, [currentUser]);
+
+  // Public portal layout: unauthenticated chrome-free render. This early
+  // return is safe here because every hook above now runs unconditionally.
   const isPublicPortal = isPublicLayout;
   if (isPublicPortal) {
     return <main className="public-portal-main min-h-screen bg-[#FDFBF7] text-slate-900 selection:bg-amber-100 selection:text-amber-900">{children}</main>;
   }
 
   // Find active item for breadcrumbs
-  const allNavItems = navSections.flatMap((s) => s.items);
+  const allNavItems = visibleNavSections.flatMap((s) => s.items);
   const activeItem = allNavItems.find((item) => isCurrentRoute(pathname, item.href)) || {
     label: 'Console',
     href: '/',
@@ -300,7 +341,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
           {/* Grouped Navigation Links - Only this area scrolls */}
           <nav className="flex-1 min-h-0 px-3 py-3 space-y-4 overflow-y-auto" aria-label="Primary navigation">
-            {navSections.map((section) => (
+            {visibleNavSections.map((section) => (
               <div key={section.title} className="space-y-1">
                 <div className="px-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-content-muted font-mono">
                   {section.title}
@@ -374,10 +415,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="p-1.5 rounded-xl text-content-muted hover:text-status-danger hover:bg-status-danger-surface transition-colors cursor-pointer"
+                  disabled={isLoggingOut}
+                  className="p-1.5 rounded-xl text-content-muted hover:text-status-danger hover:bg-status-danger-surface transition-colors cursor-pointer disabled:opacity-50"
                   title="Sign Out"
                 >
-                  <LogOut className="w-4 h-4" />
+                  {isLoggingOut ? (
+                    <Loader2 className="w-4 h-4 animate-spin text-accent" />
+                  ) : (
+                    <LogOut className="w-4 h-4" />
+                  )}
                 </button>
               </div>
             </div>
@@ -486,373 +532,511 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* Global Omnisearch Dialog Modal (⌘K) */}
-      {isSearchOpen && (
-        <div 
-          className="fixed inset-0 z-50 flex items-start justify-center pt-16 md:pt-20 px-4 bg-black/60 backdrop-blur-xs"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setIsSearchOpen(false);
-          }}
-        >
-          <div className="w-full max-w-2xl bg-surface rounded-2xl shadow-2xl border border-border overflow-hidden animate-in fade-in zoom-in-95 duration-150 flex flex-col max-h-[80vh]">
-            {/* Search Input Bar */}
-            <div className="p-3.5 border-b border-border flex items-center gap-3 bg-surface">
-              {isSearching ? (
-                <Loader2 className="w-4 h-4 text-accent animate-spin shrink-0" />
-              ) : (
-                <Search className="w-4 h-4 text-content-muted shrink-0" />
-              )}
-              <input
-                type="text"
-                autoFocus
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search leads, phone (+91), Kharghar sectors, RERA number, deals..."
-                className="w-full bg-transparent border-none text-xs focus:outline-none text-content placeholder:text-content-muted font-medium !p-0"
-              />
-              {searchQuery && (
+      {isSearchOpen && (() => {
+        const quickDestinations = [
+          {
+            id: 'quick-telecaller',
+            icon: Zap,
+            iconColor: 'text-accent',
+            title: 'Telecaller High-Velocity Desk (Speed-to-Lead)',
+            badge: '/leads',
+            action: () => { router.push('/leads?view=telecaller'); setIsSearchOpen(false); setSearchQuery(''); },
+          },
+          {
+            id: 'quick-inventory',
+            icon: Building2,
+            iconColor: 'text-status-success',
+            title: 'Kharghar & Taloja MahaRERA Inventory (Upload Brochure)',
+            badge: '/inventory',
+            action: () => { router.push('/inventory'); setIsSearchOpen(false); setSearchQuery(''); },
+          },
+          {
+            id: 'quick-calculator',
+            icon: Calculator,
+            iconColor: 'text-blue-500',
+            title: 'Maharashtra Statutory Cost Engine (Stamp Duty & GST Quotations)',
+            badge: '/calculator',
+            action: () => { router.push('/calculator'); setIsSearchOpen(false); setSearchQuery(''); },
+          },
+          {
+            id: 'quick-matching',
+            icon: Sparkles,
+            iconColor: 'text-amber-500',
+            title: 'Requirements-to-Property Matchmaker',
+            badge: '/matching',
+            action: () => { router.push('/matching'); setIsSearchOpen(false); setSearchQuery(''); },
+          },
+          {
+            id: 'quick-deals',
+            icon: DollarSign,
+            iconColor: 'text-emerald-500',
+            title: 'Deal Closing Commission Ledger & GST Invoices',
+            badge: '/deals',
+            action: () => { router.push('/deals'); setIsSearchOpen(false); setSearchQuery(''); },
+          },
+          {
+            id: 'quick-visits',
+            icon: Car,
+            iconColor: 'text-purple-500',
+            title: 'Site Visits & VIP Property Tour Passports',
+            badge: '/visits',
+            action: () => { router.push('/visits'); setIsSearchOpen(false); setSearchQuery(''); },
+          },
+          {
+            id: 'quick-backup',
+            icon: Cloud,
+            iconColor: 'text-sky-500',
+            title: 'Backup Real Estate Database to Google Drive',
+            badge: 'Cloud Backup',
+            action: () => { setBackupModalMode('BACKUP'); setIsBackupModalOpen(true); setIsSearchOpen(false); setSearchQuery(''); },
+          },
+        ];
+
+        // Flatten active search result items for unified index navigation
+        const allResultItems: { id: string; action: () => void }[] = [];
+        if (!searchQuery.trim()) {
+          quickDestinations.forEach((item) => allResultItems.push({ id: item.id, action: item.action }));
+        } else if (searchResults) {
+          (searchResults.leads || []).forEach((lead: any) => {
+            allResultItems.push({
+              id: `lead-${lead.id}`,
+              action: () => {
+                router.push(`/leads?search=${encodeURIComponent(lead.phoneE164 || lead.fullName || '')}`);
+                setIsSearchOpen(false);
+                setSearchQuery('');
+              },
+            });
+          });
+          (searchResults.projects || []).forEach((proj: any) => {
+            allResultItems.push({
+              id: `project-${proj.id}`,
+              action: () => {
+                router.push(`/inventory?search=${encodeURIComponent(proj.projectName)}`);
+                setIsSearchOpen(false);
+                setSearchQuery('');
+              },
+            });
+          });
+          (searchResults.units || []).forEach((unit: any) => {
+            allResultItems.push({
+              id: `unit-${unit.id}`,
+              action: () => {
+                router.push(`/inventory?search=${encodeURIComponent(unit.unitNumber || unit.project?.projectName || '')}`);
+                setIsSearchOpen(false);
+                setSearchQuery('');
+              },
+            });
+          });
+          (searchResults.visits || []).forEach((visit: any) => {
+            allResultItems.push({
+              id: `visit-${visit.id}`,
+              action: () => {
+                router.push('/visits');
+                setIsSearchOpen(false);
+                setSearchQuery('');
+              },
+            });
+          });
+          (searchResults.deals || []).forEach((deal: any) => {
+            allResultItems.push({
+              id: `deal-${deal.id}`,
+              action: () => {
+                router.push('/deals');
+                setIsSearchOpen(false);
+                setSearchQuery('');
+              },
+            });
+          });
+        }
+
+        const handleKeyDown = (e: React.KeyboardEvent) => {
+          if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            if (allResultItems.length > 0) {
+              setSelectedIndex((prev) => (prev + 1) % allResultItems.length);
+            }
+          } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            if (allResultItems.length > 0) {
+              setSelectedIndex((prev) => (prev - 1 + allResultItems.length) % allResultItems.length);
+            }
+          } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (allResultItems[selectedIndex]) {
+              allResultItems[selectedIndex].action();
+            }
+          } else if (e.key === 'Escape') {
+            e.preventDefault();
+            setIsSearchOpen(false);
+            setSearchQuery('');
+          }
+        };
+
+        let currentIndexCounter = 0;
+
+        return (
+          <div 
+            className="fixed inset-0 z-50 flex items-start justify-center pt-16 md:pt-20 px-4 bg-black/60 backdrop-blur-xs"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setIsSearchOpen(false);
+                setSearchQuery('');
+              }
+            }}
+          >
+            <div className="w-full max-w-2xl bg-surface rounded-2xl shadow-2xl border border-border overflow-hidden animate-in fade-in zoom-in-95 duration-150 flex flex-col max-h-[80vh]">
+              {/* Search Input Bar */}
+              <div className="px-4 py-3.5 border-b border-border flex items-center gap-3 bg-surface">
+                {isSearching ? (
+                  <Loader2 className="w-4 h-4 text-accent animate-spin shrink-0" />
+                ) : (
+                  <Search className="w-4 h-4 text-content-muted shrink-0" />
+                )}
+                <input
+                  type="text"
+                  autoFocus
+                  autoComplete="off"
+                  spellCheck={false}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Search leads, phone (+91), Kharghar sectors, RERA number, deals..."
+                  className="omnisearch-input w-full bg-transparent border-0 ring-0 focus:ring-0 focus:outline-none text-sm text-content placeholder:text-content-muted font-medium !p-0 !shadow-none"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    className="px-2 py-0.5 text-xs text-content-muted hover:text-content bg-surface-subtle hover:bg-surface border border-border rounded-md cursor-pointer transition-colors"
+                  >
+                    Clear
+                  </button>
+                )}
                 <button
                   type="button"
-                  onClick={() => setSearchQuery('')}
-                  className="p-1 text-content-muted hover:text-content rounded-lg cursor-pointer text-xs"
+                  onClick={() => {
+                    setIsSearchOpen(false);
+                    setSearchQuery('');
+                  }}
+                  className="p-1 text-content-muted hover:text-content hover:bg-surface-subtle rounded-lg cursor-pointer transition-colors"
                 >
-                  Clear
+                  <X className="w-4 h-4" />
                 </button>
-              )}
-              <button
-                type="button"
-                onClick={() => {
-                  setIsSearchOpen(false);
-                  setSearchQuery('');
-                }}
-                className="p-1 text-content-muted hover:text-content rounded-lg cursor-pointer transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
+              </div>
 
-            {/* Results or Quick Destinations */}
-            <div className="p-3 text-xs text-content-muted overflow-y-auto space-y-3 divide-y divide-border/40">
-              {/* Case 1: Empty Query -> Show Quick Destinations & Speed Tools */}
-              {!searchQuery.trim() && (
-                <div className="space-y-1">
-                  <div className="px-2 py-1 font-bold text-[10px] uppercase tracking-wider text-content-muted font-mono">
-                    ⚡ Quick Destinations &amp; Speed Tools
+              {/* Results or Quick Destinations */}
+              <div className="p-3 text-xs text-content-muted overflow-y-auto space-y-3 divide-y divide-border/40 max-h-[60vh]">
+                {/* Case 1: Empty Query -> Show Quick Destinations & Speed Tools */}
+                {!searchQuery.trim() && (
+                  <div className="space-y-1">
+                    <div className="px-2 py-1 font-bold text-[10px] uppercase tracking-wider text-content-muted font-mono">
+                      ⚡ Quick Destinations &amp; Speed Tools
+                    </div>
+                    {quickDestinations.map((dest, idx) => {
+                      const Icon = dest.icon;
+                      const isSelected = selectedIndex === idx;
+                      return (
+                        <button
+                          key={dest.id}
+                          onClick={dest.action}
+                          onMouseEnter={() => setSelectedIndex(idx)}
+                          className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left cursor-pointer transition-all border ${
+                            isSelected
+                              ? 'bg-accent-soft text-accent-text border-accent/30 shadow-2xs font-semibold'
+                              : 'hover:bg-surface-subtle border-transparent text-content'
+                          }`}
+                        >
+                          <span className="flex items-center gap-2.5">
+                            <Icon className={`w-4 h-4 ${dest.iconColor}`} />
+                            <span className="text-xs font-semibold">{dest.title}</span>
+                          </span>
+                          <span className="font-mono text-[10px] text-content-muted px-2 py-0.5 rounded bg-surface border border-border">
+                            {dest.badge}
+                          </span>
+                        </button>
+                      );
+                    })}
                   </div>
-                  <button
-                    onClick={() => {
-                      router.push('/leads?view=telecaller');
-                      setIsSearchOpen(false);
-                    }}
-                    className="w-full flex items-center justify-between px-3 py-2 hover:bg-surface-subtle rounded-xl text-left cursor-pointer transition-colors"
-                  >
-                    <span className="font-semibold text-content flex items-center gap-2">
-                      <Zap className="w-3.5 h-3.5 text-accent" />
-                      <span>Telecaller High-Velocity Desk (Speed-to-Lead)</span>
-                    </span>
-                    <span className="font-mono text-[10px] text-content-muted">/leads</span>
-                  </button>
+                )}
 
-                  <button
-                    onClick={() => {
-                      router.push('/inventory');
-                      setIsSearchOpen(false);
-                    }}
-                    className="w-full flex items-center justify-between px-3 py-2 hover:bg-surface-subtle rounded-xl text-left cursor-pointer transition-colors"
-                  >
-                    <span className="font-semibold text-content flex items-center gap-2">
-                      <Building2 className="w-3.5 h-3.5 text-status-success" />
-                      <span>Kharghar &amp; Taloja MahaRERA Inventory (Upload Brochure)</span>
-                    </span>
-                    <span className="font-mono text-[10px] text-content-muted">/inventory</span>
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      router.push('/calculator');
-                      setIsSearchOpen(false);
-                    }}
-                    className="w-full flex items-center justify-between px-3 py-2 hover:bg-surface-subtle rounded-xl text-left cursor-pointer transition-colors"
-                  >
-                    <span className="font-semibold text-content flex items-center gap-2">
-                      <Calculator className="w-3.5 h-3.5 text-blue-500" />
-                      <span>Maharashtra Statutory Cost Engine (Stamp Duty &amp; GST Quotations)</span>
-                    </span>
-                    <span className="font-mono text-[10px] text-content-muted">/calculator</span>
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      router.push('/matching');
-                      setIsSearchOpen(false);
-                    }}
-                    className="w-full flex items-center justify-between px-3 py-2 hover:bg-surface-subtle rounded-xl text-left cursor-pointer transition-colors"
-                  >
-                    <span className="font-semibold text-content flex items-center gap-2">
-                      <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                      <span>Requirements-to-Property Matchmaker</span>
-                    </span>
-                    <span className="font-mono text-[10px] text-content-muted">/matching</span>
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      router.push('/deals');
-                      setIsSearchOpen(false);
-                    }}
-                    className="w-full flex items-center justify-between px-3 py-2 hover:bg-surface-subtle rounded-xl text-left cursor-pointer transition-colors"
-                  >
-                    <span className="font-semibold text-content flex items-center gap-2">
-                      <DollarSign className="w-3.5 h-3.5 text-emerald-500" />
-                      <span>Deal Closing Commission Ledger &amp; GST Invoices</span>
-                    </span>
-                    <span className="font-mono text-[10px] text-content-muted">/deals</span>
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      router.push('/visits');
-                      setIsSearchOpen(false);
-                    }}
-                    className="w-full flex items-center justify-between px-3 py-2 hover:bg-surface-subtle rounded-xl text-left cursor-pointer transition-colors"
-                  >
-                    <span className="font-semibold text-content flex items-center gap-2">
-                      <Car className="w-3.5 h-3.5 text-purple-500" />
-                      <span>Site Visits &amp; VIP Property Tour Passports</span>
-                    </span>
-                    <span className="font-mono text-[10px] text-content-muted">/visits</span>
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      setBackupModalMode('BACKUP');
-                      setIsBackupModalOpen(true);
-                      setIsSearchOpen(false);
-                    }}
-                    className="w-full flex items-center justify-between px-3 py-2 hover:bg-surface-subtle rounded-xl text-left cursor-pointer transition-colors"
-                  >
-                    <span className="font-semibold text-content flex items-center gap-2">
-                      <Cloud className="w-3.5 h-3.5 text-sky-500" />
-                      <span>Backup Real Estate Database to Google Drive</span>
-                    </span>
-                    <span className="font-mono text-[10px] text-content-muted">Cloud Backup</span>
-                  </button>
-                </div>
-              )}
-
-              {/* Case 2: Searching with Results */}
-              {searchQuery.trim() && searchResults && (
-                <>
-                  {/* Leads Results */}
-                  {searchResults.leads.length > 0 && (
-                    <div className="space-y-1 pt-2 first:pt-0">
-                      <div className="px-2 py-1 font-bold text-[10px] uppercase tracking-wider text-accent-text font-mono flex items-center justify-between">
-                        <span>👥 Leads &amp; Inbound Inquiries ({searchResults.leads.length})</span>
-                        <span className="text-[9px] text-content-muted">Click to view in Calling Desk</span>
-                      </div>
-                      {searchResults.leads.map((lead: any) => (
-                        <button
-                          key={lead.id}
-                          onClick={() => {
-                            router.push(`/leads?search=${encodeURIComponent(lead.phoneE164 || lead.fullName || '')}`);
-                            setIsSearchOpen(false);
-                            setSearchQuery('');
-                          }}
-                          className="w-full flex items-center justify-between p-2.5 hover:bg-surface-subtle rounded-xl text-left cursor-pointer transition-all border border-transparent hover:border-border"
-                        >
-                          <div className="flex items-center gap-2.5 min-w-0">
-                            <div className="w-7 h-7 rounded-lg bg-accent-soft text-accent flex items-center justify-center font-bold text-xs shrink-0">
-                              <User className="w-4 h-4" />
-                            </div>
-                            <div className="min-w-0">
-                              <p className="font-bold text-content text-xs truncate">
-                                {lead.fullName || 'Anonymous Prospect'}
-                              </p>
-                              <p className="font-mono text-[11px] text-content-secondary truncate">
-                                {lead.phoneE164 || 'No Phone'} {lead.preferredMicroMarket ? `• ${lead.preferredMicroMarket}` : ''} {lead.preferredBhk ? `• ${lead.preferredBhk} BHK` : ''}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="text-right shrink-0">
-                            <span className="px-2 py-0.5 rounded font-mono text-[10px] font-bold bg-surface border border-border text-accent-text uppercase">
-                              {lead.currentStage?.replace(/_/g, ' ') || 'NEW'}
-                            </span>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Projects Results */}
-                  {searchResults.projects.length > 0 && (
-                    <div className="space-y-1 pt-2">
-                      <div className="px-2 py-1 font-bold text-[10px] uppercase tracking-wider text-accent-text font-mono flex items-center justify-between">
-                        <span>🏢 Developer Projects &amp; RERA Inventory ({searchResults.projects.length})</span>
-                        <span className="text-[9px] text-content-muted">Click to inspect in Inventory</span>
-                      </div>
-                      {searchResults.projects.map((proj: any) => (
-                        <button
-                          key={proj.id}
-                          onClick={() => {
-                            router.push(`/inventory?search=${encodeURIComponent(proj.projectName)}`);
-                            setIsSearchOpen(false);
-                            setSearchQuery('');
-                          }}
-                          className="w-full flex items-center justify-between p-2.5 hover:bg-surface-subtle rounded-xl text-left cursor-pointer transition-all border border-transparent hover:border-border"
-                        >
-                          <div className="flex items-center gap-2.5 min-w-0">
-                            <div className="w-7 h-7 rounded-lg bg-status-success-surface text-status-success flex items-center justify-center font-bold text-xs shrink-0">
-                              <Building2 className="w-4 h-4" />
-                            </div>
-                            <div className="min-w-0">
-                              <p className="font-bold text-content text-xs truncate">
-                                {proj.projectName} <span className="font-normal text-content-secondary">by {proj.developerName}</span>
-                              </p>
-                              <p className="font-mono text-[11px] text-content-secondary truncate">
-                                MahaRERA: <span className="font-bold text-accent-text">{proj.reraNumber}</span> • {proj.microMarket} ({proj.totalFloors} Floors)
-                              </p>
-                            </div>
-                          </div>
-                          <div className="text-right shrink-0 font-mono text-[11px] font-bold text-content">
-                            ₹{proj.basePricePerSqft?.toLocaleString('en-IN')}/sqft
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Property Units Results */}
-                  {searchResults.units.length > 0 && (
-                    <div className="space-y-1 pt-2">
-                      <div className="px-2 py-1 font-bold text-[10px] uppercase tracking-wider text-accent-text font-mono">
-                        🏠 Property Unit Configurations ({searchResults.units.length})
-                      </div>
-                      {searchResults.units.map((unit: any) => (
-                        <button
-                          key={unit.id}
-                          onClick={() => {
-                            router.push(`/inventory?search=${encodeURIComponent(unit.unitNumber || unit.project?.projectName || '')}`);
-                            setIsSearchOpen(false);
-                            setSearchQuery('');
-                          }}
-                          className="w-full flex items-center justify-between p-2.5 hover:bg-surface-subtle rounded-xl text-left cursor-pointer transition-all border border-transparent hover:border-border"
-                        >
-                          <div className="flex items-center gap-2.5 min-w-0">
-                            <div className="w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-950 text-blue-600 flex items-center justify-center font-bold text-xs shrink-0">
-                              <Home className="w-4 h-4" />
-                            </div>
-                            <div className="min-w-0">
-                              <p className="font-bold text-content text-xs truncate">
-                                {unit.unitNumber || 'Unit'} • {unit.bhk} BHK ({unit.carpetAreaSqft} sq.ft)
-                              </p>
-                              <p className="font-mono text-[11px] text-content-secondary truncate">
-                                {unit.project?.projectName} ({unit.project?.microMarket})
-                              </p>
-                            </div>
-                          </div>
-                          <div className="text-right shrink-0 font-mono text-xs font-bold text-emerald-700 dark:text-emerald-400">
-                            ₹{(unit.allInTotalCost / 100000).toFixed(2)} Lakh
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Site Visits Results */}
-                  {searchResults.visits.length > 0 && (
-                    <div className="space-y-1 pt-2">
-                      <div className="px-2 py-1 font-bold text-[10px] uppercase tracking-wider text-accent-text font-mono">
-                        🚗 Site Visits &amp; Tours ({searchResults.visits.length})
-                      </div>
-                      {searchResults.visits.map((visit: any) => (
-                        <button
-                          key={visit.id}
-                          onClick={() => {
-                            router.push('/visits');
-                            setIsSearchOpen(false);
-                            setSearchQuery('');
-                          }}
-                          className="w-full flex items-center justify-between p-2.5 hover:bg-surface-subtle rounded-xl text-left cursor-pointer transition-all border border-transparent hover:border-border"
-                        >
-                          <div className="flex items-center gap-2.5 min-w-0">
-                            <div className="w-7 h-7 rounded-lg bg-purple-50 dark:bg-purple-950 text-purple-600 flex items-center justify-center font-bold text-xs shrink-0">
-                              <Car className="w-4 h-4" />
-                            </div>
-                            <div className="min-w-0">
-                              <p className="font-bold text-content text-xs truncate">
-                                Tour for {visit.clientName} ({visit.clientPhone})
-                              </p>
-                              <p className="font-mono text-[11px] text-content-secondary truncate">
-                                {visit.microMarket} • Escort: {visit.escortAgent || 'Assigned Agent'}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="text-right shrink-0 font-mono text-[10px] font-bold uppercase text-accent-text">
-                            {visit.status}
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Deals Results */}
-                  {searchResults.deals.length > 0 && (
-                    <div className="space-y-1 pt-2">
-                      <div className="px-2 py-1 font-bold text-[10px] uppercase tracking-wider text-accent-text font-mono">
-                        💰 Deals &amp; Invoices ({searchResults.deals.length})
-                      </div>
-                      {searchResults.deals.map((deal: any) => (
-                        <button
-                          key={deal.id}
-                          onClick={() => {
-                            router.push('/deals');
-                            setIsSearchOpen(false);
-                            setSearchQuery('');
-                          }}
-                          className="w-full flex items-center justify-between p-2.5 hover:bg-surface-subtle rounded-xl text-left cursor-pointer transition-all border border-transparent hover:border-border"
-                        >
-                          <div className="flex items-center gap-2.5 min-w-0">
-                            <div className="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-950 text-emerald-600 flex items-center justify-center font-bold text-xs shrink-0">
-                              <DollarSign className="w-4 h-4" />
-                            </div>
-                            <div className="min-w-0">
-                              <p className="font-bold text-content text-xs truncate">
-                                {deal.clientName} • {deal.developerName} (Unit {deal.unitNumber})
-                              </p>
-                              <p className="font-mono text-[11px] text-content-secondary truncate">
-                                Agreement: ₹{(deal.agreementValue / 100000).toFixed(2)} Lakh • Brokerage: ₹{(deal.brokerageAmount / 1000).toFixed(1)}k
-                              </p>
-                            </div>
-                          </div>
-                          <div className="text-right shrink-0 font-mono text-[10px] font-bold uppercase text-status-success">
-                            {deal.dealStage}
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Zero Matches State */}
-                  {searchResults.leads.length === 0 &&
-                    searchResults.projects.length === 0 &&
-                    searchResults.units.length === 0 &&
-                    searchResults.visits.length === 0 &&
-                    searchResults.deals.length === 0 && (
-                      <div className="p-8 text-center space-y-2">
-                        <Search className="w-8 h-8 mx-auto text-content-muted/40" />
-                        <p className="font-bold text-content text-xs">
-                          No records match &ldquo;{searchQuery}&rdquo;
-                        </p>
-                        <p className="text-[11px] text-content-muted max-w-sm mx-auto">
-                          Try searching by 10-digit mobile number, buyer name, project name (e.g. Crown Heights, City Avenue), or MahaRERA number (e.g. P52000079818).
-                        </p>
+                {/* Case 2: Searching with Results */}
+                {searchQuery.trim() && searchResults && (
+                  <>
+                    {/* Leads Results */}
+                    {searchResults.leads.length > 0 && (
+                      <div className="space-y-1 pt-2 first:pt-0">
+                        <div className="px-2 py-1 font-bold text-[10px] uppercase tracking-wider text-accent-text font-mono flex items-center justify-between">
+                          <span>👥 Leads &amp; Inbound Inquiries ({searchResults.leads.length})</span>
+                          <span className="text-[9px] text-content-muted">Click to view in Calling Desk</span>
+                        </div>
+                        {searchResults.leads.map((lead: any) => {
+                          const itemIndex = currentIndexCounter++;
+                          const isSelected = selectedIndex === itemIndex;
+                          return (
+                            <button
+                              key={lead.id}
+                              onClick={() => {
+                                router.push(`/leads?search=${encodeURIComponent(lead.phoneE164 || lead.fullName || '')}`);
+                                setIsSearchOpen(false);
+                                setSearchQuery('');
+                              }}
+                              onMouseEnter={() => setSelectedIndex(itemIndex)}
+                              className={`w-full flex items-center justify-between p-2.5 rounded-xl text-left cursor-pointer transition-all border ${
+                                isSelected
+                                  ? 'bg-accent-soft border-accent/40 shadow-2xs'
+                                  : 'hover:bg-surface-subtle border-transparent'
+                              }`}
+                            >
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <div className="w-7 h-7 rounded-lg bg-accent-soft text-accent flex items-center justify-center font-bold text-xs shrink-0">
+                                  <User className="w-4 h-4" />
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="font-bold text-content text-xs truncate">
+                                    {lead.fullName || 'Anonymous Prospect'}
+                                  </p>
+                                  <p className="font-mono text-[11px] text-content-secondary truncate">
+                                    {lead.phoneE164 || 'No Phone'} {lead.preferredMicroMarket ? `• ${lead.preferredMicroMarket}` : ''} {lead.preferredBhk ? `• ${lead.preferredBhk} BHK` : ''}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="text-right shrink-0">
+                                <span className="px-2 py-0.5 rounded font-mono text-[10px] font-bold bg-surface border border-border text-accent-text uppercase">
+                                  {lead.currentStage?.replace(/_/g, ' ') || 'NEW'}
+                                </span>
+                              </div>
+                            </button>
+                          );
+                        })}
                       </div>
                     )}
-                </>
-              )}
+
+                    {/* Projects Results */}
+                    {searchResults.projects.length > 0 && (
+                      <div className="space-y-1 pt-2">
+                        <div className="px-2 py-1 font-bold text-[10px] uppercase tracking-wider text-accent-text font-mono flex items-center justify-between">
+                          <span>🏢 Developer Projects &amp; RERA Inventory ({searchResults.projects.length})</span>
+                          <span className="text-[9px] text-content-muted">Click to inspect in Inventory</span>
+                        </div>
+                        {searchResults.projects.map((proj: any) => {
+                          const itemIndex = currentIndexCounter++;
+                          const isSelected = selectedIndex === itemIndex;
+                          return (
+                            <button
+                              key={proj.id}
+                              onClick={() => {
+                                router.push(`/inventory?search=${encodeURIComponent(proj.projectName)}`);
+                                setIsSearchOpen(false);
+                                setSearchQuery('');
+                              }}
+                              onMouseEnter={() => setSelectedIndex(itemIndex)}
+                              className={`w-full flex items-center justify-between p-2.5 rounded-xl text-left cursor-pointer transition-all border ${
+                                isSelected
+                                  ? 'bg-accent-soft border-accent/40 shadow-2xs'
+                                  : 'hover:bg-surface-subtle border-transparent'
+                              }`}
+                            >
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <div className="w-7 h-7 rounded-lg bg-status-success-surface text-status-success flex items-center justify-center font-bold text-xs shrink-0">
+                                  <Building2 className="w-4 h-4" />
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="font-bold text-content text-xs truncate">
+                                    {proj.projectName} <span className="font-normal text-content-secondary">by {proj.developerName}</span>
+                                  </p>
+                                  <p className="font-mono text-[11px] text-content-secondary truncate">
+                                    MahaRERA: <span className="font-bold text-accent-text">{proj.reraNumber}</span> • {proj.microMarket} ({proj.totalFloors} Floors)
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="text-right shrink-0 font-mono text-[11px] font-bold text-content">
+                                ₹{proj.basePricePerSqft?.toLocaleString('en-IN')}/sqft
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {/* Property Units Results */}
+                    {searchResults.units.length > 0 && (
+                      <div className="space-y-1 pt-2">
+                        <div className="px-2 py-1 font-bold text-[10px] uppercase tracking-wider text-accent-text font-mono">
+                          🏠 Property Unit Configurations ({searchResults.units.length})
+                        </div>
+                        {searchResults.units.map((unit: any) => {
+                          const itemIndex = currentIndexCounter++;
+                          const isSelected = selectedIndex === itemIndex;
+                          return (
+                            <button
+                              key={unit.id}
+                              onClick={() => {
+                                router.push(`/inventory?search=${encodeURIComponent(unit.unitNumber || unit.project?.projectName || '')}`);
+                                setIsSearchOpen(false);
+                                setSearchQuery('');
+                              }}
+                              onMouseEnter={() => setSelectedIndex(itemIndex)}
+                              className={`w-full flex items-center justify-between p-2.5 rounded-xl text-left cursor-pointer transition-all border ${
+                                isSelected
+                                  ? 'bg-accent-soft border-accent/40 shadow-2xs'
+                                  : 'hover:bg-surface-subtle border-transparent'
+                              }`}
+                            >
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <div className="w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-950 text-blue-600 flex items-center justify-center font-bold text-xs shrink-0">
+                                  <Home className="w-4 h-4" />
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="font-bold text-content text-xs truncate">
+                                    {unit.unitNumber || 'Unit'} • {unit.bhk} BHK ({unit.carpetAreaSqft} sq.ft)
+                                  </p>
+                                  <p className="font-mono text-[11px] text-content-secondary truncate">
+                                    {unit.project?.projectName} ({unit.project?.microMarket})
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="text-right shrink-0 font-mono text-xs font-bold text-emerald-700 dark:text-emerald-400">
+                                ₹{(unit.allInTotalCost / 100000).toFixed(2)} Lakh
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {/* Site Visits Results */}
+                    {searchResults.visits.length > 0 && (
+                      <div className="space-y-1 pt-2">
+                        <div className="px-2 py-1 font-bold text-[10px] uppercase tracking-wider text-accent-text font-mono">
+                          🚗 Site Visits &amp; Tours ({searchResults.visits.length})
+                        </div>
+                        {searchResults.visits.map((visit: any) => {
+                          const itemIndex = currentIndexCounter++;
+                          const isSelected = selectedIndex === itemIndex;
+                          return (
+                            <button
+                              key={visit.id}
+                              onClick={() => {
+                                router.push('/visits');
+                                setIsSearchOpen(false);
+                                setSearchQuery('');
+                              }}
+                              onMouseEnter={() => setSelectedIndex(itemIndex)}
+                              className={`w-full flex items-center justify-between p-2.5 rounded-xl text-left cursor-pointer transition-all border ${
+                                isSelected
+                                  ? 'bg-accent-soft border-accent/40 shadow-2xs'
+                                  : 'hover:bg-surface-subtle border-transparent'
+                              }`}
+                            >
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <div className="w-7 h-7 rounded-lg bg-purple-50 dark:bg-purple-950 text-purple-600 flex items-center justify-center font-bold text-xs shrink-0">
+                                  <Car className="w-4 h-4" />
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="font-bold text-content text-xs truncate">
+                                    Tour for {visit.clientName} ({visit.clientPhone})
+                                  </p>
+                                  <p className="font-mono text-[11px] text-content-secondary truncate">
+                                    {visit.microMarket} • Escort: {visit.escortAgent || 'Assigned Agent'}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="text-right shrink-0 font-mono text-[10px] font-bold uppercase text-accent-text">
+                                {visit.status}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {/* Deals Results */}
+                    {searchResults.deals.length > 0 && (
+                      <div className="space-y-1 pt-2">
+                        <div className="px-2 py-1 font-bold text-[10px] uppercase tracking-wider text-accent-text font-mono">
+                          💰 Deals &amp; Invoices ({searchResults.deals.length})
+                        </div>
+                        {searchResults.deals.map((deal: any) => {
+                          const itemIndex = currentIndexCounter++;
+                          const isSelected = selectedIndex === itemIndex;
+                          return (
+                            <button
+                              key={deal.id}
+                              onClick={() => {
+                                router.push('/deals');
+                                setIsSearchOpen(false);
+                                setSearchQuery('');
+                              }}
+                              onMouseEnter={() => setSelectedIndex(itemIndex)}
+                              className={`w-full flex items-center justify-between p-2.5 rounded-xl text-left cursor-pointer transition-all border ${
+                                isSelected
+                                  ? 'bg-accent-soft border-accent/40 shadow-2xs'
+                                  : 'hover:bg-surface-subtle border-transparent'
+                              }`}
+                            >
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <div className="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-950 text-emerald-600 flex items-center justify-center font-bold text-xs shrink-0">
+                                  <DollarSign className="w-4 h-4" />
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="font-bold text-content text-xs truncate">
+                                    {deal.clientName} • {deal.developerName} (Unit {deal.unitNumber})
+                                  </p>
+                                  <p className="font-mono text-[11px] text-content-secondary truncate">
+                                    Agreement: ₹{(deal.agreementValue / 100000).toFixed(2)} Lakh • Brokerage: ₹{(deal.brokerageAmount / 1000).toFixed(1)}k
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="text-right shrink-0 font-mono text-[10px] font-bold uppercase text-status-success">
+                                {deal.dealStage}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {/* Zero Matches State */}
+                    {searchResults.leads.length === 0 &&
+                      searchResults.projects.length === 0 &&
+                      searchResults.units.length === 0 &&
+                      searchResults.visits.length === 0 &&
+                      searchResults.deals.length === 0 && (
+                        <div className="p-8 text-center space-y-2">
+                          <Search className="w-8 h-8 mx-auto text-content-muted/40" />
+                          <p className="font-bold text-content text-xs">
+                            No records match &ldquo;{searchQuery}&rdquo;
+                          </p>
+                          <p className="text-[11px] text-content-muted max-w-sm mx-auto">
+                            Try searching by 10-digit mobile number, buyer name, project name (e.g. Crown Heights, City Avenue), or MahaRERA number (e.g. P52000079818).
+                          </p>
+                        </div>
+                      )}
+                  </>
+                )}
+              </div>
+
+              {/* Bottom Shortcut Footer */}
+              <div className="p-2.5 px-4 bg-surface-subtle/80 border-t border-border flex items-center justify-between text-[11px] text-content-muted font-mono">
+                <div className="flex items-center gap-3">
+                  <span className="flex items-center gap-1">
+                    <kbd className="px-1.5 py-0.5 rounded bg-surface border border-border text-[10px]">↑↓</kbd> Navigate
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <kbd className="px-1.5 py-0.5 rounded bg-surface border border-border text-[10px]">↵</kbd> Select
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <kbd className="px-1.5 py-0.5 rounded bg-surface border border-border text-[10px]">ESC</kbd> Close
+                  </span>
+                </div>
+                <span className="text-[10px] text-content-secondary font-medium">
+                  {searchQuery ? `${allResultItems.length} matching records` : '7 quick tools'}
+                </span>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Google Drive Cloud Backup Modal */}
       <BackupModal
