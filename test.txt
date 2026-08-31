@@ -20,8 +20,8 @@ CLOUDINARY_URL="cloudinary://441845365593798:he_APEi3dE9-o7YTuEy1W2cfx7A@odq6wbx
 # Deployment ID
 # AKfycbyvjKn5tXpQP5SUtcf_wwf6zD9MhjzuPLm-RXpvi3oHLeZmW7sWtxUvCYEZHCA6LK3nJA
 # Connect to Postgres via the shared transaction-mode pooler (IPv4-only)
-DATABASE_URL="postgresql://postgres.dtyrgvbbdmpwkkcmtjpk:ubhpKSzl1zv8Ta8Q@aws-0-ap-northeast-2.pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=10&connect_timeout=20&pool_timeout=20"
+DATABASE_URL="postgresql://postgres.dtyrgvbbdmpwkkcmtjpk:ubhpKSzl1zv8Ta8Q@aws-0-ap-northeast-2.pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=10&connect_timeout=20&pool_timeout=20&schema=public"
 
 # Connect to Postgres via the shared session-mode pooler (used for migrations)
-DIRECT_URL="postgresql://postgres.dtyrgvbbdmpwkkcmtjpk:ubhpKSzl1zv8Ta8Q@aws-0-ap-northeast-2.pooler.supabase.com:5432/postgres?connect_timeout=20"
+DIRECT_URL="postgresql://postgres.dtyrgvbbdmpwkkcmtjpk:ubhpKSzl1zv8Ta8Q@aws-0-ap-northeast-2.pooler.supabase.com:5432/postgres?connect_timeout=20&schema=public"
 POSTGRESS_DATABASE_PASS=ubhpKSzl1zv8Ta8Q
