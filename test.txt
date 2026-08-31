@@ -1,0 +1,27 @@
+GEMINI_API_KEY="AIzaSyAs_Awj_ijuitnZgNwAaAjYrBW_cyxmoSs"
+GOOGLE_API_KEY="AIzaSyAs_Awj_ijuitnZgNwAaAjYrBW_cyxmoSs"
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+SUPER_ADMIN_KEY="0415020fa7254b4ae80f67e2aef49530b872c1361aa04f64f703fc60ce3abfc8"
+JWT_SECRET="e05684df21e9325c63aa568b8cd8b14d178efd2ef5a7d656c3920e8d9dfed1a2"
+SUPER_ADMIN_EMAIL="admin@zamzamproperties.in"
+GOOGLE_DRIVE_FOLDER_URL="https://drive.google.com/drive/folders/1KGfv8RHUpWJXlJ5psnmrWkA18G8sCz-O"
+GOOGLE_DRIVE_WEBHOOK_URL="https://script.google.com/macros/s/AKfycbyvjKn5tXpQP5SUtcf_wwf6zD9MhjzuPLm-RXpvi3oHLeZmW7sWtxUvCYEZHCA6LK3nJA/exec"
+
+# Cloudinary Media & Video Storage CDN
+CLOUDINARY_CLOUD_NAME="odq6wbxe"
+CLOUDINARY_API_KEY="441845365593798"
+CLOUDINARY_API_SECRET="he_APEi3dE9-o7YTuEy1W2cfx7A"
+CLOUDINARY_URL="cloudinary://441845365593798:he_APEi3dE9-o7YTuEy1W2cfx7A@odq6wbxe"
+
+
+
+# Deployment successfully updated.
+# Version 1 on 29 Aug 2026, 13:29
+# Deployment ID
+# AKfycbyvjKn5tXpQP5SUtcf_wwf6zD9MhjzuPLm-RXpvi3oHLeZmW7sWtxUvCYEZHCA6LK3nJA
+# Connect to Postgres via the shared transaction-mode pooler (IPv4-only)
+DATABASE_URL="postgresql://postgres.dtyrgvbbdmpwkkcmtjpk:ubhpKSzl1zv8Ta8Q@aws-0-ap-northeast-2.pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=10&connect_timeout=20&pool_timeout=20"
+
+# Connect to Postgres via the shared session-mode pooler (used for migrations)
+DIRECT_URL="postgresql://postgres.dtyrgvbbdmpwkkcmtjpk:ubhpKSzl1zv8Ta8Q@aws-0-ap-northeast-2.pooler.supabase.com:5432/postgres?connect_timeout=20"
+POSTGRESS_DATABASE_PASS=ubhpKSzl1zv8Ta8Q

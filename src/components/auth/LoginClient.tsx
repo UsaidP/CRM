@@ -274,21 +274,21 @@ export function LoginClient() {
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
-                  onClick={() => fillDemoAccount('ahmed@zamzamproperties.in', 'ADMIN')}
-                  className="p-2 rounded-xl bg-surface-subtle hover:bg-accent-soft border border-border hover:border-accent/40 text-left transition-colors cursor-pointer group"
+                  onClick={() => fillDemoAccount('usaid@zamzamproperties.in', 'SUPER_ADMIN')}
+                  className="p-2.5 rounded-xl bg-surface-subtle hover:bg-accent-soft border border-border hover:border-accent/40 text-left transition-colors cursor-pointer group"
                 >
                   <div className="font-bold text-[11px] text-content group-hover:text-accent-text truncate font-display">
-                    Ahmed Khan
+                    Usaid Patel
                   </div>
                   <div className="text-[10px] text-content-muted font-mono truncate">
-                    🛡️ Admin
+                    👑 Super Admin
                   </div>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => fillDemoAccount('safwan@zamzamproperties.in', 'MANAGER')}
-                  className="p-2 rounded-xl bg-surface-subtle hover:bg-accent-soft border border-border hover:border-accent/40 text-left transition-colors cursor-pointer group"
+                  className="p-2.5 rounded-xl bg-surface-subtle hover:bg-accent-soft border border-border hover:border-accent/40 text-left transition-colors cursor-pointer group"
                 >
                   <div className="font-bold text-[11px] text-content group-hover:text-accent-text truncate font-display">
                     Safwan Diwan
@@ -301,20 +301,20 @@ export function LoginClient() {
                 <button
                   type="button"
                   onClick={() => fillDemoAccount('suhel@zamzamproperties.in', 'AGENT')}
-                  className="p-2 rounded-xl bg-surface-subtle hover:bg-accent-soft border border-border hover:border-accent/40 text-left transition-colors cursor-pointer group"
+                  className="p-2.5 rounded-xl bg-surface-subtle hover:bg-accent-soft border border-border hover:border-accent/40 text-left transition-colors cursor-pointer group"
                 >
                   <div className="font-bold text-[11px] text-content group-hover:text-accent-text truncate font-display">
                     Suhel Patel
                   </div>
                   <div className="text-[10px] text-content-muted font-mono truncate">
-                    💼 Agent
+                    💼 Senior Agent
                   </div>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => fillDemoAccount('samrin@zamzamproperties.in', 'TELECALLER')}
-                  className="p-2 rounded-xl bg-surface-subtle hover:bg-accent-soft border border-border hover:border-accent/40 text-left transition-colors cursor-pointer group"
+                  className="p-2.5 rounded-xl bg-surface-subtle hover:bg-accent-soft border border-border hover:border-accent/40 text-left transition-colors cursor-pointer group"
                 >
                   <div className="font-bold text-[11px] text-content group-hover:text-accent-text truncate font-display">
                     Samrin Merchant
