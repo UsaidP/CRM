@@ -5,6 +5,8 @@ import { AppShell } from '@/components/layout/AppShell';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
 import { GooeyToastProvider } from '@/components/ui/GooeyToastProvider';
 import { AgentationToolbar } from '@/components/dev/AgentationToolbar';
+import { Analytics } from '@vercel/analytics/next';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 export const metadata: Metadata = {
   title: {
@@ -52,6 +54,8 @@ export default function RootLayout({
           <AppShell>{children}</AppShell>
           <GooeyToastProvider />
           <AgentationToolbar />
+          <Analytics />
+          <SpeedInsights />
         </ThemeProvider>
       </body>
     </html>
