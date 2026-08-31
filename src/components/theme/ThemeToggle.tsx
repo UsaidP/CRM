@@ -22,14 +22,14 @@ export function ThemeToggle({ variant = 'sidebar', className = '' }: ThemeToggle
     return variant === 'compact' ? (
       <button 
         type="button" 
-        className={`w-8 h-8 rounded-lg border border-border bg-surface-raised flex items-center justify-center text-content-muted ${className}`}
+        className={`w-11 h-11 min-w-[44px] min-h-[44px] rounded-xl border border-border bg-surface-raised flex items-center justify-center text-content-secondary ${className}`}
         aria-label="Toggle theme"
         disabled
       >
         <Moon className="w-4 h-4" />
       </button>
     ) : (
-      <div className={`cobalt-indicator flex items-center justify-between gap-1 text-[11px] font-semibold w-full ${className}`}>
+      <div className={`cobalt-indicator flex items-center justify-between gap-1 text-xs font-semibold w-full ${className}`}>
         <div className="flex items-center gap-1.5 truncate">
           <Zap className="w-3 h-3 text-accent shrink-0 fill-accent/20" />
           <span className="text-accent-text font-mono text-[10px] tracking-wide uppercase">Cobalt Design System</span>
@@ -46,7 +46,7 @@ export function ThemeToggle({ variant = 'sidebar', className = '' }: ThemeToggle
       <button
         type="button"
         onClick={toggleTheme}
-        className={`relative inline-flex items-center justify-center w-8 h-8 rounded-lg border border-border-default bg-surface hover:bg-surface-subtle text-content-secondary hover:text-content transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${className}`}
+        className={`relative inline-flex items-center justify-center w-11 h-11 min-w-[44px] min-h-[44px] rounded-xl border border-border-default bg-surface hover:bg-surface-subtle text-content-secondary hover:text-content transition-all shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent cursor-pointer ${className}`}
         aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
         title={isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
       >

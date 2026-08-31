@@ -1,0 +1,21 @@
+# ZamZam Properties Real Estate CRM
+
+> ZamZam Properties is an enterprise real estate brokerage operations platform, providing MahaRERA-certified inventory management, automated lead attribution, client presentation portals, and all-in total cost calculation engines.
+
+## Public Tools & Portals
+
+- [Client Presentation Portals](/p): Interactive client portals for exploring MahaRERA registered property units, carpet area specs, floor plans, and amenities.
+- [All-In Cost Calculator](/calculator): Real estate cost breakdown engine computing base price, stamp duty (6%), registration charges, GST (1% affordable / 5% standard), and CIDCO/infrastructure fees in Maharashtra.
+- [Agent & Broker Login Gateway](/login): Secure access gateway for real estate agents, team managers, and administrators.
+
+## System Capabilities
+
+- **MahaRERA Inventory Verification**: Real-time validation of developer projects, RERA registration numbers, total floors, configurations (1 BHK, 2 BHK, 3 BHK, 4 BHK), and carpet area in square feet.
+- **Lead Attribution & Communication**: Omnichannel lead capture across YouTube, Instagram, WhatsApp Business API, IVR telephony, and QR codes.
+- **Site Visit Logistics**: Real-time escort dispatch, GPS geofenced site visits, client feedback collection, and agent scheduling.
+- **Deal Ledgers & Invoicing**: Automated brokerage fee computation, milestone tracking, and invoicing.
+
+## LLM Resources
+
+- [Full Agent Specification](/llms-full.txt): Detailed breakdown of API schemas, database models, and operational workflows.
+- [Sitemap](/sitemap.xml): Machine-readable map of public property and utility pages.

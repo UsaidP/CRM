@@ -1,4 +1,3 @@
-import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { LoginClient } from '@/components/auth/LoginClient';
 
@@ -7,10 +6,19 @@ export const metadata: Metadata = {
   description: 'Sign in to the ZamZam Properties Real Estate Brokerage Console.',
 };
 
-export default function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ redirect?: string; message?: string }>;
+}) {
+  const params = searchParams ? await searchParams : {};
+  const redirectUrl = params.redirect || '/';
+  const initialMessage = params.message || null;
+
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center font-sans text-sm text-content-muted">Loading authentication gateway...</div>}>
-      <LoginClient />
-    </Suspense>
+    <LoginClient
+      initialRedirect={redirectUrl}
+      initialMessage={initialMessage}
+    />
   );
 }

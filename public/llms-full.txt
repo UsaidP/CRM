@@ -1,0 +1,37 @@
+# ZamZam Properties Real Estate CRM — Full System Reference
+
+> Complete technical and architectural specification for ZamZam Properties CRM, an enterprise brokerage management platform for high-velocity real estate operations in Mumbai and Navi Mumbai.
+
+## 1. System Overview
+
+ZamZam Properties CRM streamlines end-to-end real estate brokerage workflows:
+- Multi-channel Lead Attribution & Ingestion (Meta, WhatsApp, YouTube, Inbound Voice, QR)
+- Inventory Management with MahaRERA verification
+- All-in Property Pricing Engine (Base Price + Stamp Duty + GST + Registration + Parking + Society)
+- Client Presentation Portals for tokenized buyer property packages
+- Site Visit Escort Dispatch & Geofenced Check-ins
+- Deal Closure, Invoicing & Commission Ledgers
+
+## 2. Public Links & Endpoints
+
+- [Client Presentation Portals](/p): Interactive client presentation viewer for buyers.
+- [Cost Calculator](/calculator): Dynamic financial calculator for Maharashtra real estate purchases.
+- [Authentication Gateway](/login): Role-based login supporting Super Admin, Managers, Agents, and Telecallers.
+- [Robots Directives](/robots.txt): Machine crawling policy.
+- [Sitemap](/sitemap.xml): XML sitemap of public pages.
+
+## 3. Financial Calculation Formulae
+
+- **Agreement Value**: `carpetAreaSqft * basePricePerSqft`
+- **Stamp Duty**: `6% of Agreement Value` (Maharashtra standard)
+- **Registration**: `1% of Agreement Value` (capped at ₹30,000 for residential properties)
+- **GST**:
+  - `1% without ITC` for Affordable Housing (Agreement Value <= ₹45 Lakh AND carpet area <= 60 sq.m in metros)
+  - `5% without ITC` for Standard Residential Units
+- **All-In Total Cost**: `Agreement Value + Stamp Duty + Registration + GST + Development/Amenities Charges + Legal/Document Charges + Society Formation Deposit`
+
+## 4. Security & Compliance
+
+- MahaRERA Broker Registration Number: **A52000028714**
+- Encrypted HTTP Session Cookies with HMAC signature verification
+- Role-Based Access Control (RBAC) with granular permissions

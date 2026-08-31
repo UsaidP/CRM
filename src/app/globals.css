@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -20,10 +18,10 @@
    ============================================================================ */
 :root {
   /* Typography */
-  --font-display: 'Plus Jakarta Sans', 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-body: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-sans: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Geist Mono', 'SFMono-Regular', Consolas, monospace;
+  --font-display: var(--font-sans, 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  --font-body: var(--font-sans, 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  --font-sans: var(--font-sans, 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif);
+  --font-mono: var(--font-mono, 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace);
 
   /* Typography Scale */
   --text-xs: 0.75rem;
@@ -114,10 +112,10 @@ html[data-theme="light"],
   /* Text & Foreground Hierarchy */
   --color-ink: #0F172A;                            /* Deep Slate 900 */
   --color-text: #1E293B;                           /* Slate 800 Body */
-  --color-text-muted: #64748B;                     /* Medium Slate 500 */
-  --color-text-disabled: #94A3B8;                  /* Disabled Text Slate 400 */
+  --color-text-muted: #475569;                     /* Slate 600 - High Contrast AA */
+  --color-text-disabled: #64748B;                  /* Disabled Text Slate 500 */
   --color-text-primary: #0F172A;                   /* Primary Text */
-  --color-text-secondary: #475569;                 /* Secondary Text Slate 600 */
+  --color-text-secondary: #334155;                 /* Secondary Text Slate 700 */
   --color-text-inverse: #FFFFFF;                   /* Text on Dark/Accent */
 
   /* Hairlines & Borders */

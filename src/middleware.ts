@@ -7,6 +7,13 @@ const PUBLIC_PATHS = [
   '/forgot-password',
   '/reset-password',
   '/set-password',
+  '/robots.txt',
+  '/sitemap.xml',
+  '/sitemap',
+  '/llms.txt',
+  '/llms-full.txt',
+  '/manifest.json',
+  '/manifest.webmanifest',
 ];
 
 const PUBLIC_API_PREFIXES = [
@@ -20,15 +27,20 @@ const PUBLIC_API_PREFIXES = [
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // 1. Allow Next.js internals, static assets, images, icons
+  // 1. Allow Next.js internals, static assets, images, icons, and metadata files
   if (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/static') ||
     pathname.startsWith('/images') ||
     pathname.startsWith('/fonts') ||
+    pathname.startsWith('/.well-known') ||
     pathname === '/favicon.ico' ||
     pathname === '/icon.svg' ||
-    pathname.match(/\.(png|jpg|jpeg|gif|svg|ico|webp|css|js|woff|woff2|ttf)$/)
+    pathname === '/robots.txt' ||
+    pathname === '/sitemap.xml' ||
+    pathname === '/llms.txt' ||
+    pathname === '/llms-full.txt' ||
+    pathname.match(/\.(png|jpg|jpeg|gif|svg|ico|webp|css|js|woff|woff2|ttf|txt|xml|json|webmanifest)$/)
   ) {
     return NextResponse.next();
   }
