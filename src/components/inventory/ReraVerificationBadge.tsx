@@ -155,30 +155,36 @@ export function ReraVerificationBadge({
     <div className={`space-y-2 ${className}`}>
       {/* Main Validation State */}
       <div
-        className={`p-3 rounded-xl border transition-all duration-200 ${
+        className={`p-3.5 sm:p-4 rounded-2xl border transition-all duration-200 shadow-xs ${
           clientValidation.isValid
             ? serverData?.duplicateInCrm
               ? 'bg-status-warning-surface/60 border-status-warning/40 text-content'
-              : 'bg-accent-soft border-accent/40 text-content'
+              : 'bg-accent-soft/70 border-accent/40 text-content'
             : 'bg-status-danger-surface border-status-danger/40 text-content'
         }`}
       >
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-          <div className="flex items-start gap-2.5">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          {/* Left Info Column */}
+          <div className="flex items-start gap-3 min-w-0 flex-1">
             <div className="mt-0.5 shrink-0">
               {clientValidation.isValid ? (
-                <ShieldCheck className="w-5 h-5 text-accent" />
+                <div className="w-8 h-8 rounded-xl bg-accent/20 border border-accent/30 text-accent flex items-center justify-center">
+                  <ShieldCheck className="w-4 h-4" />
+                </div>
               ) : (
-                <ShieldAlert className="w-5 h-5 text-status-danger" />
+                <div className="w-8 h-8 rounded-xl bg-status-danger/20 border border-status-danger/30 text-status-danger flex items-center justify-center">
+                  <ShieldAlert className="w-4 h-4" />
+                </div>
               )}
             </div>
-            <div>
+
+            <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-mono text-sm font-bold text-content tracking-tight">
+                <span className="font-mono text-sm sm:text-base font-bold text-content tracking-tight select-all">
                   {clientValidation.normalized || reraNumber}
                 </span>
                 {clientValidation.isValid && (
-                  <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider bg-accent/20 text-accent-text border border-accent/30 font-mono">
+                  <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-accent/20 text-accent-text border border-accent/30 font-mono whitespace-nowrap">
                     {clientValidation.formatType === 'MAHARERA_PROJECT'
                       ? 'MahaRERA Project'
                       : clientValidation.formatType === 'MAHARERA_AGENT'
@@ -187,27 +193,29 @@ export function ReraVerificationBadge({
                   </span>
                 )}
                 {checking && (
-                  <span className="flex items-center gap-1 text-[11px] text-content-muted font-mono">
+                  <span className="flex items-center gap-1 text-[11px] text-content-secondary font-mono">
                     <Loader2 className="w-3 h-3 animate-spin text-accent" /> Checking CRM...
                   </span>
                 )}
               </div>
 
               {clientValidation.isValid ? (
-                <div className="mt-1 text-xs text-content-secondary space-y-0.5">
-                  <div className="flex items-center gap-1.5">
-                    <Building2 className="w-3 h-3 text-accent shrink-0" />
-                    <span>{clientValidation.authority}</span>
+                <div className="mt-1.5 text-xs text-content-secondary space-y-1">
+                  <div className="flex items-center gap-1.5 font-medium text-content">
+                    <Building2 className="w-3.5 h-3.5 text-accent shrink-0" />
+                    <span className="truncate">{clientValidation.authority}</span>
                   </div>
                   {clientValidation.districtName && (
-                    <div className="flex items-center gap-1.5 text-content-muted">
-                      <MapPin className="w-3 h-3 text-status-success shrink-0" />
-                      <span>District: {clientValidation.districtName}</span>
+                    <div className="flex items-center gap-1.5 text-content-secondary">
+                      <MapPin className="w-3.5 h-3.5 text-status-success shrink-0" />
+                      <span>
+                        District: <strong className="text-content font-semibold">{clientValidation.districtName}</strong>
+                      </span>
                     </div>
                   )}
                 </div>
               ) : (
-                <div className="mt-1 text-xs text-status-danger">
+                <div className="mt-1 text-xs font-medium text-status-danger">
                   {clientValidation.error || 'Invalid RERA format. Expected P followed by 11 digits (e.g. P52000028714).'}
                 </div>
               )}
@@ -215,23 +223,23 @@ export function ReraVerificationBadge({
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center gap-1.5 self-end sm:self-center shrink-0">
+          <div className="flex items-center gap-2 shrink-0 self-start md:self-center pt-2 md:pt-0 border-t md:border-t-0 border-border/40 md:border-transparent w-full md:w-auto justify-end">
             {showCopyButton && clientValidation.isValid && (
               <button
                 type="button"
                 onClick={handleCopy}
                 title="Copy RERA registration number"
-                className="px-2.5 py-1.5 rounded-lg border border-border bg-surface hover:bg-surface-raised text-content text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer"
+                className="px-3 py-2 rounded-xl border border-border bg-surface hover:bg-surface-raised text-content text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs min-h-[36px]"
               >
                 {copied ? (
                   <>
                     <Check className="w-3.5 h-3.5 text-status-success" />
-                    <span className="text-status-success text-[11px]">Copied</span>
+                    <span className="text-status-success text-xs font-bold">Copied</span>
                   </>
                 ) : (
                   <>
-                    <Copy className="w-3.5 h-3.5 text-content-muted" />
-                    <span className="text-[11px]">Copy ID</span>
+                    <Copy className="w-3.5 h-3.5 text-content-secondary" />
+                    <span className="text-xs font-bold">Copy ID</span>
                   </>
                 )}
               </button>
@@ -243,10 +251,10 @@ export function ReraVerificationBadge({
                 target="_blank"
                 rel="noopener noreferrer"
                 title="Verify registration certificate on official government portal"
-                className="px-2.5 py-1.5 rounded-lg border border-accent/40 bg-accent text-white hover:bg-accent-hover text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+                className="px-3.5 py-2 rounded-xl border border-accent/40 bg-accent text-white hover:bg-accent-hover text-xs font-bold flex items-center gap-2 shadow-xs transition-all cursor-pointer whitespace-nowrap min-h-[36px]"
               >
                 <Search className="w-3.5 h-3.5" />
-                <span className="text-[11px]">Verify on MahaRERA</span>
+                <span>Verify on MahaRERA</span>
                 <ExternalLink className="w-3 h-3 opacity-80" />
               </a>
             )}
@@ -256,13 +264,13 @@ export function ReraVerificationBadge({
 
       {/* CRM Duplicate Warning */}
       {serverData?.duplicateInCrm && serverData.existingProject && (
-        <div className="p-2.5 rounded-lg border border-status-warning/40 bg-status-warning-surface text-content text-xs flex items-start gap-2">
+        <div className="p-3 rounded-xl border border-status-warning/40 bg-status-warning-surface text-content text-xs flex items-start gap-2.5">
           <AlertTriangle className="w-4 h-4 text-status-warning shrink-0 mt-0.5" />
           <div>
-            <span className="font-semibold text-status-warning">Duplicate Detected in CRM: </span>
+            <span className="font-bold text-status-warning">Duplicate Detected in CRM: </span>
             <span>
               This RERA ID is already registered under{' '}
-              <strong className="text-content">{serverData.existingProject.projectName}</strong>
+              <strong className="text-content font-bold">{serverData.existingProject.projectName}</strong>
               {serverData.existingProject.microMarket ? ` (${serverData.existingProject.microMarket})` : ''}.
               Submitting will synchronize units with the existing project record.
             </span>

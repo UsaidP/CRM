@@ -1424,7 +1424,27 @@ export function InventoryClient({
                 onChange={(e) => setProjectForm({ ...projectForm, reraNumber: e.target.value.toUpperCase() })}
                 className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content font-mono font-bold focus:outline-hidden focus:border-accent focus:ring-1 focus:ring-accent"
               />
-              <div className="mt-2 space-y-2">
+            </div>
+            <div>
+              <label className="text-xs font-bold text-content block mb-1">Micro-Market Locality *</label>
+              <select
+                aria-label="Micro-market locality"
+                value={projectForm.microMarket}
+                onChange={(e) => setProjectForm({ ...projectForm, microMarket: e.target.value })}
+                className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content focus:outline-hidden focus:border-accent focus:ring-1 focus:ring-accent font-medium"
+              >
+                <option value="Kharghar Sector 35" className="bg-surface text-content">Kharghar Sector 35</option>
+                <option value="Kharghar Sector 36" className="bg-surface text-content">Kharghar Sector 36</option>
+                <option value="Kharghar Sector 20" className="bg-surface text-content">Kharghar Sector 20</option>
+                <option value="Taloja Phase 1" className="bg-surface text-content">Taloja Phase 1</option>
+                <option value="Upper Kharghar" className="bg-surface text-content">Upper Kharghar</option>
+                <option value="Roadpali" className="bg-surface text-content">Roadpali</option>
+              </select>
+            </div>
+
+            {/* Full-width RERA Verification Badge */}
+            {projectForm.reraNumber && (
+              <div className="col-span-1 sm:col-span-2 space-y-2">
                 <ReraVerificationBadge
                   reraNumber={projectForm.reraNumber}
                   projectId={editingProjectId || undefined}
@@ -1444,23 +1464,7 @@ export function InventoryClient({
                   </div>
                 )}
               </div>
-            </div>
-            <div>
-              <label className="text-xs font-bold text-content block mb-1">Micro-Market Locality *</label>
-              <select
-                aria-label="Micro-market locality"
-                value={projectForm.microMarket}
-                onChange={(e) => setProjectForm({ ...projectForm, microMarket: e.target.value })}
-                className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content focus:outline-hidden focus:border-accent focus:ring-1 focus:ring-accent font-medium"
-              >
-                <option value="Kharghar Sector 35" className="bg-surface text-content">Kharghar Sector 35</option>
-                <option value="Kharghar Sector 36" className="bg-surface text-content">Kharghar Sector 36</option>
-                <option value="Kharghar Sector 20" className="bg-surface text-content">Kharghar Sector 20</option>
-                <option value="Taloja Phase 1" className="bg-surface text-content">Taloja Phase 1</option>
-                <option value="Upper Kharghar" className="bg-surface text-content">Upper Kharghar</option>
-                <option value="Roadpali" className="bg-surface text-content">Roadpali</option>
-              </select>
-            </div>
+            )}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
