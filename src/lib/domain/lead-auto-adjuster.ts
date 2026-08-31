@@ -32,12 +32,15 @@ export interface AutoAdjustedLead {
   bhkPreferences: number[];
   targetLocations: string[];
   primaryLocation: string;
+  microMarket?: string;
   possessionPreference: 'READY_TO_MOVE' | 'UNDER_CONSTRUCTION' | 'ANY';
   leadSource: string;
   sourceConfidence: 'EXACT' | 'INFERRED' | 'UNKNOWN';
   sourceCode?: string;
   assignedBrokerName: string;
   assignedBrokerPhone: string;
+  stage: string;
+  stageFormatted: string;
   notes: string;
   warnings: string[];
   status: 'READY' | 'WARNING' | 'INVALID';
@@ -71,6 +74,67 @@ export function parseCSVLine(line: string): string[] {
   return result;
 }
 
+export const STAGE_DISPLAY_NAMES: Record<string, string> = {
+  new_uncontacted: 'New / Uncontacted',
+  discovery_call: 'Discovery Call',
+  portal_shared: 'Portal Shared',
+  visit_scheduled: 'Site Visit Scheduled',
+  visit_done: 'Site Visit Done',
+  revisit_scheduled: 'Re-Visit Scheduled',
+  negotiation_token: 'Negotiation / Token',
+  under_registration: 'Under Registration',
+  closed_won: 'Closed Won',
+  on_hold_nurture: 'On Hold / Nurture',
+  closed_lost: 'Closed Lost',
+};
+
+/**
+ * Normalizes any free-form status or pipeline stage string to canonical CRM stages
+ */
+export function normalizeLeadStage(input?: string | null): string {
+  if (!input) return 'new_uncontacted';
+  const clean = String(input).trim().toLowerCase().replace(/[^a-z0-9_]/g, '_');
+  
+  if (clean.includes('revisit') || clean.includes('re_visit') || clean.includes('second_visit') || clean.includes('2nd_visit')) {
+    return 'revisit_scheduled';
+  }
+  if (clean.includes('visit_done') || clean.includes('visited') || clean.includes('site_done') || clean.includes('tour_done') || clean.includes('completed_visit')) {
+    return 'visit_done';
+  }
+  if (clean.includes('visit') || clean.includes('tour') || clean.includes('inspection') || clean.includes('appointment')) {
+    return 'visit_scheduled';
+  }
+  if (clean.includes('won') || clean.includes('closed_won') || clean.includes('deal_booked') || clean.includes('unit_booked') || (clean.includes('booked') && !clean.includes('visit') && !clean.includes('tour')) || (clean.includes('registered') && !clean.includes('under'))) {
+    return 'closed_won';
+  }
+  if (clean.includes('not_intrest') || clean.includes('not_interest') || clean.includes('not_req') || clean.includes('dnd') || clean.includes('wrong_num') || clean.includes('lost') || clean.includes('dropped') || clean.includes('closed_lost') || clean.includes('junk') || clean.includes('invalid') || clean.includes('rejected')) {
+    return 'closed_lost';
+  }
+  if (clean.includes('no_ans') || clean.includes('noans') || clean.includes('no_answer') || clean.includes('rnr') || clean.includes('ringing') || clean.includes('busy') || clean.includes('switched_off') || clean.includes('out_of_reach') || clean.includes('agent') || clean.includes('broker') || clean.includes('nurture') || clean.includes('hold') || clean.includes('postpone') || clean.includes('cold') || clean.includes('later')) {
+    return 'on_hold_nurture';
+  }
+  if (clean.includes('regis') || clean.includes('under_registration') || clean.includes('agreement') || clean.includes('stamp_duty')) {
+    return 'under_registration';
+  }
+  if (clean.includes('token') || clean.includes('negotiat') || clean.includes('costing') || clean.includes('pricing') || clean.includes('offer')) {
+    return 'negotiation_token';
+  }
+  if (clean.includes('schedule')) {
+    return 'visit_scheduled';
+  }
+  if (clean.includes('portal') || clean.includes('brochure') || clean.includes('proposal') || clean.includes('link') || clean.includes('catalog') || clean.includes('shared')) {
+    return 'portal_shared';
+  }
+  if (clean.includes('intrest') || clean.includes('interest') || clean.includes('argent') || clean.includes('urgent') || clean.includes('hot') || clean.includes('call_back') || clean.includes('callback') || clean.includes('follow') || clean.includes('discover') || clean.includes('contact') || clean.includes('called') || clean.includes('spoke') || clean.includes('connect') || clean.includes('warm') || clean.includes('qualif') || clean.includes('in_progress')) {
+    return 'discovery_call';
+  }
+  if (clean.includes('new') || clean.includes('uncontacted') || clean.includes('open') || clean.includes('fresh') || clean.includes('inbound')) {
+    return 'new_uncontacted';
+  }
+  
+  return 'new_uncontacted';
+}
+
 /**
  * Fuzzy Header Auto-Detector for Lead Sheets (CSV / Excel / TSV / JSON)
  */
@@ -85,6 +149,11 @@ export function detectLeadColumnMapping(headers: string[]): ColumnMapping {
     const n = h.normalized;
     const orig = h.original;
     if (!n) continue;
+
+    // Reject openpyxl artifacts e.g. "<Cell 'Sheet1'.A2>"
+    if (orig.startsWith('<Cell') || n.includes('cellsheet') || n.startsWith('column')) {
+      continue;
+    }
 
     // Full Name
     if (!mapping.fullName && (
@@ -109,18 +178,20 @@ export function detectLeadColumnMapping(headers: string[]): ColumnMapping {
     )) {
       mapping.fullName = orig;
     } 
-    // Phone Number / Mobile
+    // Phone Number / Mobile (Strict matching to avoid 'cell' artifacts)
     else if (!mapping.phone && (
       n.includes('phone') ||
       n.includes('mobile') ||
       n.includes('contact') ||
       n.includes('whatsapp') ||
       n.includes('calling') ||
-      n.includes('cell') ||
       n.includes('telephone') ||
-      n.includes('tel') ||
       n.includes('mob') ||
       n.includes('phno') ||
+      n === 'cell' ||
+      n === 'cellnumber' ||
+      n === 'cellno' ||
+      n === 'cellphone' ||
       n === 'number' ||
       n === 'contactno' ||
       n === 'mobileno'
@@ -217,12 +288,17 @@ export function detectLeadColumnMapping(headers: string[]): ColumnMapping {
     )) {
       mapping.notes = orig;
     } 
-    // Pipeline Stage
+    // Pipeline Stage / Status
     else if (!mapping.stage && (
       n.includes('stage') ||
       n.includes('status') ||
       n.includes('leadstatus') ||
-      n.includes('leadstage')
+      n.includes('leadstage') ||
+      n.includes('pipelinestage') ||
+      n.includes('pipelinestatus') ||
+      n.includes('currentstage') ||
+      n.includes('currentstatus') ||
+      n === 'state'
     )) {
       mapping.stage = orig;
     } 
@@ -260,84 +336,138 @@ export function inferColumnMappingFromData(
   const mapping: ColumnMapping = { ...currentMapping };
   if (!rows || rows.length === 0) return mapping;
 
-  const sampleRows = rows.slice(0, 20);
+  const sampleRows = rows.slice(0, 100);
+
+  // 1. Phone Detection: Score all columns by phone density
+  let bestPhoneHeader = mapping.phone || '';
+  let highestPhoneScore = 0;
 
   for (const h of headers) {
     if (!h) continue;
+    const values = sampleRows.map((r) => String(r[h] ?? '').trim()).filter((v) => v.length > 0);
+    if (values.length === 0) continue;
 
-    // Collect non-empty values for this column
+    const phoneMatches = values.filter((v) => {
+      const digits = v.replace(/\D/g, '');
+      // 10-digit Indian phone (e.g. 9004247557) or with 91 / 0 prefix
+      return (digits.length === 10 && /^[6-9]/.test(digits)) ||
+             (digits.length === 12 && digits.startsWith('91') && /^91[6-9]/.test(digits)) ||
+             (digits.length === 11 && digits.startsWith('0') && /^0[6-9]/.test(digits));
+    });
+
+    const score = phoneMatches.length;
+    if (score > highestPhoneScore && score >= 2) {
+      highestPhoneScore = score;
+      bestPhoneHeader = h;
+    }
+  }
+
+  if (bestPhoneHeader) {
+    mapping.phone = bestPhoneHeader;
+  }
+
+  // 2. Scan remaining columns for other fields
+  for (const h of headers) {
+    if (!h || h === mapping.phone) continue;
+
     const values = sampleRows
       .map((r) => String(r[h] ?? '').trim())
       .filter((v) => v.length > 0);
 
     if (values.length === 0) continue;
 
-    // 1. Check Phone (if not already mapped)
-    if (!mapping.phone) {
-      const phoneMatches = values.filter((v) => {
-        const digits = v.replace(/\D/g, '');
-        return digits.length === 10 || (digits.length === 12 && digits.startsWith('91')) || (digits.length === 11 && digits.startsWith('0'));
-      });
-      if (phoneMatches.length / values.length >= 0.5) {
-        mapping.phone = h;
-        continue;
-      }
-    }
-
-    // 2. Check Email (if not already mapped)
+    // Email
     if (!mapping.email) {
       const emailMatches = values.filter((v) => v.includes('@') && v.includes('.'));
-      if (emailMatches.length / values.length >= 0.5) {
+      if (emailMatches.length / values.length >= 0.4) {
         mapping.email = h;
         continue;
       }
     }
 
-    // 3. Check Budget (if not already mapped)
-    if (!mapping.budget) {
-      const budgetMatches = values.filter((v) => {
+    // Stage / Disposition (e.g. "no ans", "Not intrested", "Intrested", "agent", "busy")
+    if (!mapping.stage) {
+      const stageMatches = values.filter((v) => {
         const lower = v.toLowerCase();
-        return lower.includes('cr') || lower.includes('crore') || lower.includes('lakh') || lower.includes('lac') || lower.includes('₹') || (lower.endsWith('l') && !isNaN(parseFloat(lower)));
+        return (
+          lower.includes('ans') ||
+          lower.includes('intrest') ||
+          lower.includes('interest') ||
+          lower.includes('agent') ||
+          lower.includes('busy') ||
+          lower.includes('visit') ||
+          lower.includes('new') ||
+          lower.includes('won') ||
+          lower.includes('lost') ||
+          lower.includes('call') ||
+          lower.includes('argent') ||
+          lower.includes('urgent') ||
+          lower.includes('token') ||
+          lower.includes('hold')
+        );
       });
-      if (budgetMatches.length / values.length >= 0.3) {
-        mapping.budget = h;
+      if (stageMatches.length >= 2 || stageMatches.length / values.length >= 0.3) {
+        mapping.stage = h;
         continue;
       }
     }
 
-    // 4. Check BHK (if not already mapped)
+    // BHK / Typology (e.g. "1RK", "shop", "1BHK", "2BHK", "3BHK", "studio")
     if (!mapping.bhk) {
       const bhkMatches = values.filter((v) => {
         const lower = v.toLowerCase();
-        return lower.includes('bhk') || lower.includes('rk') || lower.includes('studio') || lower.includes('bedroom');
+        return lower.includes('bhk') || lower.includes('rk') || lower.includes('shop') || lower.includes('studio') || lower.includes('bedroom') || lower.includes('flat') || lower.includes('room');
       });
-      if (bhkMatches.length / values.length >= 0.3) {
+      if (bhkMatches.length >= 2 || bhkMatches.length / values.length >= 0.3) {
         mapping.bhk = h;
         continue;
       }
     }
 
-    // 5. Check Location (if not already mapped)
+    // Location / Micro-Market (e.g. "Mumbai", "Mira Road", "Kharghar", "Taloja")
     if (!mapping.location) {
       const locationMatches = values.filter((v) => {
         const lower = v.toLowerCase();
-        return lower.includes('kharghar') || lower.includes('taloja') || lower.includes('sector') || lower.includes('sec') || lower.includes('navi mumbai') || lower.includes('panvel');
+        return lower.includes('mumbai') || lower.includes('road') || lower.includes('kharghar') || lower.includes('taloja') || lower.includes('sector') || lower.includes('sec') || lower.includes('panvel') || lower.includes('vashi') || lower.includes('thane');
       });
-      if (locationMatches.length / values.length >= 0.3) {
+      if (locationMatches.length >= 2 || locationMatches.length / values.length >= 0.3) {
         mapping.location = h;
         continue;
       }
     }
 
-    // 6. Check Full Name (if not already mapped)
-    if (!mapping.fullName && !mapping.phone && !mapping.email) {
-      const nameMatches = values.filter((v) => {
-        return /^[a-zA-Z\s.]{3,35}$/.test(v) && !v.toLowerCase().includes('http') && !v.toLowerCase().includes('www');
+    // Skip sequential serial number columns (e.g. 1, 2, 3, 4...)
+    const isSerialCol = values.length >= 3 && values.slice(0, 5).every((v, i) => parseInt(v, 10) === i + 1);
+    if (isSerialCol) continue;
+
+    // Budget (e.g. "20", "65", "40", "40 -55", "75L", "1.2 Cr")
+    if (!mapping.budget) {
+      const budgetMatches = values.filter((v) => {
+        const lower = v.toLowerCase();
+        const num = parseFloat(v.replace(/[^0-9.]/g, ''));
+        return lower.includes('cr') || lower.includes('crore') || lower.includes('lakh') || lower.includes('lac') || lower.includes('₹') || (lower.endsWith('l') && !isNaN(num)) || (num >= 15 && num <= 500);
       });
-      if (nameMatches.length / values.length >= 0.6) {
+      if (budgetMatches.length >= 2 || budgetMatches.length / values.length >= 0.3) {
+        mapping.budget = h;
+        continue;
+      }
+    }
+
+    // Full Name (Text column with human names, not numbers, not serial IDs)
+    if (!mapping.fullName && h !== mapping.phone && h !== mapping.email && h !== mapping.stage && h !== mapping.bhk && h !== mapping.location && h !== mapping.budget) {
+      const nameMatches = values.filter((v) => {
+        return /^[a-zA-Z\s.]{2,35}$/.test(v) && !/^(sale|rent|resale|buy|yes|no|na|null)$/i.test(v);
+      });
+      if (nameMatches.length >= 2 || nameMatches.length / values.length >= 0.5) {
         mapping.fullName = h;
         continue;
       }
+    }
+
+    // Source / Notes
+    if (!mapping.source && values.some((v) => /^(sale|rent|resale|buy|meta|fb|google|youtube|walkin|whatsapp)$/i.test(v))) {
+      mapping.source = h;
+      continue;
     }
   }
 
@@ -475,37 +605,42 @@ export function resolveMicroMarket(input?: string): {
   region: 'KHARGHAR' | 'TALOJA_1' | 'TALOJA_2' | 'OTHER';
 } {
   if (!input) {
-    return { canonical: 'Kharghar & Taloja Corridor', region: 'KHARGHAR' };
+    return { canonical: 'Kharghar', region: 'KHARGHAR' };
   }
 
   const raw = input.toLowerCase();
 
-  if (raw.includes('taloja 2') || raw.includes('phase 2') || raw.includes('phase2') || raw.includes('sec 26') || raw.includes('sector 26')) {
-    return { canonical: 'Taloja Phase 2', region: 'TALOJA_2' };
-  }
-  if (raw.includes('taloja 1') || raw.includes('phase 1') || raw.includes('phase1') || raw.includes('taloja') || raw.includes('sector 2') || raw.includes('sector 11')) {
-    return { canonical: 'Taloja Phase 1', region: 'TALOJA_1' };
-  }
-  if (raw.includes('35') || raw.includes('sec 35') || raw.includes('sector 35')) {
-    return { canonical: 'Kharghar Sector 35', region: 'KHARGHAR' };
-  }
-  if (raw.includes('36') || raw.includes('sec 36') || raw.includes('sector 36')) {
-    return { canonical: 'Kharghar Sector 36', region: 'KHARGHAR' };
-  }
-  if (raw.includes('37') || raw.includes('sec 37') || raw.includes('sector 37')) {
-    return { canonical: 'Kharghar Sector 37', region: 'KHARGHAR' };
-  }
-  if (raw.includes('20') || raw.includes('sec 20') || raw.includes('sector 20')) {
-    return { canonical: 'Kharghar Sector 20', region: 'KHARGHAR' };
-  }
-  if (raw.includes('10') || raw.includes('sec 10') || raw.includes('sector 10')) {
-    return { canonical: 'Kharghar Sector 10', region: 'KHARGHAR' };
-  }
-  if (raw.includes('kharghar') || raw.includes('utsav') || raw.includes('central park') || raw.includes('golf')) {
-    return { canonical: 'Kharghar', region: 'KHARGHAR' };
+  // Specific Sector match for Kharghar e.g. "Sector 35", "Sec 35", "35"
+  const secMatch = raw.match(/(?:kharghar\s*)?(?:sec(?:tor)?\.?\s*)?(\d{1,2})/i);
+  if (raw.includes('kharghar') || secMatch) {
+    if (secMatch) {
+      const secNum = parseInt(secMatch[1], 10);
+      if (secNum >= 1 && secNum <= 37) {
+        return { canonical: `Kharghar Sector ${secNum}`, region: 'KHARGHAR' };
+      }
+    }
   }
 
-  return { canonical: input.trim(), region: 'OTHER' };
+  if (raw.includes('taloja 2') || raw.includes('phase 2') || raw.includes('phase2') || raw.includes('sec 26') || raw.includes('sector 26') || raw.includes('sector 21') || raw.includes('sector 28')) {
+    return { canonical: 'Taloja Phase 2', region: 'TALOJA_2' };
+  }
+  if (raw.includes('taloja 1') || raw.includes('phase 1') || raw.includes('phase1') || raw.includes('taloja') || raw.includes('sec 11') || raw.includes('sector 11') || raw.includes('sec 4') || raw.includes('sec 6')) {
+    return { canonical: 'Taloja Phase 1', region: 'TALOJA_1' };
+  }
+  if (raw.includes('upper kharghar') || raw.includes('sec 36') || raw.includes('sec 37') || raw.includes('36') || raw.includes('37')) {
+    return { canonical: 'Upper Kharghar (Sec 36-37)', region: 'KHARGHAR' };
+  }
+  if (raw.includes('central park') || raw.includes('utsav') || raw.includes('golf') || raw.includes('sec 20') || raw.includes('sec 23')) {
+    return { canonical: 'Kharghar Central Park', region: 'KHARGHAR' };
+  }
+  if (raw.includes('panvel') || raw.includes('karanjade') || raw.includes('new panvel')) {
+    return { canonical: 'Panvel Node', region: 'OTHER' };
+  }
+  if (raw.includes('ulwe') || raw.includes('dronagiri') || raw.includes('seawoods') || raw.includes('vashi') || raw.includes('nerul')) {
+    return { canonical: input.trim(), region: 'OTHER' };
+  }
+
+  return { canonical: input.trim() || 'Kharghar', region: 'KHARGHAR' };
 }
 
 /**
@@ -538,12 +673,29 @@ export function resolveAssignedBroker(
 }
 
 /**
- * Name Sanitizer & Capitalizer
+ * Name Sanitizer & Capitalizer with Email Fallback
  */
-export function sanitizeName(name?: string): string {
-  if (!name) return 'Navi Mumbai Prospect';
-  let clean = name.trim().replace(/^(mr\.|mrs\.|ms\.|dr\.|adv\.)\s*/i, '');
-  if (!clean) return 'Navi Mumbai Prospect';
+export function sanitizeName(name?: string, emailFallback?: string): string {
+  let clean = String(name || '').trim().replace(/^(mr\.|mrs\.|ms\.|dr\.|adv\.)\s*/i, '');
+
+  // If name is "Lastname, Firstname", reverse it
+  if (clean.includes(',')) {
+    const parts = clean.split(',').map((p) => p.trim()).filter(Boolean);
+    if (parts.length === 2) {
+      clean = `${parts[1]} ${parts[0]}`;
+    }
+  }
+
+  // If name is generic or empty, try extracting from email (e.g. "amitabh.verma@example.com" -> "Amitabh Verma")
+  const isGeneric = !clean || /^(prospect|inbound|lead|customer|client|buyer|user|na|null|undefined|none)$/i.test(clean);
+  if (isGeneric && emailFallback && emailFallback.includes('@')) {
+    const userPart = emailFallback.split('@')[0].replace(/[0-9._-]/g, ' ').trim();
+    if (userPart.length >= 2) {
+      clean = userPart;
+    }
+  }
+
+  if (!clean || clean.length < 2) return 'Navi Mumbai Prospect';
 
   return clean
     .split(/\s+/)
@@ -560,26 +712,35 @@ export function classifyLeadSource(rawSource?: string, rawCampaign?: string): {
 } {
   const combined = `${rawSource || ''} ${rawCampaign || ''}`.toLowerCase();
 
-  if (combined.includes('meta') || combined.includes('fb') || combined.includes('facebook') || combined.includes('instagram') || combined.includes('ig')) {
+  if (combined.includes('meta') || combined.includes('fb') || combined.includes('facebook') || combined.includes('instagram') || combined.includes('ig') || combined.includes('reel')) {
     return { leadSource: 'META_ADS', sourceConfidence: 'EXACT' };
   }
-  if (combined.includes('google') || combined.includes('gads') || combined.includes('cpc') || combined.includes('search')) {
+  if (combined.includes('google') || combined.includes('gads') || combined.includes('cpc') || combined.includes('search') || combined.includes('adwords')) {
     return { leadSource: 'GOOGLE_ADS', sourceConfidence: 'EXACT' };
   }
   if (combined.includes('99acres') || combined.includes('99 acres')) {
     return { leadSource: '99ACRES_INQUIRY', sourceConfidence: 'EXACT' };
   }
-  if (combined.includes('magicbricks') || combined.includes('magic bricks')) {
+  if (combined.includes('magicbricks') || combined.includes('magic bricks') || combined.includes('mb')) {
     return { leadSource: 'MAGICBRICKS_INQUIRY', sourceConfidence: 'EXACT' };
   }
   if (combined.includes('housing') || combined.includes('housing.com')) {
     return { leadSource: 'HOUSING_COM', sourceConfidence: 'EXACT' };
   }
-  if (combined.includes('youtube') || combined.includes('yt')) {
+  if (combined.includes('youtube') || combined.includes('yt') || combined.includes('short')) {
     return { leadSource: 'YOUTUBE_ORGANIC', sourceConfidence: 'EXACT' };
   }
-  if (combined.includes('walk') || combined.includes('offline') || combined.includes('site')) {
+  if (combined.includes('indiamart') || combined.includes('justdial') || combined.includes('jd')) {
+    return { leadSource: 'DIRECTORY_INQUIRY', sourceConfidence: 'EXACT' };
+  }
+  if (combined.includes('walk') || combined.includes('offline') || combined.includes('site') || combined.includes('office')) {
     return { leadSource: 'SITE_VISIT_WALKIN', sourceConfidence: 'EXACT' };
+  }
+  if (combined.includes('whatsapp') || combined.includes('wa') || combined.includes('chat')) {
+    return { leadSource: 'WHATSAPP_INQUIRY', sourceConfidence: 'EXACT' };
+  }
+  if (combined.includes('referral') || combined.includes('friend') || combined.includes('channel partner') || combined.includes('broker')) {
+    return { leadSource: 'REFERRAL', sourceConfidence: 'EXACT' };
   }
 
   return { leadSource: 'CSV_IMPORT', sourceConfidence: 'INFERRED' };
@@ -597,13 +758,29 @@ export function autoAdjustLeadRow(row: RawLeadRow, mapping: ColumnMapping): Auto
   const rawLoc = mapping.location ? row[mapping.location] : row['location'] || row['Locality'];
   const rawSource = mapping.source ? row[mapping.source] : row['source'] || row['Source'];
   const rawCampaign = mapping.campaign ? row[mapping.campaign] : row['campaign'] || row['Campaign'];
-  const rawNotes = mapping.notes ? row[mapping.notes] : row['notes'] || row['Remarks'];
-  const rawPossession = mapping.possession ? row[mapping.possession] : row['possession'];
+  const rawNotes = mapping.notes ? row[mapping.notes] : row['notes'] || row['Remarks'] || row['remarks'] || row['Comment'] || row['comment'];
+  const rawPossession = mapping.possession ? row[mapping.possession] : row['possession'] || row['Possession'];
+  const rawStage = mapping.stage 
+    ? row[mapping.stage] 
+    : row['stage'] || 
+      row['Stage'] || 
+      row['status'] || 
+      row['Status'] || 
+      row['leadStatus'] || 
+      row['Lead Status'] || 
+      row['lead_status'] || 
+      row['pipelineStage'] || 
+      row['Pipeline Stage'] || 
+      row['currentStage'] || 
+      row['Current Stage'] || 
+      row['current_stage'] || 
+      row['State'] || 
+      row['state'];
 
   const warnings: string[] = [];
 
   // 1. Name
-  const fullName = sanitizeName(rawName);
+  const fullName = sanitizeName(rawName, rawEmail);
 
   // 2. Phone
   const phoneValidation = normalizeIndianPhone(rawPhone || '');
@@ -639,6 +816,10 @@ export function autoAdjustLeadRow(row: RawLeadRow, mapping: ColumnMapping): Auto
     possessionPreference = 'UNDER_CONSTRUCTION';
   }
 
+  // 10. Pipeline Stage Normalization
+  const stage = normalizeLeadStage(rawStage);
+  const stageFormatted = STAGE_DISPLAY_NAMES[stage] || stage.replace(/_/g, ' ');
+
   // Overall status
   let status: 'READY' | 'WARNING' | 'INVALID' = 'READY';
   if (!phoneValidation.isValid && !email) {
@@ -659,11 +840,14 @@ export function autoAdjustLeadRow(row: RawLeadRow, mapping: ColumnMapping): Auto
     bhkPreferences,
     targetLocations,
     primaryLocation: marketResult.canonical,
+    microMarket: marketResult.canonical,
     possessionPreference,
     leadSource: attribution.leadSource,
     sourceConfidence: attribution.sourceConfidence,
     assignedBrokerName: broker.brokerName,
     assignedBrokerPhone: broker.brokerPhone,
+    stage,
+    stageFormatted,
     notes: rawNotes ? String(rawNotes).trim() : `Imported lead from ${attribution.leadSource}.`,
     warnings,
     status,

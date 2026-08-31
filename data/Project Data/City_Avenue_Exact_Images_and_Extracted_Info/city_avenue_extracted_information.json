@@ -1,0 +1,45 @@
+{
+  "project": "City Avenue",
+  "address": "Plot No. 12D, Sector-24, Taloja Phase II, Navi Mumbai-410208",
+  "developer": "City Space",
+  "architects": "Destination Architecture Interior Designs",
+  "rcc_consultants": "SRS Consultants",
+  "contact_for_booking": "Mohd Saqlain - 9920540484",
+  "email": "citygroup36@gmail.com",
+  "project_features": [
+    "G+7 with Commercial & Residential Project",
+    "Taste-Fully Designed Entrance & Floor Lobbies",
+    "Branded High Speed Elevators",
+    "Clear Title CIDCO Transfer Plot",
+    "1 BHK & 2 BHK Spacious Flats with Balcony",
+    "1st Floor 7 Flat & 2nd to 7th Slab 8 Flat Each Floor",
+    "Power Backup For Lifts & Common Area"
+  ],
+  "amenities_specifications": {
+    "flooring": "2' x 2' vitrified flooring tiles in all rooms",
+    "kitchen": "Granite kitchen platform with stainless steel sink; ceramic tiles dado above kitchen platform",
+    "doors": "Main door with decorative lamination finish & internal wooden doors; marble frame for all bath/W.C. doors; wooden door frames for all rooms; main door with good quality night latch & decorative handle",
+    "bath_wc": "Concealed plumbing with good quality sanitary fittings; branded plumbing fittings; glazed tiles up to full height; ceramic tiles flooring in bath & WC; good quality aluminum louvers in bath & WC; hot & cold water mixer point; one wash basin",
+    "windows": "Powder Coated Aluminium sliding windows with glass in living room, bedroom & kitchen",
+    "electrical": "Concealed copper wiring with reputed brand modular switches; telephone & T.V. (Cable) points in living room & bedrooms",
+    "wall_finish": "Internal walls painted in Semi Acrylic Paint; external walls coated with Acrylic Paint",
+    "terrace": "Special water proofing treatment with china chips",
+    "water_tank": "Underground & overhead tank with adequate storage capacity",
+    "others": "Intercom facility; rain water harvesting"
+  },
+  "plans_and_images": [
+    "Page 3: building elevation/render",
+    "Page 5: ground floor plan",
+    "Page 6: first floor plan",
+    "Page 7: typical floor plan (2nd to 7th)",
+    "Page 8: location map"
+  ],
+  "location_claims_shown_on_map": [
+    "3 mins. walk to Taloja Phase II Metro Station",
+    "7 mins. drive to Central Park",
+    "7 mins. drive to Golf Course Kharghar",
+    "10 mins. drive to Taloja Railway Station",
+    "15 mins. drive from Navi Mumbai International Airport",
+    "20 mins. drive from Trans-Harbour Link"
+  ]
+}

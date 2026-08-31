@@ -16,6 +16,7 @@ import {
   UserCheck,
 } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
+import { setPassword } from '@/lib/client/auth';
 
 export function SetPasswordClient() {
   const router = useRouter();
@@ -51,13 +52,7 @@ export function SetPasswordClient() {
     setSuccessMsg(null);
 
     try {
-      const res = await fetch('/api/v1/auth/set-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, newPassword }),
-      });
-
-      const data = await res.json();
+      const data = await setPassword(token, newPassword);
 
       if (data.success) {
         setSuccessMsg(data.message || 'Account activated successfully!');

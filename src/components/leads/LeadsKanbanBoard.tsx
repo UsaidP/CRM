@@ -146,18 +146,21 @@ export function LeadsKanbanBoard({
   };
 
   const handleDragStart = (leadId: string, e: React.DragEvent) => {
+    e.stopPropagation();
     setDraggedLeadId(leadId);
     e.dataTransfer.setData('text/plain', leadId);
     e.dataTransfer.effectAllowed = 'move';
   };
 
-  const handleDragEnd = () => {
+  const handleDragEnd = (e?: React.DragEvent) => {
+    if (e) e.stopPropagation();
     setDraggedLeadId(null);
     setDragOverStageId(null);
   };
 
   const handleDragOver = (stageId: string, e: React.DragEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     e.dataTransfer.dropEffect = 'move';
     if (dragOverStageId !== stageId) {
       setDragOverStageId(stageId);
@@ -165,6 +168,8 @@ export function LeadsKanbanBoard({
   };
 
   const handleDragLeave = (stageId: string, e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (e.currentTarget.contains(e.relatedTarget as Node)) {
       return;
     }
@@ -175,6 +180,7 @@ export function LeadsKanbanBoard({
 
   const handleDrop = async (stageId: string, e: React.DragEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     const leadId = e.dataTransfer.getData('text/plain') || draggedLeadId;
     setDragOverStageId(null);
     setDraggedLeadId(null);

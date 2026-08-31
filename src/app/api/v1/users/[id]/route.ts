@@ -4,8 +4,8 @@ import { requireRole, orgScope } from '@/lib/services/api-auth';
 
 export const dynamic = 'force-dynamic';
 
-// Only Super Admins and Broker Managers may manage team members.
-const MANAGEMENT_ROLES = ['SUPER_ADMIN', 'BROKER_MANAGER'] as const;
+// Only Super Admins and Admins may deactivate/restore team members.
+const MANAGEMENT_ROLES = ['SUPER_ADMIN', 'ADMIN'] as const;
 
 /**
  * DELETE /api/v1/users/[id] — remove a team member's access.

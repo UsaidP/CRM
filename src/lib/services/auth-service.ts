@@ -1,4 +1,5 @@
 import { CrmRole } from '@/types/crm';
+export type { CrmRole };
 
 export const SESSION_COOKIE_NAME = 'zamzam_session';
 export const SESSION_MAX_AGE_SECONDS = 7 * 24 * 60 * 60; // 7 days
@@ -9,6 +10,7 @@ export interface SessionPayload {
   fullName: string;
   role: CrmRole;
   organizationId: string;
+  teamId?: string | null;
   isSuperAdmin: boolean;
   iat?: number;
   exp?: number;
@@ -198,8 +200,8 @@ export async function verifySessionToken(token?: string | null): Promise<Session
     const payload: SessionPayload = JSON.parse(base64UrlDecode(encodedPayload));
     const now = Math.floor(Date.now() / 1000);
 
-    if (payload.exp && payload.exp < now) {
-      return null; // Expired
+    if (!payload.exp || payload.exp < now) {
+      return null; // Missing or expired — tokens must always carry an expiry
     }
 
     return payload;

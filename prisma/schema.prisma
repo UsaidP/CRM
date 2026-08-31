@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model Organization {
@@ -24,6 +25,8 @@ model Organization {
   visits                  SiteVisit[]
   deals                   DealTransaction[]
   reminders               LeadReminder[]
+  teams                   Team[]
+  rolePermissions         RolePermission[]
   createdAt               DateTime            @default(now())
   updatedAt               DateTime            @updatedAt
 }
@@ -35,9 +38,11 @@ model User {
   fullName          String
   email             String               @unique
   phoneE164         String
-  role              String               @default("SALES_EXECUTIVE") // SUPER_ADMIN, BROKER_MANAGER, SALES_EXECUTIVE, TELECALLER
+  role              String               @default("AGENT") // SUPER_ADMIN, ADMIN, MANAGER, AGENT, TELECALLER
   customPermissionsJson String             @default("[]") // Custom overrides granted by Super Admin
   isActive          Boolean              @default(true)
+  teamId            String?
+  team              Team?                @relation("TeamMembers", fields: [teamId], references: [id])
   
   // Authentication & Security
   passwordHash          String?
@@ -57,10 +62,13 @@ model User {
   portalsCreated    ClientPortal[]       @relation("PortalCreator")
   siteVisitsHosted  SiteVisit[]          @relation("VisitHost")
   dealsClosed       DealTransaction[]    @relation("ClosingBroker")
+  leadAssignments   LeadAssignment[]     @relation("LeadAssignmentUser")
+  leadsAssigned     LeadAssignment[]     @relation("LeadAssigner")
   createdAt         DateTime             @default(now())
   updatedAt         DateTime             @updatedAt
 
   @@index([organizationId, role])
+  @@index([teamId])
 }
 
 model BrokerPhoneNumber {
@@ -326,6 +334,7 @@ model Lead {
   siteVisits             SiteVisit[]
   deals                  DealTransaction[]
   reminders              LeadReminder[]
+  assignments            LeadAssignment[]
   createdAt              DateTime           @default(now())
   updatedAt              DateTime           @updatedAt
 
@@ -515,5 +524,55 @@ model LeadReminder {
   @@index([organizationId, status, dueAt])
   @@index([leadId])
   @@index([dueAt])
+}
+
+// ==========================================
+// RBAC: TEAMS, ASSIGNMENTS & ROLE PERMISSIONS
+// ==========================================
+
+model Team {
+  id              String       @id @default(uuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name            String       // e.g. "Team Mumbai", "Team Navi Mumbai"
+  description     String?
+  managerId       String?      // The team's manager (User with MANAGER role)
+  isActive        Boolean      @default(true)
+  members         User[]       @relation("TeamMembers")
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@unique([organizationId, name])
+  @@index([organizationId, isActive])
+}
+
+model LeadAssignment {
+  id              String    @id @default(uuid())
+  leadId          String
+  lead            Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User      @relation("LeadAssignmentUser", fields: [userId], references: [id])
+  assignedById    String?
+  assignedBy      User?     @relation("LeadAssigner", fields: [assignedById], references: [id])
+  assignedAt      DateTime  @default(now())
+  unassignedAt    DateTime?
+  assignmentType  String    @default("DIRECT") // DIRECT, ROUND_ROBIN, MANUAL_REASSIGN, ESCALATION
+  notes           String?
+
+  @@index([leadId, unassignedAt])
+  @@index([userId, unassignedAt])
+  @@index([assignedAt])
+}
+
+model RolePermission {
+  id              String       @id @default(uuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  role            String       // SUPER_ADMIN, ADMIN, MANAGER, AGENT, TELECALLER
+  permission      String       // e.g. "leads:view_all", "leads:create"
+  scope           String       // GLOBAL, ORGANIZATION, TEAM, OWN_AND_ASSIGNED, OWN
+
+  @@unique([organizationId, role, permission])
+  @@index([organizationId, role])
 }
 

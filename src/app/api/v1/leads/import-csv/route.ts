@@ -4,7 +4,10 @@ import { prisma } from '@/lib/db/prisma';
 import { 
   parseExcelBuffer, 
   parseDelimitedText, 
-  parseJSONContent, 
+  parseJSONContent,
+  parseHTMLTable,
+  parseUnstructuredText,
+  parseUniversalLeadData,
   type FileParseResult 
 } from '@/lib/domain/lead-file-parser';
 import { type ColumnMapping } from '@/lib/domain/lead-auto-adjuster';
@@ -20,30 +23,31 @@ export async function POST(request: NextRequest) {
     const contentType = request.headers.get('content-type') || '';
     let customMapping: ColumnMapping | undefined;
     let organizationId = '';
+    let defaultStage = '';
     let parseResult: FileParseResult | null = null;
 
     if (contentType.includes('application/json')) {
       const body = await request.json();
-      const content = body.content || body.csvText || '';
+      const content = body.content || body.csvText || body.text || '';
       const base64Data = body.base64Data || '';
-      const fileType = (body.fileType || 'csv').toLowerCase();
+      const fileType = (body.fileType || '').toLowerCase();
       customMapping = body.mapping;
       organizationId = body.organizationId || '';
+      defaultStage = body.defaultStage || '';
 
-      if (fileType === 'xlsx' || fileType === 'xls' || base64Data) {
+      if (base64Data || fileType === 'xlsx' || fileType === 'xls' || fileType === 'xlsm' || fileType === 'xlsb') {
         const rawBuffer = Buffer.from(base64Data || content, 'base64');
         parseResult = parseExcelBuffer(rawBuffer, customMapping, body.sheetIndex || 0);
-      } else if (fileType === 'json' || content.trim().startsWith('[') || content.trim().startsWith('{')) {
-        parseResult = parseJSONContent(content, customMapping);
       } else {
-        parseResult = parseDelimitedText(content, customMapping);
+        parseResult = parseUniversalLeadData(content, fileType, customMapping, body.sheetIndex || 0);
       }
     } else {
       // Multipart Form Data (File upload)
       const formData = await request.formData();
       const file = formData.get('file') as File | null;
-      const content = (formData.get('content') as string) || (formData.get('csvText') as string) || '';
+      const content = (formData.get('content') as string) || (formData.get('csvText') as string) || (formData.get('text') as string) || '';
       const mappingRaw = formData.get('mapping') as string | null;
+      defaultStage = (formData.get('defaultStage') as string) || '';
       if (mappingRaw) {
         try {
           customMapping = JSON.parse(mappingRaw);
@@ -55,23 +59,15 @@ export async function POST(request: NextRequest) {
 
       if (file) {
         const fileName = file.name.toLowerCase();
-        if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+        if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls') || fileName.endsWith('.xlsm') || fileName.endsWith('.xlsb') || fileName.endsWith('.ods')) {
           const arrayBuffer = await file.arrayBuffer();
           parseResult = parseExcelBuffer(arrayBuffer, customMapping);
-        } else if (fileName.endsWith('.json')) {
-          const jsonText = await file.text();
-          parseResult = parseJSONContent(jsonText, customMapping);
         } else {
-          // .csv, .tsv, .txt
           const text = await file.text();
-          parseResult = parseDelimitedText(text, customMapping);
+          parseResult = parseUniversalLeadData(text, fileName.split('.').pop(), customMapping);
         }
       } else if (content.trim()) {
-        if (content.trim().startsWith('[') || content.trim().startsWith('{')) {
-          parseResult = parseJSONContent(content, customMapping);
-        } else {
-          parseResult = parseDelimitedText(content, customMapping);
-        }
+        parseResult = parseUniversalLeadData(content, undefined, customMapping);
       }
     }
 
@@ -144,7 +140,15 @@ export async function POST(request: NextRequest) {
         existingContactsCount++;
       }
 
-      // 3. Create Lead Record
+      // 3. Resolve Pipeline Stage
+      let targetStage = 'new_uncontacted';
+      if (defaultStage && defaultStage !== 'AUTO') {
+        targetStage = defaultStage;
+      } else if (lead.stage) {
+        targetStage = lead.stage;
+      }
+
+      // 4. Create Lead Record
       const createdLead = await prisma.lead.create({
         data: {
           organizationId: org.id,
@@ -157,7 +161,8 @@ export async function POST(request: NextRequest) {
           sourceConfidence: lead.sourceConfidence,
           inboundNumber: lead.assignedBrokerPhone,
           assignedBrokerId: assignedBroker?.id || null,
-          currentStage: 'new_uncontacted',
+          currentStage: targetStage,
+          firstResponseAt: targetStage !== 'new_uncontacted' ? new Date() : null,
           notes: lead.notes,
           lastInboundMessageAt: new Date(),
           requirements: {

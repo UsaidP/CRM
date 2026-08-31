@@ -1,20 +1,21 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
-import { normalizeIndianPhone } from '@/lib/domain/phone-normalizer';
 import { createLeadSchema } from '@/lib/validators/lead-schemas';
-import { evaluate24HourMessagingWindow, findOrCreateContact } from '@/lib/domain/contact-manager';
-import { resolveBrokerByInboundIdentifier, OFFICIAL_BROKER_NUMBERS } from '@/lib/domain/broker-resolver';
-import { analyzeInboundAttribution } from '@/lib/domain/campaign-attribution';
-import { ensureLeadFallbackReminder } from '@/lib/services/lead-reminder-service';
-import { requireSession, orgScope } from '@/lib/services/api-auth';
+import {
+  createLead,
+  LeadValidationError,
+  type CreateLeadInput,
+} from '@/lib/domain/lead-creation';
+import { evaluate24HourMessagingWindow } from '@/lib/domain/contact-manager';
+import { requireSession, requirePermissionWithScope, scopedLeadFilter, orgScope } from '@/lib/services/api-auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
   try {
-    const auth = await requireSession(req);
+    const auth = await requirePermissionWithScope(req, 'leads:view_all');
     if (!auth.ok) return auth.response;
-    const { session } = auth;
+    const { session, scope } = auth;
 
     const { searchParams } = new URL(req.url);
     const leadSource = searchParams.get('leadSource');
@@ -28,8 +29,9 @@ export async function GET(req: Request) {
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '50', 10)));
     const skip = (page - 1) * limit;
 
-    // Multi-tenant: always restrict to the caller's organization
-    const where: any = orgScope(session);
+    // Scope-aware filter: respects GLOBAL, ORGANIZATION, TEAM, OWN_AND_ASSIGNED, OWN
+    const baseScopeWhere = await scopedLeadFilter(session, scope);
+    const where: Record<string, unknown> = { ...baseScopeWhere };
     if (leadSource && leadSource !== 'ALL') {
       where.leadSource = leadSource;
     }
@@ -122,89 +124,21 @@ export async function POST(req: Request) {
   try {
     const auth = await requireSession(req);
     if (!auth.ok) return auth.response;
-    const { session } = auth;
 
     const body = await req.json();
-    const {
-      fullName,
-      phone,
-      email,
-      leadSource = 'MANUAL_ENTRY',
-      sourceCode,
-      contactedBrokerNumber = OFFICIAL_BROKER_NUMBERS.SAFWAN.e164,
-      assignedBrokerId: requestedBrokerId,
-      campaignId,
-      notes,
-    } = body;
 
-    // Multi-tenant: create within the caller's organization
-    const org = await prisma.organization.findUnique({ where: { id: session.organizationId } });
-    if (!org) {
-      return NextResponse.json({ success: false, error: 'Organization not found' }, { status: 404 });
-    }
-
-    let phoneE164: string | null = null;
-    if (phone && phone.trim() !== '') {
-      const phoneResult = normalizeIndianPhone(phone);
-      if (!phoneResult.isValid) {
-        return NextResponse.json({ success: false, error: phoneResult.error }, { status: 400 });
-      }
-      phoneE164 = phoneResult.e164;
-    }
-
-    // Resolve Broker Assignment
-    let assignedBrokerId = requestedBrokerId;
-    let inboundNumber = contactedBrokerNumber;
-
-    if (!assignedBrokerId && contactedBrokerNumber) {
-      const brokerRes = await resolveBrokerByInboundIdentifier(contactedBrokerNumber, org.id);
-      assignedBrokerId = brokerRes.brokerId;
-      inboundNumber = brokerRes.brokerPhoneE164 || contactedBrokerNumber;
-    }
-
-    // Attribution
-    const attribution = analyzeInboundAttribution(
-      sourceCode ? `Code: ${sourceCode} ${notes || ''}` : (notes || ''),
-      'CALL'
+    const result = await createLead(
+      { organizationId: auth.session.organizationId, userId: auth.session.userId },
+      body as CreateLeadInput
     );
 
-    const contact = await findOrCreateContact({
-      organizationId: org.id,
-      fullName: fullName || 'Direct Manual Lead',
-      phoneE164: phoneE164 || undefined,
-      email: email || undefined,
-      assignedBrokerId,
-      notes: notes ? `Manual entry: ${notes}` : undefined,
-    });
-
-    const lead = await prisma.lead.create({
-      data: {
-        organizationId: org.id,
-        contactId: contact?.id,
-        fullName: fullName || 'Direct Manual Lead',
-        phoneE164,
-        email,
-        leadSource: sourceCode ? attribution.leadSource : (leadSource || 'MANUAL_ENTRY'),
-        sourceConfidence: sourceCode ? 'EXACT' : 'UNKNOWN',
-        sourceCode: sourceCode?.toUpperCase(),
-        inboundNumber,
-        campaignId,
-        assignedBrokerId,
-        currentStage: 'new_uncontacted',
-        firstResponseSlaMinutes: 0,
-        lastInboundMessageAt: new Date(),
-        notes,
-      },
+    const lead = await prisma.lead.findUnique({
+      where: { id: result.leadId },
       include: {
         contact: { include: { identities: true } },
         assignedBroker: true,
         campaign: true,
       },
-    });
-
-    // Zero-Orphan Inbound Rule: Auto-seed 15-minute speed-to-lead reminder
-    await ensureLeadFallbackReminder(lead.id, {
-      organizationId: org.id,
     });
 
     return NextResponse.json({
@@ -213,6 +147,12 @@ export async function POST(req: Request) {
       data: lead,
     }, { status: 201 });
   } catch (error: any) {
+    if (error instanceof LeadValidationError) {
+      return NextResponse.json(
+        { success: false, error: error.message },
+        { status: error.status }
+      );
+    }
     return NextResponse.json(
       { success: false, error: error.message || 'Failed to create lead' },
       { status: 500 }

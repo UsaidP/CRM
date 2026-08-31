@@ -154,6 +154,7 @@ export async function POST(req: Request) {
       fullName: user.fullName,
       role: user.role as any,
       organizationId: user.organizationId,
+      teamId: user.teamId,
       isSuperAdmin,
     });
 
@@ -164,6 +165,7 @@ export async function POST(req: Request) {
         fullName: user.fullName,
         email: user.email,
         role: user.role,
+        teamId: user.teamId,
         phoneE164: user.phoneE164,
         isSuperAdmin,
         effectivePermissions: getUserEffectivePermissions(user),

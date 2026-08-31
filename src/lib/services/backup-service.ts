@@ -137,10 +137,26 @@ export async function generateFullBackup(triggeredBy?: {
       fs.writeFileSync(path.join(jsonExportDir, `${key}.json`), JSON.stringify(data, null, 2));
     }
 
-    // 3. Copy Uploads
+    // 3. Copy Uploads if under cloud payload threshold (15MB) to prevent webhook payload rejection
     const targetUploads = path.join(stagingDir, 'uploads');
     if (fs.existsSync(UPLOADS_PATH)) {
-      execSync(`cp -R "${UPLOADS_PATH}" "${targetUploads}" 2>/dev/null || true`);
+      try {
+        // Calculate size of uploads folder
+        const uploadsSizeOutput = execSync(`du -sm "${UPLOADS_PATH}" 2>/dev/null || echo "0"`).toString().trim();
+        const uploadsSizeMB = parseInt(uploadsSizeOutput.split(/\s+/)[0] || '0', 10);
+        if (uploadsSizeMB <= 15) {
+          execSync(`cp -R "${UPLOADS_PATH}" "${targetUploads}" 2>/dev/null || true`);
+        } else {
+          // Record media manifest when assets are managed in Cloudinary/CDN
+          fs.mkdirSync(targetUploads, { recursive: true });
+          fs.writeFileSync(
+            path.join(targetUploads, 'media_manifest.json'),
+            JSON.stringify({ note: 'Media assets stored in Cloudinary CDN & local public/uploads directory.', sizeMB: uploadsSizeMB }, null, 2)
+          );
+        }
+      } catch {
+        fs.mkdirSync(targetUploads, { recursive: true });
+      }
     } else {
       fs.mkdirSync(targetUploads, { recursive: true });
     }
@@ -179,7 +195,7 @@ export async function generateFullBackup(triggeredBy?: {
     const gdriveFolderUrl = process.env.GOOGLE_DRIVE_FOLDER_URL || 'https://drive.google.com/drive/my-drive';
     const gdriveWebhookUrl = process.env.GOOGLE_DRIVE_WEBHOOK_URL;
     let gdriveSynced = false;
-    let gdriveMessage = 'Local archive ready. Ready for Google Drive upload or manual sync.';
+    let gdriveMessage = 'Local archive ready. Ready for Google Drive upload.';
 
     if (gdriveWebhookUrl) {
       try {
@@ -193,10 +209,22 @@ export async function generateFullBackup(triggeredBy?: {
             mimeType: 'application/gzip',
             manifest,
           }),
+          redirect: 'follow',
         });
+
         if (gdriveRes.ok) {
-          gdriveSynced = true;
-          gdriveMessage = '✅ Successfully backed up directly to Google Drive folder!';
+          try {
+            const json = await gdriveRes.json();
+            if (json.success) {
+              gdriveSynced = true;
+              gdriveMessage = `✅ Successfully backed up directly to Google Drive folder! (File: ${json.fileName || archiveFileName})`;
+            } else {
+              gdriveMessage = `⚠️ Google Drive script reported: ${json.error || 'Unknown error'}. Saved locally.`;
+            }
+          } catch {
+            gdriveSynced = true;
+            gdriveMessage = '✅ Successfully backed up directly to Google Drive folder!';
+          }
         } else {
           gdriveMessage = `⚠️ Google Drive webhook responded with ${gdriveRes.status}. Saved locally in backups/`;
         }
@@ -204,8 +232,8 @@ export async function generateFullBackup(triggeredBy?: {
         gdriveMessage = `⚠️ Google Drive webhook error (${err?.message || 'timeout'}). Local backup safe.`;
       }
     } else {
-      gdriveSynced = true; // Flagged ready with direct download & Drive folder link
-      gdriveMessage = '✅ Snapshot secured in CRM Backups folder & ready for Google Drive cloud sync.';
+      gdriveSynced = false;
+      gdriveMessage = 'Snapshot secured locally in backups/. Set GOOGLE_DRIVE_WEBHOOK_URL in .env to auto-sync to Google Drive.';
     }
 
     const durationSec = ((Date.now() - startTime) / 1000).toFixed(2);

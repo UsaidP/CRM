@@ -4,10 +4,14 @@ import { normalizeIndianPhone } from '@/lib/domain/phone-normalizer';
 import { resolveBrokerByInboundIdentifier, OFFICIAL_BROKER_NUMBERS } from '@/lib/domain/broker-resolver';
 import { analyzeInboundAttribution } from '@/lib/domain/campaign-attribution';
 import { findOrCreateContact } from '@/lib/domain/contact-manager';
+import { requireSession } from '@/lib/services/api-auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
+  const auth = await requireSession(req);
+  if (!auth.ok) return auth.response;
+
   try {
     const body = await req.json();
     const {

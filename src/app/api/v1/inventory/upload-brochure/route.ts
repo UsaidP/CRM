@@ -5,11 +5,12 @@ import path from 'node:path';
 import { NextResponse } from 'next/server';
 import { parseBrochureAsync, parseBrochureText } from '@/lib/services/brochure-parser-service';
 import { downloadAndSaveMahaReraCertificate } from '@/lib/services/maharera-service';
+import { extractAndProcessBrochure } from '@/lib/services/brochure-extractor';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const MAX_PDF_BYTES = 50 * 1024 * 1024; // 50 MB
+const MAX_FILE_BYTES = 50 * 1024 * 1024; // 50 MB
 
 export async function POST(req: Request) {
   try {
@@ -31,27 +32,48 @@ export async function POST(req: Request) {
       }
 
       const extracted = parseBrochureText(text, filename);
+
+      // Generate classified media (elevations, floor plans, master plan)
+      const mediaResult = await extractAndProcessBrochure(
+        Buffer.from(text, 'utf-8'),
+        filename,
+        {
+          projectName: extracted.projectName,
+          developerName: extracted.developerName,
+          reraNumber: extracted.reraNumber,
+          totalFloors: extracted.totalFloors,
+          microMarket: extracted.microMarket,
+          units: extracted.units.map(u => ({ bhk: u.bhk, carpetAreaSqft: u.carpetAreaSqft, title: u.bhkLabel })),
+          confidentialBrokerData: extracted.confidentialBrokerData,
+        }
+      );
+
       return NextResponse.json({
         success: true,
-        data: extracted,
+        data: {
+          ...extracted,
+          elevations: mediaResult.elevations,
+          floorPlans: mediaResult.floorPlans,
+          masterPlan: mediaResult.masterPlan,
+        },
         extractionMethod: 'REGEX_FALLBACK',
         brochureUrl: body.brochureUrl || null,
         filename,
       });
     }
 
-    // Flow 2: Multipart Form Data with PDF / Image File Upload
+    // Flow 2: Multipart Form Data with PDF / Image / Document File Upload
     const formData = await req.formData();
     const file = formData.get('file') || formData.get('brochure');
 
     if (!file || !(file instanceof File)) {
       return NextResponse.json(
-        { success: false, error: 'Please select a developer brochure PDF or floor plan image to upload.' },
+        { success: false, error: 'Please select a developer brochure (PDF, PNG, JPG, WEBP) to upload.' },
         { status: 400 }
       );
     }
 
-    if (file.size > MAX_PDF_BYTES) {
+    if (file.size > MAX_FILE_BYTES) {
       return NextResponse.json(
         { success: false, error: 'Brochure file exceeds the 50 MB maximum size limit.' },
         { status: 413 }
@@ -97,6 +119,21 @@ export async function POST(req: Request) {
       }
     }
 
+    // Extract & Classify Media Assets (Elevations, Floor Plans, Master Plan)
+    const mediaResult = await extractAndProcessBrochure(
+      buffer,
+      file.name,
+      {
+        projectName: extracted.projectName,
+        developerName: extracted.developerName,
+        reraNumber: extracted.reraNumber,
+        totalFloors: extracted.totalFloors,
+        microMarket: extracted.microMarket,
+        units: extracted.units.map(u => ({ bhk: u.bhk, carpetAreaSqft: u.carpetAreaSqft, title: u.bhkLabel })),
+        confidentialBrokerData: extracted.confidentialBrokerData,
+      }
+    );
+
     return NextResponse.json({
       success: true,
       data: {
@@ -104,6 +141,10 @@ export async function POST(req: Request) {
         brochureUrl,
         reraCertificateUrl,
         reraVerification,
+        elevations: mediaResult.elevations,
+        floorPlans: mediaResult.floorPlans,
+        masterPlan: mediaResult.masterPlan,
+        confidentialBrokerData: extracted.confidentialBrokerData,
       },
       extractionMethod,
       modelUsed,
@@ -116,7 +157,7 @@ export async function POST(req: Request) {
   } catch (error: any) {
     console.error('Upload brochure error:', error);
     return NextResponse.json(
-      { success: false, error: error.message || 'Failed to process and parse developer brochure PDF.' },
+      { success: false, error: error.message || 'Failed to process and parse developer brochure document.' },
       { status: 500 }
     );
   }

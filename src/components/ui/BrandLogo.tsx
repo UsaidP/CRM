@@ -5,6 +5,7 @@ import Image from 'next/image';
 
 export interface BrandLogoProps {
   variant?: 'dark' | 'light' | 'auto';
+  mode?: 'horizontal' | 'stacked' | 'icon' | string;
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | number;
   withRera?: boolean;
   reraNumber?: string;
@@ -14,6 +15,7 @@ export interface BrandLogoProps {
 
 export function BrandLogo({
   variant = 'auto',
+  mode = 'horizontal',
   size = 'md',
   withRera = false,
   reraNumber = 'MahaRERA A52000028714',

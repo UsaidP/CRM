@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { AccessibleDialog } from '@/components/ui/AccessibleDialog';
 import { CustomSelect, type CustomSelectOption } from '@/components/ui/CustomSelect';
+import { createReminder } from '@/lib/client/calendar';
 
 const URGENCY_OPTIONS: CustomSelectOption[] = [
   { value: 'URGENT', label: '🔴 URGENT (Immediate Connect Next)', dotColor: 'bg-red-500' },
@@ -113,26 +114,17 @@ export function QuickReminderModal({
     setError(null);
 
     try {
-      const res = await fetch('/api/v1/reminders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      const result = await createReminder({
           leadId: lead.id,
           title: title.trim(),
           reminderType,
           dueAt: new Date(dueAt).toISOString(),
           priority,
           notes: notes.trim() || undefined,
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Failed to schedule reminder');
-      }
+        });
 
       if (onReminderSaved) {
-        onReminderSaved(data.data);
+        onReminderSaved(result);
       }
       onClose();
     } catch (err: any) {

@@ -19,6 +19,7 @@ const testSuites = [
   { name: 'Phase 4: Client Presentation Portals & Telemetry', file: 'test/run-phase4-tests.js' },
   { name: 'Phase 5 & 6: Site Visits & Deal Closing Ledger', file: 'test/run-phase5-tests.js' },
   { name: 'Phase 7: Content ROI & Conversion Analytics', file: 'test/run-phase7-tests.js' },
+  { name: 'Gooey Toast Notification System & Domain Presets', file: 'test/toast.test.ts' },
 ];
 
 let allPassed = true;
@@ -37,7 +38,7 @@ for (const suite of testSuites) {
 
 if (allPassed) {
   console.log('================================================================');
-  console.log('🎉 ALL 7 PHASE TEST SUITES PASSED CLEANLY (33/33 Tests Verified)');
+  console.log('🎉 ALL 8 TEST SUITES & NOTIFICATION PRESETS PASSED CLEANLY');
   console.log('================================================================\n');
 } else {
   process.exit(1);

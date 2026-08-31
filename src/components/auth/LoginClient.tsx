@@ -274,14 +274,40 @@ export function LoginClient() {
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
-                  onClick={() => fillDemoAccount('safwan@zamzamproperties.in', 'BROKER_MANAGER')}
+                  onClick={() => fillDemoAccount('ahmed@zamzamproperties.in', 'ADMIN')}
+                  className="p-2 rounded-xl bg-surface-subtle hover:bg-accent-soft border border-border hover:border-accent/40 text-left transition-colors cursor-pointer group"
+                >
+                  <div className="font-bold text-[11px] text-content group-hover:text-accent-text truncate font-display">
+                    Ahmed Khan
+                  </div>
+                  <div className="text-[10px] text-content-muted font-mono truncate">
+                    🛡️ Admin
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => fillDemoAccount('safwan@zamzamproperties.in', 'MANAGER')}
                   className="p-2 rounded-xl bg-surface-subtle hover:bg-accent-soft border border-border hover:border-accent/40 text-left transition-colors cursor-pointer group"
                 >
                   <div className="font-bold text-[11px] text-content group-hover:text-accent-text truncate font-display">
                     Safwan Diwan
                   </div>
                   <div className="text-[10px] text-content-muted font-mono truncate">
-                    👔 Broker Manager
+                    👔 Team Manager
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => fillDemoAccount('suhel@zamzamproperties.in', 'AGENT')}
+                  className="p-2 rounded-xl bg-surface-subtle hover:bg-accent-soft border border-border hover:border-accent/40 text-left transition-colors cursor-pointer group"
+                >
+                  <div className="font-bold text-[11px] text-content group-hover:text-accent-text truncate font-display">
+                    Suhel Patel
+                  </div>
+                  <div className="text-[10px] text-content-muted font-mono truncate">
+                    💼 Agent
                   </div>
                 </button>
 
@@ -295,32 +321,6 @@ export function LoginClient() {
                   </div>
                   <div className="text-[10px] text-content-muted font-mono truncate">
                     🎧 Telecaller Desk
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => fillDemoAccount('suhel@zamzamproperties.in', 'SALES_EXECUTIVE')}
-                  className="p-2 rounded-xl bg-surface-subtle hover:bg-accent-soft border border-border hover:border-accent/40 text-left transition-colors cursor-pointer group"
-                >
-                  <div className="font-bold text-[11px] text-content group-hover:text-accent-text truncate font-display">
-                    Suhel Patel
-                  </div>
-                  <div className="text-[10px] text-content-muted font-mono truncate">
-                    💼 Sales Executive
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={fillSuperAdminDemoKey}
-                  className="p-2 rounded-xl bg-surface-subtle hover:bg-accent-soft border border-border hover:border-accent/40 text-left transition-colors cursor-pointer group"
-                >
-                  <div className="font-bold text-[11px] text-content group-hover:text-accent-text truncate font-display">
-                    Super Admin Key
-                  </div>
-                  <div className="text-[10px] text-content-muted font-mono truncate">
-                    👑 .env Master Key
                   </div>
                 </button>
               </div>

@@ -8,6 +8,8 @@ async function main() {
   console.log('🌱 Starting Master Real-World ZamZam Properties Real Estate CRM Seed...');
 
   // 1. Clean existing records in reverse dependency order
+  await prisma.rolePermission.deleteMany({});
+  await prisma.leadAssignment.deleteMany({});
   await prisma.leadReminder.deleteMany({});
   await prisma.portalTelemetryLog.deleteMany({});
   await prisma.clientPortalUnit.deleteMany({});
@@ -27,6 +29,7 @@ async function main() {
   await prisma.propertyUnit.deleteMany({});
   await prisma.developerProject.deleteMany({});
   await prisma.user.deleteMany({});
+  await prisma.team.deleteMany({});
   await prisma.organization.deleteMany({});
 
   // 2. Create Organization
@@ -76,7 +79,24 @@ async function main() {
 
   const defaultPasswordHash = hashPasswordSync('ZamZam@2026');
 
-  // 3. Create Staff Users & Real Broker Identities (Safwan Diwan & Suhel Patel)
+  // 3. Create Teams
+  const teamMumbai = await prisma.team.create({
+    data: {
+      organizationId: org.id,
+      name: 'Team Mumbai',
+      description: 'Upper Kharghar luxury advisory and investor portfolio desk',
+    },
+  });
+
+  const teamNaviMumbai = await prisma.team.create({
+    data: {
+      organizationId: org.id,
+      name: 'Team Navi Mumbai',
+      description: 'Taloja Phase 1 & 2 residential and first-time home buyer desk',
+    },
+  });
+
+  // 4. Create Staff Users (Super Admin, Admin, Manager, Agent, Telecaller)
   const adminUser = await prisma.user.create({
     data: {
       organizationId: org.id,
@@ -88,13 +108,25 @@ async function main() {
     },
   });
 
+  const opsAdmin = await prisma.user.create({
+    data: {
+      organizationId: org.id,
+      fullName: 'Ahmed Khan',
+      email: 'ahmed@zamzamproperties.in',
+      phoneE164: '+919820998877',
+      role: 'ADMIN',
+      passwordHash: defaultPasswordHash,
+    },
+  });
+
   const brokerSafwan = await prisma.user.create({
     data: {
       organizationId: org.id,
       fullName: 'Safwan Diwan',
       email: 'safwan@zamzamproperties.in',
       phoneE164: '+917977552011',
-      role: 'BROKER_MANAGER',
+      role: 'MANAGER',
+      teamId: teamMumbai.id,
       passwordHash: defaultPasswordHash,
     },
   });
@@ -105,7 +137,8 @@ async function main() {
       fullName: 'Suhel Patel',
       email: 'suhel@zamzamproperties.in',
       phoneE164: '+919967731071',
-      role: 'SALES_EXECUTIVE',
+      role: 'AGENT',
+      teamId: teamNaviMumbai.id,
       passwordHash: defaultPasswordHash,
     },
   });
@@ -117,8 +150,19 @@ async function main() {
       email: 'samrin@zamzamproperties.in',
       phoneE164: '+919820112233',
       role: 'TELECALLER',
+      teamId: teamMumbai.id,
       passwordHash: defaultPasswordHash,
     },
+  });
+
+  // Assign Team Managers
+  await prisma.team.update({
+    where: { id: teamMumbai.id },
+    data: { managerId: brokerSafwan.id },
+  });
+  await prisma.team.update({
+    where: { id: teamNaviMumbai.id },
+    data: { managerId: brokerSafwan.id },
   });
 
   // 4. Broker Phone Numbers
@@ -151,7 +195,7 @@ async function main() {
   if (fs.existsSync(masterFilePath)) {
     cleanedProjects = JSON.parse(fs.readFileSync(masterFilePath, 'utf8'));
   } else {
-    throw new Error('Master inventory file not found. Run "bun run scripts/clean-master-inventory.ts" first.');
+    throw new Error('Master inventory file not found: expected data/scraped/master_kharghar_taloja_inventory.json (seed input).');
   }
 
   console.log(`📦 Seeding ${cleanedProjects.length} real projects across Kharghar & Taloja...`);
@@ -524,6 +568,33 @@ async function main() {
         },
       },
     },
+  });
+
+  // 8.1 Seed Initial Lead Assignments Audit Trail
+  await prisma.leadAssignment.createMany({
+    data: [
+      {
+        leadId: leadRahul.id,
+        userId: brokerSafwan.id,
+        assignedById: adminUser.id,
+        assignmentType: 'DIRECT',
+        notes: 'Assigned to Kharghar desk lead',
+      },
+      {
+        leadId: leadAmit.id,
+        userId: brokerSafwan.id,
+        assignedById: adminUser.id,
+        assignmentType: 'DIRECT',
+        notes: 'Assigned for luxury 3 BHK tour coordination',
+      },
+      {
+        leadId: leadPooja.id,
+        userId: brokerSuhel.id,
+        assignedById: adminUser.id,
+        assignmentType: 'DIRECT',
+        notes: 'Assigned to Taloja residential specialist',
+      },
+    ],
   });
 
   // 9. Client Presentation Portals

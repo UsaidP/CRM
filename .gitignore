@@ -13,4 +13,6 @@ prisma/dev.db
 prisma/dev.db-journal
 public/uploads/
 backups/
+output/
+tsconfig.tsbuildinfo
 *.pre-restore-*

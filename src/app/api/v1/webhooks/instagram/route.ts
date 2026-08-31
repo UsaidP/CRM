@@ -139,7 +139,7 @@ export async function POST(req: Request) {
           let assignedBrokerId = matchedCampaign?.assignedBrokerId;
           if (!assignedBrokerId) {
             const defaultBroker = await prisma.user.findFirst({
-              where: { role: 'BROKER_MANAGER' },
+              where: { role: 'MANAGER' },
             });
             assignedBrokerId = defaultBroker?.id;
           }
@@ -278,7 +278,7 @@ export async function POST(req: Request) {
     }
 
     const defaultBroker = await prisma.user.findFirst({
-      where: { role: 'BROKER_MANAGER' },
+      where: { role: 'MANAGER' },
     });
 
     const contact = await findOrCreateContact({

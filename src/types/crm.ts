@@ -12,7 +12,14 @@ export interface Organization {
   updatedAt: string;
 }
 
-export type CrmRole = 'SUPER_ADMIN' | 'BROKER_MANAGER' | 'SALES_EXECUTIVE' | 'TELECALLER';
+export type CrmRole = 'SUPER_ADMIN' | 'ADMIN' | 'MANAGER' | 'AGENT' | 'TELECALLER';
+
+export type PermissionScope = 'GLOBAL' | 'ORGANIZATION' | 'TEAM' | 'OWN_AND_ASSIGNED' | 'OWN';
+
+export interface ScopedPermission {
+  permission: PermissionKey;
+  scope: PermissionScope;
+}
 
 export type PermissionKey =
   | 'leads:view_all'
@@ -25,7 +32,6 @@ export type PermissionKey =
   | 'inventory:view'
   | 'inventory:edit'
   | 'inventory:verify_rera'
-  | 'inventory:scraper'
   | 'deals:view_all'
   | 'deals:create'
   | 'deals:advance_stage'
@@ -37,7 +43,8 @@ export type PermissionKey =
   | 'portals:create'
   | 'portals:view_telemetry'
   | 'analytics:view_firm'
-  | 'admin:manage_rbac';
+  | 'admin:manage_rbac'
+  | 'admin:manage_teams';
 
 export interface User {
   id: string;
@@ -48,6 +55,32 @@ export interface User {
   role: CrmRole;
   customPermissionsJson?: string;
   isActive: boolean;
+  teamId?: string | null;
+  team?: Team | null;
+}
+
+export interface Team {
+  id: string;
+  organizationId: string;
+  name: string;
+  description?: string | null;
+  managerId?: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface LeadAssignment {
+  id: string;
+  leadId: string;
+  userId: string;
+  user?: User;
+  assignedById?: string | null;
+  assignedBy?: User | null;
+  assignedAt: string;
+  unassignedAt?: string | null;
+  assignmentType: 'DIRECT' | 'ROUND_ROBIN' | 'MANUAL_REASSIGN' | 'ESCALATION';
+  notes?: string | null;
 }
 
 export interface DeveloperProject {

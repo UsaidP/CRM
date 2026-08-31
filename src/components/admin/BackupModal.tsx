@@ -21,6 +21,7 @@ import {
   Check,
   Copy
 } from 'lucide-react';
+import { toast } from '@/lib/client/toast';
 
 interface BackupModalProps {
   isOpen: boolean;
@@ -110,12 +111,15 @@ export function BackupModal({
       if (data.success) {
         setBackupResult(data);
         fetchBackupInfo();
+        toast.backupComplete(data.totalRecords || 0);
       } else {
         setError(data.error || 'Backup failed to complete.');
+        toast.error('Backup Failed', { description: data.error || 'Backup failed to complete.' });
       }
     } catch (err: any) {
       clearInterval(stepInterval);
       setError(err?.message || 'Network error while generating backup.');
+      toast.error('Backup Error', { description: err?.message || 'Network error.' });
     } finally {
       setIsLoading(false);
       setProgressStep(null);
@@ -125,6 +129,7 @@ export function BackupModal({
   const handleCopyGdriveUrl = () => {
     navigator.clipboard.writeText(gdriveFolderUrl);
     setCopiedLink(true);
+    toast.info('Link Copied', { description: 'Google Drive folder URL copied to clipboard.' });
     setTimeout(() => setCopiedLink(false), 2000);
   };
 

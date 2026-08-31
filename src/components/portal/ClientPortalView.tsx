@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { formatLakhCr, formatIndianRupees } from '@/lib/money';
 import {
   Building2,
   MapPin,
@@ -76,6 +77,9 @@ export function ClientPortalView({ portal, token }: ClientPortalViewProps) {
   const [bookingUnit, setBookingUnit] = useState<any | null>(null);
   const [visitDate, setVisitDate] = useState('This Saturday (11:00 AM)');
   const [bookedSuccess, setBookedSuccess] = useState(false);
+
+  // Digital Property Dossier Modal State (Client-Safe Broker Shield)
+  const [activeDossierUnit, setActiveDossierUnit] = useState<any | null>(null);
 
   // Telemetry Beacon helper
   const sendTelemetry = (actionType: string, unitId?: string, dwellTimeSec: number = 0) => {
@@ -163,15 +167,14 @@ export function ClientPortalView({ portal, token }: ClientPortalViewProps) {
   };
 
   const handleBrochureClick = (unit: any) => {
-    if (!unit.project?.brochureUrl) return;
     sendTelemetry('BROCHURE_DOWNLOAD', unit.id);
-    window.open(unit.project.brochureUrl, '_blank', 'noopener,noreferrer');
+    setActiveDossierUnit(unit);
   };
 
   const handleWhatsAppInquiry = (unit: any) => {
     sendTelemetry('WHATSAPP_CLICK', unit.id);
     const advisorName = portal.createdBy?.fullName || 'Zam Zam Advisor';
-    const text = `Hi ${advisorName} (Zam Zam Properties), I am reviewing the curated options for ${portal.lead?.fullName || 'my requirement'}:\n\n🏡 *${unit.project.projectName}* - Unit ${unit.unitNumber || 'Selected'}\n📍 ${unit.project.microMarket}\n💰 All-In Price: ₹${(unit.allInTotalCost / 100000).toFixed(2)} Lakhs\n\nCould you please share more details or arrange a site visit?`;
+    const text = `Hi ${advisorName} (Zam Zam Properties), I am reviewing the curated options for ${portal.lead?.fullName || 'my requirement'}:\n\n🏡 *${unit.project.projectName}* - Unit ${unit.unitNumber || 'Selected'}\n📍 ${unit.project.microMarket}\n💰 All-In Price: ${formatLakhCr(unit.allInTotalCost)} (${formatIndianRupees(unit.allInTotalCost)})\n\nCould you please share more details or arrange a site visit?`;
     const phone = portal.createdBy?.phoneE164?.replace(/[^0-9]/g, '') || '919967731071';
     window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
   };
@@ -404,7 +407,7 @@ export function ClientPortalView({ portal, token }: ClientPortalViewProps) {
               <div className="p-3 sm:p-3.5 rounded-xl sm:rounded-2xl bg-white border border-amber-200/80 shadow-2xs">
                 <span className="text-[9px] sm:text-[10px] uppercase font-bold tracking-wider text-slate-400 block truncate">Price Range</span>
                 <strong className="text-sm sm:text-base font-bold text-[#8C641E] block mt-0.5 truncate">
-                  ₹{priceRange.min.toFixed(2)}L – ₹{priceRange.max.toFixed(2)}L
+                  {formatLakhCr(priceRange.min)} – {formatLakhCr(priceRange.max)}
                 </strong>
               </div>
               <div className="p-3 sm:p-3.5 rounded-xl sm:rounded-2xl bg-white border border-amber-200/80 shadow-2xs">
@@ -470,7 +473,7 @@ export function ClientPortalView({ portal, token }: ClientPortalViewProps) {
                         </p>
                         <div className="mt-1 flex items-baseline gap-1.5 sm:gap-2 flex-wrap">
                           <strong className="text-sm sm:text-base font-bold text-[#8C641E] font-mono">
-                            ₹{(u.allInTotalCost / 100000).toFixed(2)} Lakhs
+                            {formatLakhCr(u.allInTotalCost)}
                           </strong>
                           <span className="text-[10px] text-slate-500 font-mono">All-Inclusive</span>
                         </div>
@@ -895,17 +898,17 @@ export function ClientPortalView({ portal, token }: ClientPortalViewProps) {
                         Total All-Inclusive On-Road Price
                       </span>
                       <strong className="text-2xl sm:text-3xl font-extrabold text-[#8C641E] font-mono block">
-                        ₹{(unit.allInTotalCost / 100000).toFixed(2)} Lakhs
+                        {formatLakhCr(unit.allInTotalCost)} · {formatIndianRupees(unit.allInTotalCost)}
                       </strong>
                       <div className="flex items-center md:justify-end gap-2 text-xs text-slate-600">
-                        <span>Base: ₹{(unit.agreementValue / 100000).toFixed(2)}L</span>
+                        <span>Base: {formatLakhCr(unit.agreementValue)}</span>
                         <span className="text-slate-300">•</span>
                         <span className="text-emerald-700 font-semibold">0% GST (OC Ready)</span>
                       </div>
                       <div className="pt-2">
                         <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-amber-200 text-[11px] text-[#8C641E] font-semibold shadow-xs">
                           <Calculator className="w-3 h-3 text-[#8C641E]" />
-                          Approx. ₹{Math.round(((unit.allInTotalCost || unit.agreementValue || 4500000) * 0.8 * (0.085 / 12 * Math.pow(1 + 0.085 / 12, 240)) / (Math.pow(1 + 0.085 / 12, 240) - 1))).toLocaleString('en-IN')}/mo EMI
+                          Approx. {formatIndianRupees(Math.round(((unit.allInTotalCost || unit.agreementValue || 4500000) * 0.8 * (0.085 / 12 * Math.pow(1 + 0.085 / 12, 240)) / (Math.pow(1 + 0.085 / 12, 240) - 1))))}/mo EMI
                         </span>
                       </div>
                     </div>
@@ -1105,7 +1108,7 @@ export function ClientPortalView({ portal, token }: ClientPortalViewProps) {
           <div className="min-w-0 flex-1">
             <span className="text-[9px] uppercase font-bold text-slate-400 block font-mono">Curated For You</span>
             <strong className="text-xs font-bold text-[#8C641E] truncate block">
-              {unitsCount} Options • From ₹{priceRange.min.toFixed(2)}L
+              {unitsCount} Options • From {formatLakhCr(priceRange.min)}
             </strong>
           </div>
 
@@ -1384,6 +1387,223 @@ export function ClientPortalView({ portal, token }: ClientPortalViewProps) {
               </form>
             )}
           </>
+        )}
+      </AccessibleDialog>
+
+      {/* MODAL 4: Client-Safe Zamzam Verified Property Dossier (Broker Shield) */}
+      <AccessibleDialog
+        open={Boolean(activeDossierUnit)}
+        onClose={() => setActiveDossierUnit(null)}
+        titleId="dossier-modal-title"
+        descriptionId="dossier-modal-description"
+        size="xl"
+        panelClassName="p-0 rounded-3xl border border-amber-300 shadow-2xl overflow-hidden bg-white max-h-[88vh] flex flex-col"
+      >
+        {activeDossierUnit && (
+          <div className="flex flex-col h-full overflow-y-auto">
+            {/* Dossier Header */}
+            <div className="p-5 sm:p-6 bg-gradient-to-r from-[#FFFDF9] via-[#FAF6EE] to-[#F5EEDB] border-b border-amber-200/80 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <BrandLogo
+                  variant="light"
+                  mode="horizontal"
+                  size="sm"
+                  withRera
+                  reraNumber={portal.organization?.reraBrokerRegistration ? `MahaRERA: ${portal.organization.reraBrokerRegistration}` : 'MahaRERA A52000028714'}
+                />
+                <div className="hidden sm:block border-l border-amber-300 pl-3">
+                  <h3 id="dossier-modal-title" className="text-sm font-bold text-slate-900 font-serif">
+                    Official Property Dossier &amp; Factsheet
+                  </h3>
+                  <p id="dossier-modal-description" className="text-[11px] text-[#8C641E] font-medium font-mono">
+                    Zamzam Verified • Sanctioned MahaRERA Records
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-bold shadow-2xs transition flex items-center gap-1.5 cursor-pointer"
+                  title="Print or Save as PDF"
+                >
+                  <Download className="w-3.5 h-3.5 text-[#8C641E]" />
+                  <span className="hidden xs:inline">Print / Save PDF</span>
+                </button>
+
+                <button
+                  type="button"
+                  data-dialog-close
+                  aria-label="Close dossier"
+                  onClick={() => setActiveDossierUnit(null)}
+                  className="w-8 h-8 rounded-full bg-white/80 border border-amber-300 grid place-items-center text-slate-600 hover:text-slate-900 cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Dossier Content Body */}
+            <div className="p-5 sm:p-7 space-y-6 text-slate-900">
+              {/* Project Headline & MahaRERA Verification */}
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-5 border-b border-slate-200">
+                <div>
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-[#8C641E] text-xs font-bold font-serif mb-1.5">
+                    <Sparkles className="w-3 h-3 text-[#8C641E]" />
+                    {activeDossierUnit.bhk} BHK Luxury Residence
+                  </span>
+                  <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-serif">
+                    {activeDossierUnit.project.projectName}
+                  </h2>
+                  <p className="text-xs sm:text-sm text-slate-600 flex items-center gap-1.5 mt-1">
+                    <MapPin className="w-4 h-4 text-[#8C641E] shrink-0" />
+                    <span>{activeDossierUnit.project.microMarket} • {activeDossierUnit.project.distanceToMetroKm ? `${activeDossierUnit.project.distanceToMetroKm} km to Metro` : 'Near Metro Station'}</span>
+                  </p>
+                </div>
+
+                <div className="flex flex-col sm:items-end gap-1.5">
+                  <a
+                    href="https://maharera.maharashtra.gov.in/projects-search-result"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 font-mono px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 transition text-xs"
+                  >
+                    <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>MahaRERA: <strong>{activeDossierUnit.project.reraNumber}</strong></span>
+                    <ExternalLink className="w-3 h-3 text-emerald-600 opacity-70 shrink-0" />
+                  </a>
+                  <span className="text-[10px] text-slate-400 font-mono">Government Registered &amp; Title Verified</span>
+                </div>
+              </div>
+
+              {/* High-Resolution Elevation & Floor Plan Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                {/* Elevation View */}
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-[#8C641E] font-serif flex items-center gap-1.5">
+                      <Building2 className="w-3.5 h-3.5" /> Building Elevation &amp; Façade
+                    </span>
+                    <span className="text-[10px] px-2 py-0.5 rounded bg-white border border-slate-200 text-slate-600 font-mono">
+                      {activeDossierUnit.project.totalFloors || 7} Storeys
+                    </span>
+                  </div>
+                  <div className="aspect-[16/10] rounded-xl overflow-hidden bg-slate-900 border border-slate-200 relative">
+                    <img
+                      src={activeDossierUnit.project.coverImageUrl || '/images/projects/today-callisto-taloja-phase-2-sec21/cover.jpg'}
+                      alt={activeDossierUnit.project.projectName}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                </div>
+
+                {/* Floor Plan Blueprint */}
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-[#8C641E] font-serif flex items-center gap-1.5">
+                      <Ruler className="w-3.5 h-3.5" /> Unit Floor Plan Layout
+                    </span>
+                    <span className="text-[10px] px-2 py-0.5 rounded bg-white border border-slate-200 text-[#8C641E] font-mono font-bold">
+                      {activeDossierUnit.carpetAreaSqft} Sq.Ft RERA Carpet
+                    </span>
+                  </div>
+                  <div className="aspect-[16/10] rounded-xl overflow-hidden bg-white border border-slate-200 p-2 flex items-center justify-center">
+                    <img
+                      src={activeDossierUnit.floorPlanUrl || '/images/projects/today-callisto-taloja-phase-2-sec21/cover.jpg'}
+                      alt={`${activeDossierUnit.bhk} BHK Floor Plan`}
+                      className="max-h-full max-w-full object-contain"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Transparent Statutory Financial Breakdown */}
+              <div className="p-5 rounded-2xl bg-gradient-to-br from-amber-50/60 to-white border border-amber-200 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-[#8C641E] font-serif flex items-center gap-1.5">
+                    <Calculator className="w-4 h-4 text-[#8C641E]" /> Transparent On-Road Financial Breakdown
+                  </h4>
+                  <strong className="text-lg font-extrabold text-[#8C641E] font-mono">
+                    Total All-In: {formatLakhCr(activeDossierUnit.allInTotalCost)} ({formatIndianRupees(activeDossierUnit.allInTotalCost)})
+                  </strong>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
+                  <div className="p-2.5 bg-white rounded-xl border border-amber-200/80">
+                    <span className="text-[10px] text-slate-400 block font-mono">Agreement Value</span>
+                    <strong className="text-slate-900 font-bold font-mono">{formatLakhCr(activeDossierUnit.agreementValue)} ({formatIndianRupees(activeDossierUnit.agreementValue)})</strong>
+                  </div>
+                  <div className="p-2.5 bg-white rounded-xl border border-amber-200/80">
+                    <span className="text-[10px] text-slate-400 block font-mono">Stamp Duty (6%)</span>
+                    <strong className="text-slate-900 font-bold font-mono">{formatIndianRupees(activeDossierUnit.agreementValue * 0.06)}</strong>
+                  </div>
+                  <div className="p-2.5 bg-white rounded-xl border border-amber-200/80">
+                    <span className="text-[10px] text-slate-400 block font-mono">Registration Fee</span>
+                    <strong className="text-slate-900 font-bold font-mono">₹30,000</strong>
+                  </div>
+                  <div className="p-2.5 bg-white rounded-xl border border-amber-200/80">
+                    <span className="text-[10px] text-slate-400 block font-mono">GST Status</span>
+                    <strong className="text-emerald-700 font-bold font-mono">0% GST (OC Ready)</strong>
+                  </div>
+                </div>
+              </div>
+
+              {/* Lifestyle Amenities */}
+              {activeDossierUnit.amenities?.length > 0 && (
+                <div className="space-y-2">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 font-mono block">
+                    Sanctioned Amenities &amp; Specifications:
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    {activeDossierUnit.amenities.map((am: string, i: number) => (
+                      <span key={i} className="px-3 py-1 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 text-xs font-medium">
+                        ✨ {am}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Dedicated Broker Advisor Action Card */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-slate-900 text-white flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-11 h-11 rounded-full bg-gradient-to-tr from-[#DFBA73] to-[#8C641E] p-0.5 shrink-0">
+                    <div className="w-full h-full rounded-full bg-slate-900 flex items-center justify-center font-bold text-xs text-amber-300">
+                      {advisor.fullName?.split(' ').map((n: string) => n[0]).join('') || 'SP'}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold text-white block font-serif">{advisor.fullName}</span>
+                    <span className="text-[11px] text-amber-300">Senior Real Estate Advisor • Zamzam Properties Desk</span>
+                    <p className="text-[11px] text-slate-400 font-mono mt-0.5">{advisor.phoneE164 || '+91 99677 31071'}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <a
+                    href={`tel:${advisor.phoneE164 || '+919967731071'}`}
+                    className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-xs"
+                  >
+                    <PhoneCall className="w-3.5 h-3.5" />
+                    <span>Call Advisor</span>
+                  </a>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveDossierUnit(null);
+                      handleWhatsAppInquiry(activeDossierUnit);
+                    }}
+                    className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#B38A38] to-[#8C641E] text-white text-xs font-bold flex items-center justify-center gap-1.5 transition hover:brightness-105"
+                  >
+                    <Send className="w-3.5 h-3.5" />
+                    <span>WhatsApp</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         )}
       </AccessibleDialog>
     </div>

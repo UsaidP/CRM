@@ -15,6 +15,7 @@ import {
   Check,
 } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
+import { forgotPassword } from '@/lib/client/auth';
 
 export function ForgotPasswordClient() {
   const [email, setEmail] = useState('');
@@ -32,13 +33,7 @@ export function ForgotPasswordClient() {
     setResetUrl(null);
 
     try {
-      const res = await fetch('/api/v1/auth/forgot-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
-
-      const data = await res.json();
+      const data = await forgotPassword(email);
 
       if (data.success) {
         setSuccessMsg(data.message || 'Password reset link generated!');

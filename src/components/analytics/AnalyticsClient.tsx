@@ -15,6 +15,7 @@ import {
 import { YoutubeIcon, InstagramIcon } from '@/components/icons/SocialIcons';
 import { HallmarkStamp } from '@/components/ui/HallmarkStamp';
 import { exportAnalyticsToCsv } from '@/lib/export-utils';
+import { analyticsApi } from '@/lib/client/analytics';
 
 export function AnalyticsClient({
   initialRoi = [],
@@ -47,10 +48,10 @@ export function AnalyticsClient({
     setUiError(null);
     try {
       const [resRoi, resLead, resFunnel, resCash] = await Promise.all([
-        fetch('/api/v1/analytics/content-roi').then((r) => r.json()),
-        fetch('/api/v1/analytics/agent-leaderboard').then((r) => r.json()),
-        fetch('/api/v1/analytics/funnel').then((r) => r.json()),
-        fetch('/api/v1/analytics/cash-flow').then((r) => r.json()),
+        analyticsApi.contentRoi(),
+        analyticsApi.agentLeaderboard(),
+        analyticsApi.funnel(),
+        analyticsApi.cashFlow(),
       ]);
 
       if (!resRoi.success || !resLead.success || !resFunnel.success || !resCash.success) {

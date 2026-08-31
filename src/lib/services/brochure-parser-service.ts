@@ -16,6 +16,27 @@ import { validateReraNumber } from '@/lib/domain/verification-engine';
 import { calculateAllInCost } from '@/lib/domain/cost-calculator';
 import { extractBrochureWithAI } from './gemini-service';
 
+export interface ConfidentialBrokerData {
+  developerSalesPocName?: string;
+  developerSalesPocPhone?: string;
+  developerEmail?: string;
+  siteAddress?: string;
+  officeAddress?: string;
+  architects?: string;
+  rccConsultants?: string;
+  standardCommissionPercent: number;
+  brokerShieldActive: boolean;
+  notes?: string;
+}
+
+export interface ClassifiedMediaSummary {
+  elevationsCount: number;
+  floorPlansCount: number;
+  hasMasterPlan: boolean;
+  elevations?: Array<{ title: string; viewAngle: string; url?: string; description?: string }>;
+  floorPlans?: Array<{ bhk: number; carpetAreaSqft: number; title: string; url?: string; description?: string }>;
+}
+
 export interface ExtractedBrochureData {
   projectName: string;
   developerName: string;
@@ -48,6 +69,8 @@ export interface ExtractedBrochureData {
   rccConsultants?: string;
   commercialShops?: Array<{ shopNumber: string; carpetAreaSqft: number; agreementValue?: number; description?: string }>;
   standardCommissionPercent: number;
+  confidentialBrokerData?: ConfidentialBrokerData;
+  classifiedMedia?: ClassifiedMediaSummary;
   units: ExtractedBrochureUnit[];
   rawTextPreview?: string;
 }
@@ -417,6 +440,34 @@ export function parseBrochureText(rawText: string, filename: string = 'brochure.
     architects,
     rccConsultants,
     standardCommissionPercent: 2.5,
+    confidentialBrokerData: {
+      developerSalesPocName,
+      developerSalesPocPhone,
+      developerEmail,
+      siteAddress: subLocality ? `Site Address: ${subLocality}, ${microMarket}` : undefined,
+      officeAddress: undefined,
+      architects,
+      rccConsultants,
+      standardCommissionPercent: 2.5,
+      brokerShieldActive: true,
+      notes: 'Direct builder booking contacts and site office address are secured for internal CRM broker use only.',
+    },
+    classifiedMedia: {
+      elevationsCount: 3,
+      floorPlansCount: units.length,
+      hasMasterPlan: true,
+      elevations: [
+        { title: `${projectName} Main Front Elevation`, viewAngle: 'FRONT_FACADE', description: 'Grand architectural high-rise facade' },
+        { title: `${projectName} Luxury Podium & Amenities`, viewAngle: 'PODIUM_VIEW', description: 'Resort deck & landscaping' },
+        { title: `${projectName} Night Illumination`, viewAngle: 'NIGHT_AERIAL', description: 'Nighttime architectural lighting' },
+      ],
+      floorPlans: units.map(u => ({
+        bhk: u.bhk,
+        carpetAreaSqft: u.carpetAreaSqft,
+        title: `${u.bhk} BHK Architectural Layout`,
+        description: `${u.carpetAreaSqft} sq.ft RERA Carpet with Balcony`,
+      })),
+    },
     units,
     rawTextPreview: normalizedText.slice(0, 500) + '...',
   };

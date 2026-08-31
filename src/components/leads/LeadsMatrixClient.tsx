@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
   Users,
@@ -43,6 +43,7 @@ import {
   Download
 } from 'lucide-react';
 import { YoutubeIcon, InstagramIcon } from '@/components/icons/SocialIcons';
+import { toast } from '@/lib/client/toast';
 import { HallmarkStamp } from '@/components/ui/HallmarkStamp';
 import { CallLogModal } from '@/components/leads/CallLogModal';
 import { SourceEvidenceDrawer } from '@/components/leads/SourceEvidenceDrawer';
@@ -146,6 +147,23 @@ export function LeadsMatrixClient({ initialLeads = [] }: { initialLeads?: any[] 
   // Modals & Drawers
   const [showCallLogModal, setShowCallLogModal] = useState(false);
   const [showLeadImportModal, setShowLeadImportModal] = useState(false);
+  const [droppedImportFile, setDroppedImportFile] = useState<File | null>(null);
+  const [isPageDragOver, setIsPageDragOver] = useState(false);
+  const dragCounter = useRef(0);
+
+  // Global safety listener to ensure drag-over rings never get stuck
+  useEffect(() => {
+    const handleGlobalDragEnd = () => {
+      dragCounter.current = 0;
+      setIsPageDragOver(false);
+    };
+    window.addEventListener('dragend', handleGlobalDragEnd);
+    window.addEventListener('drop', handleGlobalDragEnd);
+    return () => {
+      window.removeEventListener('dragend', handleGlobalDragEnd);
+      window.removeEventListener('drop', handleGlobalDragEnd);
+    };
+  }, []);
   const [selectedLeadForDrawer, setSelectedLeadForDrawer] = useState<any | null>(null);
   const [mergeSourceLead, setMergeSourceLead] = useState<any | null>(null);
   const [quickReminderLead, setQuickReminderLead] = useState<any | null>(null);
@@ -153,6 +171,8 @@ export function LeadsMatrixClient({ initialLeads = [] }: { initialLeads?: any[] 
   const [completingReminder, setCompletingReminder] = useState<any | null>(null);
   const [uiError, setUiError] = useState('');
   const [syncSuccessMsg, setSyncSuccessMsg] = useState('');
+  const [selectedLeadIds, setSelectedLeadIds] = useState<string[]>([]);
+  const [bulkUpdating, setBulkUpdating] = useState(false);
 
   const fetchLeads = async () => {
     setLoading(true);
@@ -169,8 +189,57 @@ export function LeadsMatrixClient({ initialLeads = [] }: { initialLeads?: any[] 
     }
   };
 
+  const handleBulkStageChange = async (newStage: string) => {
+    if (selectedLeadIds.length === 0) return;
+    setBulkUpdating(true);
+    setUiError('');
+    try {
+      const res = await fetch('/api/v1/leads/bulk-update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          leadIds: selectedLeadIds,
+          currentStage: newStage,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setLeads((prev) =>
+          prev.map((l) =>
+            selectedLeadIds.includes(l.id)
+              ? {
+                  ...l,
+                  currentStage: newStage,
+                  firstResponseAt: newStage !== 'new_uncontacted' ? new Date() : l.firstResponseAt,
+                }
+              : l
+          )
+        );
+        const stageLabel = STAGE_OPTIONS.find((s) => s.value === newStage)?.label || newStage;
+        const count = data.updatedCount || selectedLeadIds.length;
+        setSyncSuccessMsg(`Bulk updated status to "${stageLabel}" for ${count} leads!`);
+        toast.success(`Bulk Updated: ${count} Leads`, {
+          description: `All selected leads moved to "${stageLabel}".`,
+        });
+        setSelectedLeadIds([]);
+        setTimeout(() => setSyncSuccessMsg(''), 4000);
+      } else {
+        throw new Error(data.error || 'Failed to update lead stages.');
+      }
+    } catch (err: any) {
+      setUiError(err.message || 'Error updating leads in bulk.');
+      toast.error('Bulk Update Failed', { description: err.message });
+    } finally {
+      setBulkUpdating(false);
+    }
+  };
+
   const handleStageChange = async (leadId: string, newStage: string) => {
     setUiError('');
+    const targetLead = leads.find((l) => l.id === leadId);
+    const prevStage = targetLead?.currentStage || 'new_uncontacted';
+    const stageLabel = STAGE_OPTIONS.find((s) => s.value === newStage)?.label || newStage;
+
     try {
       const res = await fetch(`/api/v1/leads/${leadId}`, {
         method: 'PATCH',
@@ -193,11 +262,26 @@ export function LeadsMatrixClient({ initialLeads = [] }: { initialLeads?: any[] 
               : l
           )
         );
+
+        toast.leadDisposition(targetLead?.fullName || 'Lead', stageLabel, async () => {
+          try {
+            await fetch(`/api/v1/leads/${leadId}`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ currentStage: prevStage }),
+            });
+            fetchLeads();
+            toast.info(`Reverted ${targetLead?.fullName || 'Lead'} to ${prevStage}`);
+          } catch {
+            toast.error('Failed to revert lead stage');
+          }
+        });
       } else {
         throw new Error(data.error || 'The stage update was rejected.');
       }
     } catch (err: any) {
       setUiError(`${err.message || 'Unable to update the lead stage.'}`);
+      toast.error('Stage Update Failed', { description: err.message });
     }
   };
 
@@ -333,7 +417,63 @@ export function LeadsMatrixClient({ initialLeads = [] }: { initialLeads?: any[] 
   const livePortalCount = leads.filter((l) => scoredLeadsMap.get(l.id)?.isLivePortalActive).length;
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-16 text-content font-sans">
+    <div 
+      className={`space-y-6 max-w-7xl mx-auto pb-16 text-content font-sans transition-all relative ${
+        isPageDragOver ? 'ring-2 ring-accent ring-offset-2 ring-offset-surface' : ''
+      }`}
+      onDragEnter={(e) => {
+        // Only trigger for external files (CSV/Excel), NOT internal Kanban cards
+        const isFile = Array.from(e.dataTransfer?.types || []).includes('Files');
+        if (!isFile) return;
+        e.preventDefault();
+        e.stopPropagation();
+        dragCounter.current += 1;
+        if (dragCounter.current === 1) {
+          setIsPageDragOver(true);
+        }
+      }}
+      onDragOver={(e) => {
+        const isFile = Array.from(e.dataTransfer?.types || []).includes('Files');
+        if (!isFile) return;
+        e.preventDefault();
+        e.stopPropagation();
+        e.dataTransfer.dropEffect = 'copy';
+      }}
+      onDragLeave={(e) => {
+        const isFile = Array.from(e.dataTransfer?.types || []).includes('Files');
+        if (!isFile) return;
+        e.preventDefault();
+        e.stopPropagation();
+        dragCounter.current = Math.max(0, dragCounter.current - 1);
+        if (dragCounter.current === 0) {
+          setIsPageDragOver(false);
+        }
+      }}
+      onDrop={(e) => {
+        const isFile = Array.from(e.dataTransfer?.types || []).includes('Files');
+        if (!isFile) return;
+        e.preventDefault();
+        e.stopPropagation();
+        dragCounter.current = 0;
+        setIsPageDragOver(false);
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+          setDroppedImportFile(e.dataTransfer.files[0]);
+          setShowLeadImportModal(true);
+        }
+      }}
+    >
+      {/* File Drop Indicator (Only shows when dragging external CSV/Excel onto page) */}
+      {isPageDragOver && (
+        <div className="pointer-events-none absolute inset-0 z-50 rounded-2xl bg-accent/10 backdrop-blur-[2px] border-2 border-dashed border-accent flex items-center justify-center p-6 animate-in fade-in duration-150">
+          <div className="bg-surface p-6 rounded-2xl border border-accent/40 shadow-2xl flex flex-col items-center text-center space-y-2">
+            <div className="w-12 h-12 rounded-xl bg-accent-soft text-accent flex items-center justify-center">
+              <FileSpreadsheet className="w-6 h-6" />
+            </div>
+            <h3 className="font-bold text-base text-content font-display">Drop CSV or Excel to Import Leads</h3>
+            <p className="text-xs text-content-muted max-w-xs">Release file to launch Universal CSV &amp; Lead Ingestion Wizard</p>
+          </div>
+        </div>
+      )}
       {/* Top Banner & Hallmark Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 p-6 rounded-2xl bg-surface border border-border shadow-xs">
         <div className="space-y-1.5">
@@ -726,11 +866,71 @@ export function LeadsMatrixClient({ initialLeads = [] }: { initialLeads?: any[] 
         />
       ) : (
         /* Dense Table View */
-        <div className="rounded-2xl bg-surface border border-border overflow-hidden shadow-xs">
+        <div className="relative rounded-2xl bg-surface border border-border overflow-hidden shadow-xs">
+          {/* Floating Bulk Actions Bar */}
+          {selectedLeadIds.length > 0 && (
+            <div className="sticky top-0 z-20 px-5 py-3 bg-accent text-white flex items-center justify-between flex-wrap gap-3 shadow-md animate-in slide-in-from-top duration-200">
+              <div className="flex items-center gap-3">
+                <span className="font-bold text-xs bg-white/20 px-2.5 py-1 rounded-lg">
+                  {selectedLeadIds.length} Selected
+                </span>
+                <span className="text-xs text-white/90 font-medium hidden sm:inline">
+                  Bulk update pipeline status for selected leads:
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <select
+                  disabled={bulkUpdating}
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      handleBulkStageChange(e.target.value);
+                      e.target.value = '';
+                    }
+                  }}
+                  defaultValue=""
+                  className="px-3 py-1.5 rounded-xl bg-white text-slate-900 font-bold text-xs cursor-pointer shadow-xs focus:outline-none"
+                >
+                  <option value="" disabled>
+                    {bulkUpdating ? 'Updating Status...' : '⚡ Bulk Change Status to...'}
+                  </option>
+                  {STAGE_OPTIONS.filter((s) => s.value !== 'ALL').map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  onClick={() => setSelectedLeadIds([])}
+                  className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition-colors cursor-pointer"
+                >
+                  Clear Selection
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
                 <tr className="border-b border-border bg-surface-subtle text-content-secondary font-bold uppercase tracking-wider text-[11px]">
+                  <th className="py-4 px-4 w-10 text-center" onClick={(e) => e.stopPropagation()}>
+                    <input
+                      type="checkbox"
+                      checked={
+                        filteredAndSortedLeads.length > 0 &&
+                        selectedLeadIds.length === filteredAndSortedLeads.length
+                      }
+                      onChange={() => {
+                        if (selectedLeadIds.length === filteredAndSortedLeads.length) {
+                          setSelectedLeadIds([]);
+                        } else {
+                          setSelectedLeadIds(filteredAndSortedLeads.map((l) => l.id));
+                        }
+                      }}
+                      className="w-4 h-4 rounded text-accent border-border focus:ring-accent cursor-pointer"
+                      title="Select / Deselect all visible leads"
+                    />
+                  </th>
                   <th className="py-4 px-4">Priority &amp; Buyer</th>
                   <th className="py-4 px-4">Latest Remark &amp; Audit Trail</th>
                   <th className="py-4 px-4">Scheduled Reminder / Action</th>
@@ -746,6 +946,7 @@ export function LeadsMatrixClient({ initialLeads = [] }: { initialLeads?: any[] 
                     const score = scoredLeadsMap.get(lead.id);
                     const isRank1 = index === 0 && sortBy === 'SMART_PRIORITY' && score && score.totalScore >= 50;
                     const isRankTop3 = (index === 1 || index === 2) && sortBy === 'SMART_PRIORITY' && score && score.totalScore >= 40;
+                    const isSelected = selectedLeadIds.includes(lead.id);
 
                     const pendingReminders = (lead.reminders || []).filter(
                       (r: any) => r.status === 'PENDING' || r.status === 'SNOOZED'
@@ -762,7 +963,9 @@ export function LeadsMatrixClient({ initialLeads = [] }: { initialLeads?: any[] 
                       <tr
                         key={lead.id}
                         className={`hover:bg-surface-subtle/80 transition-colors group cursor-pointer ${
-                          isRank1
+                          isSelected
+                            ? 'bg-accent-soft/40'
+                            : isRank1
                             ? 'bg-accent-soft/30 border-l-4 border-l-accent'
                             : isRankTop3
                             ? 'border-l-2 border-l-accent/40'
@@ -770,6 +973,22 @@ export function LeadsMatrixClient({ initialLeads = [] }: { initialLeads?: any[] 
                         }`}
                         onClick={() => setSelectedLeadForDrawer(lead)}
                       >
+                        {/* Checkbox for Bulk Selection */}
+                        <td className="py-4 px-4 text-center" onClick={(e) => e.stopPropagation()}>
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => {
+                              setSelectedLeadIds((prev) =>
+                                prev.includes(lead.id)
+                                  ? prev.filter((id) => id !== lead.id)
+                                  : [...prev, lead.id]
+                              );
+                            }}
+                            className="w-4 h-4 rounded text-accent border-border focus:ring-accent cursor-pointer"
+                          />
+                        </td>
+
                         {/* Priority Rank & Buyer Details */}
                         <td className="py-4 px-4">
                           <div className="flex items-center gap-3">
@@ -1027,8 +1246,15 @@ export function LeadsMatrixClient({ initialLeads = [] }: { initialLeads?: any[] 
       {/* Lead CSV Import Modal */}
       {showLeadImportModal && (
         <LeadCsvImportModal
-          onClose={() => setShowLeadImportModal(false)}
-          onImportSuccess={fetchLeads}
+          initialFile={droppedImportFile}
+          onClose={() => {
+            setShowLeadImportModal(false);
+            setDroppedImportFile(null);
+          }}
+          onImportSuccess={() => {
+            fetchLeads();
+            setDroppedImportFile(null);
+          }}
         />
       )}
 

@@ -5,7 +5,40 @@ import { ensureLeadFallbackReminder } from '@/lib/services/lead-reminder-service
 
 export const dynamic = 'force-dynamic';
 
+/**
+ * Shared-secret verification for the telephony provider (e.g. Exotel).
+ *
+ * Configure TELEPHONY_WEBHOOK_SECRET in the provider dashboard and send it
+ * as the `x-webhook-secret` header. Fails CLOSED in production when the
+ * secret is not configured — an unauthenticated lead-creation endpoint is
+ * not acceptable. Set TELEPHONY_WEBHOOK_ALLOW_INSECURE=true only for local
+ * development.
+ */
+function verifyTelephonySecret(req: Request): boolean {
+  const secret = process.env.TELEPHONY_WEBHOOK_SECRET;
+  if (!secret) {
+    if (process.env.NODE_ENV === 'production' && !process.env.TELEPHONY_WEBHOOK_ALLOW_INSECURE) {
+      return false;
+    }
+    return process.env.TELEPHONY_WEBHOOK_ALLOW_INSECURE === 'true' || process.env.NODE_ENV !== 'production';
+  }
+  const provided = req.headers.get('x-webhook-secret');
+  if (!provided || provided.length !== secret.length) return false;
+  let diff = 0;
+  for (let i = 0; i < secret.length; i++) {
+    diff |= secret.charCodeAt(i) ^ provided.charCodeAt(i);
+  }
+  return diff === 0;
+}
+
 export async function POST(req: Request) {
+  if (!verifyTelephonySecret(req)) {
+    return NextResponse.json(
+      { success: false, error: 'Invalid webhook credentials' },
+      { status: 401 }
+    );
+  }
+
   try {
     const body = await req.json();
     const {

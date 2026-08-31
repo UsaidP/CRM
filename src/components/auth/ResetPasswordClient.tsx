@@ -16,6 +16,7 @@ import {
   KeyRound,
 } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
+import { resetPassword } from '@/lib/client/auth';
 
 export function ResetPasswordClient() {
   const router = useRouter();
@@ -51,13 +52,7 @@ export function ResetPasswordClient() {
     setSuccessMsg(null);
 
     try {
-      const res = await fetch('/api/v1/auth/reset-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, newPassword }),
-      });
-
-      const data = await res.json();
+      const data = await resetPassword(token, newPassword);
 
       if (data.success) {
         setSuccessMsg(data.message || 'Password has been updated successfully!');

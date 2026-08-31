@@ -32,23 +32,23 @@ import {
   X,
   Pencil,
   FileSpreadsheet,
-  Globe,
   Upload,
   Trash2,
   FileCheck,
   Download
 } from 'lucide-react';
 import { HallmarkStamp } from '@/components/ui/HallmarkStamp';
+import { listUnits, listProjects, verifyUnit } from '@/lib/client/inventory';
 import { AccessibleDialog } from '@/components/ui/AccessibleDialog';
 import { MediaUploader, type MediaAsset } from '@/components/inventory/MediaUploader';
 import { ProjectDetailsModal } from '@/components/inventory/ProjectDetailsModal';
-import { ScraperControlModal } from '@/components/inventory/ScraperControlModal';
 import { CsvImportModal } from '@/components/inventory/CsvImportModal';
 import { BrochureUploadModal } from '@/components/inventory/BrochureUploadModal';
 import { CustomSelect, type CustomSelectOption } from '@/components/ui/CustomSelect';
 import { ReraVerificationBadge } from '@/components/inventory/ReraVerificationBadge';
 import { QuickReraLookupModal } from '@/components/inventory/QuickReraLookupModal';
 import { MahaReraCertificateModal } from '@/components/inventory/MahaReraCertificateModal';
+import { ProjectMediaStudioModal } from '@/components/inventory/ProjectMediaStudioModal';
 
 export function InventoryClient({
   initialUnits = [],
@@ -86,7 +86,7 @@ export function InventoryClient({
 
   // Project Details Inspector
   const [inspectProject, setInspectProject] = useState<any | null>(null);
-  const [showScraperModal, setShowScraperModal] = useState(false);
+  const [mediaStudioProject, setMediaStudioProject] = useState<any | null>(null);
   const [showCsvImportModal, setShowCsvImportModal] = useState(false);
   const [showBrochureModal, setShowBrochureModal] = useState(false);
   const [showQuickReraModal, setShowQuickReraModal] = useState(false);
@@ -172,15 +172,10 @@ export function InventoryClient({
     setLoading(true);
     setRequestError(null);
     try {
-      const [uRes, pRes] = await Promise.all([
-        fetch('/api/v1/inventory/units'),
-        fetch('/api/v1/inventory/projects'),
-      ]);
-      const uData = await uRes.json();
-      const pData = await pRes.json();
+      const [uData, pData] = await Promise.all([listUnits(), listProjects()]);
 
-      if (!uRes.ok || !uData.success) throw new Error(uData.error || 'Inventory units could not be loaded.');
-      if (!pRes.ok || !pData.success) throw new Error(pData.error || 'Developer projects could not be loaded.');
+      if (!uData.success) throw new Error(uData.error || 'Inventory units could not be loaded.');
+      if (!pData.success) throw new Error(pData.error || 'Developer projects could not be loaded.');
       setUnits(uData.data);
       if (pData.success) {
         setProjects(pData.data);
@@ -201,16 +196,11 @@ export function InventoryClient({
     setActionError(null);
     setSubmittingAudit(true);
     try {
-      const res = await fetch(`/api/v1/inventory/units/${verifyModalUnit.id}/verify`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      const data = await verifyUnit(verifyModalUnit.id, {
           targetStatus,
           auditNotes,
-        }),
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
+        });
+      if (data.success) {
         setAuditSuccessMsg('Broker review recorded and freshness date updated.');
         setTimeout(() => {
           setVerifyModalUnit(null);
@@ -715,15 +705,6 @@ export function InventoryClient({
             </button>
             <button
               type="button"
-              onClick={() => setShowScraperModal(true)}
-              className="h-9 px-2.5 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border hover:border-border-hover text-xs font-medium transition-all flex items-center gap-1 shadow-2xs cursor-pointer shrink-0"
-              title="Scrape MahaRERA & Portals"
-            >
-              <Globe className="w-3.5 h-3.5 text-status-success" />
-              <span className="hidden md:inline">Scraper</span>
-            </button>
-            <button
-              type="button"
               onClick={() => setShowCsvImportModal(true)}
               className="h-9 px-2.5 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border hover:border-border-hover text-xs font-medium transition-all flex items-center gap-1 shadow-2xs cursor-pointer shrink-0"
               title="Import CSV"
@@ -906,6 +887,15 @@ export function InventoryClient({
 
                         {/* Quick Menu Icons on Card Header */}
                         <div className="flex items-center gap-1 bg-black/50 backdrop-blur-md p-1 rounded-xl border border-white/15 shadow-xs">
+                          <button
+                            type="button"
+                            onClick={() => setMediaStudioProject(project)}
+                            aria-label={`Open Elevation & Floor Plan Studio for ${project.projectName}`}
+                            title="Elevation & Floor Plan Studio (Brochure Extractor & Cloud Storage)"
+                            className="grid h-6 w-6 place-items-center rounded-lg text-amber-300 hover:text-white hover:bg-amber-500/30 transition-colors cursor-pointer"
+                          >
+                            <Sparkles className="h-3 w-3" />
+                          </button>
                           {project.reraCertificateUrl && (
                             <button
                               type="button"
@@ -1576,7 +1566,7 @@ export function InventoryClient({
                   <span>Update &amp; Synchronize Existing Project</span>
                 </>
               ) : editingProjectId ? (
-                <span>Save Project Changes</span>
+                <span>Save project changes</span>
               ) : (
                 <span>Register Project</span>
               )}
@@ -2188,17 +2178,6 @@ export function InventoryClient({
         </AccessibleDialog>
       )}
 
-      {/* Scraper Control Modal */}
-      {showScraperModal && (
-        <ScraperControlModal
-          onClose={() => setShowScraperModal(false)}
-          onIngestSuccess={() => {
-            setShowScraperModal(false);
-            fetchInventory();
-          }}
-        />
-      )}
-
       {/* CSV Bulk Importer Modal */}
       {showCsvImportModal && (
         <CsvImportModal
@@ -2251,6 +2230,18 @@ export function InventoryClient({
             certificateUrl: formCModalProject.reraCertificateUrl || (formCModalProject.reraNumber === 'P52000079818' ? '/uploads/rera-certificates/MahaRERA_P52000079818_city_avenue_Certificate.pdf' : undefined),
             originalImageUrl: formCModalProject.originalDocumentUrl || (formCModalProject.reraNumber === 'P52000079818' ? '/images/original-certificates/P52000079818.png' : undefined),
             isOriginalScannedDocument: true,
+          }}
+        />
+      )}
+
+      {/* Elevation, Floor Plan & Media Studio Modal */}
+      {mediaStudioProject && (
+        <ProjectMediaStudioModal
+          open={!!mediaStudioProject}
+          onClose={() => setMediaStudioProject(null)}
+          project={mediaStudioProject}
+          onUpdated={() => {
+            fetchInventory();
           }}
         />
       )}

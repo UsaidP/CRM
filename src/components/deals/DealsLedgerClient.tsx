@@ -32,6 +32,7 @@ import { HallmarkStamp } from '@/components/ui/HallmarkStamp';
 import { AccessibleDialog } from '@/components/ui/AccessibleDialog';
 import { formatDateFull, formatTimeShort } from '@/lib/date-utils';
 import { exportDealsToCsv } from '@/lib/export-utils';
+import { toast } from '@/lib/client/toast';
 
 export function DealsLedgerClient({
   initialDeals = [],
@@ -188,12 +189,20 @@ export function DealsLedgerClient({
       const data = await res.json();
       if (res.ok && data.success) {
         fetchDealsAndData();
+        if (nextStatus === 'PAYMENT_RECEIVED') {
+          toast.dealClosed(deal.clientName, `₹${(deal.brokerageAmount / 100000).toFixed(2)} Lakh`);
+        } else {
+          toast.success(`Deal Advanced: ${deal.clientName}`, {
+            description: `Stage updated to "${nextStatus.replace(/_/g, ' ')}".`,
+          });
+        }
       } else {
         throw new Error(data.error || 'The deal stage was rejected.');
       }
     } catch (err: any) {
       setDeals(previousDeals);
       setActionError(err.message || 'The deal stage could not be updated. The previous stage has been restored.');
+      toast.error('Deal Update Failed', { description: err.message });
     } finally {
       setPendingStageIds((ids) => {
         const next = new Set(ids);

@@ -29,6 +29,7 @@ import { HallmarkStamp } from '@/components/ui/HallmarkStamp';
 import { AccessibleDialog } from '@/components/ui/AccessibleDialog';
 import { MATCHING_SIMULATION_ENDPOINT } from '@/lib/navigation';
 import { CustomSelect, type CustomSelectOption } from '@/components/ui/CustomSelect';
+import { toast } from '@/lib/client/toast';
 
 export default function MatchmakerConsolePage() {
   const [leads, setLeads] = useState<any[]>([]);
@@ -131,11 +132,14 @@ export default function MatchmakerConsolePage() {
       if (res.ok && data.success) {
         setCopiedPortalUrl(false);
         setGeneratedPortalData(data.data);
+        toast.success('Client Portal Generated', { description: 'Private presentation link ready to share.' });
       } else {
         setPortalError(data.error || 'The client portal could not be created. Review the selected lead and units, then try again.');
+        toast.error('Portal Creation Failed', { description: data.error || 'Review selection and try again.' });
       }
     } catch (err: any) {
       setPortalError(err.message || 'The client portal request could not be completed. Check your connection, then try again.');
+      toast.error('Portal Error', { description: err.message });
     } finally {
       setGeneratingPortal(false);
     }
@@ -146,8 +150,11 @@ export default function MatchmakerConsolePage() {
       await navigator.clipboard.writeText(generatedPortalData.shareableUrl);
       setCopiedPortalUrl(true);
       setPortalError(null);
+      const activeLead = leads.find((l) => l.id === selectedLeadId);
+      toast.portalCopied(activeLead?.fullName || 'Client');
     } catch {
       setPortalError('The portal link could not be copied. Select the link and copy it manually.');
+      toast.error('Copy Failed', { description: 'Select the link and copy it manually.' });
     }
   };
 

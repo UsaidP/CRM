@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { validateReraNumber } from '@/lib/domain/verification-engine';
+import { requireSession } from '@/lib/services/api-auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -59,6 +60,9 @@ async function performVerification(reraInput: string, excludeProjectId?: string)
 }
 
 export async function GET(req: Request) {
+  const auth = await requireSession(req);
+  if (!auth.ok) return auth.response;
+
   try {
     const { searchParams } = new URL(req.url);
     const reraNumber = searchParams.get('reraNumber') || searchParams.get('rera') || searchParams.get('q') || '';
@@ -86,6 +90,9 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  const auth = await requireSession(req);
+  if (!auth.ok) return auth.response;
+
   try {
     const body = await req.json().catch(() => ({}));
     const reraNumber = (body.reraNumber || body.rera || '').trim();

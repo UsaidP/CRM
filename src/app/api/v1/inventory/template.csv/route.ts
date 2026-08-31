@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { requireSession } from '@/lib/services/api-auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,7 +16,10 @@ project,Arihant Clan Aalishan,P52000006391,Arihant Superstructures Ltd,Taloja Ph
 project,Kamdhenu Oaklands,P52000024500,Kamdhenu Realities,Taloja Phase 2,"Sector 26, Taloja Phase 2, Navi Mumbai 410208",2026-03-31,19.0560,73.1040,2,22,9200,"G+22 Storey Twin Towers with landscaped podium in Taloja Phase 2 Kharghar Annex."
 `;
 
-export async function GET() {
+export async function GET(req: Request) {
+  const auth = await requireSession(req);
+  if (!auth.ok) return auth.response;
+
   return new NextResponse(TEMPLATE_CSV_CONTENT.trim(), {
     status: 200,
     headers: {

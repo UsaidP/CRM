@@ -35,6 +35,7 @@ import {
 } from 'lucide-react';
 import { YoutubeIcon, InstagramIcon } from '@/components/icons/SocialIcons';
 import { BackupModal } from '@/components/admin/BackupModal';
+import { toast } from '@/lib/client/toast';
 
 interface LeadItem {
   id: string;
@@ -214,6 +215,7 @@ export function TelecallerConsoleView({
     if (!selectedLead?.phoneE164) return;
     navigator.clipboard.writeText(selectedLead.phoneE164);
     setCopiedPhone(true);
+    toast.info('Phone Copied', { description: `${selectedLead.phoneE164} copied to clipboard.` });
     setTimeout(() => setCopiedPhone(false), 2000);
   };
 
@@ -222,6 +224,10 @@ export function TelecallerConsoleView({
     if (!selectedLead) return;
     setIsSaving(true);
     setStatusMessage(`Recording disposition: ${dispositionLabel}...`);
+
+    const previousStage = selectedLead.currentStage;
+    const targetLeadId = selectedLead.id;
+    const targetLeadName = selectedLead.fullName || 'Lead';
 
     try {
       const summaryNotes = callNotes
@@ -241,6 +247,20 @@ export function TelecallerConsoleView({
       await onRefresh();
       setStatusMessage(`✓ Logged: ${dispositionLabel}`);
 
+      toast.leadDisposition(targetLeadName, dispositionLabel, async () => {
+        try {
+          await fetch(`/api/v1/leads/${targetLeadId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ currentStage: previousStage }),
+          });
+          await onRefresh();
+          toast.info(`Reverted ${targetLeadName} to ${previousStage}`);
+        } catch {
+          toast.error('Failed to revert disposition');
+        }
+      });
+
       // Advance to next lead in filtered queue
       const currentIndex = filteredQueue.findIndex((l) => l.id === selectedLead.id);
       if (currentIndex !== -1 && currentIndex + 1 < filteredQueue.length) {
@@ -248,6 +268,7 @@ export function TelecallerConsoleView({
       }
     } catch (err: any) {
       setStatusMessage(`Error: ${err.message}`);
+      toast.error('Disposition Failed', { description: err.message });
     } finally {
       setIsSaving(false);
       setTimeout(() => setStatusMessage(null), 3000);

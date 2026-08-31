@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
+import 'goey-toast/styles.css';
 import './globals.css';
 import { AppShell } from '@/components/layout/AppShell';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
+import { GooeyToastProvider } from '@/components/ui/GooeyToastProvider';
 import { AgentationToolbar } from '@/components/dev/AgentationToolbar';
 
 export const metadata: Metadata = {
@@ -48,6 +50,7 @@ export default function RootLayout({
       <body className="antialiased bg-canvas text-content font-body-md min-h-screen" suppressHydrationWarning>
         <ThemeProvider>
           <AppShell>{children}</AppShell>
+          <GooeyToastProvider />
           <AgentationToolbar />
         </ThemeProvider>
       </body>

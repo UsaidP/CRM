@@ -402,10 +402,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   <div className="text-[10px] text-content-muted truncate font-mono">
                     {currentUser?.role === 'SUPER_ADMIN'
                       ? '👑 Super Admin'
-                      : currentUser?.role === 'BROKER_MANAGER'
-                      ? '👔 Broker Manager'
-                      : currentUser?.role === 'SALES_EXECUTIVE'
-                      ? '💼 Sales Advisor'
+                      : currentUser?.role === 'ADMIN'
+                      ? '🛡️ Admin'
+                      : currentUser?.role === 'MANAGER'
+                      ? '👔 Team Manager'
+                      : currentUser?.role === 'AGENT'
+                      ? '💼 Sales Agent'
                       : currentUser?.role === 'TELECALLER'
                       ? '🎧 Telecaller Desk'
                       : 'Broker'}

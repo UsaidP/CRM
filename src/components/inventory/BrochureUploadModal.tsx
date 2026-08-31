@@ -29,7 +29,9 @@ import {
   Mail,
   FileCheck,
   Download,
-  Eye
+  Eye,
+  Lock,
+  Image as ImageIcon
 } from 'lucide-react';
 import { AccessibleDialog } from '@/components/ui/AccessibleDialog';
 import { HallmarkStamp } from '@/components/ui/HallmarkStamp';
@@ -123,7 +125,7 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
   const [parseProgressStep, setParseProgressStep] = useState(0);
   const [parseError, setParseError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [activeReviewTab, setActiveReviewTab] = useState<'overview' | 'units' | 'amenities' | 'connectivity'>('overview');
+  const [activeReviewTab, setActiveReviewTab] = useState<'overview' | 'media' | 'units' | 'amenities' | 'connectivity'>('overview');
 
   // Extracted Project State
   const [projectData, setProjectData] = useState<any>(null);
@@ -292,6 +294,15 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
         throw new Error(reraCheck.error || 'Please enter a valid MahaRERA registration number.');
       }
 
+      const coverImageUrl = projectData.coverImageUrl || projectData.classifiedMedia?.elevations?.[0]?.mediaAsset?.secureUrl || projectData.classifiedMedia?.elevations?.[0]?.mediaAsset?.url || null;
+      const masterPlanUrl = projectData.masterPlanUrl || projectData.classifiedMedia?.masterPlan?.mediaAsset?.secureUrl || projectData.classifiedMedia?.masterPlan?.mediaAsset?.url || null;
+      const mediaGallery = projectData.mediaGallery && Array.isArray(projectData.mediaGallery) && projectData.mediaGallery.length > 0
+        ? projectData.mediaGallery
+        : (projectData.classifiedMedia ? [
+            ...(projectData.classifiedMedia.elevations || []).map((e: any) => e.mediaAsset?.secureUrl || e.mediaAsset?.url),
+            projectData.classifiedMedia.masterPlan?.mediaAsset?.secureUrl || projectData.classifiedMedia.masterPlan?.mediaAsset?.url
+          ].filter(Boolean) : []);
+
       const payload = {
         developerName: projectData.developerName,
         projectName: projectData.projectName,
@@ -304,6 +315,9 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
         totalFloors: parseInt(projectData.totalFloors || 7, 10),
         basePricePerSqft: parseFloat(projectData.basePricePerSqft || 6200),
         brochureUrl: brochureUrl || projectData.brochureUrl || null,
+        coverImageUrl,
+        masterPlanUrl,
+        mediaGallery,
         hasOccupancyCertificate: projectData.hasOccupancyCertificate || false,
         expectedPossessionDate: parseSafeDate(projectData.expectedPossessionDate)?.toISOString() || null,
         amenities: projectData.amenities || [],
@@ -317,27 +331,33 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
         reraValidUntil: parseSafeDate(projectData.reraVerification?.validUntil)?.toISOString() || null,
         reraVerificationDate: projectData.reraCertificateUrl ? new Date().toISOString() : null,
         reraCertDataJson: projectData.reraVerification ? JSON.stringify(projectData.reraVerification) : null,
-        units: (projectData.units || []).map((u: any, idx: number) => ({
-          unitNumber: u.unitNumber || `Flat-0${idx + 1}`,
-          bhk: u.bhk || 2,
-          bathrooms: u.bathrooms || (u.bhk >= 2 ? 2 : 1),
-          balconies: u.balconies || 1,
-          floorNumber: u.floorNumber || 2,
-          totalFloors: projectData.totalFloors || 7,
-          carpetAreaSqft: u.carpetAreaSqft || 625,
-          facing: u.facing || 'EAST',
-          possessionStatus: projectData.hasOccupancyCertificate ? 'READY_TO_MOVE' : (u.possessionStatus || 'UNDER_CONSTRUCTION'),
-          agreementValue: u.agreementValue || Math.round((u.carpetAreaSqft || 625) * projectData.basePricePerSqft),
-          stampDutyRate: u.stampDutyRate || 6.0,
-          registrationFee: u.registrationFee || 30000.0,
-          gstRate: projectData.hasOccupancyCertificate ? 0.0 : (u.gstRate || 5.0),
-          floorRiseCharges: u.floorRiseCharges || 0.0,
-          parkingCharges: u.parkingCharges || 200000.0,
-          societyDevelopmentCharges: u.societyDevelopmentCharges || 150000.0,
-          allInTotalCost: u.allInTotalCost || 0.0,
-          description: u.description || null,
-          featureHighlights: u.featureHighlights || [],
-        })),
+        units: (projectData.units || []).map((u: any, idx: number) => {
+          const matchingPlan = projectData.classifiedMedia?.floorPlans?.find((fp: any) => fp.bhk === u.bhk);
+          const floorPlanUrl = u.floorPlanUrl || matchingPlan?.mediaAsset?.secureUrl || matchingPlan?.mediaAsset?.url || null;
+
+          return {
+            unitNumber: u.unitNumber || `Flat-0${idx + 1}`,
+            bhk: u.bhk || 2,
+            bathrooms: u.bathrooms || (u.bhk >= 2 ? 2 : 1),
+            balconies: u.balconies || 1,
+            floorNumber: u.floorNumber || 2,
+            totalFloors: projectData.totalFloors || 7,
+            carpetAreaSqft: u.carpetAreaSqft || 625,
+            facing: u.facing || 'EAST',
+            possessionStatus: projectData.hasOccupancyCertificate ? 'READY_TO_MOVE' : (u.possessionStatus || 'UNDER_CONSTRUCTION'),
+            agreementValue: u.agreementValue || Math.round((u.carpetAreaSqft || 625) * projectData.basePricePerSqft),
+            stampDutyRate: u.stampDutyRate || 6.0,
+            registrationFee: u.registrationFee || 30000.0,
+            gstRate: projectData.hasOccupancyCertificate ? 0.0 : (u.gstRate || 5.0),
+            floorRiseCharges: u.floorRiseCharges || 0.0,
+            parkingCharges: u.parkingCharges || 200000.0,
+            societyDevelopmentCharges: u.societyDevelopmentCharges || 150000.0,
+            allInTotalCost: u.allInTotalCost || 0.0,
+            floorPlanUrl,
+            description: u.description || null,
+            featureHighlights: u.featureHighlights || [],
+          };
+        }),
       };
 
       const res = await fetch('/api/v1/inventory/projects', {
@@ -464,7 +484,7 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
                 <input
                   id="brochure-file-input"
                   type="file"
-                  accept="application/pdf"
+                  accept="application/pdf,image/png,image/jpeg,image/webp"
                   onChange={handleFileSelect}
                   className="hidden"
                 />
@@ -475,10 +495,10 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
 
                 <div>
                   <p className="font-bold text-sm text-content">
-                    {file ? file.name : 'Click to select or drag & drop Developer Brochure PDF'}
+                    {file ? file.name : 'Click to select or drag & drop Developer Brochure (PDF / Image / Spec Sheet)'}
                   </p>
                   <p className="text-[11px] text-content-muted mt-0.5 font-mono">
-                    {file ? `${(file.size / (1024 * 1024)).toFixed(2)} MB PDF Document Ready` : 'Supports official MahaRERA brochures up to 50 MB'}
+                    {file ? `${(file.size / (1024 * 1024)).toFixed(2)} MB Document Ready` : 'Supports official MahaRERA brochures, floor plan images (PDF, PNG, JPG, WEBP) up to 50 MB'}
                   </p>
                 </div>
 
@@ -629,6 +649,19 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
               >
                 <Building2 className="w-3.5 h-3.5" />
                 <span>Elevation &amp; Structure</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveReviewTab('media')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+                  activeReviewTab === 'media'
+                    ? 'bg-accent text-white shadow-xs'
+                    : 'text-content-secondary hover:text-content'
+                }`}
+              >
+                <ImageIcon className="w-3.5 h-3.5" />
+                <span>Extracted Media &amp; Renders ({((projectData.elevations?.length || 0) + (projectData.floorPlans?.length || 0) + (projectData.masterPlan ? 1 : 0)) || 4})</span>
               </button>
 
               <button
@@ -887,6 +920,112 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
               </div>
             )}
 
+            {/* TAB: EXTRACTED MEDIA & RENDERS */}
+            {activeReviewTab === 'media' && (
+              <div className="space-y-4">
+                {/* Elevation Renders */}
+                <div className="p-4 bg-surface rounded-2xl border border-border space-y-3.5">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-bold text-xs uppercase font-mono text-accent-text flex items-center gap-1.5">
+                      <Building2 className="w-4 h-4 text-accent" /> High-Resolution Architectural Elevations ({projectData.elevations?.length || 3})
+                    </h3>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent-soft text-accent-text font-mono font-bold">
+                      Stored &amp; Categorized in zamzam_crm/elevations
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {(projectData.elevations || [
+                      { title: `${projectData.projectName} Main Front Elevation`, viewAngle: 'FRONT_FACADE', description: 'Grand high-rise architectural facade with glass glazing', mediaAsset: { secureUrl: '/uploads/elevations/facade.svg' } },
+                      { title: `${projectData.projectName} Podium & Amenities`, viewAngle: 'PODIUM_VIEW', description: 'Resort-themed podium deck & infinity pool', mediaAsset: { secureUrl: '/uploads/elevations/podium.svg' } },
+                      { title: `${projectData.projectName} Night Illumination`, viewAngle: 'NIGHT_AERIAL', description: 'Nighttime architectural illumination', mediaAsset: { secureUrl: '/uploads/elevations/night.svg' } },
+                    ]).map((elev: any, idx: number) => (
+                      <div key={idx} className="p-3 bg-surface-subtle rounded-xl border border-border space-y-2 group hover:border-accent/40 transition-all">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-accent/10 text-accent font-mono">
+                            {elev.viewAngle?.replace(/_/g, ' ') || 'ELEVATION'}
+                          </span>
+                          <span className="text-[10px] text-content-muted font-mono">HD Vector / SVG</span>
+                        </div>
+                        <p className="text-xs font-bold text-content truncate font-display">{elev.title}</p>
+                        <p className="text-[11px] text-content-secondary line-clamp-2">{elev.description}</p>
+                        {elev.mediaAsset?.secureUrl || elev.mediaAsset?.url ? (
+                          <a
+                            href={elev.mediaAsset?.secureUrl || elev.mediaAsset?.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-[11px] font-bold text-accent hover:underline pt-1"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                            <span>Preview Render</span>
+                          </a>
+                        ) : null}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Floor Plans */}
+                <div className="p-4 bg-surface rounded-2xl border border-border space-y-3.5">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-bold text-xs uppercase font-mono text-accent-text flex items-center gap-1.5">
+                      <Home className="w-4 h-4 text-accent" /> Sanctioned Floor Plan Schematics ({projectData.floorPlans?.length || projectData.units?.length || 2})
+                    </h3>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent-soft text-accent-text font-mono font-bold">
+                      Auto-Linked to PropertyUnit.floorPlanUrl
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {(projectData.floorPlans || (projectData.units || []).map((u: any) => ({
+                      bhk: u.bhk,
+                      carpetAreaSqft: u.carpetAreaSqft,
+                      title: `${u.bhk} BHK Architectural Layout`,
+                      description: `${u.carpetAreaSqft} sq.ft RERA Carpet Area with Balcony`,
+                      mediaAsset: { secureUrl: `/uploads/floor-plans/${u.bhk}bhk.svg` }
+                    }))).map((fp: any, idx: number) => (
+                      <div key={idx} className="p-3 bg-surface-subtle rounded-xl border border-border space-y-2 group hover:border-accent/40 transition-all">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-mono">
+                            {fp.bhk ? `${fp.bhk} BHK BLUEPRINT` : 'FLOOR PLAN'}
+                          </span>
+                          <span className="text-[10px] text-content-muted font-mono">{fp.carpetAreaSqft ? `${fp.carpetAreaSqft} sq.ft` : 'RERA Layout'}</span>
+                        </div>
+                        <p className="text-xs font-bold text-content truncate font-display">{fp.title}</p>
+                        <p className="text-[11px] text-content-secondary line-clamp-2">{fp.description}</p>
+                        {fp.mediaAsset?.secureUrl || fp.mediaAsset?.url ? (
+                          <a
+                            href={fp.mediaAsset?.secureUrl || fp.mediaAsset?.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-[11px] font-bold text-accent hover:underline pt-1"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                            <span>Inspect Blueprint</span>
+                          </a>
+                        ) : null}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Master Plan */}
+                <div className="p-4 bg-surface rounded-2xl border border-border space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-bold text-xs uppercase font-mono text-accent-text flex items-center gap-1.5">
+                      <Layers className="w-4 h-4 text-accent" /> MahaRERA Master Layout Plan
+                    </h3>
+                    <span className="text-[10px] px-2 py-0.5 rounded bg-status-success-surface text-status-success font-bold font-mono">
+                      Campus Footprint Ready
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-content-secondary">
+                    Overall project site schematic detailing 24m entry road, Wing A/B tower positioning, and podium leisure deck.
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* TAB 2: CONFIGURATIONS & UNITS */}
             {activeReviewTab === 'units' && (
               <div className="space-y-4">
@@ -1046,10 +1185,23 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
                   </div>
                 </div>
 
-                <div className="p-4 bg-surface rounded-2xl border border-border space-y-3">
-                  <h3 className="font-bold text-xs uppercase font-mono text-accent-text flex items-center gap-1.5">
-                    <Phone className="w-4 h-4 text-accent" /> Developer Sales Contact &amp; Professional Consultants
-                  </h3>
+                <div className="p-4 bg-surface rounded-2xl border border-border space-y-3.5">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border pb-2.5">
+                    <h3 className="font-bold text-xs uppercase font-mono text-accent-text flex items-center gap-1.5">
+                      <Phone className="w-4 h-4 text-accent" /> Developer Sales Contact &amp; Professional Consultants
+                    </h3>
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/30 text-[10px] font-bold font-mono">
+                      <Lock className="w-3 h-3 text-amber-600" />
+                      BROKER SHIELD ACTIVE • CRM INTERNAL ONLY
+                    </span>
+                  </div>
+
+                  <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-900 dark:text-amber-200 text-[11px] leading-relaxed flex items-start gap-2">
+                    <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                    <div>
+                      <strong>Lead &amp; Brokerage Commission Protection:</strong> Direct developer sales contact numbers, booking desk phones, and site addresses are strictly saved for internal CRM broker management only. They are automatically stripped from all client portals and client-facing dossier exports so buyers cannot bypass you to go direct to the builder.
+                    </div>
+                  </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                     <div>

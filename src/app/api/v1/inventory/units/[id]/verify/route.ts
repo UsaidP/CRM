@@ -3,10 +3,14 @@ import { prisma } from '@/lib/db/prisma';
 import { verifyUnitSchema } from '@/lib/validators/inventory-schemas';
 import { canTransitionStatus, validateReraNumber, VerificationStatus } from '@/lib/domain/verification-engine';
 import { calculateAllInCost } from '@/lib/domain/cost-calculator';
+import { requireSession } from '@/lib/services/api-auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const auth = await requireSession(req);
+  if (!auth.ok) return auth.response;
+
   try {
     const { id } = await params;
     const body = await req.json();

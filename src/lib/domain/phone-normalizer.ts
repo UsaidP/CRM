@@ -32,14 +32,23 @@ export function normalizeIndianPhone(input: string | number): PhoneValidationRes
 
   let tenDigitNumber = '';
 
-  if (digitsOnly.length === 10) {
+  if (digitsOnly.length === 10 && ['6', '7', '8', '9'].includes(digitsOnly.charAt(0))) {
     tenDigitNumber = digitsOnly;
-  } else if (digitsOnly.length === 11 && digitsOnly.startsWith('0')) {
+  } else if (digitsOnly.length === 11 && digitsOnly.startsWith('0') && ['6', '7', '8', '9'].includes(digitsOnly.charAt(1))) {
     tenDigitNumber = digitsOnly.substring(1);
-  } else if (digitsOnly.length === 12 && digitsOnly.startsWith('91')) {
+  } else if (digitsOnly.length === 12 && digitsOnly.startsWith('91') && ['6', '7', '8', '9'].includes(digitsOnly.charAt(2))) {
     tenDigitNumber = digitsOnly.substring(2);
-  } else if (digitsOnly.length === 13 && digitsOnly.startsWith('091')) {
+  } else if (digitsOnly.length === 13 && digitsOnly.startsWith('091') && ['6', '7', '8', '9'].includes(digitsOnly.charAt(3))) {
     tenDigitNumber = digitsOnly.substring(3);
+  } else if (digitsOnly.length >= 8 && digitsOnly.length <= 15) {
+    // Valid International / NRI Phone Number (e.g. +965 Kuwait, +971 UAE, +1 USA, +44 UK)
+    const e164 = `+${digitsOnly}`;
+    return {
+      isValid: true,
+      e164,
+      nationalFormat: e164,
+      rawInput: raw,
+    };
   } else {
     return {
       isValid: false,

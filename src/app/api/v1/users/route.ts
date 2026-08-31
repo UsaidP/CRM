@@ -5,12 +5,15 @@ import { requireRole, orgScope } from '@/lib/services/api-auth';
 
 export const dynamic = 'force-dynamic';
 
-// Only Super Admins and Broker Managers may manage team members.
-const MANAGEMENT_ROLES = ['SUPER_ADMIN', 'BROKER_MANAGER'] as const;
+// Super Admins, Admins, and Managers may view team members.
+const VIEW_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER'] as const;
+
+// Only Super Admins and Admins can add or provision users.
+const ADMIN_ROLES = ['SUPER_ADMIN', 'ADMIN'] as const;
 
 export async function GET(req: Request) {
   try {
-    const auth = await requireRole(req, [...MANAGEMENT_ROLES]);
+    const auth = await requireRole(req, [...VIEW_ROLES]);
     if (!auth.ok) return auth.response;
     const { session } = auth;
 
@@ -18,6 +21,12 @@ export async function GET(req: Request) {
       where: orgScope(session),
       orderBy: { createdAt: 'asc' },
       include: {
+        team: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
         _count: {
           select: {
             assignedLeads: true,
@@ -47,12 +56,12 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const auth = await requireRole(req, [...MANAGEMENT_ROLES]);
+    const auth = await requireRole(req, [...ADMIN_ROLES]);
     if (!auth.ok) return auth.response;
     const { session } = auth;
 
     const body = await req.json();
-    const { fullName, email, phoneE164, role, customPermissions } = body;
+    const { fullName, email, phoneE164, role, teamId, customPermissions } = body;
 
     if (!fullName || !email || !phoneE164) {
       return NextResponse.json(
@@ -63,6 +72,38 @@ export async function POST(req: Request) {
 
     const cleanEmail = email.trim().toLowerCase();
     const cleanPhone = phoneE164.trim();
+    const targetRole = role || 'AGENT';
+
+    // Verify teamId if provided or required (Agents, Telecallers, Managers should belong to a team)
+    let validatedTeamId: string | null = null;
+    if (teamId) {
+      const team = await prisma.team.findFirst({
+        where: orgScope(session, { id: teamId, isActive: true }),
+      });
+      if (!team) {
+        return NextResponse.json(
+          { success: false, error: 'Selected team does not exist or is inactive' },
+          { status: 400 }
+        );
+      }
+      validatedTeamId = team.id;
+    } else if (targetRole === 'AGENT' || targetRole === 'TELECALLER' || targetRole === 'MANAGER') {
+      // Find or create default team if none provided
+      let defaultTeam = await prisma.team.findFirst({
+        where: orgScope(session, { isActive: true }),
+        orderBy: { createdAt: 'asc' },
+      });
+      if (!defaultTeam) {
+        defaultTeam = await prisma.team.create({
+          data: {
+            organizationId: session.organizationId,
+            name: 'General Team',
+            description: 'Default operations team',
+          },
+        });
+      }
+      validatedTeamId = defaultTeam.id;
+    }
 
     // Check if user already exists (within this organization)
     const existingUser = await prisma.user.findFirst({
@@ -77,8 +118,12 @@ export async function POST(req: Request) {
         where: { id: existingUser.id },
         data: {
           fullName: fullName.trim(),
-          role: role || existingUser.role,
+          role: targetRole,
+          teamId: validatedTeamId !== undefined ? validatedTeamId : existingUser.teamId,
           isActive: true,
+        },
+        include: {
+          team: { select: { id: true, name: true } },
         },
       });
 
@@ -107,11 +152,15 @@ export async function POST(req: Request) {
         fullName: fullName.trim(),
         email: cleanEmail,
         phoneE164: cleanPhone,
-        role: role || 'TELECALLER',
+        role: targetRole,
+        teamId: validatedTeamId,
         customPermissionsJson: customPermissions ? JSON.stringify(customPermissions) : '[]',
         isActive: true,
         inviteToken,
         inviteTokenExpiresAt,
+      },
+      include: {
+        team: { select: { id: true, name: true } },
       },
     });
 

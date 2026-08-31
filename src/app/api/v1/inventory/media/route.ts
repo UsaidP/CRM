@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { NextResponse } from 'next/server';
+import { requireSession } from '@/lib/services/api-auth';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -27,6 +28,9 @@ function extensionFor(type: string, originalName: string) {
 }
 
 export async function POST(req: Request) {
+  const auth = await requireSession(req);
+  if (!auth.ok) return auth.response;
+
   try {
     const formData = await req.formData();
     const files = formData.getAll('files').filter((value): value is File => value instanceof File);

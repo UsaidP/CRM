@@ -1,10 +1,15 @@
 import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/db/prisma';
 import {
   SESSION_COOKIE_NAME,
   verifySessionToken,
   type SessionPayload,
 } from '@/lib/services/auth-service';
-import type { CrmRole } from '@/types/crm';
+import type { CrmRole, PermissionScope } from '@/types/crm';
+import { PermissionKey } from '@/types/crm';
+import { hasPermission, getPermissionScope } from '@/lib/domain/rbac-engine';
+import { bindTenant } from '@/lib/db/tenant-context';
+import { getTeamMemberIds } from '@/lib/services/team-service';
 
 /**
  * Central API authentication & tenant-scoping guards.
@@ -19,6 +24,10 @@ import type { CrmRole } from '@/types/crm';
 
 export type ApiAuthResult =
   | { ok: true; session: SessionPayload }
+  | { ok: false; response: NextResponse };
+
+export type ApiAuthWithScopeResult =
+  | { ok: true; session: SessionPayload; scope: PermissionScope }
   | { ok: false; response: NextResponse };
 
 function readCookie(req: Request, name: string): string | null {
@@ -59,6 +68,24 @@ export async function requireSession(req: Request): Promise<ApiAuthResult> {
   if (!session) {
     return { ok: false, response: unauthorized() };
   }
+
+  // Stale-session guard: if the session's organization no longer exists
+  // (e.g. DB was re-seeded), the session cannot be trusted — force re-login.
+  const org = await prisma.organization.findUnique({
+    where: { id: session.organizationId },
+  });
+
+  if (!org) {
+    return {
+      ok: false,
+      response: unauthorized('Session is stale — please sign in again'),
+    };
+  }
+
+  // Bind the tenant for the remainder of this request's async context so the
+  // Prisma tenant guard (src/lib/db/tenant-guard.ts) auto-scopes every query.
+  bindTenant(session.organizationId);
+
   return { ok: true, session };
 }
 
@@ -83,6 +110,120 @@ export async function requireSuperAdmin(req: Request): Promise<ApiAuthResult> {
     return { ok: false, response: forbidden('Super Admin access required') };
   }
   return result;
+}
+
+/**
+ * Require an authenticated user holding a specific RBAC permission.
+ *
+ * This is the ONLY seam routes should use for permission checks — it
+ * delegates to the rbac-engine matrix (role defaults + per-user custom
+ * overrides). Prefer it over requireRole when the question is "may this
+ * user do X" rather than "is this user role Y".
+ */
+export async function requirePermission(
+  req: Request,
+  permission: PermissionKey
+): Promise<ApiAuthResult> {
+  const result = await requireSession(req);
+  if (!result.ok) return result;
+  const { session } = result;
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.userId },
+    select: { role: true, customPermissionsJson: true },
+  });
+
+  if (!hasPermission(user, permission)) {
+    return { ok: false, response: forbidden(`Missing permission: ${permission}`) };
+  }
+
+  return result;
+}
+
+/**
+ * Require a permission AND return the resolved scope for data filtering.
+ *
+ * Usage:
+ *   const auth = await requirePermissionWithScope(req, 'leads:view_all');
+ *   if (!auth.ok) return auth.response;
+ *   const { session, scope } = auth;
+ *   const where = await scopedLeadFilter(session, scope);
+ */
+export async function requirePermissionWithScope(
+  req: Request,
+  permission: PermissionKey
+): Promise<ApiAuthWithScopeResult> {
+  const result = await requireSession(req);
+  if (!result.ok) return result;
+  const { session } = result;
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.userId },
+    select: { role: true, customPermissionsJson: true, teamId: true },
+  });
+
+  if (!hasPermission(user, permission)) {
+    return { ok: false, response: forbidden(`Missing permission: ${permission}`) };
+  }
+
+  const scope = getPermissionScope(user, permission);
+
+  return { ok: true, session: { ...session, teamId: user?.teamId }, scope };
+}
+
+/**
+ * Build a Prisma where clause for leads based on scope.
+ *
+ * GLOBAL       → {} (no additional filter beyond org)
+ * ORGANIZATION → { organizationId } (existing behavior)
+ * TEAM         → assignedBrokerId IN [team member IDs]
+ * OWN_AND_ASSIGNED → assignedBrokerId = userId OR has active LeadAssignment
+ * OWN          → assignedBrokerId = userId
+ */
+export async function scopedLeadFilter(
+  session: SessionPayload,
+  scope: PermissionScope
+): Promise<Record<string, unknown>> {
+  const base: Record<string, unknown> = { organizationId: session.organizationId };
+
+  switch (scope) {
+    case 'GLOBAL':
+    case 'ORGANIZATION':
+      // Full org access — no additional filter
+      return base;
+
+    case 'TEAM': {
+      const teamMemberIds = await getTeamMemberIds(session.userId);
+      return {
+        ...base,
+        assignedBrokerId: { in: teamMemberIds },
+      };
+    }
+
+    case 'OWN_AND_ASSIGNED': {
+      return {
+        ...base,
+        OR: [
+          { assignedBrokerId: session.userId },
+          {
+            assignments: {
+              some: {
+                userId: session.userId,
+                unassignedAt: null,
+              },
+            },
+          },
+        ],
+      };
+    }
+
+    case 'OWN':
+    default:
+      return {
+        ...base,
+        assignedBrokerId: session.userId,
+      };
+  }
 }
 
 /**

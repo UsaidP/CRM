@@ -2,10 +2,14 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { rankMatchingProperties, BuyerRequirementInput, PropertyUnitForMatching } from '@/lib/domain/matching-engine';
 import { generateWhatsAppPitchWithAI } from '@/lib/services/gemini-service';
+import { requireSession } from '@/lib/services/api-auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
+  const auth = await requireSession(req);
+  if (!auth.ok) return auth.response;
+
   try {
     const body = await req.json();
     const {

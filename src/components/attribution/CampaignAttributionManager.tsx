@@ -21,6 +21,7 @@ import {
 import { YoutubeIcon, InstagramIcon } from '@/components/icons/SocialIcons';
 import { OFFICIAL_BROKER_NUMBERS } from '@/lib/constants/broker-constants';
 import { CustomSelect, type CustomSelectOption } from '@/components/ui/CustomSelect';
+import { listCampaigns, createCampaign } from '@/lib/client/attribution';
 
 const CAMPAIGN_CHANNEL_OPTIONS: CustomSelectOption[] = [
   { value: 'YOUTUBE_SHORT', label: 'YouTube Short' },
@@ -53,10 +54,9 @@ export function CampaignAttributionManager({ initialCampaigns = [] }: { initialC
   const fetchCampaigns = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/v1/attribution/campaigns');
-      const data = await res.json();
-      if (data.success) {
-        setCampaigns(data.data);
+      const data = await listCampaigns();
+      if (data) {
+        setCampaigns(data as any);
       }
     } catch (err) {
       console.error('Error fetching campaigns:', err);
@@ -79,17 +79,12 @@ export function CampaignAttributionManager({ initialCampaigns = [] }: { initialC
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      const res = await fetch('/api/v1/attribution/campaigns', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      const data = await createCampaign({
           campaignName: formName,
           channelType: formChannel,
           sourceCode: formCode.trim().toUpperCase(),
           waPrefilledText: formText || undefined,
-        }),
-      });
-      const data = await res.json();
+        });
       if (data.success) {
         setShowCreateModal(false);
         setFormName('');

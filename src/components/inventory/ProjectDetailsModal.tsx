@@ -28,6 +28,7 @@ import { formatDateFull } from '@/lib/date-utils';
 import { AccessibleDialog } from '@/components/ui/AccessibleDialog';
 import { ReraVerificationBadge } from '@/components/inventory/ReraVerificationBadge';
 import { MahaReraCertificateModal } from '@/components/inventory/MahaReraCertificateModal';
+import { ProjectMediaStudioModal } from '@/components/inventory/ProjectMediaStudioModal';
 
 interface ProjectDetailsModalProps {
   project: any;
@@ -52,6 +53,7 @@ export function ProjectDetailsModal({
   const [syncingCertificate, setSyncingCertificate] = useState(false);
   const [certificateMsg, setCertificateMsg] = useState<string | null>(null);
   const [showFormCModal, setShowFormCModal] = useState(false);
+  const [showMediaStudio, setShowMediaStudio] = useState(false);
 
   const handleSyncCertificate = async () => {
     if (!currentProject?.reraNumber) return;
@@ -96,37 +98,149 @@ export function ProjectDetailsModal({
     return `₹${Number(val).toLocaleString('en-IN')}`;
   };
 
-  const mediaGallery = Array.isArray(project.mediaGalleryJson) 
-    ? project.mediaGalleryJson 
-    : typeof project.mediaGalleryJson === 'string'
-    ? JSON.parse(project.mediaGalleryJson || '[]')
+  const projectUnits = units.filter((u) => u.projectId === currentProject.id);
+
+  const rawGallery = Array.isArray(currentProject.mediaGalleryJson) 
+    ? currentProject.mediaGalleryJson 
+    : typeof currentProject.mediaGalleryJson === 'string'
+    ? JSON.parse(currentProject.mediaGalleryJson || '[]')
+    : Array.isArray(currentProject.mediaGallery)
+    ? currentProject.mediaGallery
     : [];
 
-  const keyHighlights = Array.isArray(project.keyHighlights)
-    ? project.keyHighlights
-    : typeof project.keyHighlights === 'string'
-    ? JSON.parse(project.keyHighlights || '[]')
+  const keyHighlights = Array.isArray(currentProject.keyHighlights)
+    ? currentProject.keyHighlights
+    : typeof currentProject.keyHighlights === 'string'
+    ? JSON.parse(currentProject.keyHighlights || '[]')
     : [];
 
-  const amenities = Array.isArray(project.amenitiesJson)
-    ? project.amenitiesJson
-    : typeof project.amenitiesJson === 'string'
-    ? JSON.parse(project.amenitiesJson || '[]')
+  const amenities = Array.isArray(currentProject.amenitiesJson)
+    ? currentProject.amenitiesJson
+    : typeof currentProject.amenitiesJson === 'string'
+    ? JSON.parse(currentProject.amenitiesJson || '[]')
     : [];
 
-  const elevationImages = mediaGallery.filter((m: any) => 
-    m.category === 'elevation' || 
-    m.type === 'ELEVATION' || 
-    (m.title && (m.title.toLowerCase().includes('elevation') || m.title.toLowerCase().includes('facade') || m.title.toLowerCase().includes('exterior')))
-  );
+  // Normalize gallery items into uniform { url, title, category, type } objects
+  const normalizedGallery: Array<{ url: string; title: string; category: string; type?: string }> = [];
 
-  const floorPlanImages = mediaGallery.filter((m: any) => 
-    m.category === 'floorplan' || 
-    m.type === 'FLOOR_PLAN' || 
-    (m.title && (m.title.toLowerCase().includes('floor plan') || m.title.toLowerCase().includes('blueprint') || m.title.toLowerCase().includes('layout') || m.title.toLowerCase().includes('master plan')))
-  );
+  rawGallery.forEach((item: any, idx: number) => {
+    if (!item) return;
+    if (typeof item === 'string') {
+      const url = item;
+      const lower = url.toLowerCase();
+      let category = 'elevation';
+      let title = `${currentProject.projectName} Architectural View ${idx + 1}`;
+      if (lower.includes('floorplan') || lower.includes('floor_plan') || lower.includes('floor-plan') || lower.includes('blueprint')) {
+        category = 'floorplan';
+        title = `${currentProject.projectName} Floor Plan Blueprint`;
+      } else if (lower.includes('master_plan') || lower.includes('masterplan') || lower.includes('master-plan') || lower.includes('layout')) {
+        category = 'floorplan';
+        title = `${currentProject.projectName} Master Layout Plan`;
+      } else if (lower.includes('facade') || lower.includes('front')) {
+        category = 'elevation';
+        title = `${currentProject.projectName} Front Facade Elevation`;
+      } else if (lower.includes('podium')) {
+        category = 'elevation';
+        title = `${currentProject.projectName} Podium Architecture View`;
+      } else if (lower.includes('night') || lower.includes('aerial')) {
+        category = 'elevation';
+        title = `${currentProject.projectName} Night Aerial Elevation`;
+      }
+      normalizedGallery.push({ url, title, category });
+    } else if (typeof item === 'object' && (item.url || item.secureUrl)) {
+      const url = item.url || item.secureUrl;
+      const lower = (item.title || item.category || item.type || url || '').toLowerCase();
+      let category = item.category || item.type || 'elevation';
+      if (lower.includes('floor') || lower.includes('plan') || lower.includes('blueprint') || lower.includes('layout')) {
+        category = 'floorplan';
+      }
+      normalizedGallery.push({
+        url,
+        title: item.title || `${currentProject.projectName} Media ${idx + 1}`,
+        category,
+        type: item.type || category
+      });
+    }
+  });
 
-  const projectUnits = units.filter((u) => u.projectId === project.id);
+  // Build Elevation Images List
+  const elevationList: Array<{ url: string; title: string; category: string; badge?: string }> = [];
+
+  // Add coverImageUrl
+  if (currentProject.coverImageUrl && !elevationList.some(e => e.url === currentProject.coverImageUrl)) {
+    elevationList.push({
+      url: currentProject.coverImageUrl,
+      title: `${currentProject.projectName} Primary Elevation (Cover)`,
+      category: 'elevation',
+      badge: 'PRIMARY ELEVATION COVER'
+    });
+  }
+
+  // Add elevations from gallery
+  normalizedGallery
+    .filter(m => m.category === 'elevation' || m.category === 'exterior' || (m.type && m.type.toLowerCase().includes('elevation')))
+    .forEach((m) => {
+      if (!elevationList.some(e => e.url === m.url)) {
+        let badge = 'ARCHITECTURAL VIEW';
+        const lower = (m.title + ' ' + m.url).toLowerCase();
+        if (lower.includes('front') || lower.includes('facade')) badge = 'FRONT FACADE';
+        else if (lower.includes('podium')) badge = 'PODIUM VIEW';
+        else if (lower.includes('night') || lower.includes('aerial')) badge = 'NIGHT AERIAL';
+        elevationList.push({
+          ...m,
+          badge
+        });
+      }
+    });
+
+  const elevationImages = elevationList.length > 0 ? elevationList : [
+    { url: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1600', title: `${currentProject.projectName} Tower Elevation`, category: 'elevation', badge: 'FRONT ELEVATION' },
+    { url: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1600', title: `${currentProject.projectName} Facade Render`, category: 'elevation', badge: 'PODIUM FACADE' }
+  ];
+
+  // Build Floor Plans & Blueprints List
+  const floorPlanList: Array<{ url: string; title: string; category: string; badge?: string; bhk?: number; carpet?: number }> = [];
+
+  // Add masterPlanUrl
+  if (currentProject.masterPlanUrl && !floorPlanList.some(f => f.url === currentProject.masterPlanUrl)) {
+    floorPlanList.push({
+      url: currentProject.masterPlanUrl,
+      title: `${currentProject.projectName} Sanctioned Master Layout Plan`,
+      category: 'floorplan',
+      badge: 'MASTER LAYOUT PLAN'
+    });
+  }
+
+  // Add unit floor plans
+  projectUnits.forEach((unit: any) => {
+    if (unit.floorPlanUrl && !floorPlanList.some(f => f.url === unit.floorPlanUrl)) {
+      floorPlanList.push({
+        url: unit.floorPlanUrl,
+        title: `${unit.bhk} BHK Architectural Floor Plan (${unit.carpetAreaSqft || 'RERA'} sq.ft.)`,
+        category: 'floorplan',
+        badge: `${unit.bhk} BHK BLUEPRINT`,
+        bhk: unit.bhk,
+        carpet: unit.carpetAreaSqft
+      });
+    }
+  });
+
+  // Add floor plans from gallery
+  normalizedGallery
+    .filter(m => m.category === 'floorplan' || (m.type && m.type.toLowerCase().includes('floor_plan')))
+    .forEach((m) => {
+      if (!floorPlanList.some(f => f.url === m.url)) {
+        floorPlanList.push({
+          ...m,
+          badge: 'FLOOR PLAN BLUEPRINT'
+        });
+      }
+    });
+
+  const floorPlanImages = floorPlanList.length > 0 ? floorPlanList : [
+    { url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1600', title: `${currentProject.projectName} Master Layout Plan`, category: 'floorplan', badge: 'MASTER LAYOUT' },
+    { url: 'https://images.unsplash.com/photo-1574362848149-11496d93a7c7?w=1600', title: `Typical 2 & 3 BHK Cluster Floor Plan`, category: 'floorplan', badge: 'CLUSTER PLAN' }
+  ];
 
   return (
     <AccessibleDialog
@@ -146,12 +260,12 @@ export function ProjectDetailsModal({
             <div>
               <div className="flex items-center gap-2.5 flex-wrap">
                 <h2 id="project-modal-title" className="text-xl font-bold text-content font-display">
-                  {project.projectName}
+                  {currentProject.projectName}
                 </h2>
                 <span className="badge-cobalt">
-                  {project.microMarket}
+                  {currentProject.microMarket}
                 </span>
-                {project.hasOccupancyCertificate ? (
+                {currentProject.hasOccupancyCertificate ? (
                   <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-status-success-surface text-status-success border border-status-success/30 flex items-center gap-1">
                     <CheckCircle2 className="w-3 h-3" /> Ready OC (0% GST)
                   </span>
@@ -162,7 +276,7 @@ export function ProjectDetailsModal({
                 )}
               </div>
               <p className="text-xs text-content-muted mt-1">
-                Developer: <span className="text-content font-medium">{project.developerName}</span> • Sub-locality: {project.subLocality || 'Kharghar & Taloja Corridor'}
+                Developer: <span className="text-content font-medium">{currentProject.developerName}</span> • Sub-locality: {currentProject.subLocality || 'Kharghar & Taloja Corridor'}
               </p>
             </div>
           </div>
@@ -172,7 +286,7 @@ export function ProjectDetailsModal({
                 type="button"
                 onClick={() => {
                   onClose();
-                  onEditProject(project);
+                  onEditProject(currentProject);
                 }}
                 className="px-3 py-1.5 rounded-lg border border-border bg-surface text-content text-xs font-semibold hover:bg-surface-raised flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
                 title="Edit Project Specifications"
@@ -185,7 +299,7 @@ export function ProjectDetailsModal({
               <button
                 type="button"
                 onClick={() => {
-                  onDeleteProject(project.id, project.projectName);
+                  onDeleteProject(currentProject.id, currentProject.projectName);
                 }}
                 className="px-3 py-1.5 rounded-lg border border-status-danger/30 bg-status-danger-surface text-status-danger text-xs font-semibold hover:bg-status-danger/10 flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
                 title="Delete Project & Associated Units"
@@ -226,7 +340,7 @@ export function ProjectDetailsModal({
                 : 'border-transparent text-content-muted hover:text-content'
             }`}
           >
-            <Building2 className="w-4 h-4" /> Elevations &amp; Facades ({elevationImages.length || 2})
+            <Building2 className="w-4 h-4" /> Elevations &amp; Facades ({elevationImages.length})
           </button>
           <button
             onClick={() => setActiveTab('floorplans')}
@@ -236,7 +350,7 @@ export function ProjectDetailsModal({
                 : 'border-transparent text-content-muted hover:text-content'
             }`}
           >
-            <Layers className="w-4 h-4" /> Floor Plans &amp; Blueprints ({floorPlanImages.length || 2})
+            <Layers className="w-4 h-4" /> Floor Plans &amp; Blueprints ({floorPlanImages.length})
           </button>
           <button
             onClick={() => setActiveTab('areamatrix')}
@@ -431,67 +545,85 @@ export function ProjectDetailsModal({
           {/* TAB 2: Elevations & Facades */}
           {activeTab === 'elevations' && (
             <div className="space-y-6">
-              <div className="p-4 rounded-xl border border-border bg-surface-raised">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-xs font-bold text-content uppercase tracking-wider flex items-center gap-1.5">
-                    <Building2 className="w-4 h-4 text-accent" /> Architectural Elevations &amp; Exterior Facades
-                  </h3>
-                  <span className="text-[11px] text-content-muted bg-surface px-2.5 py-1 rounded border border-border font-mono">
-                    Strict Filter: Only Exterior Renders &amp; High-Rise Elevations
-                  </span>
+              <div className="p-4 rounded-xl border border-border bg-surface-raised flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="text-xs font-bold text-content uppercase tracking-wider flex items-center gap-1.5">
+                      <Building2 className="w-4 h-4 text-accent" /> Architectural Elevations &amp; Exterior Facades ({elevationImages.length})
+                    </h3>
+                  </div>
+                  <p className="text-xs text-content-muted leading-relaxed">
+                    High-resolution 3D building elevations, tower architecture, and aerial facade views stored via Cloudinary &amp; Local Media Vault.
+                  </p>
                 </div>
-                <p className="text-xs text-content-muted leading-relaxed">
-                  High-resolution 3D building elevations, tower architecture, and aerial views from sanctioned MahaRERA and CIDCO filings.
-                </p>
+                <button
+                  type="button"
+                  onClick={() => setShowMediaStudio(true)}
+                  className="px-3.5 py-2 rounded-xl bg-accent text-accent-contrast text-xs font-bold shadow hover:bg-accent/90 flex items-center gap-1.5 shrink-0 cursor-pointer transition-all"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  <span>Media &amp; Elevation Studio</span>
+                </button>
               </div>
 
               {/* Elevation Image Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {(elevationImages.length > 0 ? elevationImages : [
-                  { url: project.coverImageUrl || 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1600', title: `${project.projectName} Tower Elevation` },
-                  { url: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1600', title: `${project.projectName} Facade Render` }
-                ]).map((img: any, idx: number) => (
-                  <div 
-                    key={idx} 
-                    className="group relative rounded-xl overflow-hidden border border-border bg-surface-inset aspect-[16/10] cursor-pointer"
-                    onClick={() => setSelectedImage(img.url)}
-                  >
-                    <img 
-                      src={img.url} 
-                      alt={img.title || `${project.projectName} Elevation ${idx + 1}`} 
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-4">
-                      <div className="flex items-center justify-between w-full">
-                        <span className="text-xs font-semibold text-white">
-                          {img.title || `Tower Architectural Elevation ${idx + 1}`}
-                        </span>
-                        <span className="p-1.5 rounded-md bg-black/60 text-white group-hover:bg-accent group-hover:text-white transition-colors">
-                          <Maximize2 className="w-3.5 h-3.5" />
-                        </span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {elevationImages.map((img: any, idx: number) => {
+                  const isCloud = img.url?.includes('cloudinary') || img.url?.includes('/uploads/');
+                  return (
+                    <div 
+                      key={idx} 
+                      className="group relative rounded-xl overflow-hidden border border-border/80 bg-slate-950 aspect-[16/10] cursor-pointer shadow-sm hover:border-accent hover:shadow-md transition-all flex flex-col justify-end"
+                      onClick={() => setSelectedImage(img.url)}
+                    >
+                      <img 
+                        src={img.url} 
+                        alt={img.title || `${currentProject.projectName} Elevation ${idx + 1}`} 
+                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-black/40 flex flex-col justify-between p-3.5 pointer-events-none">
+                        <div className="flex items-center justify-between w-full">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-accent text-accent-contrast shadow-sm tracking-wide">
+                            {img.badge || 'ELEVATION'}
+                          </span>
+                          {isCloud && (
+                            <span className="px-2 py-0.5 rounded text-[9px] font-mono font-medium bg-black/70 text-sky-300 border border-sky-500/30 flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                              Cloud Vault
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center justify-between w-full">
+                          <span className="text-xs font-semibold text-white truncate pr-2">
+                            {img.title || `Tower Architectural Elevation ${idx + 1}`}
+                          </span>
+                          <span className="p-1.5 rounded-md bg-black/60 text-white group-hover:bg-accent group-hover:text-white transition-colors shrink-0">
+                            <Maximize2 className="w-3.5 h-3.5" />
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               {/* Architecture Specs */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-2">
                 <div className="p-3 rounded-lg border border-border bg-surface-raised text-center">
                   <div className="text-[11px] text-content-muted">Total Towers</div>
-                  <div className="text-base font-bold text-content font-mono">{project.totalTowers || 6}</div>
+                  <div className="text-base font-bold text-content font-mono">{currentProject.totalTowers || 1}</div>
                 </div>
                 <div className="p-3 rounded-lg border border-border bg-surface-raised text-center">
                   <div className="text-[11px] text-content-muted">Storeys / Floors</div>
-                  <div className="text-base font-bold text-content font-mono">{project.totalFloors || 38} Storeys</div>
+                  <div className="text-base font-bold text-content font-mono">{currentProject.totalFloors || 7} Storeys</div>
                 </div>
                 <div className="p-3 rounded-lg border border-border bg-surface-raised text-center">
                   <div className="text-[11px] text-content-muted">Base Price/sqft</div>
-                  <div className="text-base font-bold text-accent font-mono">₹{project.basePricePerSqft?.toLocaleString('en-IN') || '14,500'}</div>
+                  <div className="text-base font-bold text-accent font-mono">₹{currentProject.basePricePerSqft?.toLocaleString('en-IN') || '6,200'}</div>
                 </div>
                 <div className="p-3 rounded-lg border border-border bg-surface-raised text-center">
                   <div className="text-[11px] text-content-muted">Metro Station</div>
-                  <div className="text-base font-bold text-content font-mono">{project.distanceToMetroKm || 0.65} km</div>
+                  <div className="text-base font-bold text-content font-mono">{currentProject.distanceToMetroKm || 0.65} km</div>
                 </div>
               </div>
             </div>
@@ -500,48 +632,66 @@ export function ProjectDetailsModal({
           {/* TAB 3: Floor Plans & Blueprints */}
           {activeTab === 'floorplans' && (
             <div className="space-y-6">
-              <div className="p-4 rounded-xl border border-border bg-surface-raised">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-xs font-bold text-content uppercase tracking-wider flex items-center gap-1.5">
-                    <Layers className="w-4 h-4 text-accent" /> Sanctioned Floor Plans &amp; Blueprints
-                  </h3>
-                  <span className="text-[11px] text-content-muted bg-surface px-2.5 py-1 rounded border border-border font-mono">
-                    Architectural Layout Blueprints
-                  </span>
+              <div className="p-4 rounded-xl border border-border bg-surface-raised flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="text-xs font-bold text-content uppercase tracking-wider flex items-center gap-1.5">
+                      <Layers className="w-4 h-4 text-accent" /> Sanctioned Floor Plans &amp; Blueprints ({floorPlanImages.length})
+                    </h3>
+                  </div>
+                  <p className="text-xs text-content-muted leading-relaxed">
+                    Sanctioned master blueprints, typical cluster floor plans, and 2D/3D unit floor plan schematics with exact internal dimensions.
+                  </p>
                 </div>
-                <p className="text-xs text-content-muted leading-relaxed">
-                  Sanctioned master blueprints, typical cluster floor plans, and 2D/3D unit floor plan schematics with exact internal dimensions.
-                </p>
+                <button
+                  type="button"
+                  onClick={() => setShowMediaStudio(true)}
+                  className="px-3.5 py-2 rounded-xl bg-accent text-accent-contrast text-xs font-bold shadow hover:bg-accent/90 flex items-center gap-1.5 shrink-0 cursor-pointer transition-all"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  <span>Media &amp; Elevation Studio</span>
+                </button>
               </div>
 
               {/* Floor Plan Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {(floorPlanImages.length > 0 ? floorPlanImages : [
-                  { url: project.masterPlanUrl || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1600', title: `${project.projectName} Master Layout Plan` },
-                  { url: 'https://images.unsplash.com/photo-1574362848149-11496d93a7c7?w=1600', title: `Typical 2 & 3 BHK Cluster Floor Plan` }
-                ]).map((img: any, idx: number) => (
-                  <div 
-                    key={idx} 
-                    className="group relative rounded-xl overflow-hidden border border-border bg-surface-inset aspect-[16/11] cursor-pointer"
-                    onClick={() => setSelectedImage(img.url)}
-                  >
-                    <img 
-                      src={img.url} 
-                      alt={img.title || `${project.projectName} Floor Plan ${idx + 1}`} 
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-4">
-                      <div className="flex items-center justify-between w-full">
-                        <span className="text-xs font-semibold text-white">
-                          {img.title || `Sanctioned Floor Plan Blueprint ${idx + 1}`}
-                        </span>
-                        <span className="p-1.5 rounded-md bg-black/60 text-white group-hover:bg-accent group-hover:text-white transition-colors">
-                          <Maximize2 className="w-3.5 h-3.5" />
-                        </span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {floorPlanImages.map((img: any, idx: number) => {
+                  const isCloud = img.url?.includes('cloudinary') || img.url?.includes('/uploads/');
+                  return (
+                    <div 
+                      key={idx} 
+                      className="group relative rounded-xl overflow-hidden border border-sky-500/30 bg-slate-950 aspect-[16/11] cursor-pointer shadow-sm hover:border-sky-400 hover:shadow-md transition-all flex flex-col justify-end"
+                      onClick={() => setSelectedImage(img.url)}
+                    >
+                      <img 
+                        src={img.url} 
+                        alt={img.title || `${currentProject.projectName} Floor Plan ${idx + 1}`} 
+                        className="absolute inset-0 w-full h-full object-contain p-3 transition-transform duration-300 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-black/40 flex flex-col justify-between p-3.5 pointer-events-none">
+                        <div className="flex items-center justify-between w-full">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-500 text-white shadow-sm tracking-wide">
+                            {img.badge || 'BLUEPRINT'}
+                          </span>
+                          {isCloud && (
+                            <span className="px-2 py-0.5 rounded text-[9px] font-mono font-medium bg-black/70 text-sky-300 border border-sky-500/30 flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                              Verified
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center justify-between w-full">
+                          <span className="text-xs font-semibold text-white truncate pr-2">
+                            {img.title || `Sanctioned Floor Plan Blueprint ${idx + 1}`}
+                          </span>
+                          <span className="p-1.5 rounded-md bg-black/60 text-white group-hover:bg-accent group-hover:text-white transition-colors shrink-0">
+                            <Maximize2 className="w-3.5 h-3.5" />
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
@@ -682,7 +832,7 @@ export function ProjectDetailsModal({
               <button
                 type="button"
                 onClick={() => {
-                  onDeleteProject(project.id, project.projectName);
+                  onDeleteProject(currentProject.id, currentProject.projectName);
                 }}
                 className="px-3 py-2 text-xs font-semibold rounded-xl border border-status-danger/30 text-status-danger bg-status-danger-surface hover:bg-status-danger/10 transition-all flex items-center gap-1.5 cursor-pointer"
               >
@@ -695,7 +845,7 @@ export function ProjectDetailsModal({
                 type="button"
                 onClick={() => {
                   onClose();
-                  onEditProject(project);
+                  onEditProject(currentProject);
                 }}
                 className="btn-secondary px-3.5 py-2 text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
               >
@@ -714,6 +864,52 @@ export function ProjectDetailsModal({
           </div>
         </div>
       </div>
+
+      {/* High-Resolution Media Lightbox Modal */}
+      {selectedImage && (
+        <AccessibleDialog
+          open={true}
+          onClose={() => setSelectedImage(null)}
+          titleId="lightbox-title"
+          size="2xl"
+          panelClassName="!p-4 bg-slate-950/95 border-slate-800 max-w-5xl"
+        >
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+              <h3 id="lightbox-title" className="text-sm font-bold text-white flex items-center gap-2">
+                <Maximize2 className="w-4 h-4 text-accent" />
+                High-Resolution Architectural View • {currentProject.projectName}
+              </h3>
+              <div className="flex items-center gap-2">
+                <a
+                  href={selectedImage}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  download
+                  className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Open Full Asset</span>
+                </a>
+                <button
+                  type="button"
+                  onClick={() => setSelectedImage(null)}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+            <div className="relative w-full max-h-[75vh] flex items-center justify-center overflow-auto rounded-xl bg-slate-900/60 p-2">
+              <img
+                src={selectedImage}
+                alt="High resolution render"
+                className="max-h-[70vh] w-auto object-contain rounded-lg shadow-2xl"
+              />
+            </div>
+          </div>
+        </AccessibleDialog>
+      )}
 
       {/* Form C Interactive Preview Modal */}
       {currentProject && (
@@ -735,6 +931,32 @@ export function ProjectDetailsModal({
             certificateUrl: currentProject.reraCertificateUrl || (currentProject.reraNumber === 'P52000079818' ? '/uploads/rera-certificates/MahaRERA_P52000079818_city_avenue_Certificate.pdf' : undefined),
             originalImageUrl: currentProject.originalDocumentUrl || (currentProject.reraNumber === 'P52000079818' ? '/images/original-certificates/P52000079818.png' : undefined),
             isOriginalScannedDocument: true,
+          }}
+        />
+      )}
+
+      {/* Elevation, Floor Plan & Media Studio Modal */}
+      {showMediaStudio && currentProject && (
+        <ProjectMediaStudioModal
+          open={showMediaStudio}
+          onClose={() => setShowMediaStudio(false)}
+          project={{
+            ...currentProject,
+            units: projectUnits,
+          }}
+          onUpdated={async () => {
+            try {
+              const res = await fetch(`/api/v1/inventory/projects`);
+              if (res.ok) {
+                const data = await res.json();
+                const updated = (data.data || []).find((p: any) => p.id === currentProject.id);
+                if (updated) {
+                  setCurrentProject(updated);
+                }
+              }
+            } catch (e) {
+              console.warn('Failed to refresh project data:', e);
+            }
           }}
         />
       )}

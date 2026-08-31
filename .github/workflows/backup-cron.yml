@@ -1,0 +1,37 @@
+name: Automated Daily CRM Backup & Cloud Sync
+
+on:
+  schedule:
+    # Runs everyday at 20:30 UTC (2:00 AM IST)
+    - cron: '30 20 * * *'
+  workflow_dispatch: # Allows manual run button in GitHub Actions tab
+
+jobs:
+  backup:
+    name: Backup PostgreSQL to Google Drive
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile || bun install
+
+      - name: Generate Prisma Client
+        run: bunx prisma generate
+
+      - name: Execute Backup & Google Drive Sync
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+          GOOGLE_DRIVE_WEBHOOK_URL: ${{ secrets.GOOGLE_DRIVE_WEBHOOK_URL }}
+          GOOGLE_DRIVE_FOLDER_URL: ${{ secrets.GOOGLE_DRIVE_FOLDER_URL }}
+          CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+        run: bun scripts/backup.ts

@@ -79,9 +79,9 @@ export function SourceEvidenceDrawer({
   onOpenMergeModal,
   onLeadUpdated,
 }: SourceEvidenceDrawerProps) {
-  if (!lead) return null;
-
-  const [communications, setCommunications] = useState<any[]>(lead.communications || []);
+  // Hooks must run unconditionally — guard values with `lead?.` instead of
+  // returning early before them (react-hooks/rules-of-hooks).
+  const [communications, setCommunications] = useState<any[]>(lead?.communications || []);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingLogId, setEditingLogId] = useState<string | null>(null);
 
@@ -94,8 +94,8 @@ export function SourceEvidenceDrawer({
   const [callDurationSeconds, setCallDurationSeconds] = useState(0);
   const [followUpDate, setFollowUpDate] = useState('');
   const [nextSteps, setNextSteps] = useState('');
-  const [callerName, setCallerName] = useState(lead.assignedBroker?.fullName || 'Safwan Diwan');
-  const [stageUpdate, setStageUpdate] = useState(lead.currentStage || 'discovery_call');
+  const [callerName, setCallerName] = useState(lead?.assignedBroker?.fullName || 'Safwan Diwan');
+  const [stageUpdate, setStageUpdate] = useState(lead?.currentStage || 'discovery_call');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -104,6 +104,8 @@ export function SourceEvidenceDrawer({
   const [editOutcome, setEditOutcome] = useState('');
   const [editFollowUp, setEditFollowUp] = useState('');
   const [editNextSteps, setEditNextSteps] = useState('');
+
+  if (!lead) return null;
 
   const identities = lead.contact?.identities || [];
 

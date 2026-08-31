@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
+import { requireSession } from '@/lib/services/api-auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -7,6 +8,9 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireSession(req);
+  if (!auth.ok) return auth.response;
+
   try {
     const { id } = await params;
     const body = await req.json();
@@ -86,6 +90,9 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireSession(req);
+  if (!auth.ok) return auth.response;
+
   try {
     const { id } = await params;
     await prisma.communicationLog.delete({

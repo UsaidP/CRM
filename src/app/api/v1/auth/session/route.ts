@@ -22,7 +22,10 @@ const ORGANIZATION_SELECT = {
   },
 } as const;
 
-const USER_INCLUDE = { organization: ORGANIZATION_SELECT } as const;
+const USER_INCLUDE = {
+  organization: ORGANIZATION_SELECT,
+  team: { select: { id: true, name: true } },
+} as const;
 
 /**
  * Session introspection endpoint.
@@ -73,6 +76,8 @@ export async function GET() {
         email: user.email,
         phoneE164: user.phoneE164,
         role: user.role,
+        teamId: user.teamId,
+        team: user.team,
         isSuperAdmin,
         organization: user.organization,
         customPermissionsJson: user.customPermissionsJson,
@@ -82,13 +87,14 @@ export async function GET() {
 
     // Refresh the cookie only for an already-valid session whose org binding
     // changed (e.g. user moved organizations). User identity never changes here.
-    if (user.organizationId !== payload.organizationId) {
+    if (user.organizationId !== payload.organizationId || user.teamId !== payload.teamId) {
       const newToken = await createSessionToken({
         userId: user.id,
         email: user.email,
         fullName: user.fullName,
         role: user.role as CrmRole,
         organizationId: user.organizationId,
+        teamId: user.teamId,
         isSuperAdmin,
       });
 

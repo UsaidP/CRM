@@ -42,6 +42,7 @@ import { AccessibleDialog } from '@/components/ui/AccessibleDialog';
 import { CustomSelect, type CustomSelectOption } from '@/components/ui/CustomSelect';
 import { SourceEvidenceDrawer } from '@/components/leads/SourceEvidenceDrawer';
 import { formatDateTime, formatTimeShort } from '@/lib/date-utils';
+import { fetchCalendarEvents, createReminder, updateReminder, deleteReminder } from '@/lib/client/calendar';
 
 const ACTION_TYPE_OPTIONS: CustomSelectOption[] = [
   { value: 'CALL', label: '📞 Phone Call' },
@@ -170,10 +171,9 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
   const fetchEvents = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/v1/calendar/events');
-      const data = await res.json();
-      if (res.ok && data.success) {
-        setEvents(data.events);
+      const events = await fetchCalendarEvents();
+      if (events) {
+        setEvents(events as any);
       }
     } catch (err) {
       console.error('Failed to refresh calendar:', err);
@@ -232,23 +232,14 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
 
     setSubmitting(true);
     try {
-      const res = await fetch('/api/v1/reminders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      await createReminder({
           leadId: newLeadId,
           title: newTitle,
           reminderType: newType,
           dueAt: new Date(newDueDate).toISOString(),
           priority: newPriority,
           notes: newNotes,
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Failed to schedule reminder');
-      }
+        });
 
       setShowAddModal(false);
       setNewTitle('');
@@ -267,13 +258,8 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
     const newStatus = event.status === 'COMPLETED' ? 'PENDING' : 'COMPLETED';
 
     try {
-      const res = await fetch(`/api/v1/reminders/${event.rawId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus }),
-      });
-
-      if (res.ok) {
+      const res = await updateReminder(event.rawId, { status: newStatus });
+      if (res.success) {
         setEvents((prev) =>
           prev.map((e) => (e.id === event.id ? { ...e, status: newStatus, isPastDue: false } : e))
         );
@@ -290,13 +276,8 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
     if (event.sourceType !== 'REMINDER') return;
 
     try {
-      const res = await fetch(`/api/v1/reminders/${event.rawId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ snoozeMinutes: minutes }),
-      });
-
-      if (res.ok) {
+      const res = await updateReminder(event.rawId, { snoozeMinutes: minutes });
+      if (res.success) {
         await fetchEvents();
         setSelectedEvent(null);
       }
@@ -310,11 +291,8 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
     if (!confirm('Are you sure you want to delete this reminder?')) return;
 
     try {
-      const res = await fetch(`/api/v1/reminders/${event.rawId}`, {
-        method: 'DELETE',
-      });
-
-      if (res.ok) {
+      const res = await deleteReminder(event.rawId);
+      if (res.success) {
         setEvents((prev) => prev.filter((e) => e.id !== event.id));
         setSelectedEvent(null);
       }
@@ -404,14 +382,9 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
           payload.dueAt = new Date(editDueDate).toISOString();
         }
 
-        const res = await fetch(`/api/v1/reminders/${selectedEvent.rawId}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
-        const data = await res.json();
-        if (!res.ok || !data.success) {
-          throw new Error(data.error || 'Failed to update reminder');
+        const res = await updateReminder(selectedEvent.rawId, payload);
+        if (!res.success) {
+          throw new Error(res.error || 'Failed to update reminder');
         }
 
         setEditSuccess('Scheduled action updated successfully!');
