@@ -3,6 +3,7 @@ import { InventoryClient } from '@/components/inventory/InventoryClient';
 import { assessUnitFreshness } from '@/lib/domain/verification-engine';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export default async function InventoryPage() {
   let initialUnits: any[] = [];

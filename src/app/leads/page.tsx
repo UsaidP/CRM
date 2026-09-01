@@ -3,6 +3,7 @@ import { LeadsMatrixClient } from '@/components/leads/LeadsMatrixClient';
 import { evaluate24HourMessagingWindow } from '@/lib/domain/contact-manager';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export default async function LeadsPage() {
   let initialLeads: any[] = [];
