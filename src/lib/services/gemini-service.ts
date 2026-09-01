@@ -20,13 +20,14 @@ function getGeminiClient(): GoogleGenAI | null {
   return new GoogleGenAI({ apiKey });
 }
 
-// Active Free-Tier High-RPM Vision & Multimodal Model
-export const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-3.6-flash';
+// Active High-RPM Vision & Multimodal Models for Document Understanding
+export const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 
 // Model cascade for rate-limit immunity:
-// 1. gemini-3.6-flash (Fast, modern, generous free tier multimodal vision)
-// 2. gemini-3.5-flash-lite (Ultra high throughput, lightweight free tier)
-// 3. gemini-2.5-flash (Reliable free tier fallback)
+// 1. gemini-2.5-flash (Fast, accurate multimodal vision & document OCR)
+// 2. gemini-2.0-flash (High throughput fallback)
+// 3. gemini-1.5-flash (Reliable free tier fallback)
+// 4. gemini-1.5-pro (Deep vision fallback for high-density architectural plans)
 export const GEMINI_MODEL_CANDIDATES = [
   process.env.GEMINI_MODEL || 'gemini-3.6-flash',
   'gemini-3.5-flash-lite',
@@ -53,295 +54,77 @@ export function isRateLimitError(err: any): boolean {
 
 /**
  * Industrial-Grade Real Estate Multimodal Vision Prompt for Indian/MahaRERA Projects
- * SYSTEM PROMPT — REAL ESTATE PDF PROPERTY & IMAGE EXTRACTION ENGINE (18-Section Specification)
  */
 const BROCHURE_EXTRACTION_PROMPT = `
-SYSTEM PROMPT — REAL ESTATE PDF PROPERTY & IMAGE EXTRACTION ENGINE
+SYSTEM PROMPT — REAL ESTATE PDF BROCHURE & SPECIFICATIONS AI EXTRACTION ENGINE
 
-You are a Real Estate Document Extraction Engine.
+You are an expert Real Estate Document Extraction Engine specialized in Indian and MahaRERA property brochures, architectural drawings, marketing leaflets, and floor plans.
 
-Your task is to process real-estate brochures, property PDFs, floor-plan documents, project presentations, and marketing PDFs.
+Your task is to analyze every page of the uploaded brochure (PDF/Images) and extract ALL authentic, verified specifications into clean, structured JSON.
 
-You must extract BOTH:
+CRITICAL EXTRACTION GUIDELINES:
+1. STRICT ACCURACY: Do NOT invent, assume, or hallucinate project names, RERA numbers, addresses, or unit sizes. Extract ONLY facts present in the brochure.
+2. MAHARERA REGISTRATION NUMBER: Search thoroughly across cover pages, headers, footers, QR code captions, certificates, and disclaimers for the MahaRERA number (Format: "P" followed by 11 digits, e.g., P51700077818, P52000018920). Return the exact MahaRERA number or null if completely absent.
+3. PROJECT & DEVELOPER: Extract the exact Project Name (e.g., "Saras Icon") and Developer/Builder Promoter Name (e.g., "Saras Infra").
+4. LOCATION & LOCALITY: Extract the exact site address, plot number, sector number, and micro-market / locality (e.g., Seawoods, Kharghar, Taloja, Ulwe, Panvel, Vashi, etc.).
+5. STRUCTURE & FLOORS: Extract the total number of storeys / floors (e.g. 15 storeys -> 15), elevation structure (e.g. "G+15 Storey Tower"), and tower count.
+6. CONFIGURATIONS & UNITS:
+   - Extract all unit typologies (1 BHK, 2 BHK, 3 BHK).
+   - If unit floor plans or typical floor plates are shown, extract specific unit flat numbers (e.g., 101, 102, 1201, 1202...), usable RERA carpet areas in sq.ft, balconies, and bathrooms.
+7. AMENITIES & SPECIFICATIONS:
+   - Extract all listed lifestyle amenities (e.g., Fitness Center, Swimming Pool, Rooftop Garden, Kids Play Area, CCTV, Covered Parking, High Speed Elevators).
+   - Extract technical specifications (flooring, sanitary ware, concealed plumbing, copper wiring, aluminum windows, granite platform).
+8. CONNECTIVITY & TRANSIT: Extract all railway stations, highways, airports, and distance/time metrics mentioned in the brochure.
+9. CONTACT DETAILS: Extract direct builder sales phone numbers, emails, site office address, and registered head office address.
 
-A. STRUCTURED PROPERTY INFORMATION
-B. ORIGINAL VISUAL ASSETS / IMAGES
-
-The final result must preserve the relationship between extracted information and the corresponding images.
-
-==================================================
-1. CORE OBJECTIVE
-==================================================
-
-For every uploaded PDF:
-
-1. Read and analyze every page.
-2. Extract all available textual information.
-3. Analyze visual content on every page.
-4. Detect images, renders, floor plans, maps, diagrams, tables, logos, site plans, elevations, photographs, and other useful visual assets.
-5. Extract the ORIGINAL embedded image whenever technically possible.
-6. Do NOT recreate, redraw, generate, or modify the original image.
-7. Classify every useful extracted image.
-8. Associate every image with the correct property/project field.
-9. Preserve the original page number and source location.
-10. Return structured JSON suitable for insertion into a real-estate CRM/database.
-
-The system must prioritize source accuracy over assumptions.
-
-==================================================
-2. PDF PAGE ANALYSIS
-==================================================
-
-Process every page individually.
-
-For each page determine:
-- page_number
-- page_title
-- page_type (cover, project_overview, amenities, elevation, exterior_render, interior_render, floor_plan, ground_floor_plan, first_floor_plan, typical_floor_plan, unit_plan, site_plan, location_map, master_plan, connectivity_map, specification, pricing, payment_plan, legal_information, contact, other)
-- textual_content
-- visual_assets
-- relevant_property_information
-
-==================================================
-3. IMAGE EXTRACTION & 4. CLASSIFICATION
-==================================================
-
-Classify every visual asset into categories:
-ELEVATION, FLOOR_PLAN, GROUND_FLOOR_PLAN, FIRST_FLOOR_PLAN, TYPICAL_FLOOR_PLAN, UNIT_FLOOR_PLAN, SITE_PLAN, MASTER_PLAN, LOCATION_MAP, CONNECTIVITY_MAP, EXTERIOR_IMAGE, INTERIOR_IMAGE, AMENITY_IMAGE, PROJECT_RENDER, LOGO, DIAGRAM, TABLE, OTHER
-
-Generate specific subtypes (e.g. "front_elevation", "ground_floor_parking_plan", "first_floor_layout", "typical_2nd_to_7th_floor_plan", "1bhk_floor_plan", "2bhk_floor_plan", "location_connectivity_map").
-
-==================================================
-5. IMAGE POSITION / SEMANTIC MAPPING & 6. POSITION DETECTION
-==================================================
-
-Map every image to its semantic position (elevation, floor_plans, ground_floor_plan, first_floor_plan, typical_floor_plan, location_map, amenities, etc.) with page_number, filename, and confidence.
-
-==================================================
-7. FLOOR PLAN HANDLING & 8. ELEVATION HANDLING
-==================================================
-
-Separate:
-- Ground floor plans
-- First floor plans
-- Typical floor plans (e.g. 2nd to 7th floor plate)
-- Unit-specific plans (1 BHK, 2 BHK, 3 BHK)
-- Architectural Elevations (front, podium, night illumination)
-
-==================================================
-9. LOCATION MAP HANDLING & 10. TEXT EXTRACTION
-==================================================
-
-Extract project name, developer, MahaRERA number (starting with P), locality, sector, total floors, total towers, units matrix, specifications, amenities, and transit connectivity.
-
-==================================================
-11. DO NOT INVENT INFORMATION & 12. SOURCE TRACEABILITY
-==================================================
-
-Never hallucinate. Return null or "not specified" when unclear. Retain page_number source.
-
-==================================================
-13. IMAGE-TO-DATA ASSOCIATION & 14. RECOMMENDED OUTPUT STRUCTURE
-==================================================
-
-Output pure JSON matching this exact structure:
-
+Output purely valid JSON conforming to this schema:
 {
-  "project": {
-    "name": "Project Name",
-    "developer": "Developer Name",
-    "address": "Site Address",
-    "city": "Navi Mumbai",
-    "locality": "Taloja",
-    "sector": "Sector 24",
-    "plot_number": "Plot Details",
-    "building_configuration": "G+7 Storey",
-    "project_type": "Residential cum Commercial",
-    "rera_number": "P52000079818",
-    "status": "UNDER_CONSTRUCTION"
-  },
-  "building": {
-    "total_floors": 7,
-    "residential_floors": 6,
-    "commercial_floors": 1,
-    "units_per_floor": 8,
-    "elevators": 2,
-    "towers": 1
-  },
-  "units": [
-    {
-      "unit_number": "Flat 101",
-      "bhk": 1,
-      "bhk_label": "1 BHK Premium",
-      "carpet_area_sqft": 445,
-      "bathrooms": 2,
-      "balconies": 1,
-      "orientation": "EAST",
-      "floor_number": 1,
-      "agreement_value": 4500000,
-      "description": "1 BHK layout with balcony and master bedroom"
-    },
-    {
-      "unit_number": "Flat 102",
-      "bhk": 2,
-      "bhk_label": "2 BHK Luxury",
-      "carpet_area_sqft": 650,
-      "bathrooms": 2,
-      "balconies": 2,
-      "orientation": "WEST",
-      "floor_number": 2,
-      "agreement_value": 6800000,
-      "description": "2 BHK luxury layout with sundeck"
-    }
-  ],
-  "amenities": [
-    "Clubhouse", "Gymnasium", "Podium Garden", "Children Play Area", "24/7 Security", "High-Speed Elevators", "Power Backup", "Rainwater Harvesting"
-  ],
-  "specifications": {
-    "flooring": "2'x2' Vitrified tiles in all rooms",
-    "kitchen": "Granite platform with stainless steel sink",
-    "doors": "Decorative main door with marble frame",
-    "windows": "Powder coated aluminum sliding windows",
-    "bathrooms": "Concealed plumbing with branded fittings",
-    "electrical": "Concealed copper wiring with modular switches",
-    "waterproofing": "Terrace water proofing treatment"
-  },
-  "location": {
-    "address": "Sector 24, Taloja Phase II, Navi Mumbai",
-    "nearby_places": ["Metro Station", "Central Park", "Railway Station", "International Airport"],
-    "connectivity": [
-      { "destination": "Metro Station", "distance_or_time": "3 mins walk", "type": "METRO" },
-      { "destination": "Railway Station", "distance_or_time": "10 mins drive", "type": "RAILWAY" },
-      { "destination": "International Airport", "distance_or_time": "15 mins drive", "type": "AIRPORT" }
-    ]
-  },
-  "contacts": {
-    "phone": ["+919967731071"],
-    "email": ["sales@developer.com"],
-    "website": "www.developer.com",
-    "sales_poc_name": "Sales Contact",
-    "office_address": "Office Address"
+  "projectName": string,
+  "developerName": string,
+  "reraNumber": string | null,
+  "microMarket": string,
+  "subLocality": string,
+  "elevation": string,
+  "totalFloors": number,
+  "totalTowers": number,
+  "hasOccupancyCertificate": boolean,
+  "possessionStatus": "READY_TO_MOVE" | "UNDER_CONSTRUCTION",
+  "expectedPossessionDate": string | null,
+  "basePricePerSqft": number | null,
+  "plotDetails": string | null,
+  "structureType": string | null,
+  "floorPlateSummary": string | null,
+  "shortDescription": string,
+  "description": string,
+  "amenities": string[],
+  "specifications": Record<string, string>,
+  "transitConnectivity": Array<{ "destination": string, "timeOrDistance": string, "type": string }>,
+  "keyHighlights": string[],
+  "units": Array<{
+    "unitNumber": string,
+    "bhk": number,
+    "bhkLabel": string,
+    "carpetAreaSqft": number,
+    "bathrooms": number,
+    "balconies": number,
+    "floorNumber": number,
+    "facing": string,
+    "agreementValue": number,
+    "description": string
+  }>,
+  "confidentialBrokerData": {
+    "developerSalesPocName": string | null,
+    "developerSalesPocPhone": string | null,
+    "developerEmail": string | null,
+    "siteAddress": string | null,
+    "officeAddress": string | null,
+    "architects": string | null,
+    "rccConsultants": string | null
   },
   "images": {
-    "elevation": [
-      {
-        "asset_type": "elevation",
-        "subtype": "front_elevation",
-        "title": "Main Building Front Elevation",
-        "page_number": 3,
-        "source_position": "full_page",
-        "filename": "PROJECTNAME_elevation.jpg",
-        "original": true,
-        "confidence": 0.99
-      }
-    ],
-    "ground_floor_plan": [
-      {
-        "asset_type": "ground_floor_plan",
-        "subtype": "ground_floor_parking_plan",
-        "title": "Ground Floor Layout",
-        "page_number": 5,
-        "source_position": "full_page",
-        "filename": "PROJECTNAME_ground_floor_plan.jpg",
-        "original": true,
-        "confidence": 0.99
-      }
-    ],
-    "first_floor_plan": [
-      {
-        "asset_type": "first_floor_plan",
-        "subtype": "first_floor_layout",
-        "title": "First Floor Cluster Layout",
-        "page_number": 6,
-        "source_position": "full_page",
-        "filename": "PROJECTNAME_first_floor_plan.jpg",
-        "original": true,
-        "confidence": 0.99
-      }
-    ],
-    "typical_floor_plan": [
-      {
-        "asset_type": "typical_floor_plan",
-        "subtype": "typical_2nd_to_7th_floor_plan",
-        "title": "Typical Floor Plan (2nd to 7th Floor)",
-        "page_number": 7,
-        "source_position": "full_page",
-        "filename": "PROJECTNAME_typical_floor_plan_2nd_to_7th.jpg",
-        "original": true,
-        "confidence": 0.99
-      }
-    ],
-    "unit_floor_plan": [
-      {
-        "asset_type": "unit_floor_plan",
-        "subtype": "1bhk_floor_plan",
-        "title": "1 BHK Floor Plan",
-        "page_number": 7,
-        "source_position": "center_left",
-        "filename": "PROJECTNAME_1bhk_floor_plan.jpg",
-        "original": true,
-        "confidence": 0.99
-      },
-      {
-        "asset_type": "unit_floor_plan",
-        "subtype": "2bhk_floor_plan",
-        "title": "2 BHK Floor Plan",
-        "page_number": 7,
-        "source_position": "center_right",
-        "filename": "PROJECTNAME_2bhk_floor_plan.jpg",
-        "original": true,
-        "confidence": 0.99
-      }
-    ],
-    "location_map": [
-      {
-        "asset_type": "location_map",
-        "subtype": "location_connectivity_map",
-        "title": "Location & Connectivity Map",
-        "page_number": 8,
-        "source_position": "full_page",
-        "filename": "PROJECTNAME_location_map.jpg",
-        "original": true,
-        "confidence": 0.99
-      }
-    ],
-    "amenities": [],
-    "exterior": [],
-    "interior": [],
-    "other": []
-  },
-  "floor_plans": [
-    {
-      "floor": "Ground Floor",
-      "plan_type": "ground_floor_plan",
-      "page_number": 5,
-      "image_asset": "PROJECTNAME_ground_floor_plan.jpg",
-      "orientation": "north",
-      "original_image": true
-    },
-    {
-      "floor": "1st Floor",
-      "plan_type": "first_floor_plan",
-      "page_number": 6,
-      "image_asset": "PROJECTNAME_first_floor_plan.jpg",
-      "orientation": "north",
-      "original_image": true
-    },
-    {
-      "floor": "Typical (2nd to 7th Floor)",
-      "plan_type": "typical_floor_plan",
-      "page_number": 7,
-      "image_asset": "PROJECTNAME_typical_floor_plan_2nd_to_7th.jpg",
-      "orientation": "north",
-      "original_image": true
-    }
-  ],
-  "pages": [],
-  "extraction_metadata": {
-    "total_pages": 8,
-    "images_extracted": 6,
-    "text_extracted": true,
-    "original_images_preserved": true
+    "elevation": Array<{ "asset_type": "elevation", "subtype": string, "title": string, "page_number": number, "description": string }>,
+    "floor_plans": Array<{ "floor": string, "plan_type": string, "page_number": number, "bhk": number, "carpet_area_sqft": number }>,
+    "location_map": Array<{ "asset_type": "location_map", "subtype": string, "title": string, "page_number": number }>
   }
 }
 `;
@@ -376,7 +159,7 @@ export async function extractBrochureWithAI(
   let parsed: any = null;
   let successfulModel: string = GEMINI_MODEL;
 
-  // Multi-model retry cascade for free tier rate-limit immunity
+  // Multi-model retry cascade for rate-limit and availability resilience
   for (const modelName of GEMINI_MODEL_CANDIDATES) {
     try {
       const response = await ai.models.generateContent({
@@ -392,7 +175,7 @@ export async function extractBrochureWithAI(
         ],
         config: {
           responseMimeType: 'application/json',
-          temperature: 0.1, // High precision for OCR & architectural parameters
+          temperature: 0.1, // High precision for architectural parameters
         },
       });
 
@@ -410,7 +193,7 @@ export async function extractBrochureWithAI(
   if (!parsed) {
     throw new Error(
       lastError
-        ? `Gemini AI rate limit reached (${lastError.message || '429 Too Many Requests'}). Falling back to high-accuracy local parser.`
+        ? `Gemini AI extraction attempt failed (${lastError.message || 'Error'}).`
         : 'All AI model extraction attempts failed.'
     );
   }
@@ -419,28 +202,42 @@ export async function extractBrochureWithAI(
   const projObj = parsed.project || {};
   const bldgObj = parsed.building || {};
   const locObj = parsed.location || {};
-  const contactObj = parsed.contacts || {};
+  const contactObj = parsed.contacts || parsed.contactDetails || {};
 
-  const projectName = projObj.name || parsed.projectName || filename.replace(/\.[^/.]+$/, '').replace(/[_-]/g, ' ');
-  const developerName = projObj.developer || parsed.developerName || 'Premier Developer';
-  const rawRera = projObj.rera_number || parsed.reraNumber || 'P52000079818';
-  
-  // Validate MahaRERA number
-  const reraValidation = validateReraNumber(rawRera);
-  const reraNumber = reraValidation.isValid && reraValidation.normalized 
-    ? reraValidation.normalized 
-    : rawRera;
+  const cleanFilenameName = filename.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ').replace(/\s+brochure.*$/i, '').trim();
+  const projectName = parsed.projectName || projObj.name || cleanFilenameName || 'New Real Estate Project';
+  const developerName = parsed.developerName || projObj.developer || 'Developer Group';
 
-  const totalFloors = Number(bldgObj.total_floors || parsed.totalFloors) || 7;
-  const totalTowers = Number(bldgObj.towers || parsed.totalTowers) || 1;
+  // Extract MahaRERA registration number with validation
+  let rawRera = parsed.reraNumber || parsed.rera_number || projObj.rera_number || projObj.reraNumber || parsed.mahareraNumber || parsed.maharera_number || '';
+  if (!rawRera) {
+    const rawReraMatch = JSON.stringify(parsed).match(/\b(P\d{11})\b/i);
+    if (rawReraMatch) {
+      rawRera = rawReraMatch[1];
+    }
+  }
+
+  let reraNumber: string | undefined;
+  if (rawRera) {
+    const reraValidation = validateReraNumber(rawRera);
+    reraNumber = reraValidation.isValid && reraValidation.normalized 
+      ? reraValidation.normalized 
+      : rawRera.toUpperCase();
+  }
+
+  // Floors & Elevation
+  const totalFloors = Number(parsed.totalFloors || bldgObj.total_floors || bldgObj.floors) || (parsed.floors ? parseInt(String(parsed.floors).replace(/\D/g, ''), 10) || 7 : 7);
+  const totalTowers = Number(parsed.totalTowers || bldgObj.towers || parsed.towers) || 1;
   const hasOccupancyCertificate = Boolean(parsed.hasOccupancyCertificate || projObj.status === 'READY_TO_MOVE');
   const possessionStatus = hasOccupancyCertificate || projObj.status === 'READY_TO_MOVE' || parsed.possessionStatus === 'READY_TO_MOVE' 
     ? 'READY_TO_MOVE' 
     : 'UNDER_CONSTRUCTION';
 
-  const microMarket = locObj.locality || parsed.microMarket || 'Taloja Sector 24';
-  const subLocality = locObj.sector ? `${locObj.sector}, ${locObj.locality || ''}` : (parsed.subLocality || 'Near Metro Station');
-  const elevation = projObj.building_configuration || parsed.elevation || `G+${totalFloors} Storey Tower`;
+  // Locality & Sub-locality
+  const rawLocality = typeof locObj === 'string' ? locObj : (locObj.locality || locObj.city || locObj.siteOffice || '');
+  const microMarket = parsed.microMarket || rawLocality || (locObj.sector ? `${locObj.sector}, Navi Mumbai` : 'Navi Mumbai');
+  const subLocality = parsed.subLocality || (typeof locObj === 'object' && locObj.siteOffice ? locObj.siteOffice : (locObj.address || (locObj.sector ? `${locObj.sector} ${locObj.locality || ''}`.trim() : 'Navi Mumbai')));
+  const elevation = parsed.elevation || projObj.building_configuration || (parsed.floors ? String(parsed.floors) : `G+${totalFloors} Storey Tower`);
 
   // Process units with Navi Mumbai statutory cost calculations
   const rawUnits = Array.isArray(parsed.units) && parsed.units.length > 0
@@ -451,10 +248,16 @@ export async function extractBrochureWithAI(
       ];
 
   const processedUnits: ExtractedBrochureUnit[] = rawUnits.map((u: any, idx: number) => {
-    const agreementValue = Number(u.agreement_value || u.agreementValue) || 4500000;
     const carpetAreaSqft = Number(u.carpet_area_sqft || u.carpetAreaSqft) || (u.bhk === 1 ? 440 : u.bhk === 2 ? 650 : 880);
     const bhk = Number(u.bhk) || 2;
     const floorNumber = Number(u.floor_number || u.floorNumber) || Math.min(idx + 1, totalFloors);
+    
+    // Estimate agreement value if not specified in marketing brochure
+    let agreementValue = Number(u.agreement_value || u.agreementValue) || 0;
+    if (agreementValue <= 0) {
+      const estimatedRate = parsed.basePricePerSqft ? Number(parsed.basePricePerSqft) : (bhk === 1 ? 9500 : 10500);
+      agreementValue = Math.round(carpetAreaSqft * estimatedRate);
+    }
 
     // Calculate all-in statutory cost breakdown (Stamp Duty 6%, Registration ₹30k, GST 5%, Parking, Dev Charges)
     const costBreakdown = calculateAllInCost({
@@ -469,11 +272,11 @@ export async function extractBrochureWithAI(
     const facingVal = u.orientation || u.facing || (idx % 2 === 0 ? 'EAST' : 'WEST');
 
     return {
-      unitNumber: u.unit_number || u.unitNumber || `Flat ${floorNumber}0${idx + 1}`,
+      unitNumber: u.unit_number || u.unitNumber || `Flat ${floorNumber}0${(idx % 4) + 1}`,
       bhk,
-      bhkLabel: u.bhk_label || u.bhkLabel || `${bhk} BHK Premium with Balcony`,
+      bhkLabel: u.bhk_label || u.bhkLabel || `${bhk} BHK`,
       carpetAreaSqft,
-      bathrooms: Number(u.bathrooms) || 2,
+      bathrooms: Number(u.bathrooms) || (bhk >= 2 ? 2 : 1),
       balconies: Number(u.balconies) || 1,
       floorNumber,
       totalFloors,
@@ -488,14 +291,14 @@ export async function extractBrochureWithAI(
       societyDevelopmentCharges: costBreakdown.societyDevCharges,
       allInTotalCost: costBreakdown.totalAllInCost,
       possessionStatus,
-      description: u.description || `${bhk} BHK layout with ${carpetAreaSqft} sq.ft usable carpet area, balcony, and Vastu orientation.`,
+      description: u.description || `${bhk} BHK layout with ${carpetAreaSqft} sq.ft usable carpet area and balcony.`,
       featureHighlights: Array.isArray(u.featureHighlights || u.feature_highlights) && (u.featureHighlights || u.feature_highlights).length > 0
         ? (u.featureHighlights || u.feature_highlights)
         : [
             `${carpetAreaSqft} Sq.ft Usable Carpet Area`,
-            `${u.bathrooms || 2} Bathrooms with Branded Fittings`,
-            facingVal ? `${facingVal} Facing Entrance (Vastu Compliant)` : 'Vastu Compliant Layout',
-            possessionStatus === 'READY_TO_MOVE' ? 'Ready to Move (OC Received)' : 'Under Construction (RERA Approved)',
+            `${u.bathrooms || (bhk >= 2 ? 2 : 1)} Bathrooms with Branded Fittings`,
+            facingVal ? `${facingVal} Facing Entrance` : 'Vastu Compliant Layout',
+            possessionStatus === 'READY_TO_MOVE' ? 'Ready to Move' : 'Under Construction (MahaRERA Sanctioned)',
           ],
     };
   });
@@ -544,72 +347,6 @@ export async function extractBrochureWithAI(
   ingestCategory(rawImages.site_plan || rawImages.master_plan, 'master_plan', 'master_layout_plan', 'master_plan');
   ingestCategory(rawImages.location_map, 'location_map', 'location_connectivity_map', 'location_map');
   ingestCategory(rawImages.amenities, 'amenity', 'amenity_view', 'amenities');
-
-  // If no asset records returned by AI, create deterministic defaults
-  if (assetRecords.length === 0) {
-    assetRecords.push(
-      {
-        asset_id: `asset_${cleanProjSlug}_1`,
-        asset_type: 'elevation',
-        subtype: 'front_elevation',
-        title: `${projectName} Main Front Elevation`,
-        file_url: `/uploads/elevations/${cleanProjSlug}_elevation.svg`,
-        page_number: 3,
-        original: true,
-        display_position: 'elevation',
-        sort_order: 1,
-        confidence: 0.99,
-      },
-      {
-        asset_id: `asset_${cleanProjSlug}_2`,
-        asset_type: 'ground_floor_plan',
-        subtype: 'ground_floor_parking_plan',
-        title: `${projectName} Ground Floor Parking & Commercial Layout`,
-        file_url: `/uploads/floor-plans/${cleanProjSlug}_ground_floor_plan.svg`,
-        page_number: 5,
-        original: true,
-        display_position: 'ground_floor_plan',
-        sort_order: 2,
-        confidence: 0.99,
-      },
-      {
-        asset_id: `asset_${cleanProjSlug}_3`,
-        asset_type: 'first_floor_plan',
-        subtype: 'first_floor_layout',
-        title: `${projectName} 1st Floor Layout Plan`,
-        file_url: `/uploads/floor-plans/${cleanProjSlug}_first_floor_plan.svg`,
-        page_number: 6,
-        original: true,
-        display_position: 'first_floor_plan',
-        sort_order: 3,
-        confidence: 0.99,
-      },
-      {
-        asset_id: `asset_${cleanProjSlug}_4`,
-        asset_type: 'typical_floor_plan',
-        subtype: 'typical_2nd_to_7th_floor_plan',
-        title: `${projectName} Typical Floor Plan (2nd to 7th Floor)`,
-        file_url: `/uploads/floor-plans/${cleanProjSlug}_typical_floor_plan_2nd_to_7th.svg`,
-        page_number: 7,
-        original: true,
-        display_position: 'typical_floor_plan',
-        sort_order: 4,
-        confidence: 0.99,
-      },
-      {
-        asset_id: `asset_${cleanProjSlug}_5`,
-        asset_type: 'location_map',
-        subtype: 'location_connectivity_map',
-        title: `${projectName} Location & Transit Connectivity Map`,
-        file_url: `/uploads/gallery/${cleanProjSlug}_location_map.svg`,
-        page_number: 8,
-        original: true,
-        display_position: 'location_map',
-        sort_order: 5,
-        confidence: 0.99,
-      }
-    );
-  }
 
   // Floor plans list
   const floorPlansList: ExtractedFloorPlanDetail[] = Array.isArray(parsed.floor_plans) && parsed.floor_plans.length > 0
@@ -686,24 +423,24 @@ export async function extractBrochureWithAI(
       '3 mins walk to Metro Station',
       'Clear Title CIDCO Transfer Plot',
     ],
-    developerSalesPocName: contactObj.sales_poc_name || parsed.developerSalesPocName || undefined,
-    developerSalesPocPhone: Array.isArray(contactObj.phone) ? contactObj.phone[0] : (parsed.developerSalesPocPhone || undefined),
-    developerEmail: Array.isArray(contactObj.email) ? contactObj.email[0] : (parsed.developerEmail || undefined),
-    siteAddress: locObj.address || parsed.siteAddress || undefined,
-    officeAddress: contactObj.office_address || parsed.officeAddress || undefined,
-    architects: parsed.architects || undefined,
-    rccConsultants: parsed.rccConsultants || undefined,
+    developerSalesPocName: parsed.confidentialBrokerData?.developerSalesPocName || contactObj.sales_poc_name || contactObj.developerSalesPocName || parsed.developerSalesPocName || undefined,
+    developerSalesPocPhone: parsed.confidentialBrokerData?.developerSalesPocPhone || (Array.isArray(contactObj.phone) ? contactObj.phone[0] : (typeof contactObj.phone === 'string' ? contactObj.phone : parsed.developerSalesPocPhone)) || undefined,
+    developerEmail: parsed.confidentialBrokerData?.developerEmail || (Array.isArray(contactObj.email) ? contactObj.email[0] : (typeof contactObj.email === 'string' ? contactObj.email : parsed.developerEmail)) || undefined,
+    siteAddress: parsed.confidentialBrokerData?.siteAddress || locObj.siteOffice || locObj.address || parsed.siteAddress || subLocality || undefined,
+    officeAddress: parsed.confidentialBrokerData?.officeAddress || locObj.officeAddress || contactObj.office_address || contactObj.officeAddress || parsed.officeAddress || undefined,
+    architects: parsed.confidentialBrokerData?.architects || parsed.architects || undefined,
+    rccConsultants: parsed.confidentialBrokerData?.rccConsultants || parsed.rccConsultants || undefined,
     commercialShops: Array.isArray(parsed.commercialShops) ? parsed.commercialShops : undefined,
-    standardCommissionPercent: typeof parsed.standardCommissionPercent === 'number' ? parsed.standardCommissionPercent : 2.5,
+    standardCommissionPercent: typeof parsed.standardCommissionPercent === 'number' ? parsed.standardCommissionPercent : (typeof parsed.confidentialBrokerData?.standardCommissionPercent === 'number' ? parsed.confidentialBrokerData.standardCommissionPercent : 2.5),
     confidentialBrokerData: {
-      developerSalesPocName: contactObj.sales_poc_name || parsed.developerSalesPocName || undefined,
-      developerSalesPocPhone: Array.isArray(contactObj.phone) ? contactObj.phone[0] : (parsed.developerSalesPocPhone || undefined),
-      developerEmail: Array.isArray(contactObj.email) ? contactObj.email[0] : (parsed.developerEmail || undefined),
-      siteAddress: locObj.address || parsed.siteAddress || undefined,
-      officeAddress: contactObj.office_address || parsed.officeAddress || undefined,
-      architects: parsed.architects || undefined,
-      rccConsultants: parsed.rccConsultants || undefined,
-      standardCommissionPercent: typeof parsed.standardCommissionPercent === 'number' ? parsed.standardCommissionPercent : 2.5,
+      developerSalesPocName: parsed.confidentialBrokerData?.developerSalesPocName || contactObj.sales_poc_name || contactObj.developerSalesPocName || parsed.developerSalesPocName || undefined,
+      developerSalesPocPhone: parsed.confidentialBrokerData?.developerSalesPocPhone || (Array.isArray(contactObj.phone) ? contactObj.phone[0] : (typeof contactObj.phone === 'string' ? contactObj.phone : parsed.developerSalesPocPhone)) || undefined,
+      developerEmail: parsed.confidentialBrokerData?.developerEmail || (Array.isArray(contactObj.email) ? contactObj.email[0] : (typeof contactObj.email === 'string' ? contactObj.email : parsed.developerEmail)) || undefined,
+      siteAddress: parsed.confidentialBrokerData?.siteAddress || locObj.siteOffice || locObj.address || parsed.siteAddress || subLocality || undefined,
+      officeAddress: parsed.confidentialBrokerData?.officeAddress || locObj.officeAddress || contactObj.office_address || contactObj.officeAddress || parsed.officeAddress || undefined,
+      architects: parsed.confidentialBrokerData?.architects || parsed.architects || undefined,
+      rccConsultants: parsed.confidentialBrokerData?.rccConsultants || parsed.rccConsultants || undefined,
+      standardCommissionPercent: typeof parsed.standardCommissionPercent === 'number' ? parsed.standardCommissionPercent : (typeof parsed.confidentialBrokerData?.standardCommissionPercent === 'number' ? parsed.confidentialBrokerData.standardCommissionPercent : 2.5),
       brokerShieldActive: true,
       notes: 'Builder direct booking contact and site address are secured for internal CRM broker use only.',
     },

@@ -249,9 +249,21 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
     try {
       let res: Response;
       if (uploadMode === 'file' && file) {
-        // Step 1: Direct chunked Cloudinary upload (supports up to 100MB without hitting 10MB ceiling)
-        let directUploadedUrl: string | null = null;
+        // Step 1: Encode Base64 for guaranteed immediate in-memory transport & vision parsing
+        let base64Data: string | null = null;
+        try {
+          base64Data = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
+        } catch (base64Err) {
+          console.warn('[BROCHURE] Base64 encoding notice:', base64Err);
+        }
 
+        // Step 2: Direct Cloudinary chunked upload for permanent asset hosting (if configured)
+        let directUploadedUrl: string | null = null;
         try {
           const isPdf = file.type?.includes('pdf') || file.name.match(/\.pdf$/i);
           const resourceType = isPdf ? 'raw' : 'auto';
@@ -272,14 +284,6 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
         } catch (cloudUploadErr) {
           console.warn('[UPLOAD] Direct Cloudinary chunked upload attempt warning:', cloudUploadErr);
         }
-
-        // Convert file to Base64 (fallback or in-memory transport)
-        const base64Data = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result as string);
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        });
 
         res = await fetch('/api/v1/inventory/upload-brochure', {
           method: 'POST',
@@ -1007,17 +1011,13 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    {(projectData.elevations || [
-                      { title: `${projectData.projectName} Main Front Elevation`, viewAngle: 'FRONT_FACADE', description: 'Grand high-rise architectural facade with glass glazing', mediaAsset: { secureUrl: '/uploads/elevations/facade.svg' } },
-                      { title: `${projectData.projectName} Podium & Amenities`, viewAngle: 'PODIUM_VIEW', description: 'Resort-themed podium deck & infinity pool', mediaAsset: { secureUrl: '/uploads/elevations/podium.svg' } },
-                      { title: `${projectData.projectName} Night Illumination`, viewAngle: 'NIGHT_AERIAL', description: 'Nighttime architectural illumination', mediaAsset: { secureUrl: '/uploads/elevations/night.svg' } },
-                    ]).map((elev: any, idx: number) => (
+                    {(projectData.elevations || []).map((elev: any, idx: number) => (
                       <div key={idx} className="p-3 bg-surface-subtle rounded-xl border border-border space-y-2 group hover:border-accent/40 transition-all">
                         <div className="flex items-center justify-between">
                           <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-accent/10 text-accent font-mono">
                             {elev.viewAngle?.replace(/_/g, ' ') || 'ELEVATION'}
                           </span>
-                          <span className="text-[10px] text-content-muted font-mono">HD Vector / SVG</span>
+                          <span className="text-[10px] text-content-muted font-mono">{elev.page_number ? `Page ${elev.page_number}` : 'Original Media'}</span>
                         </div>
                         <p className="text-xs font-bold text-content truncate font-display">{elev.title}</p>
                         <p className="text-[11px] text-content-secondary line-clamp-2">{elev.description}</p>
@@ -1029,7 +1029,7 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
                             className="inline-flex items-center gap-1 text-[11px] font-bold text-accent hover:underline pt-1"
                           >
                             <Eye className="w-3.5 h-3.5" />
-                            <span>Preview Render</span>
+                            <span>Preview Image</span>
                           </a>
                         ) : null}
                       </div>
@@ -1041,27 +1041,21 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
                 <div className="p-4 bg-surface rounded-2xl border border-border space-y-3.5">
                   <div className="flex items-center justify-between">
                     <h3 className="font-bold text-xs uppercase font-mono text-accent-text flex items-center gap-1.5">
-                      <Home className="w-4 h-4 text-accent" /> Sanctioned Floor Plan Schematics ({projectData.floorPlans?.length || projectData.units?.length || 2})
+                      <Home className="w-4 h-4 text-accent" /> Sanctioned Floor Plans &amp; Layouts ({projectData.floorPlans?.length || 0})
                     </h3>
                     <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent-soft text-accent-text font-mono font-bold">
-                      Auto-Linked to PropertyUnit.floorPlanUrl
+                      Extracted from Developer Brochure
                     </span>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    {(projectData.floorPlans || (projectData.units || []).map((u: any) => ({
-                      bhk: u.bhk,
-                      carpetAreaSqft: u.carpetAreaSqft,
-                      title: `${u.bhk} BHK Architectural Layout`,
-                      description: `${u.carpetAreaSqft} sq.ft RERA Carpet Area with Balcony`,
-                      mediaAsset: { secureUrl: `/uploads/floor-plans/${u.bhk}bhk.svg` }
-                    }))).map((fp: any, idx: number) => (
+                    {(projectData.floorPlans || []).map((fp: any, idx: number) => (
                       <div key={idx} className="p-3 bg-surface-subtle rounded-xl border border-border space-y-2 group hover:border-accent/40 transition-all">
                         <div className="flex items-center justify-between">
                           <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-mono">
-                            {fp.bhk ? `${fp.bhk} BHK BLUEPRINT` : 'FLOOR PLAN'}
+                            {fp.bhk ? `${fp.bhk} BHK PLAN` : 'FLOOR PLAN'}
                           </span>
-                          <span className="text-[10px] text-content-muted font-mono">{fp.carpetAreaSqft ? `${fp.carpetAreaSqft} sq.ft` : 'RERA Layout'}</span>
+                          <span className="text-[10px] text-content-muted font-mono">{fp.page_number ? `Page ${fp.page_number}` : fp.carpetAreaSqft ? `${fp.carpetAreaSqft} sq.ft` : 'RERA Layout'}</span>
                         </div>
                         <p className="text-xs font-bold text-content truncate font-display">{fp.title}</p>
                         <p className="text-[11px] text-content-secondary line-clamp-2">{fp.description}</p>
@@ -1073,7 +1067,7 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
                             className="inline-flex items-center gap-1 text-[11px] font-bold text-accent hover:underline pt-1"
                           >
                             <Eye className="w-3.5 h-3.5" />
-                            <span>Inspect Blueprint</span>
+                            <span>View Floor Plan</span>
                           </a>
                         ) : null}
                       </div>

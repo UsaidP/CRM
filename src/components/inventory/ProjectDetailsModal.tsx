@@ -35,27 +35,34 @@ import { ReraVerificationBadge } from '@/components/inventory/ReraVerificationBa
 import { MahaReraCertificateModal } from '@/components/inventory/MahaReraCertificateModal';
 import { ProjectMediaStudioModal } from '@/components/inventory/ProjectMediaStudioModal';
 import { resolveAssetUrl, parseGalleryUrls } from '@/lib/inventory-media';
+import { uploadToCloudinaryChunked } from '@/lib/client/cloudinary-chunked-upload';
 
 interface ProjectDetailsModalProps {
   project: any;
+  unit?: any;
   units?: any[];
   onClose: () => void;
   onSelectUnitForCalc?: (unit: any) => void;
   onEditProject?: (project: any) => void;
   onDeleteProject?: (projectId: string, projectName: string) => void;
+  onDeleteUnit?: (unit: any) => void;
+  onEditUnit?: (unit: any) => void;
   onProjectUpdated?: (updatedProject?: any) => void;
 }
 
 export function ProjectDetailsModal({
   project,
+  unit,
   units = [],
   onClose,
   onSelectUnitForCalc,
   onEditProject,
   onDeleteProject,
+  onDeleteUnit,
+  onEditUnit,
   onProjectUpdated,
 }: ProjectDetailsModalProps) {
-  const [activeTab, setActiveTab] = useState<'rera' | 'elevations' | 'floorplans' | 'areamatrix' | 'amenities'>('rera');
+  const [activeTab, setActiveTab] = useState<'rera' | 'elevations' | 'floorplans' | 'areamatrix' | 'amenities'>(unit ? 'areamatrix' : 'rera');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [currentProject, setCurrentProject] = useState(project);
   const [syncingCertificate, setSyncingCertificate] = useState(false);
@@ -215,36 +222,24 @@ export function ProjectDetailsModal({
 
       if (file.size > 4 * 1024 * 1024) {
         try {
+          const isPdf = file.type?.includes('pdf') || file.name.match(/\.pdf$/i);
+          const resourceType = isPdf ? 'raw' : 'auto';
           const signRes = await fetch(
-            `/api/v1/media/sign-upload?category=brochures&filename=${encodeURIComponent(file.name)}&resourceType=auto`
+            `/api/v1/media/sign-upload?category=brochures&filename=${encodeURIComponent(file.name)}&resourceType=${resourceType}`
           );
           if (signRes.ok) {
             const signData = await signRes.json();
             if (signData.success && signData.signed) {
-              const { signature, timestamp, apiKey, cloudName, folder, publicId } = signData.signed;
-              const cloudFormData = new FormData();
-              cloudFormData.append('file', file);
-              cloudFormData.append('api_key', apiKey);
-              cloudFormData.append('timestamp', String(timestamp));
-              cloudFormData.append('signature', signature);
-              cloudFormData.append('folder', folder);
-              if (publicId) cloudFormData.append('public_id', publicId);
-
-              const cloudRes = await fetch(
-                `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
-                { method: 'POST', body: cloudFormData }
+              const cloudAsset = await uploadToCloudinaryChunked(
+                file,
+                signData.signed,
+                file.name
               );
-              if (cloudRes.ok) {
-                const cloudJson = await cloudRes.json();
-                directUploadedUrl = resolveAssetUrl(cloudJson);
-              } else {
-                const errText = await cloudRes.text();
-                console.warn('[1-SHOT] Cloudinary returned non-200:', cloudRes.status, errText);
-              }
+              directUploadedUrl = cloudAsset.secure_url || cloudAsset.url;
             }
           }
         } catch (signErr) {
-          console.warn('[1-SHOT] Cloudinary direct upload failed, fallback to local', signErr);
+          console.warn('[1-SHOT] Cloudinary chunked direct upload notice:', signErr);
         }
       }
 
@@ -531,9 +526,15 @@ export function ProjectDetailsModal({
                 <h2 id="project-modal-title" className="text-xl font-bold text-content font-display">
                   {currentProject.projectName}
                 </h2>
-                <span className="badge-cobalt">
-                  {currentProject.microMarket}
-                </span>
+                {unit ? (
+                  <span className="badge-cobalt">
+                    Unit {unit.unitNumber} ({unit.bhk} BHK • Floor {unit.floorNumber})
+                  </span>
+                ) : (
+                  <span className="badge-cobalt">
+                    {currentProject.microMarket}
+                  </span>
+                )}
                 {currentProject.hasOccupancyCertificate ? (
                   <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-status-success-surface text-status-success border border-status-success/30 flex items-center gap-1">
                     <CheckCircle2 className="w-3 h-3" /> Ready OC (0% GST)
@@ -550,53 +551,92 @@ export function ProjectDetailsModal({
             </div>
           </div>
           <div className="flex items-center gap-2 flex-wrap justify-end">
-            <button
-              type="button"
-              onClick={() => brochureExtractInputRef.current?.click()}
-              disabled={oneShotExtracting}
-              className="px-3 py-1.5 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-300 text-xs font-bold hover:bg-amber-500/20 flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
-              title="1-Shot Extract: Elevations, Floor Plans, RERA & Specs from Developer Brochure PDF"
-            >
-              {oneShotExtracting ? (
-                <>
-                  <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-400" />
-                  <span>AI Extracting 1-Shot…</span>
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                  <span className="hidden sm:inline">1-Shot Extract Brochure</span>
-                </>
-              )}
-            </button>
+            {!unit && (
+              <button
+                type="button"
+                onClick={() => brochureExtractInputRef.current?.click()}
+                disabled={oneShotExtracting}
+                className="px-3 py-1.5 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-300 text-xs font-bold hover:bg-amber-500/20 flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
+                title="1-Shot Extract: Elevations, Floor Plans, RERA & Specs from Developer Brochure PDF"
+              >
+                {oneShotExtracting ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-400" />
+                    <span>AI Extracting 1-Shot…</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                    <span className="hidden sm:inline">1-Shot Extract Brochure</span>
+                  </>
+                )}
+              </button>
+            )}
 
-            {onEditProject && (
-              <button
-                type="button"
-                onClick={() => {
-                  onClose();
-                  onEditProject(currentProject);
-                }}
-                className="px-3 py-1.5 rounded-lg border border-border bg-surface text-content text-xs font-semibold hover:bg-surface-raised flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
-                title="Edit Project Specifications"
-              >
-                <Pencil className="w-3.5 h-3.5 text-accent" />
-                <span className="hidden sm:inline">Edit Project</span>
-              </button>
+            {unit ? (
+              <>
+                {onEditUnit && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onClose();
+                      onEditUnit(unit);
+                    }}
+                    className="px-3 py-1.5 rounded-lg border border-border bg-surface text-content text-xs font-semibold hover:bg-surface-raised flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
+                    title={`Edit Unit ${unit.unitNumber || ''}`}
+                  >
+                    <Pencil className="w-3.5 h-3.5 text-accent" />
+                    <span className="hidden sm:inline">Edit Unit</span>
+                  </button>
+                )}
+                {onDeleteUnit && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onClose();
+                      onDeleteUnit(unit);
+                    }}
+                    className="px-3 py-1.5 rounded-lg border border-status-danger/30 bg-status-danger-surface text-status-danger text-xs font-semibold hover:bg-status-danger/10 flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
+                    title={`Delete Unit ${unit.unitNumber || ''}`}
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">Delete Unit</span>
+                  </button>
+                )}
+              </>
+            ) : (
+              <>
+                {onEditProject && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onClose();
+                      onEditProject(currentProject);
+                    }}
+                    className="px-3 py-1.5 rounded-lg border border-border bg-surface text-content text-xs font-semibold hover:bg-surface-raised flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
+                    title="Edit Project Specifications"
+                  >
+                    <Pencil className="w-3.5 h-3.5 text-accent" />
+                    <span className="hidden sm:inline">Edit Project</span>
+                  </button>
+                )}
+                {onDeleteProject && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onClose();
+                      onDeleteProject(currentProject.id, currentProject.projectName);
+                    }}
+                    className="px-3 py-1.5 rounded-lg border border-status-danger/30 bg-status-danger-surface text-status-danger text-xs font-semibold hover:bg-status-danger/10 flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
+                    title="Delete Project & Associated Units"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">Delete Project</span>
+                  </button>
+                )}
+              </>
             )}
-            {onDeleteProject && (
-              <button
-                type="button"
-                onClick={() => {
-                  onDeleteProject(currentProject.id, currentProject.projectName);
-                }}
-                className="px-3 py-1.5 rounded-lg border border-status-danger/30 bg-status-danger-surface text-status-danger text-xs font-semibold hover:bg-status-danger/10 flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
-                title="Delete Project & Associated Units"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Delete Project</span>
-              </button>
-            )}
+
             <button
               type="button"
               data-dialog-close
@@ -1190,24 +1230,54 @@ export function ProjectDetailsModal({
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end">
+                        <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
                           <div className="text-right">
                             <div className="text-xs text-content-muted font-mono">All-in Statutory Cost</div>
                             <div className="text-base font-bold text-accent font-mono">
                               {formatINR(unit.allInTotalCost || unit.agreementValue)}
                             </div>
                           </div>
-                          {onSelectUnitForCalc && (
-                            <button
-                              onClick={() => {
-                                onSelectUnitForCalc(unit);
-                                onClose();
-                              }}
-                              className="btn-secondary px-3 py-1.5 text-xs font-medium flex items-center gap-1.5"
-                            >
-                              <Calculator className="w-3.5 h-3.5" /> Breakdown
-                            </button>
-                          )}
+                          <div className="flex items-center gap-1.5">
+                            {onSelectUnitForCalc && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  onSelectUnitForCalc(unit);
+                                  onClose();
+                                }}
+                                className="btn-secondary px-2.5 py-1.5 text-xs font-medium flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                                title="Open cost & EMI calculator"
+                              >
+                                <Calculator className="w-3.5 h-3.5 text-accent" />
+                                <span>Breakdown</span>
+                              </button>
+                            )}
+                            {onEditUnit && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  onClose();
+                                  onEditUnit(unit);
+                                }}
+                                className="btn-secondary p-1.5 text-xs font-medium rounded-lg flex items-center justify-center cursor-pointer shadow-2xs"
+                                title={`Edit Unit ${unit.unitNumber || ''}`}
+                              >
+                                <Pencil className="w-3.5 h-3.5 text-accent" />
+                              </button>
+                            )}
+                            {onDeleteUnit && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  onDeleteUnit(unit);
+                                }}
+                                className="p-1.5 text-xs font-medium rounded-lg border border-status-danger/30 text-status-danger bg-status-danger-surface hover:bg-status-danger/10 transition-all flex items-center justify-center cursor-pointer shadow-2xs"
+                                title={`Delete Unit ${unit.unitNumber || ''}`}
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
                         </div>
                       </div>
                     );
@@ -1261,30 +1331,34 @@ export function ProjectDetailsModal({
             ZamZam Verified Real Estate Intelligence • Kharghar &amp; Taloja Corridor
           </div>
           <div className="flex items-center gap-2">
-            {onDeleteProject && (
-              <button
-                type="button"
-                onClick={() => {
-                  onDeleteProject(currentProject.id, currentProject.projectName);
-                }}
-                className="px-3 py-2 text-xs font-semibold rounded-xl border border-status-danger/30 text-status-danger bg-status-danger-surface hover:bg-status-danger/10 transition-all flex items-center gap-1.5 cursor-pointer"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                <span>Delete</span>
-              </button>
-            )}
-            {onEditProject && (
-              <button
-                type="button"
-                onClick={() => {
-                  onClose();
-                  onEditProject(currentProject);
-                }}
-                className="btn-secondary px-3.5 py-2 text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
-              >
-                <Pencil className="w-3.5 h-3.5 text-accent" />
-                <span>Edit Specs</span>
-              </button>
+            {unit ? (
+              onEditUnit && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    onEditUnit(unit);
+                  }}
+                  className="btn-secondary px-3.5 py-2 text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Pencil className="w-3.5 h-3.5 text-accent" />
+                  <span>Edit Unit Specs</span>
+                </button>
+              )
+            ) : (
+              onEditProject && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    onEditProject(currentProject);
+                  }}
+                  className="btn-secondary px-3.5 py-2 text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Pencil className="w-3.5 h-3.5 text-accent" />
+                  <span>Edit Specs</span>
+                </button>
+              )
             )}
             <button
               type="button"

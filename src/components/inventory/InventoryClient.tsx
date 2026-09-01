@@ -86,8 +86,9 @@ export function InventoryClient({
   const [submittingAudit, setSubmittingAudit] = useState(false);
   const [auditSuccessMsg, setAuditSuccessMsg] = useState('');
 
-  // Project Details Inspector
+  // Project & Unit Details Inspector
   const [inspectProject, setInspectProject] = useState<any | null>(null);
+  const [inspectUnit, setInspectUnit] = useState<any | null>(null);
   const [mediaStudioProject, setMediaStudioProject] = useState<any | null>(null);
   const [showCsvImportModal, setShowCsvImportModal] = useState(false);
   const [showBrochureModal, setShowBrochureModal] = useState(false);
@@ -890,7 +891,10 @@ export function InventoryClient({
                           )}
                           <button
                             type="button"
-                            onClick={() => setInspectProject(project)}
+                            onClick={() => {
+                              setInspectUnit(null);
+                              setInspectProject(project);
+                            }}
                             aria-label={`Inspect ${project.projectName} Specifications`}
                             title="Inspect Full Building & RERA Specs"
                             className="grid h-6 w-6 place-items-center rounded-lg text-white/80 hover:text-white hover:bg-white/20 transition-colors cursor-pointer"
@@ -987,7 +991,10 @@ export function InventoryClient({
                   <div className="px-4 pb-4 pt-2 border-t border-border flex items-center gap-2">
                     <button
                       type="button"
-                      onClick={() => setInspectProject(project)}
+                      onClick={() => {
+                        setInspectUnit(null);
+                        setInspectProject(project);
+                      }}
                       className="flex-1 h-8 rounded-xl bg-surface-subtle hover:bg-accent-soft text-content hover:text-accent-text border border-border hover:border-accent/30 text-xs font-semibold transition-all flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer"
                       title="View full specs, amenities, brochure and map"
                     >
@@ -1125,9 +1132,12 @@ export function InventoryClient({
                         <div className="flex items-center justify-end gap-1.5">
                           <button
                             type="button"
-                            onClick={() => setInspectProject(unit.project)}
-                            aria-label={`Inspect ${unit.project?.projectName} specifications`}
-                            title="Inspect Full Building &amp; RERA Specs"
+                            onClick={() => {
+                              setInspectUnit(unit);
+                              setInspectProject(unit.project || projects.find((p) => p.id === unit.projectId));
+                            }}
+                            aria-label={`Inspect ${unit.project?.projectName} specifications for Unit ${unit.unitNumber}`}
+                            title="Inspect Unit & Building Specs"
                             className="grid h-8 w-8 place-items-center rounded-lg border border-border bg-surface text-content-secondary hover:text-accent hover:border-accent/40 shadow-2xs transition-all"
                           >
                             <Eye className="h-3.5 w-3.5" />
@@ -1211,6 +1221,18 @@ export function InventoryClient({
                       <strong className="text-content text-sm font-bold font-mono">{formatINR(unit.allInTotalCost)}</strong>
                     </div>
                     <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setInspectUnit(unit);
+                          setInspectProject(unit.project || projects.find((p) => p.id === unit.projectId));
+                        }}
+                        aria-label={`Inspect ${unit.project?.projectName} specifications for Unit ${unit.unitNumber}`}
+                        title="Inspect Unit & Building Specs"
+                        className="grid h-8 w-8 place-items-center rounded-lg border border-border bg-surface text-content-secondary hover:text-accent hover:border-accent/40 shadow-2xs transition-all cursor-pointer"
+                      >
+                        <Eye className="h-3.5 w-3.5" />
+                      </button>
                       <button
                         type="button"
                         onClick={() => openEditUnit(unit)}
@@ -2043,21 +2065,40 @@ export function InventoryClient({
         )}
       </AccessibleDialog>
 
-      {/* Project Specifications Inspector Modal */}
+      {/* Project & Unit Specifications Inspector Modal */}
       {inspectProject && (
         <ProjectDetailsModal
           project={inspectProject}
+          unit={inspectUnit}
           units={units}
-          onClose={() => setInspectProject(null)}
+          onClose={() => {
+            setInspectProject(null);
+            setInspectUnit(null);
+          }}
           onSelectUnitForCalc={(unit) => setCalcModalUnit(unit)}
           onEditProject={(proj) => openEditProject(proj)}
           onDeleteProject={(id, name) => {
             setInspectProject(null);
+            setInspectUnit(null);
             setDeleteConfirmProject({
               id,
               name,
               unitCount: units.filter((u) => u.projectId === id).length,
             });
+          }}
+          onDeleteUnit={(unit) => {
+            setInspectProject(null);
+            setInspectUnit(null);
+            setDeleteConfirmUnit({
+              id: unit.id,
+              unitNumber: unit.unitNumber || 'Unit',
+              projectName: inspectProject.projectName || 'Project',
+            });
+          }}
+          onEditUnit={(unit) => {
+            setInspectProject(null);
+            setInspectUnit(null);
+            openEditUnit(unit);
           }}
           onProjectUpdated={() => {
             fetchInventory();

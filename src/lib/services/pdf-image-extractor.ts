@@ -53,6 +53,8 @@ export async function extractRealImagesFromPdf(
   options?: {
     customUnits?: Array<{ bhk: number; carpetAreaSqft?: number; title?: string }>;
     aiAssetHints?: ProjectAssetRecord[];
+    floorPlansList?: any[];
+    pages?: any[];
   }
 ): Promise<ExtractedRealAsset[]> {
   const cleanSlug = projectName.toLowerCase().replace(/[^a-z0-9]/g, '_');
@@ -132,51 +134,87 @@ export async function extractRealImagesFromPdf(
 
     const finalAssets: ExtractedRealAsset[] = [];
     const aiHints = options?.aiAssetHints || [];
+    const floorPlansList = options?.floorPlansList || [];
+    const pageTypes = options?.pages || [];
+    const totalRendered = renderedPages.length;
 
-    // Map rendered pages to real assets using genuine AI hints where available
+    // Map rendered pages to real assets using genuine AI hints and structural analysis
     for (const page of renderedPages) {
       const { pageNum, buffer } = page;
       const matchingHint = aiHints.find((h) => (h as any).page_number === pageNum || (h as any).pageNumber === pageNum);
+      const matchingFp = floorPlansList.find((fp) => Number(fp.page_number) === pageNum);
+      const matchingPageType = pageTypes.find((p) => p.page_number === pageNum);
+
+      let assetType: ExtractedRealAsset['assetType'] = 'elevation';
+      let subtype = 'brochure_page';
+      let title = `${projectName} Page ${pageNum}`;
+      let description = `High-resolution original brochure page ${pageNum} for ${projectName}.`;
+      let bhk = matchingHint?.bhk || matchingFp?.units?.[0]?.bhk;
+      let carpetAreaSqft = matchingHint?.carpetAreaSqft || matchingFp?.units?.[0]?.carpetAreaSqft;
 
       if (matchingHint) {
-        const aType = ((matchingHint as any).asset_type || (matchingHint as any).assetType || (pageNum === 1 ? 'cover' : 'elevation')) as any;
-        finalAssets.push({
-          pageNumber: pageNum,
-          assetType: aType,
-          subtype: matchingHint.subtype || 'brochure_page',
-          title: matchingHint.title || `${projectName} Page ${pageNum}`,
-          description: matchingHint.description || `Page ${pageNum} of ${projectName} developer brochure.`,
-          buffer,
-          fileName: `${cleanSlug}_page_${String(pageNum).padStart(2, '0')}.jpg`,
-          mimeType: 'image/jpeg',
-          bhk: matchingHint.bhk,
-          carpetAreaSqft: matchingHint.carpetAreaSqft,
-          viewAngle: (matchingHint as any).viewAngle,
-        });
+        assetType = ((matchingHint as any).asset_type || (matchingHint as any).assetType || (pageNum === 1 ? 'cover' : 'elevation')) as any;
+        subtype = matchingHint.subtype || 'brochure_page';
+        title = matchingHint.title || `${projectName} Page ${pageNum}`;
+        description = matchingHint.description || description;
+      } else if (matchingFp) {
+        assetType = (matchingFp.plan_type || 'floor_plan') as any;
+        subtype = matchingFp.plan_type || 'typical_floor_plan';
+        title = matchingFp.title || `${projectName} ${matchingFp.floor || 'Floor'} Layout Plan`;
+        description = `${matchingFp.floor || 'Typical'} floor architectural layout extracted from developer brochure.`;
+      } else if (matchingPageType) {
+        const pt = matchingPageType.page_type.toLowerCase();
+        if (pt.includes('floor') || pt.includes('unit') || pt.includes('layout')) {
+          assetType = pt.includes('ground') ? 'ground_floor_plan' : pt.includes('first') ? 'first_floor_plan' : pt.includes('typical') ? 'typical_floor_plan' : 'floor_plan';
+          subtype = pt;
+          title = matchingPageType.page_title || `${projectName} Floor Layout (Page ${pageNum})`;
+        } else if (pt.includes('map') || pt.includes('connect')) {
+          assetType = 'location_map';
+          subtype = 'location_connectivity_map';
+          title = `${projectName} Location & Connectivity Map`;
+        } else if (pt.includes('master') || pt.includes('site')) {
+          assetType = 'master_plan';
+          subtype = 'master_layout_plan';
+          title = `${projectName} Master Site Layout`;
+        } else if (pt.includes('amenit')) {
+          assetType = 'amenity';
+          subtype = 'amenities_page';
+          title = `${projectName} Lifestyle Amenities`;
+        } else if (pt.includes('cover')) {
+          assetType = 'cover';
+          subtype = 'front_facade';
+          title = `${projectName} Main Cover & Facade`;
+        }
       } else if (pageNum === 1) {
-        finalAssets.push({
-          pageNumber: 1,
-          assetType: 'cover',
-          subtype: 'cover_page',
-          title: `${projectName} Brochure Cover (Page 1)`,
-          description: `Brochure cover page for ${projectName}.`,
-          buffer,
-          fileName: `${cleanSlug}_page_01_cover.jpg`,
-          mimeType: 'image/jpeg',
-          viewAngle: 'FRONT_FACADE',
-        });
-      } else {
-        finalAssets.push({
-          pageNumber: pageNum,
-          assetType: 'elevation',
-          subtype: 'brochure_page',
-          title: `${projectName} Brochure Page ${pageNum}`,
-          description: `Page ${pageNum} of ${projectName} developer brochure.`,
-          buffer,
-          fileName: `${cleanSlug}_page_${String(pageNum).padStart(2, '0')}.jpg`,
-          mimeType: 'image/jpeg',
-        });
+        assetType = 'cover';
+        subtype = 'cover_page';
+        title = `${projectName} Main Brochure Cover`;
+        description = `Official developer brochure cover and elevation for ${projectName}.`;
+      } else if (totalRendered >= 4 && pageNum === totalRendered) {
+        assetType = 'location_map';
+        subtype = 'location_connectivity_map';
+        title = `${projectName} Location & Transit Map`;
+        description = `Official location and connectivity map from developer brochure.`;
+      } else if (totalRendered >= 6 && pageNum >= Math.floor(totalRendered * 0.6)) {
+        assetType = 'floor_plan';
+        subtype = 'typical_floor_plan';
+        title = `${projectName} Floor Plan Layout (Page ${pageNum})`;
+        description = `Architectural floor plan layout from developer brochure.`;
       }
+
+      finalAssets.push({
+        pageNumber: pageNum,
+        assetType,
+        subtype,
+        title,
+        description,
+        buffer,
+        fileName: `${cleanSlug}_page_${String(pageNum).padStart(2, '0')}.jpg`,
+        mimeType: 'image/jpeg',
+        bhk,
+        carpetAreaSqft,
+        viewAngle: pageNum === 1 ? 'FRONT_FACADE' : undefined,
+      });
     }
 
     // Attach raw images if no full pages were rendered

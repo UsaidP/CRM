@@ -28,6 +28,7 @@ import {
   UserX,
   UserCheck,
   Link as LinkIcon,
+  Trash2,
 } from 'lucide-react';
 import { HallmarkStamp } from '@/components/ui/HallmarkStamp';
 import { CustomSelect, type CustomSelectOption } from '@/components/ui/CustomSelect';
@@ -112,14 +113,15 @@ export function RbacManagementClient() {
   } | null>(null);
   const [copiedInvite, setCopiedInvite] = useState(false);
   const [mutatingAccessUserId, setMutatingAccessUserId] = useState<string | null>(null);
+  const [mutatingDeleteUserId, setMutatingDeleteUserId] = useState<string | null>(null);
 
   const handleToggleActive = async (user: any) => {
-    const removing = !!user.isActive;
-    const verb = removing ? 'remove' : 'restore';
+    const nextIsActive = !user.isActive;
+    const verb = nextIsActive ? 'restore' : 'deactivate';
     if (
       !window.confirm(
-        removing
-          ? `Remove ${user.fullName}'s access? Their account will be deactivated and their leads/deals history preserved. You can restore them later.`
+        !nextIsActive
+          ? `Deactivate ${user.fullName}'s access? Their account will be deactivated and their leads/deals history preserved. You can restore them later.`
           : `Restore ${user.fullName}'s access?`
       )
     ) {
@@ -130,12 +132,15 @@ export function RbacManagementClient() {
       setErrorMsg(null);
       setSuccessMsg(null);
       const res = await fetch(`/api/v1/users/${user.id}`, {
-        method: removing ? 'DELETE' : 'PATCH',
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive: nextIsActive }),
       });
       const data = await res.json();
       if (res.ok && data.success) {
         setSuccessMsg(data.message || `${user.fullName} ${verb}d successfully.`);
         await fetchUsers();
+        setTimeout(() => setSuccessMsg(null), 3000);
       } else {
         setErrorMsg(data.error || `Failed to ${verb} ${user.fullName}.`);
       }
@@ -143,6 +148,37 @@ export function RbacManagementClient() {
       setErrorMsg(err?.message || `Network error while trying to ${verb} ${user.fullName}.`);
     } finally {
       setMutatingAccessUserId(null);
+    }
+  };
+
+  const handleDeleteMember = async (user: any) => {
+    if (
+      !window.confirm(
+        `Are you sure you want to permanently delete member "${user.fullName}" (${user.email})? This action will remove their account and cannot be undone.`
+      )
+    ) {
+      return;
+    }
+    try {
+      setMutatingDeleteUserId(user.id);
+      setErrorMsg(null);
+      setSuccessMsg(null);
+      const res = await fetch(`/api/v1/users/${user.id}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setSuccessMsg(data.message || `Member ${user.fullName} deleted successfully.`);
+        await fetchUsers();
+        await fetchTeams();
+        setTimeout(() => setSuccessMsg(null), 3500);
+      } else {
+        setErrorMsg(data.error || `Failed to delete member ${user.fullName}.`);
+      }
+    } catch (err: any) {
+      setErrorMsg(err?.message || `Network error while trying to delete member ${user.fullName}.`);
+    } finally {
+      setMutatingDeleteUserId(null);
     }
   };
 
@@ -567,13 +603,13 @@ export function RbacManagementClient() {
               </div>
 
               {/* Action Buttons */}
-              <div className="pt-3 border-t border-border flex items-center justify-between gap-2">
-                <div className="flex items-center gap-1">
+              <div className="pt-3 border-t border-border flex items-center justify-between gap-2 flex-wrap">
+                <div className="flex items-center gap-1.5 flex-wrap">
                   {user.inviteToken && (
                     <button
                       type="button"
                       onClick={() => handleGenerateInviteLink(user)}
-                      className="px-2.5 py-1.5 rounded-xl bg-surface-subtle hover:bg-surface border border-border text-[11px] font-bold text-content flex items-center gap-1.5 transition-all cursor-pointer"
+                      className="px-2.5 py-1.5 rounded-xl bg-surface-subtle hover:bg-surface border border-border text-[11px] font-bold text-content flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs hover:shadow-xs"
                       title="View set-password link"
                     >
                       <LinkIcon className="w-3 h-3 text-accent" /> Link
@@ -582,15 +618,26 @@ export function RbacManagementClient() {
                   <button
                     type="button"
                     onClick={() => handleToggleActive(user)}
-                    disabled={mutatingAccessUserId === user.id}
-                    className={`px-2.5 py-1.5 rounded-xl border text-[11px] font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                    disabled={mutatingAccessUserId === user.id || mutatingDeleteUserId === user.id}
+                    className={`px-2.5 py-1.5 rounded-xl border text-[11px] font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs hover:shadow-xs ${
                       user.isActive
-                        ? 'bg-status-danger-surface/40 hover:bg-status-danger-surface border-status-danger/30 text-status-danger'
+                        ? 'bg-status-warning-surface/40 hover:bg-status-warning-surface border-status-warning/30 text-status-warning'
                         : 'bg-status-success-surface/40 hover:bg-status-success-surface border-status-success/30 text-status-success'
                     }`}
+                    title={user.isActive ? 'Deactivate member access' : 'Restore member access'}
                   >
                     {user.isActive ? <UserX className="w-3 h-3" /> : <UserCheck className="w-3 h-3" />}
                     <span>{user.isActive ? 'Deactivate' : 'Restore'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteMember(user)}
+                    disabled={mutatingDeleteUserId === user.id || mutatingAccessUserId === user.id}
+                    className="px-2.5 py-1.5 rounded-xl border border-status-danger/30 bg-status-danger-surface/40 hover:bg-status-danger-surface text-status-danger text-[11px] font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs hover:shadow-xs disabled:opacity-50"
+                    title={`Delete member ${user.fullName}`}
+                  >
+                    <Trash2 className="w-3 h-3" />
+                    <span>{mutatingDeleteUserId === user.id ? 'Deleting...' : 'Delete'}</span>
                   </button>
                 </div>
 

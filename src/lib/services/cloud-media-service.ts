@@ -132,35 +132,39 @@ export async function uploadToCloudinary(
   const resourceType = isVideo ? 'video' : isRaw ? 'raw' : 'image';
 
   return new Promise<UploadedMediaAsset>((resolve, reject) => {
-    const uploadStream = cloudinary.uploader.upload_stream(
-      {
-        folder,
-        public_id: publicId,
-        resource_type: resourceType as any,
-        chunk_size: 6000000, // 6 MB chunks for large file support
-      },
-      (error, result) => {
-        if (error || !result) {
-          reject(new Error(`Cloudinary upload failed: ${error?.message || 'Unknown upload failure'}`));
-          return;
-        }
+    const uploadOptions = {
+      folder,
+      public_id: publicId,
+      resource_type: resourceType as any,
+      chunk_size: 6000000, // 6 MB chunks for large file support
+    };
 
-        resolve({
-          url: result.secure_url || result.url,
-          secureUrl: result.secure_url || result.url,
-          publicId: result.public_id || publicId,
-          storageProvider: 'CLOUDINARY',
-          fileName,
-          fileSizeBytes: result.bytes || nodeBuffer.length,
-          mimeType,
-          category,
-          width: result.width,
-          height: result.height,
-          format: result.format || path.extname(fileName).replace('.', '') || (isRaw ? 'pdf' : 'jpg'),
-          createdAt: result.created_at || new Date().toISOString(),
-        });
+    const handleResult = (error: any, result: any) => {
+      if (error || !result) {
+        reject(new Error(`Cloudinary upload failed: ${error?.message || 'Unknown upload failure'}`));
+        return;
       }
-    );
+
+      resolve({
+        url: result.secure_url || result.url,
+        secureUrl: result.secure_url || result.url,
+        publicId: result.public_id || publicId,
+        storageProvider: 'CLOUDINARY',
+        fileName,
+        fileSizeBytes: result.bytes || nodeBuffer.length,
+        mimeType,
+        category,
+        width: result.width,
+        height: result.height,
+        format: result.format || path.extname(fileName).replace('.', '') || (isRaw ? 'pdf' : 'jpg'),
+        createdAt: result.created_at || new Date().toISOString(),
+      });
+    };
+
+    // Use upload_large_stream for files > 5MB to stream in chunks
+    const uploadStream = nodeBuffer.length > 5 * 1024 * 1024
+      ? cloudinary.uploader.upload_large_stream(uploadOptions, handleResult)
+      : cloudinary.uploader.upload_stream(uploadOptions, handleResult);
 
     uploadStream.end(nodeBuffer);
   });
@@ -226,7 +230,7 @@ export async function uploadToLocalStorage(
 
 /**
  * Universal Media Uploader
- * Strictly routes all media uploads to Cloudinary CDN
+ * Tries Cloudinary CDN first, with seamless fallback to Local Vault if Cloudinary limits or errors are encountered.
  */
 export async function uploadMediaAsset(
   buffer: Buffer | ArrayBuffer | Uint8Array,
@@ -235,7 +239,12 @@ export async function uploadMediaAsset(
   mimeType = 'image/jpeg'
 ): Promise<UploadedMediaAsset> {
   if (isCloudinaryConfigured()) {
-    return await uploadToCloudinary(buffer, fileName, category, mimeType);
+    try {
+      return await uploadToCloudinary(buffer, fileName, category, mimeType);
+    } catch (err: any) {
+      console.warn(`[MEDIA] Cloudinary upload notice (${err.message}). Storing in local media vault.`);
+      return await uploadToLocalStorage(buffer, fileName, category, mimeType);
+    }
   }
   return await uploadToLocalStorage(buffer, fileName, category, mimeType);
 }

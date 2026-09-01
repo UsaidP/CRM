@@ -47,7 +47,8 @@ export async function POST(req: Request) {
     // Flow 1: JSON payload (direct Cloudinary URL, Base64 document payload, or raw text paste)
     if (contentType.includes('application/json')) {
       const body = await req.json();
-      filename = sanitizeFilename(body.filename || 'Developer_Brochure.pdf');
+      const rawFilename = body.filename || 'Developer_Brochure.pdf';
+      filename = sanitizeFilename(rawFilename);
       brochureUrl = body.brochureUrl || null;
       mimeType = normalizeMimeType(body.mimeType);
       projectId = body.projectId || null;
@@ -73,14 +74,18 @@ export async function POST(req: Request) {
         }
       }
 
-      // 3. Fallback check for local project files in data/Project Data
-      if (!buffer && filename) {
+      // 3. Fallback check for local project files in data/Project Data and uploads
+      if (!buffer && (rawFilename || filename)) {
         try {
           const fs = await import('fs');
           const localPaths = [
+            path.join(process.cwd(), 'data', 'Project Data', rawFilename),
             path.join(process.cwd(), 'data', 'Project Data', filename),
+            path.join(process.cwd(), 'data', rawFilename),
             path.join(process.cwd(), 'data', filename),
+            path.join(process.cwd(), 'public', 'uploads', 'brochures', rawFilename),
             path.join(process.cwd(), 'public', 'uploads', 'brochures', filename),
+            path.join(process.cwd(), 'public', 'uploads', rawFilename),
             path.join(process.cwd(), 'public', 'uploads', filename),
           ];
           for (const p of localPaths) {
@@ -179,6 +184,9 @@ export async function POST(req: Request) {
           microMarket: extracted.microMarket,
           units: (extracted.units || []).map((u: any) => ({ bhk: u.bhk, carpetAreaSqft: u.carpetAreaSqft, title: u.bhkLabel })),
           confidentialBrokerData: extracted.confidentialBrokerData,
+          assetRecords: extracted.assetRecords,
+          floorPlansList: extracted.floorPlansList,
+          pages: extracted.pages,
         }
       );
 

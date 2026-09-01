@@ -553,13 +553,13 @@ export async function parseBrochureAsync(
     };
   } catch (error: any) {
     console.warn('Gemini AI brochure extraction encountered rate limits or network issue, using smart local parser:', error.message || error);
-    const rawText = extractTextFromPdfBuffer(buffer) || `Project: ${filename.replace(/\.pdf$/i, '')} MahaRERA: P52000079818 Sector 24 Taloja Phase II G+7 Storey 1 BHK 2 BHK Swimming Pool Gym Clubhouse`;
+    const rawText = extractTextFromPdfBuffer(buffer) || `Project: ${filename.replace(/\.pdf$/i, '').replace(/[-_]/g, ' ')}`;
     const fallbackData = parseBrochureText(rawText, filename);
     return {
       data: fallbackData,
       extractionMethod: 'REGEX_FALLBACK',
       modelUsed: 'Smart Local Parser (Quota Safe)',
-      note: 'Gemini Free Tier API rate limit reached. Extracted instantly using local smart parser.',
+      note: 'AI rate limit or network issue. Parsed using local text extraction engine.',
     };
   }
 }
