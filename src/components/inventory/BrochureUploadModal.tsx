@@ -139,6 +139,8 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
   const [fetchingCertificate, setFetchingCertificate] = useState(false);
   const [certificateSuccessMsg, setCertificateSuccessMsg] = useState<string | null>(null);
   const [showFormCModal, setShowFormCModal] = useState(false);
+  const [previewLightboxUrl, setPreviewLightboxUrl] = useState<string | null>(null);
+  const [previewLightboxTitle, setPreviewLightboxTitle] = useState<string>('');
 
   const resetState = () => {
     setStep('upload');
@@ -157,6 +159,63 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
     setActiveReviewTab('overview');
     setFetchingCertificate(false);
     setCertificateSuccessMsg(null);
+    setPreviewLightboxUrl(null);
+  };
+
+  const handleUpdateUnit = (idx: number, patch: any) => {
+    if (!projectData || !Array.isArray(projectData.units)) return;
+    const nextUnits = [...projectData.units];
+    const current = nextUnits[idx];
+    const updated = { ...current, ...patch };
+
+    if ('carpetAreaSqft' in patch) {
+      const carpet = Number(patch.carpetAreaSqft) || 0;
+      const basePrice = Number(projectData.basePricePerSqft) || 6200;
+      updated.agreementValue = Math.round(carpet * basePrice);
+      const stampDuty = updated.agreementValue * 0.06;
+      const gst = projectData.hasOccupancyCertificate ? 0 : updated.agreementValue * 0.05;
+      updated.allInTotalCost = Math.round(updated.agreementValue + stampDuty + 30000 + gst + 200000 + 150000);
+    } else if ('agreementValue' in patch) {
+      const agVal = Number(patch.agreementValue) || 0;
+      const stampDuty = agVal * 0.06;
+      const gst = projectData.hasOccupancyCertificate ? 0 : agVal * 0.05;
+      updated.allInTotalCost = Math.round(agVal + stampDuty + 30000 + gst + 200000 + 150000);
+    }
+
+    nextUnits[idx] = updated;
+    setProjectData({ ...projectData, units: nextUnits });
+  };
+
+  const handleAddUnitRow = () => {
+    if (!projectData) return;
+    const currentUnits = Array.isArray(projectData.units) ? projectData.units : [];
+    const count = currentUnits.length + 1;
+    const defaultCarpet = 650;
+    const basePrice = Number(projectData.basePricePerSqft) || 6200;
+    const agValue = defaultCarpet * basePrice;
+    const stampDuty = agValue * 0.06;
+    const gst = projectData.hasOccupancyCertificate ? 0 : agValue * 0.05;
+    const allIn = agValue + stampDuty + 30000 + gst + 200000 + 150000;
+
+    const newUnit = {
+      unitNumber: `Flat-0${count}`,
+      bhk: 2,
+      carpetAreaSqft: defaultCarpet,
+      facing: 'EAST',
+      floorNumber: 2,
+      totalFloors: projectData.totalFloors || 7,
+      agreementValue: agValue,
+      allInTotalCost: allIn,
+      floorPlanUrl: projectData.floorPlans?.[0] ? resolveAssetUrl(projectData.floorPlans[0]) : null,
+    };
+
+    setProjectData({ ...projectData, units: [...currentUnits, newUnit] });
+  };
+
+  const handleDeleteUnitRow = (idx: number) => {
+    if (!projectData || !Array.isArray(projectData.units)) return;
+    const nextUnits = projectData.units.filter((_: any, i: number) => i !== idx);
+    setProjectData({ ...projectData, units: nextUnits });
   };
 
   const handleFetchReraCertificate = async () => {
@@ -1096,61 +1155,159 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
             {activeReviewTab === 'units' && (
               <div className="space-y-4">
                 <div className="p-4 bg-surface rounded-2xl border border-border space-y-3.5">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-bold text-xs uppercase font-mono text-accent-text flex items-center gap-1.5">
-                        <Home className="w-4 h-4 text-accent" /> Floor Plans &amp; Unit Matrix ({projectData.units?.length || 0})
-                      </h3>
-                      <p className="text-[11px] text-content-muted mt-0.5">
-                        Itemized flat layouts with RERA carpet areas, Vastu facing orientation, and MahaRERA statutory breakdowns.
-                      </p>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="font-bold text-xs uppercase font-mono text-accent-text flex items-center gap-1.5">
+                          <Home className="w-4 h-4 text-accent" /> Floor Plans &amp; Unit Matrix ({projectData.units?.length || 0})
+                        </h3>
+                        <p className="text-[11px] text-content-muted mt-0.5">
+                          Configure units, assign genuine extracted brochure floor plans, and adjust pricing.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleAddUnitRow}
+                        className="px-3 py-1.5 rounded-xl bg-accent text-white text-xs font-bold shadow-xs hover:bg-accent-hover transition-all flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Add Unit Configuration</span>
+                      </button>
                     </div>
-                  </div>
 
-                  <div className="overflow-x-auto rounded-xl border border-border">
-                    <table className="w-full text-left text-xs">
-                      <thead className="bg-surface-subtle text-content-secondary uppercase text-[10px] font-bold border-b border-border">
-                        <tr>
-                          <th className="p-2.5 pl-3">Unit / Flat</th>
-                          <th className="p-2.5">Typology</th>
-                          <th className="p-2.5">Carpet Area</th>
-                          <th className="p-2.5">Facing</th>
-                          <th className="p-2.5">Floor</th>
-                          <th className="p-2.5 text-right">Agreement Value</th>
-                          <th className="p-2.5 text-right">All-In Cost (Taxes Incl.)</th>
-                          <th className="p-2.5 pr-3 text-center">Status</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-border text-content">
-                        {(projectData.units || []).map((u: any, idx: number) => (
-                          <tr key={idx} className="hover:bg-surface-subtle/50 font-mono text-xs">
-                            <td className="p-2.5 pl-3 font-bold font-sans text-accent-text">
-                              {u.unitNumber || `Flat ${u.floorNumber || idx + 1}0${idx + 1}`}
-                            </td>
-                            <td className="p-2.5 font-sans font-medium">
-                              <span className="px-2 py-0.5 rounded bg-accent-soft text-accent-text border border-accent/20 text-[11px] font-bold">
-                                {u.bhk} BHK
-                              </span>
-                            </td>
-                            <td className="p-2.5">{u.carpetAreaSqft} sq.ft</td>
-                            <td className="p-2.5 font-sans text-[11px]">
-                              <span className="text-content-secondary font-semibold">{u.facing || 'EAST'}</span>
-                            </td>
-                            <td className="p-2.5">Fl {u.floorNumber} / {projectData.totalFloors}</td>
-                            <td className="p-2.5 text-right font-bold">{formatINR(u.agreementValue)}</td>
-                            <td className="p-2.5 text-right font-bold text-emerald-700 dark:text-emerald-400">
-                              {formatINR(u.allInTotalCost)}
-                            </td>
-                            <td className="p-2.5 pr-3 text-center">
-                              <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-status-success-surface text-status-success border border-status-success/30 font-sans">
-                                VERIFIED
-                              </span>
-                            </td>
+                    <div className="overflow-x-auto rounded-xl border border-border">
+                      <table className="w-full text-left text-xs">
+                        <thead className="bg-surface-subtle text-content-secondary uppercase text-[10px] font-bold border-b border-border">
+                          <tr>
+                            <th className="p-2.5 pl-3">Flat / Unit #</th>
+                            <th className="p-2.5">Typology</th>
+                            <th className="p-2.5">RERA Carpet</th>
+                            <th className="p-2.5">Facing</th>
+                            <th className="p-2.5">Floor #</th>
+                            <th className="p-2.5">Agreement Value</th>
+                            <th className="p-2.5">Assigned Floor Plan</th>
+                            <th className="p-2.5 pr-3 text-center">Actions</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                        </thead>
+                        <tbody className="divide-y divide-border text-content">
+                          {(projectData.units || []).map((u: any, idx: number) => {
+                            const currentPlanUrl = u.floorPlanUrl || resolveAssetUrl(projectData.floorPlans?.find((fp: any) => fp.bhk === u.bhk) || projectData.floorPlans?.[0]);
+                            const availablePlans = projectData.floorPlans || [];
+
+                            return (
+                              <tr key={idx} className="hover:bg-surface-subtle/50 font-mono text-xs">
+                                <td className="p-2 pl-3">
+                                  <input
+                                    type="text"
+                                    value={u.unitNumber || ''}
+                                    onChange={(e) => handleUpdateUnit(idx, { unitNumber: e.target.value })}
+                                    className="w-24 bg-surface-inset border border-border rounded-lg p-1.5 text-xs text-accent-text font-bold focus:outline-none focus:border-accent"
+                                    placeholder="Flat 101"
+                                  />
+                                </td>
+                                <td className="p-2">
+                                  <select
+                                    value={u.bhk || 2}
+                                    onChange={(e) => handleUpdateUnit(idx, { bhk: Number(e.target.value) })}
+                                    className="bg-surface-inset border border-border rounded-lg p-1.5 text-xs text-content font-bold focus:outline-none focus:border-accent"
+                                  >
+                                    <option value={1}>1 BHK</option>
+                                    <option value={2}>2 BHK</option>
+                                    <option value={3}>3 BHK</option>
+                                    <option value={4}>4 BHK</option>
+                                    <option value={5}>5 BHK</option>
+                                    <option value={6}>6 BHK</option>
+                                  </select>
+                                </td>
+                                <td className="p-2">
+                                  <div className="flex items-center gap-1">
+                                    <input
+                                      type="number"
+                                      value={u.carpetAreaSqft || ''}
+                                      onChange={(e) => handleUpdateUnit(idx, { carpetAreaSqft: Number(e.target.value) })}
+                                      className="w-20 bg-surface-inset border border-border rounded-lg p-1.5 text-xs text-content font-mono font-bold focus:outline-none focus:border-accent"
+                                    />
+                                    <span className="text-[10px] text-content-muted">sqft</span>
+                                  </div>
+                                </td>
+                                <td className="p-2 font-sans">
+                                  <select
+                                    value={u.facing || 'EAST'}
+                                    onChange={(e) => handleUpdateUnit(idx, { facing: e.target.value })}
+                                    className="bg-surface-inset border border-border rounded-lg p-1.5 text-xs text-content focus:outline-none focus:border-accent font-medium"
+                                  >
+                                    <option value="EAST">EAST</option>
+                                    <option value="WEST">WEST</option>
+                                    <option value="NORTH">NORTH</option>
+                                    <option value="SOUTH">SOUTH</option>
+                                    <option value="NORTH_EAST">NORTH EAST</option>
+                                    <option value="NORTH_WEST">NORTH WEST</option>
+                                    <option value="ROAD_FACING">ROAD FACING</option>
+                                    <option value="GARDEN_FACING">GARDEN FACING</option>
+                                  </select>
+                                </td>
+                                <td className="p-2">
+                                  <input
+                                    type="number"
+                                    value={u.floorNumber || 2}
+                                    onChange={(e) => handleUpdateUnit(idx, { floorNumber: Number(e.target.value) })}
+                                    className="w-14 bg-surface-inset border border-border rounded-lg p-1.5 text-xs text-content font-mono focus:outline-none focus:border-accent"
+                                  />
+                                </td>
+                                <td className="p-2">
+                                  <input
+                                    type="number"
+                                    value={u.agreementValue || ''}
+                                    onChange={(e) => handleUpdateUnit(idx, { agreementValue: Number(e.target.value) })}
+                                    className="w-28 bg-surface-inset border border-border rounded-lg p-1.5 text-xs text-content font-mono font-bold text-right focus:outline-none focus:border-accent"
+                                  />
+                                </td>
+                                <td className="p-2 font-sans">
+                                  <div className="flex items-center gap-1.5 max-w-[220px]">
+                                    <select
+                                      value={u.floorPlanUrl || ''}
+                                      onChange={(e) => handleUpdateUnit(idx, { floorPlanUrl: e.target.value })}
+                                      className="w-full bg-surface-inset border border-border rounded-lg p-1.5 text-[11px] text-content truncate focus:outline-none focus:border-accent font-medium"
+                                    >
+                                      <option value="">Auto-matched Layout</option>
+                                      {availablePlans.map((fp: any, fIdx: number) => (
+                                        <option key={fIdx} value={resolveAssetUrl(fp)}>
+                                          {fp.title || `Floor Plan Page ${fp.page_number || fIdx + 1}`}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  </div>
+                                </td>
+                                <td className="p-2 pr-3 text-center">
+                                  <div className="flex items-center justify-center gap-1.5">
+                                    {currentPlanUrl && (
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setPreviewLightboxUrl(currentPlanUrl);
+                                          setPreviewLightboxTitle(`Floor Plan • ${u.bhk} BHK (${u.unitNumber || `Flat ${idx + 1}`})`);
+                                        }}
+                                        className="p-1.5 rounded-lg bg-surface hover:bg-surface-subtle text-accent border border-border shadow-2xs transition-all cursor-pointer"
+                                        title="Preview floor plan image"
+                                      >
+                                        <Eye className="w-3.5 h-3.5" />
+                                      </button>
+                                    )}
+                                    <button
+                                      type="button"
+                                      onClick={() => handleDeleteUnitRow(idx)}
+                                      className="p-1.5 rounded-lg bg-surface hover:bg-status-danger-surface text-content-muted hover:text-status-danger border border-border transition-all cursor-pointer"
+                                      title="Delete unit"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
                 </div>
 
                 {/* Commercial Shops Matrix if available */}
@@ -1382,6 +1539,38 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
             isOriginalScannedDocument: projectData.reraVerification?.isOriginalScannedDocument ?? true,
           }}
         />
+      )}
+
+      {/* Full Resolution Lightbox Preview Modal */}
+      {previewLightboxUrl && (
+        <AccessibleDialog
+          open={Boolean(previewLightboxUrl)}
+          onClose={() => setPreviewLightboxUrl(null)}
+          titleId="preview-lightbox-title"
+          size="2xl"
+          panelClassName="!p-0 overflow-hidden max-w-4xl"
+        >
+          <div className="bg-slate-950 p-4 flex items-center justify-between border-b border-border">
+            <h3 id="preview-lightbox-title" className="text-sm font-bold text-white font-display flex items-center gap-2">
+              <Eye className="w-4 h-4 text-accent" />
+              <span>{previewLightboxTitle || 'Original Document Asset Preview'}</span>
+            </h3>
+            <button
+              type="button"
+              onClick={() => setPreviewLightboxUrl(null)}
+              className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="bg-slate-950 p-6 flex items-center justify-center max-h-[75vh] overflow-auto">
+            <img
+              src={previewLightboxUrl}
+              alt={previewLightboxTitle || 'Asset Preview'}
+              className="max-h-[70vh] w-auto max-w-full object-contain rounded-lg shadow-2xl"
+            />
+          </div>
+        </AccessibleDialog>
       )}
     </AccessibleDialog>
   );

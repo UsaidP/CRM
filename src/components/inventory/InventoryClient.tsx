@@ -35,10 +35,12 @@ import {
   Upload,
   Trash2,
   FileCheck,
-  Download
+  Download,
+  Home
 } from 'lucide-react';
 import { HallmarkStamp } from '@/components/ui/HallmarkStamp';
 import { listUnits, listProjects, verifyUnit } from '@/lib/client/inventory';
+import { resolveAssetUrl, parseGalleryUrls } from '@/lib/inventory-media';
 import { AccessibleDialog } from '@/components/ui/AccessibleDialog';
 import { MediaUploader, type MediaAsset } from '@/components/inventory/MediaUploader';
 import { ProjectDetailsModal } from '@/components/inventory/ProjectDetailsModal';
@@ -139,6 +141,39 @@ export function InventoryClient({
     isExclusive: false,
   });
   const [creatingUnit, setCreatingUnit] = useState(false);
+  const [uploadingUnitFloorPlan, setUploadingUnitFloorPlan] = useState(false);
+  const [previewUnitFloorPlanUrl, setPreviewUnitFloorPlanUrl] = useState<string | null>(null);
+
+  const handleUnitFloorPlanFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !e.target.files[0]) return;
+    const file = e.target.files[0];
+    setUploadingUnitFloorPlan(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('category', 'floor-plans');
+      if (unitForm.projectId) formData.append('projectId', unitForm.projectId);
+
+      const res = await fetch('/api/v1/media/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (res.ok && data.asset) {
+        const url = resolveAssetUrl(data.asset);
+        setUnitForm((prev) => ({ ...prev, floorPlanUrl: url }));
+      } else {
+        alert(data.error || 'Failed to upload floor plan image.');
+      }
+    } catch (err: any) {
+      console.error('Floor plan upload failed:', err);
+      alert('Floor plan upload failed: ' + (err.message || err));
+    } finally {
+      setUploadingUnitFloorPlan(false);
+      e.target.value = '';
+    }
+  };
 
   // Add Developer Project Form State
   const [showAddProjectModal, setShowAddProjectModal] = useState(false);
@@ -1813,18 +1848,112 @@ export function InventoryClient({
                 className="w-full bg-surface border border-border rounded-xl p-2.5 text-xs text-content placeholder-content-muted focus:outline-hidden focus:border-accent font-medium"
               />
             </div>
-            <div>
-              <label className="text-xs font-bold text-content block mb-1">
-                Floor plan URL <span className="text-content-muted font-normal">(optional)</span>
-              </label>
-              <input
-                aria-label="Floor plan URL"
-                type="url"
-                placeholder="https://…"
-                value={unitForm.floorPlanUrl}
-                onChange={(e) => setUnitForm({ ...unitForm, floorPlanUrl: e.target.value })}
-                className="w-full bg-surface border border-border rounded-xl p-2.5 text-xs text-content placeholder-content-muted focus:outline-hidden focus:border-accent font-medium"
-              />
+            {/* Unit Floor Plan Selector & Uploader */}
+            <div className="p-3 bg-surface-subtle border border-border rounded-xl space-y-2.5">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-content flex items-center gap-1.5">
+                  <Home className="w-3.5 h-3.5 text-accent" />
+                  <span>Floor Plan &amp; Layout Blueprint</span>
+                </label>
+                {unitForm.floorPlanUrl && (
+                  <button
+                    type="button"
+                    onClick={() => setPreviewUnitFloorPlanUrl(unitForm.floorPlanUrl)}
+                    className="text-[11px] font-bold text-accent hover:underline flex items-center gap-1 cursor-pointer"
+                  >
+                    <Eye className="w-3 h-3" />
+                    <span>Preview Current Plan</span>
+                  </button>
+                )}
+              </div>
+
+              {/* Select from parent project's brochure floor plans */}
+              {(() => {
+                const selectedProj = projects.find((p) => p.id === unitForm.projectId);
+                const rawGallery: any[] = Array.isArray(selectedProj?.mediaGallery) 
+                  ? selectedProj.mediaGallery 
+                  : (typeof selectedProj?.mediaGalleryJson === 'string' ? JSON.parse(selectedProj.mediaGalleryJson || '[]') : []);
+
+                const extractedPlans = rawGallery.filter((item: any) => {
+                  if (typeof item === 'object') {
+                    const typeStr = (item.asset_type || item.type || item.subtype || item.title || '').toLowerCase();
+                    return typeStr.includes('floor') || typeStr.includes('plan') || typeStr.includes('layout') || item.category === 'floorplan';
+                  }
+                  return typeof item === 'string' && (item.includes('floor') || item.includes('plan'));
+                });
+
+                if (selectedProj?.masterPlanUrl) {
+                  extractedPlans.unshift({ url: selectedProj.masterPlanUrl, title: `${selectedProj.projectName} Master Layout Plan` });
+                }
+
+                if (extractedPlans.length > 0) {
+                  return (
+                    <div className="space-y-1">
+                      <label className="text-[11px] text-content-secondary block">
+                        Pick from Project Extracted Floor Plans:
+                      </label>
+                      <select
+                        aria-label="Pick from Project Extracted Floor Plans"
+                        value={unitForm.floorPlanUrl || ''}
+                        onChange={(e) => setUnitForm({ ...unitForm, floorPlanUrl: e.target.value })}
+                        className="w-full bg-surface border border-border rounded-xl p-2 text-xs text-content focus:outline-hidden focus:border-accent font-medium"
+                      >
+                        <option value="">-- Select from Project Brochure Floor Plans --</option>
+                        {extractedPlans.map((plan: any, pIdx: number) => {
+                          const url = resolveAssetUrl(plan);
+                          const label = plan.title || (plan.bhk ? `${plan.bhk} BHK Floor Plan` : `Layout Plan ${pIdx + 1}`);
+                          return (
+                            <option key={pIdx} value={url}>
+                              {label}
+                            </option>
+                          );
+                        })}
+                      </select>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
+
+              <div className="flex items-center gap-2">
+                <input
+                  aria-label="Floor plan URL"
+                  type="url"
+                  placeholder="Or enter custom image URL (https://…)"
+                  value={unitForm.floorPlanUrl}
+                  onChange={(e) => setUnitForm({ ...unitForm, floorPlanUrl: e.target.value })}
+                  className="flex-1 bg-surface border border-border rounded-xl p-2 text-xs text-content placeholder-content-muted focus:outline-hidden focus:border-accent font-medium"
+                />
+                <label className="px-3 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 shrink-0">
+                  <Upload className="w-3.5 h-3.5 text-accent" />
+                  <span>{uploadingUnitFloorPlan ? 'Uploading…' : 'Upload Image'}</span>
+                  <input
+                    type="file"
+                    accept="image/*,application/pdf"
+                    className="hidden"
+                    disabled={uploadingUnitFloorPlan}
+                    onChange={handleUnitFloorPlanFileUpload}
+                  />
+                </label>
+              </div>
+
+              {unitForm.floorPlanUrl && (
+                <div className="mt-2 relative w-full h-32 bg-slate-950 rounded-lg overflow-hidden border border-border flex items-center justify-center group">
+                  <img
+                    src={unitForm.floorPlanUrl}
+                    alt="Unit floor plan preview"
+                    className="max-h-full max-w-full object-contain cursor-pointer"
+                    onClick={() => setPreviewUnitFloorPlanUrl(unitForm.floorPlanUrl)}
+                  />
+                  <div 
+                    onClick={() => setPreviewUnitFloorPlanUrl(unitForm.floorPlanUrl)}
+                    className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold gap-1.5 cursor-pointer"
+                  >
+                    <Eye className="w-4 h-4" />
+                    <span>Click to Zoom</span>
+                  </div>
+                </div>
+              )}
             </div>
             <div>
               <label className="text-xs font-bold text-content block mb-1">
@@ -2300,6 +2429,38 @@ export function InventoryClient({
             fetchInventory();
           }}
         />
+      )}
+
+      {/* Full Resolution Unit Floor Plan Lightbox Modal */}
+      {previewUnitFloorPlanUrl && (
+        <AccessibleDialog
+          open={Boolean(previewUnitFloorPlanUrl)}
+          onClose={() => setPreviewUnitFloorPlanUrl(null)}
+          titleId="preview-unit-floorplan-title"
+          size="2xl"
+          panelClassName="!p-0 overflow-hidden max-w-4xl"
+        >
+          <div className="bg-slate-950 p-4 flex items-center justify-between border-b border-border">
+            <h3 id="preview-unit-floorplan-title" className="text-sm font-bold text-white font-display flex items-center gap-2">
+              <Home className="w-4 h-4 text-accent" />
+              <span>Unit Floor Plan Blueprint Preview</span>
+            </h3>
+            <button
+              type="button"
+              onClick={() => setPreviewUnitFloorPlanUrl(null)}
+              className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="bg-slate-950 p-6 flex items-center justify-center max-h-[75vh] overflow-auto">
+            <img
+              src={previewUnitFloorPlanUrl}
+              alt="Floor Plan Preview"
+              className="max-h-[70vh] w-auto max-w-full object-contain rounded-lg shadow-2xl"
+            />
+          </div>
+        </AccessibleDialog>
       )}
     </div>
   );

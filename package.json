@@ -11,6 +11,7 @@
     "db:push": "bunx prisma db push",
     "db:seed": "bun prisma/seed.js",
     "db:clean": "bun scripts/clean-db.js",
+    "db:fresh": "bun scripts/reset-to-superadmin.js",
     "test": "bun test/run-all-tests.js",
     "test:unit": "bun test test/unit/ test/crm.test.js test/money-format.test.ts test/toast.test.ts",
     "test:api": "bun test test/api/",
