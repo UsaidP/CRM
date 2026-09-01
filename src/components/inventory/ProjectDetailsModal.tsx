@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   Building2, 
   ShieldCheck, 
@@ -22,13 +22,19 @@ import {
   Download,
   FileCheck,
   RefreshCw,
-  Eye
+  Eye,
+  UploadCloud,
+  ImagePlus,
+  Loader2,
+  Check,
+  CheckCircle
 } from 'lucide-react';
 import { formatDateFull } from '@/lib/date-utils';
 import { AccessibleDialog } from '@/components/ui/AccessibleDialog';
 import { ReraVerificationBadge } from '@/components/inventory/ReraVerificationBadge';
 import { MahaReraCertificateModal } from '@/components/inventory/MahaReraCertificateModal';
 import { ProjectMediaStudioModal } from '@/components/inventory/ProjectMediaStudioModal';
+import { resolveAssetUrl, parseGalleryUrls } from '@/lib/inventory-media';
 
 interface ProjectDetailsModalProps {
   project: any;
@@ -37,6 +43,7 @@ interface ProjectDetailsModalProps {
   onSelectUnitForCalc?: (unit: any) => void;
   onEditProject?: (project: any) => void;
   onDeleteProject?: (projectId: string, projectName: string) => void;
+  onProjectUpdated?: (updatedProject?: any) => void;
 }
 
 export function ProjectDetailsModal({
@@ -46,6 +53,7 @@ export function ProjectDetailsModal({
   onSelectUnitForCalc,
   onEditProject,
   onDeleteProject,
+  onProjectUpdated,
 }: ProjectDetailsModalProps) {
   const [activeTab, setActiveTab] = useState<'rera' | 'elevations' | 'floorplans' | 'areamatrix' | 'amenities'>('rera');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -54,6 +62,17 @@ export function ProjectDetailsModal({
   const [certificateMsg, setCertificateMsg] = useState<string | null>(null);
   const [showFormCModal, setShowFormCModal] = useState(false);
   const [showMediaStudio, setShowMediaStudio] = useState(false);
+
+  // Multi-Photo & 1-Shot Extract State
+  const elevationInputRef = useRef<HTMLInputElement>(null);
+  const floorplanInputRef = useRef<HTMLInputElement>(null);
+  const brochureExtractInputRef = useRef<HTMLInputElement>(null);
+
+  const [uploadingFiles, setUploadingFiles] = useState(false);
+  const [uploadProgressMsg, setUploadProgressMsg] = useState<string | null>(null);
+  const [oneShotExtracting, setOneShotExtracting] = useState(false);
+  const [oneShotExtractMsg, setOneShotExtractMsg] = useState<string | null>(null);
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
 
   const handleSyncCertificate = async () => {
     if (!currentProject?.reraNumber) return;
@@ -89,6 +108,211 @@ export function ProjectDetailsModal({
     }
   };
 
+  const handleMultiImageUpload = async (files: FileList | File[], category: 'elevations' | 'floorplans') => {
+    const fileArray = Array.from(files);
+    if (!fileArray.length || !currentProject?.id) return;
+
+    setUploadingFiles(true);
+    setUploadProgressMsg(`Uploading ${fileArray.length} image(s) to Cloud Media Vault...`);
+
+    try {
+      const uploadedUrls: string[] = [];
+
+      // Concurrently upload files to cloud media vault
+      const uploadPromises = fileArray.map(async (file) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('category', category === 'floorplans' ? 'floor-plans' : 'elevations');
+        formData.append('projectId', currentProject.id);
+
+        const res = await fetch('/api/v1/media/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        const data = await res.json();
+        if (res.ok && data.asset) {
+          return resolveAssetUrl(data.asset);
+        }
+        return null;
+      });
+
+      const results = await Promise.all(uploadPromises);
+      results.filter(Boolean).forEach((url) => uploadedUrls.push(url as string));
+
+      if (uploadedUrls.length === 0) {
+        throw new Error('No files were successfully uploaded.');
+      }
+
+      // Merge into current gallery
+      const existingUrls = parseGalleryUrls(currentProject.mediaGalleryJson || currentProject.mediaGallery);
+      const mergedGallery = Array.from(new Set([...existingUrls, ...uploadedUrls]));
+      const nextCover = currentProject.coverImageUrl || (category === 'elevations' ? uploadedUrls[0] : null);
+
+      // Save to database
+      const updateRes = await fetch(`/api/v1/inventory/projects/${currentProject.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mediaGallery: mergedGallery,
+          ...(nextCover ? { coverImageUrl: nextCover } : {}),
+        }),
+      });
+
+      const updateData = await updateRes.json();
+      if (!updateRes.ok || !updateData.success) {
+        throw new Error(updateData.error || 'Failed to update project media gallery in database.');
+      }
+
+      setCurrentProject((prev: any) => ({
+        ...prev,
+        ...updateData.data,
+        mediaGalleryJson: mergedGallery,
+        ...(nextCover ? { coverImageUrl: nextCover } : {}),
+      }));
+
+      setUploadProgressMsg(`Successfully uploaded ${uploadedUrls.length} file(s) to ${category}!`);
+      setTimeout(() => setUploadProgressMsg(null), 4000);
+      onProjectUpdated?.(updateData.data);
+    } catch (err: any) {
+      console.error('Upload error:', err);
+      setUploadProgressMsg(`Upload failed: ${err.message || err}`);
+      setTimeout(() => setUploadProgressMsg(null), 5000);
+    } finally {
+      setUploadingFiles(false);
+      if (elevationInputRef.current) elevationInputRef.current.value = '';
+      if (floorplanInputRef.current) floorplanInputRef.current.value = '';
+    }
+  };
+
+  const handleSetCoverImage = async (imgUrl: string) => {
+    if (!currentProject?.id || !imgUrl) return;
+    try {
+      const res = await fetch(`/api/v1/inventory/projects/${currentProject.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ coverImageUrl: imgUrl }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setCurrentProject((prev: any) => ({ ...prev, coverImageUrl: imgUrl }));
+        setUploadProgressMsg(`Set as primary project elevation cover!`);
+        setTimeout(() => setUploadProgressMsg(null), 3000);
+        onProjectUpdated?.(data.data);
+      }
+    } catch (e) {
+      console.error('Failed to set cover image:', e);
+    }
+  };
+
+  const handleOneShotBrochureExtract = async (file: File) => {
+    if (!currentProject?.id) return;
+    setOneShotExtracting(true);
+    setOneShotExtractMsg('Ingesting brochure & extracting project blueprints with AI multimodal vision…');
+
+    try {
+      let directUploadedUrl: string | null = null;
+
+      if (file.size > 4 * 1024 * 1024) {
+        try {
+          const signRes = await fetch(
+            `/api/v1/media/sign-upload?category=brochures&filename=${encodeURIComponent(file.name)}&resourceType=auto`
+          );
+          if (signRes.ok) {
+            const signData = await signRes.json();
+            if (signData.success && signData.signed) {
+              const { signature, timestamp, apiKey, cloudName, folder, publicId } = signData.signed;
+              const cloudFormData = new FormData();
+              cloudFormData.append('file', file);
+              cloudFormData.append('api_key', apiKey);
+              cloudFormData.append('timestamp', String(timestamp));
+              cloudFormData.append('signature', signature);
+              cloudFormData.append('folder', folder);
+              if (publicId) cloudFormData.append('public_id', publicId);
+
+              const cloudRes = await fetch(
+                `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
+                { method: 'POST', body: cloudFormData }
+              );
+              if (cloudRes.ok) {
+                const cloudJson = await cloudRes.json();
+                directUploadedUrl = resolveAssetUrl(cloudJson);
+              } else {
+                const errText = await cloudRes.text();
+                console.warn('[1-SHOT] Cloudinary returned non-200:', cloudRes.status, errText);
+              }
+            }
+          }
+        } catch (signErr) {
+          console.warn('[1-SHOT] Cloudinary direct upload failed, fallback to local', signErr);
+        }
+      }
+
+      let res: Response;
+      if (directUploadedUrl) {
+        res = await fetch('/api/v1/inventory/upload-brochure', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            brochureUrl: directUploadedUrl,
+            filename: file.name,
+            projectId: currentProject.id,
+          }),
+        });
+      } else {
+        const base64Data = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+
+        res = await fetch('/api/v1/inventory/upload-brochure', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            fileBase64: base64Data,
+            filename: file.name,
+            mimeType: file.type || 'application/pdf',
+            projectId: currentProject.id,
+          }),
+        });
+      }
+
+      const rawText = await res.text();
+      let json: any;
+      try {
+        json = JSON.parse(rawText);
+      } catch {
+        throw new Error(`Server response error: ${rawText.slice(0, 100)}`);
+      }
+
+      if (!res.ok || !json.success) {
+        throw new Error(json.error || 'Failed to extract brochure information.');
+      }
+
+      const updatedProjectData = json.data?.updatedProject || json.data;
+
+      if (updatedProjectData) {
+        setCurrentProject((prev: any) => ({
+          ...prev,
+          ...updatedProjectData,
+        }));
+        onProjectUpdated?.(updatedProjectData);
+      }
+
+      setOneShotExtractMsg(`Successfully extracted elevations, floor plans, and specs in 1 shot!`);
+      setTimeout(() => setOneShotExtractMsg(null), 5000);
+    } catch (err: any) {
+      console.error('1-shot extraction error:', err);
+      setOneShotExtractMsg(`Extraction failed: ${err.message || err}`);
+      setTimeout(() => setOneShotExtractMsg(null), 6000);
+    } finally {
+      setOneShotExtracting(false);
+      if (brochureExtractInputRef.current) brochureExtractInputRef.current.value = '';
+    }
+  };
+
   if (!project) return null;
 
   const formatINR = (val: number) => {
@@ -120,8 +344,19 @@ export function ProjectDetailsModal({
     ? JSON.parse(currentProject.amenitiesJson || '[]')
     : [];
 
-  // Normalize gallery items into uniform { url, title, category, type } objects
-  const normalizedGallery: Array<{ url: string; title: string; category: string; type?: string }> = [];
+  // Normalize gallery items into uniform { url, title, category, type, subtype, etc. } objects
+  const normalizedGallery: Array<{
+    url: string;
+    title: string;
+    category: string;
+    type?: string;
+    subtype?: string;
+    pageNumber?: number;
+    original?: boolean;
+    bhk?: number;
+    carpetAreaSqft?: number;
+    description?: string;
+  }> = [];
 
   rawGallery.forEach((item: any, idx: number) => {
     if (!item) return;
@@ -147,10 +382,10 @@ export function ProjectDetailsModal({
         title = `${currentProject.projectName} Night Aerial Elevation`;
       }
       normalizedGallery.push({ url, title, category });
-    } else if (typeof item === 'object' && (item.url || item.secureUrl)) {
-      const url = item.url || item.secureUrl;
-      const lower = (item.title || item.category || item.type || url || '').toLowerCase();
-      let category = item.category || item.type || 'elevation';
+    } else if (typeof item === 'object' && (item.file_url || item.url || item.secureUrl)) {
+      const url = item.file_url || item.url || item.secureUrl;
+      const lower = (item.title || item.category || item.asset_type || item.subtype || item.display_position || url || '').toLowerCase();
+      let category = item.display_position || item.asset_type || item.category || 'elevation';
       if (lower.includes('floor') || lower.includes('plan') || lower.includes('blueprint') || lower.includes('layout')) {
         category = 'floorplan';
       }
@@ -158,13 +393,19 @@ export function ProjectDetailsModal({
         url,
         title: item.title || `${currentProject.projectName} Media ${idx + 1}`,
         category,
-        type: item.type || category
+        type: item.asset_type || item.type || category,
+        subtype: item.subtype,
+        pageNumber: item.page_number || item.pageNumber,
+        original: item.original ?? true,
+        bhk: item.bhk,
+        carpetAreaSqft: item.carpetAreaSqft,
+        description: item.description,
       });
     }
   });
 
   // Build Elevation Images List
-  const elevationList: Array<{ url: string; title: string; category: string; badge?: string }> = [];
+  const elevationList: Array<{ url: string; title: string; category: string; badge?: string; pageNumber?: number }> = [];
 
   // Add coverImageUrl
   if (currentProject.coverImageUrl && !elevationList.some(e => e.url === currentProject.coverImageUrl)) {
@@ -172,7 +413,8 @@ export function ProjectDetailsModal({
       url: currentProject.coverImageUrl,
       title: `${currentProject.projectName} Primary Elevation (Cover)`,
       category: 'elevation',
-      badge: 'PRIMARY ELEVATION COVER'
+      badge: 'PRIMARY ELEVATION COVER',
+      pageNumber: 3,
     });
   }
 
@@ -194,12 +436,12 @@ export function ProjectDetailsModal({
     });
 
   const elevationImages = elevationList.length > 0 ? elevationList : [
-    { url: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1600', title: `${currentProject.projectName} Tower Elevation`, category: 'elevation', badge: 'FRONT ELEVATION' },
-    { url: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1600', title: `${currentProject.projectName} Facade Render`, category: 'elevation', badge: 'PODIUM FACADE' }
+    { url: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1600', title: `${currentProject.projectName} Tower Elevation`, category: 'elevation', badge: 'FRONT ELEVATION', pageNumber: 3 },
+    { url: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1600', title: `${currentProject.projectName} Facade Render`, category: 'elevation', badge: 'PODIUM FACADE', pageNumber: 3 }
   ];
 
   // Build Floor Plans & Blueprints List
-  const floorPlanList: Array<{ url: string; title: string; category: string; badge?: string; bhk?: number; carpet?: number }> = [];
+  const floorPlanList: Array<{ url: string; title: string; category: string; badge?: string; bhk?: number; carpet?: number; pageNumber?: number }> = [];
 
   // Add masterPlanUrl
   if (currentProject.masterPlanUrl && !floorPlanList.some(f => f.url === currentProject.masterPlanUrl)) {
@@ -207,7 +449,8 @@ export function ProjectDetailsModal({
       url: currentProject.masterPlanUrl,
       title: `${currentProject.projectName} Sanctioned Master Layout Plan`,
       category: 'floorplan',
-      badge: 'MASTER LAYOUT PLAN'
+      badge: 'MASTER LAYOUT PLAN',
+      pageNumber: 8,
     });
   }
 
@@ -220,7 +463,8 @@ export function ProjectDetailsModal({
         category: 'floorplan',
         badge: `${unit.bhk} BHK BLUEPRINT`,
         bhk: unit.bhk,
-        carpet: unit.carpetAreaSqft
+        carpet: unit.carpetAreaSqft,
+        pageNumber: 7,
       });
     }
   });
@@ -232,14 +476,14 @@ export function ProjectDetailsModal({
       if (!floorPlanList.some(f => f.url === m.url)) {
         floorPlanList.push({
           ...m,
-          badge: 'FLOOR PLAN BLUEPRINT'
+          badge: m.subtype ? m.subtype.replace(/_/g, ' ').toUpperCase() : 'FLOOR PLAN BLUEPRINT'
         });
       }
     });
 
   const floorPlanImages = floorPlanList.length > 0 ? floorPlanList : [
-    { url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1600', title: `${currentProject.projectName} Master Layout Plan`, category: 'floorplan', badge: 'MASTER LAYOUT' },
-    { url: 'https://images.unsplash.com/photo-1574362848149-11496d93a7c7?w=1600', title: `Typical 2 & 3 BHK Cluster Floor Plan`, category: 'floorplan', badge: 'CLUSTER PLAN' }
+    { url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1600', title: `${currentProject.projectName} Master Layout Plan`, category: 'floorplan', badge: 'MASTER LAYOUT', pageNumber: 8 },
+    { url: 'https://images.unsplash.com/photo-1574362848149-11496d93a7c7?w=1600', title: `Typical 2 & 3 BHK Cluster Floor Plan`, category: 'floorplan', badge: 'CLUSTER PLAN', pageNumber: 7 }
   ];
 
   return (
@@ -251,6 +495,31 @@ export function ProjectDetailsModal({
       panelClassName="!p-0 overflow-hidden max-w-5xl"
     >
       <div className="relative w-full flex flex-col text-content">
+        {/* Hidden Inputs for Multi-Photo and 1-Shot Brochure Ingestion */}
+        <input
+          ref={elevationInputRef}
+          type="file"
+          multiple
+          accept="image/jpeg,image/png,image/webp,image/avif"
+          className="sr-only"
+          onChange={(e) => e.target.files && handleMultiImageUpload(e.target.files, 'elevations')}
+        />
+        <input
+          ref={floorplanInputRef}
+          type="file"
+          multiple
+          accept="image/jpeg,image/png,image/webp,image/avif,application/pdf"
+          className="sr-only"
+          onChange={(e) => e.target.files && handleMultiImageUpload(e.target.files, 'floorplans')}
+        />
+        <input
+          ref={brochureExtractInputRef}
+          type="file"
+          accept="application/pdf,image/jpeg,image/png"
+          className="sr-only"
+          onChange={(e) => e.target.files?.[0] && handleOneShotBrochureExtract(e.target.files[0])}
+        />
+
         {/* Header */}
         <div className="p-5 border-b border-border bg-surface-raised flex items-start justify-between">
           <div className="flex items-start gap-4">
@@ -280,7 +549,27 @@ export function ProjectDetailsModal({
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap justify-end">
+            <button
+              type="button"
+              onClick={() => brochureExtractInputRef.current?.click()}
+              disabled={oneShotExtracting}
+              className="px-3 py-1.5 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-300 text-xs font-bold hover:bg-amber-500/20 flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
+              title="1-Shot Extract: Elevations, Floor Plans, RERA & Specs from Developer Brochure PDF"
+            >
+              {oneShotExtracting ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-400" />
+                  <span>AI Extracting 1-Shot…</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                  <span className="hidden sm:inline">1-Shot Extract Brochure</span>
+                </>
+              )}
+            </button>
+
             {onEditProject && (
               <button
                 type="button"
@@ -542,6 +831,25 @@ export function ProjectDetailsModal({
             </div>
           )}
 
+          {/* Active Upload / Extraction Notification Banner */}
+          {(uploadProgressMsg || oneShotExtractMsg) && (
+            <div className={`p-3.5 rounded-xl border flex items-center justify-between gap-3 text-xs font-semibold animate-in fade-in slide-in-from-top-2 ${
+              uploadingFiles || oneShotExtracting
+                ? 'bg-accent-soft/60 border-accent/40 text-accent'
+                : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+            }`}>
+              <div className="flex items-center gap-2.5">
+                {uploadingFiles || oneShotExtracting ? (
+                  <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+                ) : (
+                  <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+                )}
+                <span>{uploadProgressMsg || oneShotExtractMsg}</span>
+              </div>
+              <span className="text-[10px] font-mono opacity-80 uppercase tracking-wider">Cloud Vault</span>
+            </div>
+          )}
+
           {/* TAB 2: Elevations & Facades */}
           {activeTab === 'elevations' && (
             <div className="space-y-6">
@@ -556,24 +864,40 @@ export function ProjectDetailsModal({
                     High-resolution 3D building elevations, tower architecture, and aerial facade views stored via Cloudinary &amp; Local Media Vault.
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setShowMediaStudio(true)}
-                  className="px-3.5 py-2 rounded-xl bg-accent text-accent-contrast text-xs font-bold shadow hover:bg-accent/90 flex items-center gap-1.5 shrink-0 cursor-pointer transition-all"
-                >
-                  <Sparkles className="w-4 h-4" />
-                  <span>Media &amp; Elevation Studio</span>
-                </button>
+                <div className="flex items-center gap-2 flex-wrap shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => elevationInputRef.current?.click()}
+                    disabled={uploadingFiles}
+                    className="px-3.5 py-2 rounded-xl bg-accent text-accent-contrast text-xs font-bold shadow hover:bg-accent/90 flex items-center gap-1.5 cursor-pointer transition-all disabled:opacity-50"
+                    title="Select and upload multiple photos at once"
+                  >
+                    <ImagePlus className="w-4 h-4" />
+                    <span>Add Photos (Select Multiple)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowMediaStudio(true)}
+                    className="px-3.5 py-2 rounded-xl border border-border bg-surface text-content text-xs font-bold shadow-2xs hover:bg-surface-raised flex items-center gap-1.5 cursor-pointer transition-all"
+                  >
+                    <Sparkles className="w-4 h-4 text-accent" />
+                    <span>Media Studio</span>
+                  </button>
+                </div>
               </div>
 
               {/* Elevation Image Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {elevationImages.map((img: any, idx: number) => {
                   const isCloud = img.url?.includes('cloudinary') || img.url?.includes('/uploads/');
+                  const isCover = currentProject.coverImageUrl === img.url || (idx === 0 && !currentProject.coverImageUrl);
+
                   return (
                     <div 
                       key={idx} 
-                      className="group relative rounded-xl overflow-hidden border border-border/80 bg-slate-950 aspect-[16/10] cursor-pointer shadow-sm hover:border-accent hover:shadow-md transition-all flex flex-col justify-end"
+                      className={`group relative rounded-xl overflow-hidden border bg-slate-950 aspect-[16/10] cursor-pointer shadow-sm hover:border-accent hover:shadow-md transition-all flex flex-col justify-end ${
+                        isCover ? 'border-accent ring-2 ring-accent/30' : 'border-border/80'
+                      }`}
                       onClick={() => setSelectedImage(img.url)}
                     >
                       <img 
@@ -583,15 +907,37 @@ export function ProjectDetailsModal({
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-black/40 flex flex-col justify-between p-3.5 pointer-events-none">
                         <div className="flex items-center justify-between w-full">
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-accent text-accent-contrast shadow-sm tracking-wide">
-                            {img.badge || 'ELEVATION'}
-                          </span>
-                          {isCloud && (
-                            <span className="px-2 py-0.5 rounded text-[9px] font-mono font-medium bg-black/70 text-sky-300 border border-sky-500/30 flex items-center gap-1">
-                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                              Cloud Vault
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-accent text-accent-contrast shadow-sm tracking-wide">
+                              {isCover ? 'PRIMARY COVER' : (img.badge || 'ELEVATION')}
                             </span>
-                          )}
+                            {Boolean(img.pageNumber) && (
+                              <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-black/80 text-amber-300 border border-amber-500/30">
+                                Page {img.pageNumber}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1.5 pointer-events-auto">
+                            {!isCover && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleSetCoverImage(img.url);
+                                }}
+                                className="px-2 py-0.5 rounded text-[9px] font-semibold bg-black/80 hover:bg-accent text-white border border-white/20 transition-colors shadow-sm"
+                                title="Set this photo as primary project cover"
+                              >
+                                Set Cover
+                              </button>
+                            )}
+                            {isCloud && (
+                              <span className="px-2 py-0.5 rounded text-[9px] font-mono font-medium bg-black/70 text-sky-300 border border-sky-500/30 flex items-center gap-1">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                                Cloud Vault
+                              </span>
+                            )}
+                          </div>
                         </div>
                         <div className="flex items-center justify-between w-full">
                           <span className="text-xs font-semibold text-white truncate pr-2">
@@ -605,6 +951,40 @@ export function ProjectDetailsModal({
                     </div>
                   );
                 })}
+              </div>
+
+              {/* Multi-Photo Drag & Drop Upload Zone */}
+              <div
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setIsDraggingOver(true);
+                }}
+                onDragLeave={() => setIsDraggingOver(false)}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setIsDraggingOver(false);
+                  if (e.dataTransfer.files?.length) {
+                    handleMultiImageUpload(e.dataTransfer.files, 'elevations');
+                  }
+                }}
+                onClick={() => elevationInputRef.current?.click()}
+                className={`p-6 rounded-2xl border-2 border-dashed transition-all text-center cursor-pointer flex flex-col items-center justify-center gap-2.5 ${
+                  isDraggingOver 
+                    ? 'border-accent bg-accent-soft/40 scale-[1.01]' 
+                    : 'border-border hover:border-accent/60 bg-surface-subtle/50 hover:bg-surface-raised'
+                }`}
+              >
+                <div className="p-3 rounded-full bg-accent-soft text-accent">
+                  <UploadCloud className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-content">
+                    Click to select multiple photos or drag &amp; drop here
+                  </div>
+                  <div className="text-[11px] text-content-muted mt-0.5">
+                    Select 5, 10, or 20+ images in one go (JPG, PNG, WebP up to 25 MB each)
+                  </div>
+                </div>
               </div>
 
               {/* Architecture Specs */}
@@ -643,14 +1023,26 @@ export function ProjectDetailsModal({
                     Sanctioned master blueprints, typical cluster floor plans, and 2D/3D unit floor plan schematics with exact internal dimensions.
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setShowMediaStudio(true)}
-                  className="px-3.5 py-2 rounded-xl bg-accent text-accent-contrast text-xs font-bold shadow hover:bg-accent/90 flex items-center gap-1.5 shrink-0 cursor-pointer transition-all"
-                >
-                  <Sparkles className="w-4 h-4" />
-                  <span>Media &amp; Elevation Studio</span>
-                </button>
+                <div className="flex items-center gap-2 flex-wrap shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => floorplanInputRef.current?.click()}
+                    disabled={uploadingFiles}
+                    className="px-3.5 py-2 rounded-xl bg-accent text-accent-contrast text-xs font-bold shadow hover:bg-accent/90 flex items-center gap-1.5 cursor-pointer transition-all disabled:opacity-50"
+                    title="Select and upload multiple floor plans at once"
+                  >
+                    <ImagePlus className="w-4 h-4" />
+                    <span>Add Floor Plans (Select Multiple)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowMediaStudio(true)}
+                    className="px-3.5 py-2 rounded-xl border border-border bg-surface text-content text-xs font-bold shadow-2xs hover:bg-surface-raised flex items-center gap-1.5 cursor-pointer transition-all"
+                  >
+                    <Sparkles className="w-4 h-4 text-accent" />
+                    <span>Media Studio</span>
+                  </button>
+                </div>
               </div>
 
               {/* Floor Plan Cards */}
@@ -670,9 +1062,16 @@ export function ProjectDetailsModal({
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-black/40 flex flex-col justify-between p-3.5 pointer-events-none">
                         <div className="flex items-center justify-between w-full">
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-500 text-white shadow-sm tracking-wide">
-                            {img.badge || 'BLUEPRINT'}
-                          </span>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-500 text-white shadow-sm tracking-wide">
+                              {img.badge || 'BLUEPRINT'}
+                            </span>
+                            {Boolean(img.pageNumber) && (
+                              <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-black/80 text-sky-300 border border-sky-500/30">
+                                Page {img.pageNumber}
+                              </span>
+                            )}
+                          </div>
                           {isCloud && (
                             <span className="px-2 py-0.5 rounded text-[9px] font-mono font-medium bg-black/70 text-sky-300 border border-sky-500/30 flex items-center gap-1">
                               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
@@ -692,6 +1091,40 @@ export function ProjectDetailsModal({
                     </div>
                   );
                 })}
+              </div>
+
+              {/* Multi-Floor Plan Drag & Drop Upload Zone */}
+              <div
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setIsDraggingOver(true);
+                }}
+                onDragLeave={() => setIsDraggingOver(false)}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setIsDraggingOver(false);
+                  if (e.dataTransfer.files?.length) {
+                    handleMultiImageUpload(e.dataTransfer.files, 'floorplans');
+                  }
+                }}
+                onClick={() => floorplanInputRef.current?.click()}
+                className={`p-6 rounded-2xl border-2 border-dashed transition-all text-center cursor-pointer flex flex-col items-center justify-center gap-2.5 ${
+                  isDraggingOver 
+                    ? 'border-sky-500 bg-sky-500/10 scale-[1.01]' 
+                    : 'border-border hover:border-sky-500/60 bg-surface-subtle/50 hover:bg-surface-raised'
+                }`}
+              >
+                <div className="p-3 rounded-full bg-sky-500/15 text-sky-400">
+                  <Layers className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-content">
+                    Click to select multiple floor plans or drag &amp; drop here
+                  </div>
+                  <div className="text-[11px] text-content-muted mt-0.5">
+                    Select 1 BHK, 2 BHK, 3 BHK blueprints or master layouts in one go
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -872,35 +1305,37 @@ export function ProjectDetailsModal({
           onClose={() => setSelectedImage(null)}
           titleId="lightbox-title"
           size="2xl"
-          panelClassName="!p-4 bg-slate-950/95 border-slate-800 max-w-5xl"
+          panelClassName="!p-4 bg-surface border-border max-w-5xl"
         >
           <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-800">
-              <h3 id="lightbox-title" className="text-sm font-bold text-white flex items-center gap-2">
-                <Maximize2 className="w-4 h-4 text-accent" />
-                High-Resolution Architectural View • {currentProject.projectName}
+            <div className="flex items-center justify-between pb-3 border-b border-border">
+              <h3 id="lightbox-title" className="text-sm font-bold text-content flex items-center gap-2 font-display">
+                <Maximize2 className="w-4 h-4 text-accent shrink-0" />
+                <span className="truncate">High-Resolution Architectural View • {currentProject.projectName}</span>
               </h3>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 shrink-0">
                 <a
                   href={selectedImage}
                   target="_blank"
                   rel="noopener noreferrer"
                   download
-                  className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                  className="px-3.5 py-1.5 rounded-lg bg-accent text-white hover:bg-accent-hover active:bg-accent-active text-xs font-semibold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
                 >
                   <Download className="w-3.5 h-3.5" />
                   <span>Open Full Asset</span>
                 </a>
                 <button
                   type="button"
+                  data-dialog-close
                   onClick={() => setSelectedImage(null)}
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+                  className="p-1.5 rounded-lg text-content-muted hover:text-content hover:bg-surface-raised transition-colors cursor-pointer"
+                  aria-label="Close dialog"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
             </div>
-            <div className="relative w-full max-h-[75vh] flex items-center justify-center overflow-auto rounded-xl bg-slate-900/60 p-2">
+            <div className="relative w-full max-h-[75vh] flex items-center justify-center overflow-auto rounded-xl bg-surface-subtle border border-border/60 p-2">
               <img
                 src={selectedImage}
                 alt="High resolution render"

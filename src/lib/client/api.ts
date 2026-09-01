@@ -6,7 +6,11 @@
  * this so components never call fetch() directly.
  */
 
+import { toUserMessage } from './user-feedback';
+
 export class ApiError extends Error {
+  public readonly userMessage: { title: string; description: string };
+
   constructor(
     message: string,
     public readonly status: number,
@@ -14,6 +18,7 @@ export class ApiError extends Error {
   ) {
     super(message);
     this.name = 'ApiError';
+    this.userMessage = toUserMessage(message);
   }
 }
 
@@ -72,11 +77,17 @@ async function handleResponse<T>(res: Response): Promise<T> {
   }
 
   if (!res.ok || payload?.success === false) {
-    throw new ApiError(
-      payload?.error || `Request failed (${res.status})`,
-      res.status,
-      payload
-    );
+    const errorString =
+      payload?.error ||
+      (res.status === 404
+        ? 'The requested record or endpoint could not be found.'
+        : res.status === 401 || res.status === 403
+        ? 'You do not have authorization to view or edit this resource.'
+        : res.status >= 500
+        ? 'The server encountered a temporary issue. Please try again.'
+        : `Request could not be processed (Status ${res.status})`);
+
+    throw new ApiError(errorString, res.status, payload);
   }
 
   return (payload?.data !== undefined ? payload.data : (payload as unknown)) as T;

@@ -30,6 +30,8 @@ import { AccessibleDialog } from '@/components/ui/AccessibleDialog';
 import { MATCHING_SIMULATION_ENDPOINT } from '@/lib/navigation';
 import { CustomSelect, type CustomSelectOption } from '@/components/ui/CustomSelect';
 import { toast } from '@/lib/client/toast';
+import { FeedbackAlert } from '@/components/ui/FeedbackAlert';
+import { EmptyState } from '@/components/ui/EmptyState';
 
 export default function MatchmakerConsolePage() {
   const [leads, setLeads] = useState<any[]>([]);
@@ -304,13 +306,14 @@ export default function MatchmakerConsolePage() {
             </button>
           </div>
           {portalError && (
-            <div id="matching-portal-error" role="alert" className="max-w-md rounded-xl border border-status-danger/40 bg-status-danger-surface px-3.5 py-2 text-xs text-status-danger font-semibold shadow-xs">
-              <p>{portalError}</p>
-              {selectedUnitIds.length > 0 && leads.length > 0 && (
-                <button type="button" onClick={handleGeneratePortal} className="mt-1 font-bold text-status-danger underline underline-offset-2">
-                  Try generating again
-                </button>
-              )}
+            <div id="matching-portal-error" className="max-w-md">
+              <FeedbackAlert
+                variant="error"
+                error={portalError}
+                actionLabel="Try Generating Again"
+                onAction={selectedUnitIds.length > 0 && leads.length > 0 ? handleGeneratePortal : undefined}
+                onDismiss={() => setPortalError(null)}
+              />
             </div>
           )}
         </div>
@@ -344,11 +347,14 @@ export default function MatchmakerConsolePage() {
                 className="w-full"
               />
               {leadsError && (
-                <div role="alert" className="mt-2 rounded-xl border border-status-danger/40 bg-status-danger-surface p-2.5 text-xs text-status-danger font-semibold">
-                  <p>{leadsError}</p>
-                  <button type="button" onClick={() => setLeadRequestKey((key) => key + 1)} className="mt-1 font-bold text-status-danger underline underline-offset-2">
-                    Retry lead profiles
-                  </button>
+                <div className="mt-2">
+                  <FeedbackAlert
+                    variant="error"
+                    error={leadsError}
+                    actionLabel="Retry Profiles"
+                    onAction={() => setLeadRequestKey((key) => key + 1)}
+                    onDismiss={() => setLeadsError(null)}
+                  />
                 </div>
               )}
             </div>
@@ -538,17 +544,14 @@ export default function MatchmakerConsolePage() {
             </div>
 
             {matchingError ? (
-              <div role="alert" className="p-12 text-center text-xs">
-                <AlertCircle className="mx-auto h-8 w-8 text-status-danger" />
-                <p className="mt-3 font-semibold text-content">Inventory matches could not be evaluated.</p>
-                <p className="mt-1 text-content-muted">{matchingError}</p>
-                <button
-                  type="button"
-                  onClick={() => setMatchingRequestKey((key) => key + 1)}
-                  className="mt-4 rounded-xl border border-border bg-surface px-4 py-2 font-bold text-accent-text hover:bg-surface-subtle shadow-2xs"
-                >
-                  Retry matching
-                </button>
+              <div className="p-8">
+                <FeedbackAlert
+                  variant="error"
+                  error={matchingError}
+                  actionLabel="Retry Matching"
+                  onAction={() => setMatchingRequestKey((key) => key + 1)}
+                  onDismiss={() => setMatchingError(null)}
+                />
               </div>
             ) : loading ? (
               <div className="p-12 text-center text-content-muted text-xs flex flex-col items-center gap-3">
@@ -556,10 +559,19 @@ export default function MatchmakerConsolePage() {
                 <span>Evaluating multi-factor weighted scores...</span>
               </div>
             ) : matchedResults.length === 0 ? (
-              <div className="p-12 text-center text-content-muted text-xs space-y-2">
-                <AlertCircle className="w-8 h-8 text-status-warning mx-auto" />
-                <p className="text-content font-semibold">No current inventory records match your strict criteria.</p>
-                <p className="text-xs">Try expanding the maximum budget ceiling or adding adjacent BHK configurations.</p>
+              <div className="p-8">
+                <EmptyState
+                  type="filter"
+                  title="No Matching Properties Found"
+                  description="No current inventory units match the strict budget and location parameters. Try expanding your budget ceiling or selecting multiple BHK sizes."
+                  actionLabel="Reset Search Parameters"
+                  onAction={() => {
+                    setBudgetMax(15000000);
+                    setBhkPreferences([1, 2, 3]);
+                    setPossessionPreference('ANY');
+                    setMinCarpetSqft(0);
+                  }}
+                />
               </div>
             ) : (
               <div className="overflow-x-auto">

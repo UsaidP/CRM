@@ -37,8 +37,11 @@ import { AccessibleDialog } from '@/components/ui/AccessibleDialog';
 import { HallmarkStamp } from '@/components/ui/HallmarkStamp';
 import { validateReraNumber } from '@/lib/domain/verification-engine';
 import { ReraVerificationBadge } from '@/components/inventory/ReraVerificationBadge';
+import { FeedbackAlert } from '@/components/ui/FeedbackAlert';
+import { uploadToCloudinaryChunked } from '@/lib/client/cloudinary-chunked-upload';
 import { parseSafeDate } from '@/lib/date-utils';
 import { MahaReraCertificateModal } from '@/components/inventory/MahaReraCertificateModal';
+import { resolveAssetUrl, parseGalleryUrls } from '@/lib/inventory-media';
 
 export interface BrochureUploadModalProps {
   open: boolean;
@@ -244,13 +247,49 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
     }, 450);
 
     try {
-      let res;
+      let res: Response;
       if (uploadMode === 'file' && file) {
-        const formData = new FormData();
-        formData.append('file', file);
+        // Step 1: Direct chunked Cloudinary upload (supports up to 100MB without hitting 10MB ceiling)
+        let directUploadedUrl: string | null = null;
+
+        try {
+          const isPdf = file.type?.includes('pdf') || file.name.match(/\.pdf$/i);
+          const resourceType = isPdf ? 'raw' : 'auto';
+          const signRes = await fetch(
+            `/api/v1/media/sign-upload?category=brochures&filename=${encodeURIComponent(file.name)}&resourceType=${resourceType}`
+          );
+          if (signRes.ok) {
+            const signData = await signRes.json();
+            if (signData.success && signData.signed) {
+              const cloudAsset = await uploadToCloudinaryChunked(
+                file,
+                signData.signed,
+                file.name
+              );
+              directUploadedUrl = cloudAsset.secure_url || cloudAsset.url;
+            }
+          }
+        } catch (cloudUploadErr) {
+          console.warn('[UPLOAD] Direct Cloudinary chunked upload attempt warning:', cloudUploadErr);
+        }
+
+        // Convert file to Base64 (fallback or in-memory transport)
+        const base64Data = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+
         res = await fetch('/api/v1/inventory/upload-brochure', {
           method: 'POST',
-          body: formData,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            fileBase64: base64Data,
+            brochureUrl: directUploadedUrl,
+            filename: file.name,
+            mimeType: file.type || 'application/pdf',
+          }),
         });
       } else if (uploadMode === 'text' && pastedText.trim()) {
         res = await fetch('/api/v1/inventory/upload-brochure', {
@@ -262,7 +301,19 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
         throw new Error('Please select a PDF brochure or paste brochure specification text.');
       }
 
-      const json = await res.json();
+      const rawText = await res.text();
+      let json: any;
+      try {
+        json = JSON.parse(rawText);
+      } catch {
+        if (res.status === 413 || rawText.includes('Request Entity Too Large')) {
+          throw new Error(
+            `File size (${(file ? (file.size / (1024 * 1024)).toFixed(1) : '13.9')} MB) exceeds Vercel direct upload limit (4.5 MB). Please configure CLOUDINARY credentials in your Vercel Project Settings for direct cloud uploads, or use the "Paste Brochure / Spec Text" tab.`
+          );
+        }
+        throw new Error(`Server returned HTTP ${res.status}: ${rawText.slice(0, 150)}`);
+      }
+
       clearInterval(progressTimer);
 
       if (!res.ok || !json.success) {
@@ -270,7 +321,7 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
       }
 
       setProjectData(json.data);
-      setBrochureUrl(json.brochureUrl || json.data.brochureUrl || null);
+      setBrochureUrl(json.brochureUrl || json.data?.brochureUrl || null);
       setExtractionMethod(json.extractionMethod || 'GEMINI_AI');
       setModelUsed(json.modelUsed || (json.extractionMethod === 'GEMINI_AI' ? 'Gemini 2.5 Flash' : 'Smart Local Parser'));
       setExtractionNote(json.note || null);
@@ -294,14 +345,31 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
         throw new Error(reraCheck.error || 'Please enter a valid MahaRERA registration number.');
       }
 
-      const coverImageUrl = projectData.coverImageUrl || projectData.classifiedMedia?.elevations?.[0]?.mediaAsset?.secureUrl || projectData.classifiedMedia?.elevations?.[0]?.mediaAsset?.url || null;
-      const masterPlanUrl = projectData.masterPlanUrl || projectData.classifiedMedia?.masterPlan?.mediaAsset?.secureUrl || projectData.classifiedMedia?.masterPlan?.mediaAsset?.url || null;
-      const mediaGallery = projectData.mediaGallery && Array.isArray(projectData.mediaGallery) && projectData.mediaGallery.length > 0
+      const extractedElevations = projectData.elevations || projectData.classifiedMedia?.elevations || [];
+      const extractedFloorPlans = projectData.floorPlans || projectData.classifiedMedia?.floorPlans || [];
+      const extractedMasterPlan = projectData.masterPlan || projectData.classifiedMedia?.masterPlan;
+
+      const coverImageUrl = projectData.coverImageUrl 
+        || resolveAssetUrl(extractedElevations[0]) 
+        || null;
+
+      const masterPlanUrl = projectData.masterPlanUrl 
+        || resolveAssetUrl(extractedMasterPlan) 
+        || null;
+
+      const assetRecords = projectData.assetRecords || [];
+
+      const allMediaUrls: string[] = [
+        ...extractedElevations.map(resolveAssetUrl),
+        resolveAssetUrl(extractedMasterPlan),
+        ...extractedFloorPlans.map(resolveAssetUrl),
+      ].filter(Boolean);
+
+      const mediaGallery = (assetRecords.length > 0)
+        ? assetRecords
+        : (projectData.mediaGallery && Array.isArray(projectData.mediaGallery) && projectData.mediaGallery.length > 0)
         ? projectData.mediaGallery
-        : (projectData.classifiedMedia ? [
-            ...(projectData.classifiedMedia.elevations || []).map((e: any) => e.mediaAsset?.secureUrl || e.mediaAsset?.url),
-            projectData.classifiedMedia.masterPlan?.mediaAsset?.secureUrl || projectData.classifiedMedia.masterPlan?.mediaAsset?.url
-          ].filter(Boolean) : []);
+        : allMediaUrls;
 
       const payload = {
         developerName: projectData.developerName,
@@ -332,8 +400,12 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
         reraVerificationDate: projectData.reraCertificateUrl ? new Date().toISOString() : null,
         reraCertDataJson: projectData.reraVerification ? JSON.stringify(projectData.reraVerification) : null,
         units: (projectData.units || []).map((u: any, idx: number) => {
-          const matchingPlan = projectData.classifiedMedia?.floorPlans?.find((fp: any) => fp.bhk === u.bhk);
-          const floorPlanUrl = u.floorPlanUrl || matchingPlan?.mediaAsset?.secureUrl || matchingPlan?.mediaAsset?.url || null;
+          const matchingPlan = extractedFloorPlans.find((fp: any) => fp.bhk === u.bhk);
+          const floorPlanUrl = u.floorPlanUrl 
+            || matchingPlan?.mediaAsset?.secureUrl 
+            || matchingPlan?.mediaAsset?.url 
+            || matchingPlan?.url 
+            || null;
 
           return {
             unitNumber: u.unitNumber || `Flat-0${idx + 1}`,
@@ -436,13 +508,11 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
         </div>
 
         {parseError && (
-          <div role="alert" className="p-3.5 bg-status-danger-surface border border-status-danger/40 rounded-xl text-status-danger text-xs font-semibold flex items-center justify-between shadow-xs">
-            <div className="flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 shrink-0" />
-              <span>{parseError}</span>
-            </div>
-            <button onClick={() => setParseError(null)} className="font-bold p-1">✕</button>
-          </div>
+          <FeedbackAlert
+            variant="error"
+            error={parseError}
+            onDismiss={() => setParseError(null)}
+          />
         )}
 
         {/* STEP 1: UPLOAD BROCHURE */}
@@ -498,7 +568,7 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
                     {file ? file.name : 'Click to select or drag & drop Developer Brochure (PDF / Image / Spec Sheet)'}
                   </p>
                   <p className="text-[11px] text-content-muted mt-0.5 font-mono">
-                    {file ? `${(file.size / (1024 * 1024)).toFixed(2)} MB Document Ready` : 'Supports official MahaRERA brochures, floor plan images (PDF, PNG, JPG, WEBP) up to 50 MB'}
+                    {file ? `${(file.size / (1024 * 1024)).toFixed(2)} MB Document Ready` : 'Supports official MahaRERA brochures, floor plan images (PDF, PNG, JPG, WEBP) up to 100 MB'}
                   </p>
                 </div>
 
@@ -825,10 +895,12 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
                       </div>
 
                       {certificateSuccessMsg && (
-                        <div className="p-2.5 bg-status-success-surface border border-status-success/30 rounded-xl text-status-success text-xs font-semibold flex items-center gap-2 animate-in fade-in">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          <span>{certificateSuccessMsg}</span>
-                        </div>
+                        <FeedbackAlert
+                          variant="success"
+                          title="MahaRERA Verified"
+                          description={certificateSuccessMsg}
+                          onDismiss={() => setCertificateSuccessMsg(null)}
+                        />
                       )}
 
                       {projectData.reraVerification && (
@@ -949,9 +1021,9 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
                         </div>
                         <p className="text-xs font-bold text-content truncate font-display">{elev.title}</p>
                         <p className="text-[11px] text-content-secondary line-clamp-2">{elev.description}</p>
-                        {elev.mediaAsset?.secureUrl || elev.mediaAsset?.url ? (
+                        {resolveAssetUrl(elev) ? (
                           <a
-                            href={elev.mediaAsset?.secureUrl || elev.mediaAsset?.url}
+                            href={resolveAssetUrl(elev)}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-1 text-[11px] font-bold text-accent hover:underline pt-1"
@@ -993,9 +1065,9 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
                         </div>
                         <p className="text-xs font-bold text-content truncate font-display">{fp.title}</p>
                         <p className="text-[11px] text-content-secondary line-clamp-2">{fp.description}</p>
-                        {fp.mediaAsset?.secureUrl || fp.mediaAsset?.url ? (
+                        {resolveAssetUrl(fp) ? (
                           <a
-                            href={fp.mediaAsset?.secureUrl || fp.mediaAsset?.url}
+                            href={resolveAssetUrl(fp)}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-1 text-[11px] font-bold text-accent hover:underline pt-1"

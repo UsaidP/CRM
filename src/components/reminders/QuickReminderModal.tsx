@@ -16,12 +16,13 @@ import {
 import { AccessibleDialog } from '@/components/ui/AccessibleDialog';
 import { CustomSelect, type CustomSelectOption } from '@/components/ui/CustomSelect';
 import { createReminder } from '@/lib/client/calendar';
+import { FeedbackAlert } from '@/components/ui/FeedbackAlert';
 
 const URGENCY_OPTIONS: CustomSelectOption[] = [
-  { value: 'URGENT', label: '🔴 URGENT (Immediate Connect Next)', dotColor: 'bg-red-500' },
-  { value: 'HIGH', label: '🟡 HIGH (Standard Pipeline)', dotColor: 'bg-amber-500' },
-  { value: 'MEDIUM', label: '🔵 MEDIUM (Nurture Task)', dotColor: 'bg-blue-500' },
-  { value: 'LOW', label: '⚪ LOW (General)', dotColor: 'bg-emerald-500' },
+  { value: 'URGENT', label: 'URGENT (Immediate Connect Next)', dotColor: 'bg-red-500' },
+  { value: 'HIGH', label: 'HIGH (Standard Pipeline)', dotColor: 'bg-amber-500' },
+  { value: 'MEDIUM', label: 'MEDIUM (Nurture Task)', dotColor: 'bg-blue-500' },
+  { value: 'LOW', label: 'LOW (General)', dotColor: 'bg-emerald-500' },
 ];
 
 interface QuickReminderModalProps {
@@ -167,9 +168,11 @@ export function QuickReminderModal({
           </div>
 
           {error && (
-            <div role="alert" className="rounded-xl border border-status-danger/40 bg-status-danger-surface p-3 text-xs text-status-danger font-semibold">
-              {error}
-            </div>
+            <FeedbackAlert
+              variant="error"
+              error={error}
+              onDismiss={() => setError(null)}
+            />
           )}
 
           {/* Quick Date Preset Chips */}

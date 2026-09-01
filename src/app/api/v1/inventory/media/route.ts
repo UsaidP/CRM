@@ -7,8 +7,8 @@ export const dynamic = 'force-dynamic';
 
 const IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/avif']);
 const VIDEO_TYPES = new Set(['video/mp4', 'video/webm', 'video/quicktime']);
-const MAX_IMAGE_BYTES = 25 * 1024 * 1024;
-const MAX_VIDEO_BYTES = 250 * 1024 * 1024;
+const MAX_IMAGE_BYTES = 50 * 1024 * 1024;
+const MAX_VIDEO_BYTES = 300 * 1024 * 1024;
 
 export async function POST(req: Request) {
   const auth = await requireSession(req);
@@ -32,7 +32,7 @@ export async function POST(req: Request) {
       }
       const maxBytes = kind === 'image' ? MAX_IMAGE_BYTES : MAX_VIDEO_BYTES;
       if (file.size > maxBytes) {
-        return NextResponse.json({ success: false, error: `${file.name} exceeds the ${kind === 'image' ? '25 MB image' : '250 MB video'} limit.` }, { status: 413 });
+        return NextResponse.json({ success: false, error: `${file.name} exceeds the ${kind === 'image' ? '50 MB image' : '300 MB video'} limit.` }, { status: 413 });
       }
 
       const fileBuffer = Buffer.from(await file.arrayBuffer());

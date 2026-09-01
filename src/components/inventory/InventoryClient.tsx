@@ -48,6 +48,8 @@ import { CustomSelect, type CustomSelectOption } from '@/components/ui/CustomSel
 import { ReraVerificationBadge } from '@/components/inventory/ReraVerificationBadge';
 import { QuickReraLookupModal } from '@/components/inventory/QuickReraLookupModal';
 import { MahaReraCertificateModal } from '@/components/inventory/MahaReraCertificateModal';
+import { FeedbackAlert } from '@/components/ui/FeedbackAlert';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { ProjectMediaStudioModal } from '@/components/inventory/ProjectMediaStudioModal';
 
 export function InventoryClient({
@@ -593,35 +595,11 @@ export function InventoryClient({
     <div className="space-y-6 max-w-7xl mx-auto pb-16 text-content font-sans">
       {/* Toast Notification Banner */}
       {bannerToast && (
-        <div 
-          role="status"
-          className={`p-4 rounded-2xl border flex items-center justify-between text-xs font-semibold shadow-sm transition-all animate-in fade-in slide-in-from-top-2 duration-200 ${
-            bannerToast.type === 'success' 
-              ? 'bg-status-success-surface border-status-success/30 text-status-success' 
-              : bannerToast.type === 'warning'
-              ? 'bg-status-warning-surface border-status-warning/40 text-status-warning'
-              : 'bg-accent-soft border-accent/30 text-accent-text'
-          }`}
-        >
-          <div className="flex items-center gap-2.5">
-            {bannerToast.type === 'success' ? (
-              <CheckCircle2 className="w-4 h-4 text-status-success shrink-0" />
-            ) : bannerToast.type === 'warning' ? (
-              <AlertTriangle className="w-4 h-4 text-status-warning shrink-0" />
-            ) : (
-              <Sparkles className="w-4 h-4 text-accent shrink-0" />
-            )}
-            <span>{bannerToast.text}</span>
-          </div>
-          <button 
-            type="button"
-            onClick={() => setBannerToast(null)} 
-            aria-label="Dismiss notification"
-            className="p-1 hover:opacity-75 rounded-md hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer"
-          >
-            <X className="w-3.5 h-3.5" />
-          </button>
-        </div>
+        <FeedbackAlert
+          variant={bannerToast.type === 'success' ? 'success' : bannerToast.type === 'warning' ? 'warning' : 'info'}
+          description={bannerToast.text}
+          onDismiss={() => setBannerToast(null)}
+        />
       )}
 
       {/* Header */}
@@ -742,10 +720,13 @@ export function InventoryClient({
       </div>
 
       {requestError && (
-        <div role="alert" className="rounded-xl border border-status-danger/40 bg-status-danger-surface p-3.5 text-xs text-status-danger font-semibold shadow-xs">
-          <p>{requestError}</p>
-          <button type="button" onClick={fetchInventory} className="mt-1 font-bold text-status-danger underline underline-offset-2">Retry inventory</button>
-        </div>
+        <FeedbackAlert
+          variant="error"
+          error={requestError}
+          actionLabel="Retry Inventory"
+          onAction={fetchInventory}
+          onDismiss={() => setRequestError(null)}
+        />
       )}
 
       {/* Section View Tabs & Filter Bar */}
@@ -1188,8 +1169,19 @@ export function InventoryClient({
 
                 {filteredUnits.length === 0 && (
                   <tr>
-                    <td colSpan={8} className="p-8 text-center text-content-muted text-xs">
-                      No property records match the current criteria.
+                    <td colSpan={8} className="p-8">
+                      <EmptyState
+                        type="filter"
+                        title="No Units Found"
+                        description="No property units match the selected filters or search keyword. Try clearing filters or selecting another project."
+                        actionLabel="Clear Filters"
+                        onAction={() => {
+                          setSearchQuery('');
+                          setSelectedMarket('ALL');
+                          setSelectedBhk('ALL');
+                          setSelectedStatus('ALL');
+                        }}
+                      />
                     </td>
                   </tr>
                 )}
@@ -1297,8 +1289,12 @@ export function InventoryClient({
         </div>
 
         {actionError && (
-          <div role="alert" className="rounded-xl border border-status-danger/40 bg-status-danger-surface p-3 text-xs text-status-danger font-medium mt-3">
-            {actionError}
+          <div className="mt-3">
+            <FeedbackAlert
+              variant="error"
+              error={actionError}
+              onDismiss={() => setActionError(null)}
+            />
           </div>
         )}
 
@@ -1613,8 +1609,12 @@ export function InventoryClient({
         </div>
 
         {actionError && (
-          <div role="alert" className="rounded-xl border border-status-danger/40 bg-status-danger-surface p-3 text-xs text-status-danger font-medium mt-3">
-            {actionError}
+          <div className="mt-3">
+            <FeedbackAlert
+              variant="error"
+              error={actionError}
+              onDismiss={() => setActionError(null)}
+            />
           </div>
         )}
 
@@ -1884,14 +1884,22 @@ export function InventoryClient({
             </div>
 
             {auditSuccessMsg ? (
-              <div className="p-4 rounded-xl bg-status-success-surface border border-status-success/40 text-status-success font-medium text-xs text-center my-3">
-                ✓ {auditSuccessMsg}
+              <div className="my-3">
+                <FeedbackAlert
+                  variant="success"
+                  title="Unit Verified"
+                  description={auditSuccessMsg}
+                />
               </div>
             ) : (
               <>
                 {actionError && (
-                  <div role="alert" className="rounded-xl border border-status-danger/40 bg-status-danger-surface p-3 text-xs text-status-danger font-medium mt-3">
-                    {actionError}
+                  <div className="mt-3">
+                    <FeedbackAlert
+                      variant="error"
+                      error={actionError}
+                      onDismiss={() => setActionError(null)}
+                    />
                   </div>
                 )}
                 <form onSubmit={handleVerifyUnit} className="space-y-4 pt-3">
@@ -2050,6 +2058,9 @@ export function InventoryClient({
               name,
               unitCount: units.filter((u) => u.projectId === id).length,
             });
+          }}
+          onProjectUpdated={() => {
+            fetchInventory();
           }}
         />
       )}

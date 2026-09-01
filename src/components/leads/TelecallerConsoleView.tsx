@@ -36,6 +36,9 @@ import {
 import { YoutubeIcon, InstagramIcon } from '@/components/icons/SocialIcons';
 import { BackupModal } from '@/components/admin/BackupModal';
 import { toast } from '@/lib/client/toast';
+import { FeedbackAlert } from '@/components/ui/FeedbackAlert';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { toUserMessage } from '@/lib/client/user-feedback';
 
 interface LeadItem {
   id: string;
@@ -267,11 +270,12 @@ export function TelecallerConsoleView({
         setSelectedLeadId(filteredQueue[currentIndex + 1].id);
       }
     } catch (err: any) {
-      setStatusMessage(`Error: ${err.message}`);
-      toast.error('Disposition Failed', { description: err.message });
+      const userErr = toUserMessage(err, 'Call Log Incomplete', 'Unable to record disposition for this prospect.');
+      setStatusMessage(userErr.description);
+      toast.error('Disposition Incomplete', { description: userErr.description });
     } finally {
       setIsSaving(false);
-      setTimeout(() => setStatusMessage(null), 3000);
+      setTimeout(() => setStatusMessage(null), 4000);
     }
   };
 
@@ -348,10 +352,12 @@ export function TelecallerConsoleView({
       </div>
 
       {statusMessage && (
-        <div className="p-3 bg-accent-soft border border-accent/30 rounded-xl text-accent-text text-xs font-bold flex items-center justify-between animate-fadeIn shadow-xs">
-          <span>{statusMessage}</span>
-          <button onClick={() => setStatusMessage(null)} className="text-accent-text font-bold">✕</button>
-        </div>
+        <FeedbackAlert
+          variant={statusMessage.startsWith('✓') ? 'success' : 'info'}
+          title={statusMessage.startsWith('✓') ? 'Action Completed' : 'Telecaller Notice'}
+          description={statusMessage}
+          onDismiss={() => setStatusMessage(null)}
+        />
       )}
 
       {/* Main Dual-Pane Workstation */}
@@ -378,11 +384,15 @@ export function TelecallerConsoleView({
           </div>
 
           {/* Fixed-Density 40px Rows Table */}
-          <div className="flex-1 overflow-y-auto divide-y divide-border-subtle">
+          <div className="flex-1 overflow-y-auto divide-y divide-border-subtle p-2">
             {filteredQueue.length === 0 ? (
-              <div className="p-8 text-center text-content-muted text-xs">
-                No leads match this queue filter.
-              </div>
+              <EmptyState
+                type="filter"
+                title="No Leads in Queue"
+                description="All prospects in this filter category have been contacted or no leads matched your search query."
+                actionLabel="Clear Queue Filters"
+                onAction={() => setSearchQuery('')}
+              />
             ) : (
               filteredQueue.map((lead) => {
                 const isSelected = lead.id === selectedLead?.id;
@@ -837,9 +847,12 @@ export function TelecallerConsoleView({
               </div>
             </>
           ) : (
-            <div className="h-full flex flex-col items-center justify-center p-12 text-center text-content-muted">
-              <Phone className="w-8 h-8 mb-2 opacity-40 text-accent" />
-              <p className="text-sm font-semibold">Select a lead from the queue to start calling</p>
+            <div className="h-full flex items-center justify-center p-6">
+              <EmptyState
+                icon={Phone}
+                title="Ready for Calling"
+                description="Select any prospect from the left queue to open their telemetry card, verify contact history, and record dispositions."
+              />
             </div>
           )}
         </div>

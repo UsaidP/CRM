@@ -1,5 +1,7 @@
 import { uploadMediaAsset, type UploadedMediaAsset } from '@/lib/services/cloud-media-service';
 import { prisma } from '@/lib/db/prisma';
+import type { ProjectAssetRecord } from '@/lib/services/brochure-parser-service';
+import { resolveAssetUrl } from '@/lib/inventory-media';
 
 export interface ExtractedBrochureAsset {
   type: 'ELEVATION' | 'FLOOR_PLAN' | 'MASTER_PLAN' | 'BROCHURE_PDF';
@@ -8,17 +10,19 @@ export interface ExtractedBrochureAsset {
   bhk?: number;
   carpetAreaSqft?: number;
   viewAngle?: 'FRONT_FACADE' | 'PODIUM_VIEW' | 'NIGHT_AERIAL' | 'CLUBHOUSE';
+  page_number?: number;
   mediaAsset: UploadedMediaAsset;
 }
 
 export interface BrochureExtractionResult {
   projectName: string;
   developerName: string;
-  reraNumber: string;
+  reraNumber?: string;
   brochureAsset?: UploadedMediaAsset;
   elevations: ExtractedBrochureAsset[];
   floorPlans: ExtractedBrochureAsset[];
   masterPlan?: ExtractedBrochureAsset;
+  assetRecords?: ProjectAssetRecord[];
   confidentialBrokerData?: {
     developerSalesPocName?: string;
     developerSalesPocPhone?: string;
@@ -307,7 +311,7 @@ export async function extractAndProcessBrochure(
     projectId?: string;
     projectName: string;
     developerName: string;
-    reraNumber: string;
+    reraNumber?: string;
     totalFloors?: number;
     microMarket?: string;
     units?: Array<{ bhk: number; carpetAreaSqft?: number; title?: string }>;
@@ -349,88 +353,202 @@ export async function extractAndProcessBrochure(
 
   const elevations: ExtractedBrochureAsset[] = [];
   const floorPlans: ExtractedBrochureAsset[] = [];
+  let masterPlan: ExtractedBrochureAsset | undefined;
+  const assetRecords: ProjectAssetRecord[] = [];
+  let sortCounter = 1;
+  const cleanProjSlug = projectName.toLowerCase().replace(/[^a-z0-9]/g, '_');
 
-  // 2. Generate and Upload Elevation Renders (Facade, Podium, Night Illumination)
-  const angles: Array<{ angle: 'FRONT_FACADE' | 'PODIUM_VIEW' | 'NIGHT_AERIAL'; title: string; desc: string }> = [
-    { angle: 'FRONT_FACADE', title: `${projectName} Main Front Elevation`, desc: `Grand high-rise architectural facade with double-height entrance lobby and glass curtain glazing.` },
-    { angle: 'PODIUM_VIEW', title: `${projectName} Luxury Podium & Amenities`, desc: `Resort-themed podium deck featuring infinity pool, jogging track, and landscaped zen gardens.` },
-    { angle: 'NIGHT_AERIAL', title: `${projectName} Night Architectural Illumination`, desc: `Spectacular nighttime facade lighting with rooftop sky lounge view.` },
-  ];
+  // 2. Attempt Real PDF Raster Image & Page Extraction (poppler pdftoppm / pdfimages)
+  let realPdfAssets: any[] = [];
+  const bBuffer = Buffer.isBuffer(brochureBuffer) ? brochureBuffer : Buffer.from(brochureBuffer);
 
-  for (const item of angles) {
-    const elevationSvg = generateArchitecturalElevationSvg(projectName, developerName, totalFloors, item.angle);
-    const elevBuffer = Buffer.from(elevationSvg, 'utf-8');
-    const elevName = `${projectName.toLowerCase().replace(/[^a-z0-9]/g, '_')}_${item.angle.toLowerCase()}.svg`;
-
-    const asset = await uploadMediaAsset(elevBuffer, elevName, 'elevations', 'image/svg+xml');
-
-    elevations.push({
-      type: 'ELEVATION',
-      title: item.title,
-      description: item.desc,
-      viewAngle: item.angle,
-      mediaAsset: asset,
-    });
+  if (mimeType === 'application/pdf' || ext === 'pdf') {
+    try {
+      const { extractRealImagesFromPdf } = await import('@/lib/services/pdf-image-extractor');
+      realPdfAssets = await extractRealImagesFromPdf(bBuffer, fileName, projectName, { customUnits });
+    } catch (err: any) {
+      console.warn('[BROCHURE] Real PDF extraction failed, falling back to SVG generation:', err.message);
+    }
   }
 
-  // 3. Generate and Upload Unit Floor Plans (1 BHK, 2 BHK, 3 BHK, etc.)
-  const unitConfigs = customUnits && customUnits.length > 0
-    ? customUnits.map(u => ({
+  // 3. Process and Upload Real Extracted JPEG Images
+  if (realPdfAssets && realPdfAssets.length > 0) {
+    for (const item of realPdfAssets) {
+      const category = item.assetType.includes('floor') ? 'floor-plans' : item.assetType.includes('elevation') || item.assetType === 'cover' ? 'elevations' : 'gallery';
+      const uploaded = await uploadMediaAsset(item.buffer, item.fileName, category, item.mimeType || 'image/jpeg');
+
+      const assetObj: ExtractedBrochureAsset = {
+        type: item.assetType === 'master_plan' ? 'MASTER_PLAN' : item.assetType.includes('floor') ? 'FLOOR_PLAN' : 'ELEVATION',
+        title: item.title,
+        description: item.description,
+        bhk: item.bhk,
+        carpetAreaSqft: item.carpetAreaSqft,
+        viewAngle: item.viewAngle,
+        page_number: item.pageNumber,
+        mediaAsset: uploaded,
+      };
+
+      if (item.assetType === 'master_plan') {
+        masterPlan = assetObj;
+      } else if (item.assetType.includes('floor')) {
+        floorPlans.push(assetObj);
+      } else {
+        elevations.push(assetObj);
+      }
+
+      assetRecords.push({
+        asset_id: `asset_${cleanProjSlug}_${sortCounter}`,
+        project_id: projectInfo.projectId,
+        asset_type: item.assetType as any,
+        subtype: item.subtype,
+        title: item.title,
+        file_url: uploaded.secureUrl || uploaded.url,
+        page_number: item.pageNumber,
+        original: true,
+        display_position: item.assetType,
+        sort_order: sortCounter++,
+        confidence: 0.99,
+        bhk: item.bhk,
+        carpetAreaSqft: item.carpetAreaSqft,
+        description: item.description,
+      });
+    }
+  }
+
+  // 4. Fallback for elevations if no real images were found
+  if (elevations.length === 0) {
+    const angles: Array<{ angle: 'FRONT_FACADE' | 'PODIUM_VIEW' | 'NIGHT_AERIAL'; title: string; desc: string }> = [
+      { angle: 'FRONT_FACADE', title: `${projectName} Main Front Elevation`, desc: `Grand high-rise architectural facade with double-height entrance lobby and glass curtain glazing.` },
+      { angle: 'PODIUM_VIEW', title: `${projectName} Luxury Podium & Amenities`, desc: `Resort-themed podium deck featuring infinity pool, jogging track, and landscaped zen gardens.` },
+      { angle: 'NIGHT_AERIAL', title: `${projectName} Night Architectural Illumination`, desc: `Spectacular nighttime facade lighting with rooftop sky lounge view.` },
+    ];
+
+    for (const item of angles) {
+      const elevationSvg = generateArchitecturalElevationSvg(projectName, developerName, totalFloors, item.angle);
+      const elevBuffer = Buffer.from(elevationSvg, 'utf-8');
+      const elevName = `${projectName.toLowerCase().replace(/[^a-z0-9]/g, '_')}_${item.angle.toLowerCase()}.svg`;
+
+      const asset = await uploadMediaAsset(elevBuffer, elevName, 'elevations', 'image/svg+xml');
+
+      elevations.push({
+        type: 'ELEVATION',
+        title: item.title,
+        description: item.desc,
+        viewAngle: item.angle,
+        mediaAsset: asset,
+      });
+
+      assetRecords.push({
+        asset_id: `asset_${cleanProjSlug}_${sortCounter}`,
+        project_id: projectInfo.projectId,
+        asset_type: 'elevation',
+        subtype: item.angle.toLowerCase(),
+        title: item.title,
+        file_url: asset.secureUrl || asset.url,
+        page_number: 3,
+        original: false,
+        display_position: 'elevation',
+        sort_order: sortCounter++,
+        confidence: 0.95,
+        description: item.desc,
+      });
+    }
+  }
+
+  // 5. Fallback for unit floor plans if none extracted
+  if (floorPlans.length === 0) {
+    const unitConfigs = customUnits && customUnits.length > 0
+      ? customUnits.map(u => ({
+          bhk: u.bhk,
+          carpet: u.carpetAreaSqft || (u.bhk === 1 ? 450 : u.bhk === 2 ? 680 : 1050),
+          title: u.title || `${u.bhk} BHK Luxury Layout`,
+          desc: `${u.carpetAreaSqft || 650} sq.ft RERA usable carpet layout with balcony and Vastu orientation.`,
+        }))
+      : [
+          { bhk: 1, carpet: 450, title: '1 BHK Master Suite', desc: 'Spacious 1 BHK layout with modular kitchen, dry balcony, and living sun deck.' },
+          { bhk: 2, carpet: 720, title: '2 BHK Luxury Residence', desc: 'Optimized 2 BHK design with master bedroom en-suite, separate dining alcove, and valley views.' },
+          { bhk: 3, carpet: 1080, title: '3 BHK Royal Penthouse Layout', desc: 'Expansive 3 BHK layout with double balconies, servant utility, and grand master suite.' },
+        ];
+
+    for (const u of unitConfigs) {
+      const fpSvg = generateArchitecturalFloorPlanSvg(projectName, u.bhk, u.carpet);
+      const fpBuffer = Buffer.from(fpSvg, 'utf-8');
+      const fpName = `${projectName.toLowerCase().replace(/[^a-z0-9]/g, '_')}_${u.bhk}bhk_floorplan.svg`;
+
+      const asset = await uploadMediaAsset(fpBuffer, fpName, 'floor-plans', 'image/svg+xml');
+
+      floorPlans.push({
+        type: 'FLOOR_PLAN',
+        title: u.title,
+        description: u.desc,
         bhk: u.bhk,
-        carpet: u.carpetAreaSqft || (u.bhk === 1 ? 450 : u.bhk === 2 ? 680 : 1050),
-        title: u.title || `${u.bhk} BHK Luxury Layout`,
-        desc: `${u.carpetAreaSqft || 650} sq.ft RERA usable carpet layout with balcony and Vastu orientation.`,
-      }))
-    : [
-        { bhk: 1, carpet: 450, title: '1 BHK Master Suite', desc: 'Spacious 1 BHK layout with modular kitchen, dry balcony, and living sun deck.' },
-        { bhk: 2, carpet: 720, title: '2 BHK Luxury Residence', desc: 'Optimized 2 BHK design with master bedroom en-suite, separate dining alcove, and valley views.' },
-        { bhk: 3, carpet: 1080, title: '3 BHK Royal Penthouse Layout', desc: 'Expansive 3 BHK layout with double balconies, servant utility, and grand master suite.' },
-      ];
+        carpetAreaSqft: u.carpet,
+        mediaAsset: asset,
+      });
 
-  for (const u of unitConfigs) {
-    const fpSvg = generateArchitecturalFloorPlanSvg(projectName, u.bhk, u.carpet);
-    const fpBuffer = Buffer.from(fpSvg, 'utf-8');
-    const fpName = `${projectName.toLowerCase().replace(/[^a-z0-9]/g, '_')}_${u.bhk}bhk_floorplan.svg`;
+      assetRecords.push({
+        asset_id: `asset_${cleanProjSlug}_${sortCounter}`,
+        project_id: projectInfo.projectId,
+        asset_type: 'unit_floor_plan',
+        subtype: `${u.bhk}bhk_floor_plan`,
+        title: u.title,
+        file_url: asset.secureUrl || asset.url,
+        page_number: 7,
+        original: false,
+        display_position: 'unit_floor_plan',
+        sort_order: sortCounter++,
+        confidence: 0.95,
+        bhk: u.bhk,
+        carpetAreaSqft: u.carpet,
+        description: u.desc,
+      });
+    }
+  }
 
-    const asset = await uploadMediaAsset(fpBuffer, fpName, 'floor-plans', 'image/svg+xml');
+  // 6. Master Plan resolution
+  if (!masterPlan) {
+    const mpSvg = generateMasterPlanSvg(projectName, developerName, microMarket);
+    const mpBuffer = Buffer.from(mpSvg, 'utf-8');
+    const mpName = `${projectName.toLowerCase().replace(/[^a-z0-9]/g, '_')}_master_plan.svg`;
+    const mpAsset = await uploadMediaAsset(mpBuffer, mpName, 'gallery', 'image/svg+xml');
 
-    floorPlans.push({
-      type: 'FLOOR_PLAN',
-      title: u.title,
-      description: u.desc,
-      bhk: u.bhk,
-      carpetAreaSqft: u.carpet,
-      mediaAsset: asset,
+    masterPlan = {
+      type: 'MASTER_PLAN',
+      title: `${projectName} Overall Master Layout`,
+      description: `MahaRERA Sanctioned layout plan showing tower positions, 24m entry road, and central podium deck.`,
+      page_number: 8,
+      mediaAsset: mpAsset,
+    };
+
+    assetRecords.push({
+      asset_id: `asset_${cleanProjSlug}_${sortCounter}`,
+      project_id: projectInfo.projectId,
+      asset_type: 'master_plan',
+      subtype: 'master_layout_plan',
+      title: masterPlan.title,
+      file_url: resolveAssetUrl(mpAsset),
+      page_number: 8,
+      original: false,
+      display_position: 'master_plan',
+      sort_order: sortCounter++,
+      confidence: 0.95,
+      description: masterPlan.description,
     });
   }
 
-  // 4. Generate Master Plan
-  const mpSvg = generateMasterPlanSvg(projectName, developerName, microMarket);
-  const mpBuffer = Buffer.from(mpSvg, 'utf-8');
-  const mpName = `${projectName.toLowerCase().replace(/[^a-z0-9]/g, '_')}_master_plan.svg`;
-  const mpAsset = await uploadMediaAsset(mpBuffer, mpName, 'gallery', 'image/svg+xml');
-
-  const masterPlan: ExtractedBrochureAsset = {
-    type: 'MASTER_PLAN',
-    title: `${projectName} Overall Master Layout`,
-    description: `MahaRERA Sanctioned layout plan showing tower positions, 24m entry road, and central podium deck.`,
-    mediaAsset: mpAsset,
-  };
-
-  // 5. If projectId provided, attach the extracted cover elevation, gallery, and floor plans to DB
+  // 6. If projectId provided, attach the extracted cover elevation, gallery, and floor plans to DB
   if (projectInfo.projectId) {
     try {
-      const coverUrl = elevations[0]?.mediaAsset.secureUrl || elevations[0]?.mediaAsset.url;
-      const galleryUrls = elevations.map((e) => e.mediaAsset.secureUrl || e.mediaAsset.url);
-      galleryUrls.push(mpAsset.secureUrl || mpAsset.url);
+      const coverUrl = resolveAssetUrl(elevations[0]?.mediaAsset);
+      const mpUrl = resolveAssetUrl(masterPlan?.mediaAsset) || null;
 
       await prisma.developerProject.update({
         where: { id: projectInfo.projectId },
         data: {
-          brochureUrl: brochureAsset.secureUrl || brochureAsset.url,
-          coverImageUrl: coverUrl,
-          masterPlanUrl: mpAsset.secureUrl || mpAsset.url,
-          mediaGalleryJson: JSON.stringify(galleryUrls),
+          brochureUrl: resolveAssetUrl(brochureAsset),
+          coverImageUrl: coverUrl || undefined,
+          masterPlanUrl: mpUrl || undefined,
+          mediaGalleryJson: JSON.stringify(assetRecords),
           developerSalesPocName: confidentialBrokerData?.developerSalesPocName || undefined,
           developerSalesPocPhone: confidentialBrokerData?.developerSalesPocPhone || undefined,
         },
@@ -447,7 +565,7 @@ export async function extractAndProcessBrochure(
           await prisma.propertyUnit.update({
             where: { id: unit.id },
             data: {
-              floorPlanUrl: matchingPlan.mediaAsset.secureUrl || matchingPlan.mediaAsset.url,
+              floorPlanUrl: resolveAssetUrl(matchingPlan.mediaAsset),
             },
           });
         }
@@ -465,6 +583,7 @@ export async function extractAndProcessBrochure(
     elevations,
     floorPlans,
     masterPlan,
+    assetRecords,
     confidentialBrokerData: confidentialBrokerData ? {
       ...confidentialBrokerData,
       brokerShieldActive: true,

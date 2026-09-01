@@ -252,51 +252,61 @@ export function PortalDossierModal({
           )}
 
           {/* Dedicated Broker Advisor Action Card */}
-          <div className="p-5 rounded-2xl bg-slate-900 text-white flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
-            <div className="flex items-center gap-3.5">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-[#DFBA73] to-[#8C641E] p-0.5 shrink-0">
-                <div className="w-full h-full rounded-full bg-slate-900 flex items-center justify-center font-bold text-xs text-amber-300 font-serif">
-                  {advisor.fullName
-                    ?.split(' ')
-                    .map((n: string) => n[0])
-                    .join('') || 'SP'}
+          {(() => {
+            const initials = (advisor.fullName || '')
+              .trim()
+              .split(/\s+/)
+              .map((n: string) => n[0])
+              .filter(Boolean)
+              .join('')
+              .slice(0, 2)
+              .toUpperCase() || 'PA';
+
+            return (
+              <div className="p-5 rounded-2xl bg-slate-900 text-white flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-[#DFBA73] to-[#8C641E] p-0.5 shrink-0">
+                    <div className="w-full h-full rounded-full bg-slate-900 flex items-center justify-center font-bold text-xs text-amber-300 font-serif">
+                      {initials}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-sm font-bold text-white block font-serif">
+                      {advisor.fullName || 'Property Advisor'}
+                    </span>
+                    <span className="text-xs text-amber-300">
+                      Senior Real Estate Advisor • {portal.organization?.name || 'ZamZam Properties'} Advisory Desk
+                    </span>
+                    <p className="text-xs text-slate-400 font-mono mt-0.5">
+                      {advisor.phoneE164 || '+91 99677 31071'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2.5 w-full sm:w-auto">
+                  <a
+                    href={`tel:${(advisor.phoneE164 || '+919967731071').replace(/\s+/g, '')}`}
+                    className="flex-1 sm:flex-initial px-4.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-xs"
+                  >
+                    <PhoneCall className="w-3.5 h-3.5" />
+                    <span>Call Advisor</span>
+                  </a>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onClose();
+                      onWhatsAppInquiry(dossierUnit);
+                    }}
+                    className="flex-1 sm:flex-initial px-4.5 py-2.5 rounded-xl bg-[#25D366] hover:bg-[#20BD5A] text-white text-xs font-extrabold flex items-center justify-center gap-1.5 transition shadow-xs"
+                  >
+                    <Send className="w-3.5 h-3.5" />
+                    <span>WhatsApp</span>
+                  </button>
                 </div>
               </div>
-              <div>
-                <span className="text-sm font-bold text-white block font-serif">
-                  {advisor.fullName || 'Suhel Patel'}
-                </span>
-                <span className="text-xs text-amber-300">
-                  Senior Real Estate Advisor • ZamZam Properties Advisory Desk
-                </span>
-                <p className="text-xs text-slate-400 font-mono mt-0.5">
-                  {advisor.phoneE164 || '+91 99677 31071'}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2.5 w-full sm:w-auto">
-              <a
-                href={`tel:${advisor.phoneE164 || '+919967731071'}`}
-                className="flex-1 sm:flex-initial px-4.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-xs"
-              >
-                <PhoneCall className="w-3.5 h-3.5" />
-                <span>Call Advisor</span>
-              </a>
-
-              <button
-                type="button"
-                onClick={() => {
-                  onClose();
-                  onWhatsAppInquiry(dossierUnit);
-                }}
-                className="flex-1 sm:flex-initial px-4.5 py-2.5 rounded-xl bg-gradient-to-r from-[#B38A38] to-[#8C641E] text-white text-xs font-extrabold flex items-center justify-center gap-1.5 transition hover:brightness-105"
-              >
-                <Send className="w-3.5 h-3.5" />
-                <span>WhatsApp</span>
-              </button>
-            </div>
-          </div>
+            );
+          })()}
         </div>
       </div>
     </AccessibleDialog>

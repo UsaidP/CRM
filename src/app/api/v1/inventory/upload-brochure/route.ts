@@ -1,14 +1,35 @@
 import { requireSession } from '@/lib/services/api-auth';
 import { NextResponse } from 'next/server';
+import path from 'path';
+import { prisma } from '@/lib/db/prisma';
 import { parseBrochureAsync, parseBrochureText } from '@/lib/services/brochure-parser-service';
 import { downloadAndSaveMahaReraCertificate } from '@/lib/services/maharera-service';
 import { extractAndProcessBrochure } from '@/lib/services/brochure-extractor';
 import { uploadMediaAsset } from '@/lib/services/cloud-media-service';
+import { resolveAssetUrl, parseGalleryUrls } from '@/lib/inventory-media';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const MAX_FILE_BYTES = 50 * 1024 * 1024; // 50 MB
+const MAX_FILE_BYTES = 100 * 1024 * 1024; // 100 MB
+const ALLOWED_MIME_TYPES = new Set([
+  'application/pdf',
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+]);
+
+function sanitizeFilename(name: string): string {
+  const base = path.basename(name).replace(/[^a-zA-Z0-9._-]/g, '_');
+  return base.slice(0, 100) || 'Developer_Brochure.pdf';
+}
+
+function normalizeMimeType(mime?: string | null): string {
+  if (mime && ALLOWED_MIME_TYPES.has(mime.toLowerCase())) {
+    return mime.toLowerCase();
+  }
+  return 'application/pdf';
+}
 
 export async function POST(req: Request) {
   try {
@@ -16,32 +37,232 @@ export async function POST(req: Request) {
     if (!auth.ok) return auth.response;
     const contentType = req.headers.get('content-type') || '';
 
-    // Flow 1: Raw JSON text payload (for direct text paste or quick inspection)
+    let buffer: Buffer | null = null;
+    let filename = 'Developer_Brochure.pdf';
+    let mimeType = 'application/pdf';
+    let brochureUrl: string | null = null;
+    let pastedText: string | null = null;
+    let projectId: string | null = null;
+
+    // Flow 1: JSON payload (direct Cloudinary URL, Base64 document payload, or raw text paste)
     if (contentType.includes('application/json')) {
       const body = await req.json();
-      const text = body.text || body.content || '';
-      const filename = body.filename || 'Developer_Brochure.pdf';
+      filename = sanitizeFilename(body.filename || 'Developer_Brochure.pdf');
+      brochureUrl = body.brochureUrl || null;
+      mimeType = normalizeMimeType(body.mimeType);
+      projectId = body.projectId || null;
 
-      if (!text || text.trim().length < 10) {
+      // 1. Prefer direct Base64 document payload (immediate in-memory decoding)
+      if (body.fileBase64 || body.base64) {
+        const rawBase64 = String(body.fileBase64 || body.base64);
+        const cleanBase64 = rawBase64.replace(/^data:[^;]+;base64,/, '');
+        buffer = Buffer.from(cleanBase64, 'base64');
+      }
+
+      // 2. If no buffer yet but brochureUrl provided, fetch remote stream
+      if (!buffer && brochureUrl && typeof brochureUrl === 'string' && brochureUrl.startsWith('http')) {
+        try {
+          const fetched = await fetch(brochureUrl);
+          if (fetched.ok) {
+            const ab = await fetched.arrayBuffer();
+            buffer = Buffer.from(ab);
+            mimeType = normalizeMimeType(fetched.headers.get('content-type') || mimeType);
+          }
+        } catch (fetchErr: any) {
+          console.warn('[BROCHURE] Could not fetch buffer from brochureUrl:', fetchErr.message);
+        }
+      }
+
+      // 3. Fallback check for local project files in data/Project Data
+      if (!buffer && filename) {
+        try {
+          const fs = await import('fs');
+          const localPaths = [
+            path.join(process.cwd(), 'data', 'Project Data', filename),
+            path.join(process.cwd(), 'data', filename),
+            path.join(process.cwd(), 'public', 'uploads', 'brochures', filename),
+            path.join(process.cwd(), 'public', 'uploads', filename),
+          ];
+          for (const p of localPaths) {
+            if (fs.existsSync(p)) {
+              buffer = fs.readFileSync(p);
+              break;
+            }
+          }
+        } catch (fsErr: any) {
+          console.warn('[BROCHURE] Local file fallback check error:', fsErr.message);
+        }
+      }
+
+      if (body.text || body.content) {
+        pastedText = body.text || body.content;
+      }
+    } else {
+      // Flow 2: Multipart Form Data or Direct Binary Stream
+      try {
+        const formData = await req.formData();
+        const file = formData.get('file') || formData.get('brochure');
+        projectId = (formData.get('projectId') as string) || null;
+
+        if (file && file instanceof File) {
+          filename = sanitizeFilename(file.name);
+          mimeType = normalizeMimeType(file.type);
+          const ab = await file.arrayBuffer();
+          buffer = Buffer.from(ab);
+        }
+      } catch (formErr: any) {
+        console.warn('[BROCHURE] req.formData() failed, attempting arrayBuffer fallback:', formErr.message);
+        try {
+          const ab = await req.arrayBuffer();
+          if (ab && ab.byteLength > 0) {
+            buffer = Buffer.from(ab);
+            mimeType = normalizeMimeType(contentType);
+          }
+        } catch (abErr: any) {
+          console.warn('[BROCHURE] req.arrayBuffer() fallback failed:', abErr.message);
+        }
+      }
+    }
+
+    // Process from Binary Buffer (AI Multimodal Vision Extraction)
+    if (buffer && buffer.length > 0) {
+      if (buffer.length > MAX_FILE_BYTES) {
         return NextResponse.json(
-          { success: false, error: 'Please provide valid brochure text to parse.' },
-          { status: 400 }
+          { success: false, error: 'Brochure file exceeds the 100 MB maximum size limit.' },
+          { status: 413 }
         );
       }
 
-      const extracted = parseBrochureText(text, filename);
+      // If we don't have a Cloudinary brochureUrl yet, try uploading it to cloud media vault
+      if (!brochureUrl) {
+        try {
+          const brochureAsset = await uploadMediaAsset(buffer, filename, 'brochures', mimeType);
+          brochureUrl = resolveAssetUrl(brochureAsset);
+        } catch (uploadErr: any) {
+          console.warn('[BROCHURE] Cloud media vault upload warning:', uploadErr.message);
+        }
+      }
 
-      // Generate classified media (elevations, floor plans, master plan)
+      // AI-first multimodal parsing
+      const { data: extracted, extractionMethod, modelUsed, note } = await parseBrochureAsync(
+        buffer,
+        mimeType,
+        filename
+      );
+
+      let reraCertificateUrl: string | undefined;
+      let reraVerification: any = null;
+
+      if (extracted?.reraNumber) {
+        try {
+          const certResult = await downloadAndSaveMahaReraCertificate(
+            extracted.reraNumber,
+            extracted.projectName,
+            extracted.developerName
+          );
+          reraCertificateUrl = certResult.certificateUrl;
+          reraVerification = certResult.projectRecord;
+        } catch (reraErr: any) {
+          console.warn('[BROCHURE] MahaRERA certificate auto-fetch warning:', reraErr.message);
+        }
+      }
+
       const mediaResult = await extractAndProcessBrochure(
-        Buffer.from(text, 'utf-8'),
+        buffer,
         filename,
         {
+          projectId: projectId || undefined,
           projectName: extracted.projectName,
           developerName: extracted.developerName,
           reraNumber: extracted.reraNumber,
           totalFloors: extracted.totalFloors,
           microMarket: extracted.microMarket,
-          units: extracted.units.map(u => ({ bhk: u.bhk, carpetAreaSqft: u.carpetAreaSqft, title: u.bhkLabel })),
+          units: (extracted.units || []).map((u: any) => ({ bhk: u.bhk, carpetAreaSqft: u.carpetAreaSqft, title: u.bhkLabel })),
+          confidentialBrokerData: extracted.confidentialBrokerData,
+        }
+      );
+
+      // Server-side atomic sync if projectId was provided
+      let updatedProject: any = null;
+      if (projectId) {
+        try {
+          const existingProject = await prisma.developerProject.findUnique({
+            where: { id: projectId },
+          });
+
+          if (existingProject) {
+            const existingUrls = parseGalleryUrls(existingProject.mediaGalleryJson);
+            const extractedUrls = [
+              ...(mediaResult.elevations || []).map(resolveAssetUrl),
+              resolveAssetUrl(mediaResult.masterPlan),
+              ...(mediaResult.floorPlans || []).map(resolveAssetUrl),
+            ].filter(Boolean);
+
+            const mergedGallery = Array.from(new Set([...existingUrls, ...extractedUrls]));
+            const newCover = existingProject.coverImageUrl || resolveAssetUrl(mediaResult.elevations?.[0]) || extracted.coverImageUrl;
+            const newMasterPlan = existingProject.masterPlanUrl || resolveAssetUrl(mediaResult.masterPlan) || extracted.masterPlanUrl;
+
+            updatedProject = await prisma.developerProject.update({
+              where: { id: projectId },
+              data: {
+                mediaGalleryJson: JSON.stringify(mergedGallery),
+                coverImageUrl: newCover || undefined,
+                masterPlanUrl: newMasterPlan || undefined,
+                brochureUrl: brochureUrl || existingProject.brochureUrl,
+                totalTowers: extracted.totalTowers ? parseInt(String(extracted.totalTowers), 10) : existingProject.totalTowers,
+                totalFloors: extracted.totalFloors ? parseInt(String(extracted.totalFloors), 10) : existingProject.totalFloors,
+                basePricePerSqft: extracted.basePricePerSqft ? parseFloat(String(extracted.basePricePerSqft)) : existingProject.basePricePerSqft,
+                amenitiesJson: extracted.amenities?.length ? JSON.stringify(extracted.amenities) : existingProject.amenitiesJson,
+                keyHighlightsJson: extracted.keyHighlights?.length ? JSON.stringify(extracted.keyHighlights) : existingProject.keyHighlightsJson,
+                developerSalesPocName: extracted.confidentialBrokerData?.developerSalesPocName || existingProject.developerSalesPocName,
+                developerSalesPocPhone: extracted.confidentialBrokerData?.developerSalesPocPhone || existingProject.developerSalesPocPhone,
+              },
+            });
+          }
+        } catch (syncErr: any) {
+          console.warn('[BROCHURE] Server-side atomic project sync warning:', syncErr.message);
+        }
+      }
+
+      return NextResponse.json({
+        success: true,
+        data: {
+          ...extracted,
+          brochureUrl,
+          reraCertificateUrl,
+          reraVerification,
+          elevations: mediaResult.elevations,
+          floorPlans: mediaResult.floorPlans,
+          masterPlan: mediaResult.masterPlan,
+          assetRecords: mediaResult.assetRecords || extracted.assetRecords || [],
+          confidentialBrokerData: extracted.confidentialBrokerData,
+          updatedProject,
+        },
+        extractionMethod,
+        modelUsed,
+        note,
+        brochureUrl,
+        reraCertificateUrl,
+        filename,
+        fileSizeBytes: buffer.length,
+      });
+    }
+
+    // Process from Pasted Text (Regex Fallback)
+    if (pastedText && pastedText.trim().length >= 10) {
+      const extracted = parseBrochureText(pastedText, filename);
+
+      const mediaResult = await extractAndProcessBrochure(
+        Buffer.from(pastedText, 'utf-8'),
+        filename,
+        {
+          projectId: projectId || undefined,
+          projectName: extracted.projectName,
+          developerName: extracted.developerName,
+          reraNumber: extracted.reraNumber,
+          totalFloors: extracted.totalFloors,
+          microMarket: extracted.microMarket,
+          units: (extracted.units || []).map((u: any) => ({ bhk: u.bhk, carpetAreaSqft: u.carpetAreaSqft, title: u.bhkLabel })),
           confidentialBrokerData: extracted.confidentialBrokerData,
         }
       );
@@ -53,115 +274,26 @@ export async function POST(req: Request) {
           elevations: mediaResult.elevations,
           floorPlans: mediaResult.floorPlans,
           masterPlan: mediaResult.masterPlan,
+          assetRecords: mediaResult.assetRecords || extracted.assetRecords || [],
         },
         extractionMethod: 'REGEX_FALLBACK',
-        brochureUrl: body.brochureUrl || null,
+        brochureUrl: brochureUrl || null,
         filename,
       });
     }
 
-    // Flow 2: Multipart Form Data with PDF / Image / Document File Upload
-    const formData = await req.formData();
-    const file = formData.get('file') || formData.get('brochure');
-
-    if (!file || !(file instanceof File)) {
-      return NextResponse.json(
-        { success: false, error: 'Please select a developer brochure (PDF, PNG, JPG, WEBP) to upload.' },
-        { status: 400 }
-      );
-    }
-
-    if (file.size > MAX_FILE_BYTES) {
-      return NextResponse.json(
-        { success: false, error: 'Brochure file exceeds the 50 MB maximum size limit.' },
-        { status: 413 }
-      );
-    }
-
-    // Read buffer
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-
-    // Upload/store brochure using universal cloud/serverless-safe media uploader
-    let brochureUrl: string | null = null;
-    try {
-      const brochureAsset = await uploadMediaAsset(
-        buffer,
-        file.name,
-        'brochures',
-        file.type || 'application/pdf'
-      );
-      brochureUrl = brochureAsset.secureUrl || brochureAsset.url;
-    } catch (uploadErr: any) {
-      console.warn('Brochure upload warning:', uploadErr.message);
-    }
-
-    // Process with AI-first multimodal parsing
-    const { data: extracted, extractionMethod, modelUsed, note } = await parseBrochureAsync(
-      buffer,
-      file.type || 'application/pdf',
-      file.name
-    );
-
-    // Automated MahaRERA Registry Search & Official Certificate Download
-    let reraCertificateUrl: string | undefined;
-    let reraVerification: any = null;
-
-    if (extracted?.reraNumber) {
-      try {
-        const certResult = await downloadAndSaveMahaReraCertificate(
-          extracted.reraNumber,
-          extracted.projectName,
-          extracted.developerName
-        );
-        reraCertificateUrl = certResult.certificateUrl;
-        reraVerification = certResult.projectRecord;
-      } catch (reraErr: any) {
-        console.warn('MahaRERA certificate auto-fetch warning:', reraErr.message);
-      }
-    }
-
-    // Extract & Classify Media Assets (Elevations, Floor Plans, Master Plan)
-    const mediaResult = await extractAndProcessBrochure(
-      buffer,
-      file.name,
+    return NextResponse.json(
       {
-        projectName: extracted.projectName,
-        developerName: extracted.developerName,
-        reraNumber: extracted.reraNumber,
-        totalFloors: extracted.totalFloors,
-        microMarket: extracted.microMarket,
-        units: extracted.units.map(u => ({ bhk: u.bhk, carpetAreaSqft: u.carpetAreaSqft, title: u.bhkLabel })),
-        confidentialBrokerData: extracted.confidentialBrokerData,
-      }
-    );
-
-    return NextResponse.json({
-      success: true,
-      data: {
-        ...extracted,
-        brochureUrl,
-        reraCertificateUrl,
-        reraVerification,
-        elevations: mediaResult.elevations,
-        floorPlans: mediaResult.floorPlans,
-        masterPlan: mediaResult.masterPlan,
-        confidentialBrokerData: extracted.confidentialBrokerData,
+        success: false,
+        error: 'Please select a valid brochure file (PDF/Image) or paste brochure text to extract specifications.',
       },
-      extractionMethod,
-      modelUsed,
-      note,
-      brochureUrl,
-      reraCertificateUrl,
-      filename: file.name,
-      fileSizeBytes: file.size,
-    });
+      { status: 400 }
+    );
   } catch (error: any) {
-    console.error('Upload brochure error:', error);
+    console.error('[BROCHURE] Upload brochure error:', error);
     return NextResponse.json(
       { success: false, error: error.message || 'Failed to process and parse developer brochure document.' },
       { status: 500 }
     );
   }
 }
-

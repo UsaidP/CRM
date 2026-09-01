@@ -53,16 +53,16 @@ export function PortalLightboxModal({
       titleId="lightbox-modal-title"
       descriptionId="lightbox-modal-description"
       size="xl"
-      panelClassName="p-0 rounded-3xl border border-slate-200 shadow-2xl overflow-hidden bg-white max-h-[92vh] flex flex-col"
+      panelClassName="p-0 rounded-3xl border border-border shadow-2xl overflow-hidden bg-surface max-h-[92vh] flex flex-col"
     >
-      <div className="flex flex-col h-full overflow-y-auto bg-slate-950 text-white">
+      <div className="flex flex-col h-full overflow-y-auto bg-surface text-content">
         {/* Header Bar */}
-        <div className="px-5 py-3.5 bg-slate-900 border-b border-slate-800 flex items-center justify-between z-10">
+        <div className="px-5 py-3.5 bg-surface-raised border-b border-border flex items-center justify-between z-10">
           <div className="min-w-0">
-            <h3 id="lightbox-modal-title" className="text-sm font-bold text-white font-serif truncate">
+            <h3 id="lightbox-modal-title" className="text-sm font-bold text-content font-serif truncate">
               {currentPhoto?.title || 'Verified High-Definition Photography'}
             </h3>
-            <p id="lightbox-modal-description" className="text-xs text-slate-400 font-mono truncate">
+            <p id="lightbox-modal-description" className="text-xs text-content-muted font-mono truncate">
               {lightboxState.unit?.project?.projectName} • Image {lightboxState.currentIndex + 1} of{' '}
               {lightboxState.photos.length}
             </p>
@@ -70,8 +70,9 @@ export function PortalLightboxModal({
 
           <button
             type="button"
+            data-dialog-close
             onClick={onClose}
-            className="w-9 h-9 rounded-full bg-slate-800 hover:bg-slate-700 border border-slate-700 grid place-items-center text-slate-300 hover:text-white transition-colors cursor-pointer shrink-0"
+            className="w-9 h-9 rounded-full bg-surface-subtle hover:bg-surface-raised border border-border grid place-items-center text-content-muted hover:text-content transition-colors cursor-pointer shrink-0"
             aria-label="Close photo lightbox"
           >
             <X className="w-4 h-4" />
@@ -79,7 +80,7 @@ export function PortalLightboxModal({
         </div>
 
         {/* Main Photo Viewport */}
-        <div className="relative flex-1 min-h-[350px] sm:min-h-[500px] flex items-center justify-center p-3 sm:p-6 bg-slate-950">
+        <div className="relative flex-1 min-h-[350px] sm:min-h-[500px] flex items-center justify-center p-3 sm:p-6 bg-surface-subtle/40">
           <AnimatePresence mode="wait">
             <motion.img
               key={currentPhoto?.url || lightboxState.currentIndex}
@@ -104,7 +105,7 @@ export function PortalLightboxModal({
                     lightboxState.photos.length;
                   onNavigate(prev);
                 }}
-                className="absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/90 hover:bg-white text-slate-900 grid place-items-center border border-slate-200 shadow-xl backdrop-blur transition-all active:scale-95 cursor-pointer"
+                className="absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-surface/90 hover:bg-surface text-content grid place-items-center border border-border shadow-xl backdrop-blur transition-all active:scale-95 cursor-pointer"
                 aria-label="Previous image"
               >
                 <ChevronLeft className="w-6 h-6" />
@@ -116,7 +117,7 @@ export function PortalLightboxModal({
                   const next = (lightboxState.currentIndex + 1) % lightboxState.photos.length;
                   onNavigate(next);
                 }}
-                className="absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/90 hover:bg-white text-slate-900 grid place-items-center border border-slate-200 shadow-xl backdrop-blur transition-all active:scale-95 cursor-pointer"
+                className="absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-surface/90 hover:bg-surface text-content grid place-items-center border border-border shadow-xl backdrop-blur transition-all active:scale-95 cursor-pointer"
                 aria-label="Next image"
               >
                 <ChevronRight className="w-6 h-6" />
@@ -126,9 +127,9 @@ export function PortalLightboxModal({
         </div>
 
         {/* Thumbnail Filmstrip & Caption */}
-        <div className="p-4 bg-slate-900 border-t border-slate-800 space-y-3">
+        <div className="p-4 bg-surface-raised border-t border-border space-y-3">
           {currentPhoto?.caption && (
-            <p className="text-xs text-slate-300 text-center max-w-2xl mx-auto">
+            <p className="text-xs text-content-secondary text-center max-w-2xl mx-auto">
               {currentPhoto.caption}
             </p>
           )}
@@ -142,8 +143,8 @@ export function PortalLightboxModal({
                   onClick={() => onNavigate(idx)}
                   className={`w-14 h-11 rounded-lg overflow-hidden shrink-0 border-2 transition-all cursor-pointer ${
                     lightboxState.currentIndex === idx
-                      ? 'border-amber-400 ring-2 ring-amber-400/50 scale-105'
-                      : 'border-slate-700 opacity-50 hover:opacity-100'
+                      ? 'border-accent ring-2 ring-accent/40 scale-105'
+                      : 'border-border opacity-60 hover:opacity-100'
                   }`}
                 >
                   <img src={ph.url} alt="" className="w-full h-full object-cover" />

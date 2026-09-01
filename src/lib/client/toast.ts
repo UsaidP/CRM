@@ -2,6 +2,7 @@
 
 import { gooeyToast } from 'goey-toast';
 import type { ReactNode } from 'react';
+import { toUserMessage } from '@/lib/client/user-feedback';
 
 /**
  * GooeyToast options interface re-exported and extended for ZamZam Real Estate CRM.
@@ -36,7 +37,7 @@ export interface PromiseToastMessages<T> {
 }
 
 /**
- * Base Toast Dispatcher
+ * Base Toast Dispatcher with End-User Normalization
  */
 function baseToast(title: string, options?: ToastOptions) {
   return gooeyToast(title, options as any);
@@ -46,8 +47,35 @@ baseToast.success = (title: string, options?: ToastOptions) => {
   return gooeyToast.success(title, options as any);
 };
 
-baseToast.error = (title: string, options?: ToastOptions) => {
-  return gooeyToast.error(title, options as any);
+baseToast.error = (titleOrError: unknown, options?: ToastOptions) => {
+  // If an Error or object is passed, or if the title has a raw error string, normalize it
+  let finalTitle = typeof titleOrError === 'string' ? titleOrError : 'Unable to Complete Request';
+  let finalDescription = options?.description;
+
+  if (typeof titleOrError !== 'string' || options?.description) {
+    const rawToNormalize = options?.description || titleOrError;
+    const normalized = toUserMessage(rawToNormalize);
+
+    if (typeof titleOrError !== 'string') {
+      finalTitle = normalized.title;
+      finalDescription = normalized.description;
+    } else if (typeof options?.description === 'string' || options?.description instanceof Error) {
+      finalDescription = toUserMessage(options.description).description;
+    }
+  } else if (typeof titleOrError === 'string') {
+    // If the title itself looks like a raw technical error string
+    const normalized = toUserMessage(titleOrError);
+    if (normalized.title !== 'Operation Incomplete') {
+      finalTitle = normalized.title;
+      finalDescription = normalized.description;
+    }
+  }
+
+  return gooeyToast.error(finalTitle, {
+    ...options,
+    description: finalDescription,
+    preset: options?.preset || 'snappy',
+  } as any);
 };
 
 baseToast.warning = (title: string, options?: ToastOptions) => {
@@ -63,7 +91,23 @@ baseToast.promise = <T>(
   data: PromiseToastMessages<T>
 ) => {
   const resolvedPromise = typeof promise === 'function' ? (promise as () => Promise<T>)() : promise;
-  return gooeyToast.promise(resolvedPromise, data as any);
+  
+  // Wrap error handler to ensure user-friendly message
+  const userFriendlyData: PromiseToastMessages<T> = {
+    ...data,
+    error: (err: unknown) => {
+      if (typeof data.error === 'function') {
+        const result = data.error(err);
+        if (typeof result === 'string') {
+          return toUserMessage(result).description;
+        }
+        return result;
+      }
+      return toUserMessage(data.error || err).description;
+    },
+  };
+
+  return gooeyToast.promise(resolvedPromise, userFriendlyData as any);
 };
 
 baseToast.update = (id: string | number, options: Record<string, unknown>) => {

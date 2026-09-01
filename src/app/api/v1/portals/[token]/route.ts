@@ -23,6 +23,14 @@ export async function GET(req: Request, { params }: { params: Promise<{ token: s
             id: true,
             fullName: true,
             phoneE164: true,
+            assignedBroker: {
+              select: {
+                fullName: true,
+                phoneE164: true,
+                email: true,
+                role: true,
+              },
+            },
           },
         },
         createdBy: {
@@ -30,6 +38,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ token: s
             fullName: true,
             phoneE164: true,
             email: true,
+            role: true,
           },
         },
         portalUnits: {

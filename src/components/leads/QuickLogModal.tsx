@@ -14,6 +14,7 @@ import {
   Calendar,
 } from 'lucide-react';
 import { AccessibleDialog } from '@/components/ui/AccessibleDialog';
+import { FeedbackAlert } from '@/components/ui/FeedbackAlert';
 import { CustomSelect, type CustomSelectOption } from '@/components/ui/CustomSelect';
 
 const OUTCOME_OPTIONS: CustomSelectOption[] = [
@@ -159,9 +160,11 @@ export function QuickLogModal({
           </div>
 
           {error && (
-            <div role="alert" className="rounded-xl border border-status-danger/40 bg-status-danger-surface p-3 text-xs text-status-danger font-semibold">
-              {error}
-            </div>
+            <FeedbackAlert
+              variant="error"
+              error={error}
+              onDismiss={() => setError(null)}
+            />
           )}
 
           {/* Quick Snippet Chips */}

@@ -18,3 +18,5 @@ backups/
 output/
 tsconfig.tsbuildinfo
 *.pre-restore-*
+test.txt
+test*.txt

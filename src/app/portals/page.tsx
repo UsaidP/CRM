@@ -31,6 +31,8 @@ import { HallmarkStamp } from '@/components/ui/HallmarkStamp';
 import { formatTimeShort } from '@/lib/date-utils';
 import { AccessibleDialog } from '@/components/ui/AccessibleDialog';
 import { buildPublicPortalUrl } from '@/lib/navigation';
+import { FeedbackAlert } from '@/components/ui/FeedbackAlert';
+import { EmptyState } from '@/components/ui/EmptyState';
 
 export default function ClientPortalsConsolePage() {
   const [portals, setPortals] = useState<any[]>([]);
@@ -209,15 +211,29 @@ export default function ClientPortalsConsolePage() {
 
       <div aria-live="polite" className="space-y-2">
         {requestError && (
-          <div role="alert" className="rounded-xl border border-status-danger/40 bg-status-danger-surface p-3.5 text-xs text-status-danger font-semibold shadow-xs">
-            <p>{requestError}</p>
-            <button type="button" onClick={fetchPortals} className="mt-1 font-bold text-status-danger underline underline-offset-2">
-              Retry client portals
-            </button>
-          </div>
+          <FeedbackAlert
+            variant="error"
+            error={requestError}
+            actionLabel="Retry Portals"
+            onAction={fetchPortals}
+            onDismiss={() => setRequestError(null)}
+          />
         )}
-        {copyError && <p role="alert" className="rounded-xl border border-status-danger/40 bg-status-danger-surface p-3.5 text-xs text-status-danger font-semibold">{copyError}</p>}
-        {copiedToken && <p className="text-xs font-semibold text-status-success">Portal link copied to clipboard.</p>}
+        {copyError && (
+          <FeedbackAlert
+            variant="error"
+            error={copyError}
+            onDismiss={() => setCopyError(null)}
+          />
+        )}
+        {copiedToken && (
+          <FeedbackAlert
+            variant="success"
+            title="Link Copied"
+            description="Client portal URL copied to clipboard. Ready to share with buyer."
+            onDismiss={() => setCopiedToken(null)}
+          />
+        )}
       </div>
 
       {/* High-Density Portals & Telemetry Table */}
@@ -346,8 +362,17 @@ export default function ClientPortalsConsolePage() {
 
               {!loading && !requestError && filteredPortals.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="p-8 text-center text-content-muted text-xs">
-                    No client portals found matching current filter.
+                  <td colSpan={7} className="p-8">
+                    <EmptyState
+                      type="filter"
+                      title="No Client Portals Found"
+                      description="No client engagement portals match your search term or tier filter. Try clearing filters or creating a new portal from Matchmaker."
+                      actionLabel="Show All Portals"
+                      onAction={() => {
+                        setSearchQuery('');
+                        setSelectedTier('ALL');
+                      }}
+                    />
                   </td>
                 </tr>
               )}

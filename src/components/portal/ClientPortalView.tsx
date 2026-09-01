@@ -133,34 +133,59 @@ export function ClientPortalView({ portal, token }: ClientPortalViewProps) {
     }
   };
 
+  const advisor = useMemo(() => {
+    // 1. Creator of the portal (exact user who generated it)
+    if (portal.createdBy && (portal.createdBy.fullName || portal.createdBy.phoneE164)) {
+      return {
+        fullName: portal.createdBy.fullName,
+        phoneE164: portal.createdBy.phoneE164,
+        email: portal.createdBy.email,
+        role: portal.createdBy.role,
+      };
+    }
+    // 2. Assigned Lead Broker fallback
+    if (portal.lead?.assignedBroker && (portal.lead.assignedBroker.fullName || portal.lead.assignedBroker.phoneE164)) {
+      return {
+        fullName: portal.lead.assignedBroker.fullName,
+        phoneE164: portal.lead.assignedBroker.phoneE164,
+        email: portal.lead.assignedBroker.email,
+        role: portal.lead.assignedBroker.role,
+      };
+    }
+    // 3. Organization Default
+    return {
+      fullName: portal.organization?.name ? `${portal.organization.name} Advisory Desk` : 'Property Advisor',
+      phoneE164: '+91 99677 31071',
+      email: 'advisory@zamzamproperties.in',
+      role: 'Senior Property Advisor',
+    };
+  }, [portal]);
+
   const handleBrochureClick = (unit: any) => {
     sendTelemetry('BROCHURE_DOWNLOAD', unit.id);
     setActiveDossierUnit(unit);
   };
 
   const handleWhatsAppInquiry = (unit: any) => {
-    sendTelemetry('WHATSAPP_CLICK', unit.id);
-    const advisorName = portal.createdBy?.fullName || 'ZamZam Advisor';
-    const text = `Hi ${advisorName} (ZamZam Properties), I am reviewing the curated options for ${
-      portal.lead?.fullName || 'my requirement'
-    }:\n\n🏡 *${unit.project?.projectName || 'Shortlisted Property'}* - Unit ${
-      unit.unitNumber || 'Selected'
-    }\n📍 ${unit.project?.microMarket || 'Navi Mumbai'}\n💰 All-In Price: ${formatLakhCr(
-      unit.allInTotalCost
-    )} (${formatIndianRupees(unit.allInTotalCost)})\n\nCould you please share more details or arrange a site visit?`;
-    const phone = portal.createdBy?.phoneE164?.replace(/[^0-9]/g, '') || '919967731071';
+    sendTelemetry('WHATSAPP_CLICK', unit?.id);
+    const advisorName = advisor.fullName || 'Property Advisor';
+    const clientName = portal.lead?.fullName || 'my requirement';
+    const propertySummary = unit?.project?.projectName
+      ? `\n\n🏡 *${unit.project.projectName}* - Unit ${unit.unitNumber || 'Selected'}\n📍 ${unit.project.microMarket || 'Navi Mumbai'}\n💰 All-In Price: ${formatLakhCr(unit.allInTotalCost || 0)} (${formatIndianRupees(unit.allInTotalCost || 0)})`
+      : '';
+    const text = `Hi ${advisorName} (${portal.organization?.name || 'ZamZam Properties'}), I am reviewing the curated options for ${clientName}:${propertySummary}\n\nCould you please share more details or arrange a site visit?`;
+    const phone = (advisor.phoneE164 || '').replace(/[^0-9]/g, '') || '919967731071';
     window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
   };
 
   const handleBookVisitSubmit = (unit: any, slot: string, needsCab: boolean) => {
-    sendTelemetry('VISIT_BOOKING_CLICK', unit.id);
-    // Open WhatsApp confirmation with booking details
-    const advisorName = portal.createdBy?.fullName || 'ZamZam Advisor';
+    sendTelemetry('VISIT_BOOKING_CLICK', unit?.id);
+    const advisorName = advisor.fullName || 'Property Advisor';
     const cabNote = needsCab ? ' (Includes station pickup cab)' : '';
-    const text = `Hi ${advisorName} (ZamZam Properties), I would like to schedule a physical site visit for:\n\n🏡 *${
-      unit.project?.projectName
+    const text = `Hi ${advisorName} (${portal.organization?.name || 'ZamZam Properties'}), I would like to schedule a physical site visit for:\n\n🏡 *${
+      unit?.project?.projectName || 'Shortlisted Property'
     }*\n📅 Preferred Slot: ${slot}${cabNote}\n👤 Name: ${portal.lead?.fullName || 'Client'}\n\nPlease confirm the itinerary.`;
-    const phone = portal.createdBy?.phoneE164?.replace(/[^0-9]/g, '') || '919967731071';
+    const phone = (advisor.phoneE164 || '').replace(/[^0-9]/g, '') || '919967731071';
     window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
   };
 
@@ -196,8 +221,8 @@ export function ClientPortalView({ portal, token }: ClientPortalViewProps) {
       videoAsset,
       videoUrl: embedUrl,
       title,
-      hostName: videoAsset?.hostName || portal.createdBy?.fullName || 'Suhel Patel',
-      hostRole: videoAsset?.hostRole || 'Senior Property Specialist • ZamZam Properties',
+      hostName: videoAsset?.hostName || advisor.fullName || 'Property Specialist',
+      hostRole: videoAsset?.hostRole || `${advisor.fullName ? `${advisor.fullName} • ` : ''}${portal.organization?.name || 'ZamZam Properties'} Desk`,
       isYouTube,
       isInstagram,
     });
@@ -217,12 +242,6 @@ export function ClientPortalView({ portal, token }: ClientPortalViewProps) {
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-  };
-
-  const advisor = portal.createdBy || {
-    fullName: 'Suhel Patel',
-    phoneE164: '+91 99677 31071',
-    email: 'suhel@zamzamproperties.in',
   };
 
   const unitsCount = portal.portalUnits?.length || 0;

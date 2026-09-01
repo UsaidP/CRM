@@ -49,7 +49,8 @@ import { CallLogModal } from '@/components/leads/CallLogModal';
 import { SourceEvidenceDrawer } from '@/components/leads/SourceEvidenceDrawer';
 import { ContactMergeModal } from '@/components/leads/ContactMergeModal';
 import { LeadCsvImportModal } from '@/components/leads/LeadCsvImportModal';
-import { LeadsKanbanBoard } from '@/components/leads/LeadsKanbanBoard';
+import { FeedbackAlert } from '@/components/ui/FeedbackAlert';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { QuickReminderModal } from '@/components/reminders/QuickReminderModal';
 import { exportLeadsToCsv } from '@/lib/export-utils';
 import { CompleteReminderPrompt } from '@/components/reminders/CompleteReminderPrompt';
@@ -57,6 +58,7 @@ import { QuickLogModal } from '@/components/leads/QuickLogModal';
 import { AccessibleDialog } from '@/components/ui/AccessibleDialog';
 import { evaluateLeadConnectPriority, rankFirmLeadsForNextConnect, PrioritizedLeadScore } from '@/lib/domain/prioritization-engine';
 import { TelecallerConsoleView } from '@/components/leads/TelecallerConsoleView';
+import { LeadsKanbanBoard } from '@/components/leads/LeadsKanbanBoard';
 import { formatDateTime } from '@/lib/date-utils';
 import { CustomSelect, type CustomSelectOption } from '@/components/ui/CustomSelect';
 
@@ -593,17 +595,20 @@ export function LeadsMatrixClient({ initialLeads = [] }: { initialLeads?: any[] 
       </div>
 
       {syncSuccessMsg && (
-        <div role="status" className="p-3.5 bg-status-success-surface border border-status-success/30 rounded-xl text-status-success text-xs font-semibold flex items-center justify-between shadow-xs">
-          <span>{syncSuccessMsg}</span>
-          <button onClick={() => setSyncSuccessMsg('')} className="text-status-success hover:opacity-80 font-bold p-1">✕</button>
-        </div>
+        <FeedbackAlert
+          variant="success"
+          title="Lead Updates Saved"
+          description={syncSuccessMsg}
+          onDismiss={() => setSyncSuccessMsg('')}
+        />
       )}
 
       {uiError && (
-        <div role="alert" className="p-4 bg-status-danger-surface border border-status-danger/30 rounded-xl text-status-danger text-xs font-semibold flex items-center justify-between shadow-xs">
-          <span>{uiError}</span>
-          <button onClick={() => setUiError('')} className="text-status-danger hover:opacity-80 font-bold p-1">✕</button>
-        </div>
+        <FeedbackAlert
+          variant="error"
+          error={uiError}
+          onDismiss={() => setUiError('')}
+        />
       )}
 
       {/* Unified Firm Summary Cards */}
@@ -1183,8 +1188,19 @@ export function LeadsMatrixClient({ initialLeads = [] }: { initialLeads?: any[] 
                   })
                 ) : (
                   <tr>
-                    <td colSpan={6} className="py-12 text-center text-content-muted">
-                      No leads found matching the selected filter criteria.
+                    <td colSpan={6} className="p-8">
+                      <EmptyState
+                        type="filter"
+                        title="No Matching Leads Found"
+                        description="Try adjusting your search query, clearing source filters, or switching stage tabs."
+                        actionLabel="Reset Search & Filters"
+                        onAction={() => {
+                          setSearchQuery('');
+                          setSelectedSource('ALL');
+                          setSelectedStage('ALL');
+                          setSelectedConfidence('ALL');
+                        }}
+                      />
                     </td>
                   </tr>
                 )}

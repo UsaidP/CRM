@@ -17,6 +17,7 @@ async function cleanDatabase() {
     await prisma.siteVisit.deleteMany({});
     await prisma.communicationLog.deleteMany({});
     await prisma.buyerRequirement.deleteMany({});
+    await prisma.leadAssignment.deleteMany({});
     await prisma.lead.deleteMany({});
     await prisma.contactMergeAudit.deleteMany({});
     await prisma.contactIdentity.deleteMany({});
@@ -27,7 +28,9 @@ async function cleanDatabase() {
     await prisma.inventoryAuditLog.deleteMany({});
     await prisma.propertyUnit.deleteMany({});
     await prisma.developerProject.deleteMany({});
+    await prisma.rolePermission.deleteMany({});
     await prisma.user.deleteMany({});
+    await prisma.team.deleteMany({});
     await prisma.organization.deleteMany({});
 
     // 2. Perform SQLite VACUUM to compact file and reset storage
@@ -40,7 +43,9 @@ async function cleanDatabase() {
     // 3. Verify all tables are 0
     const counts = {
       Organization: await prisma.organization.count(),
+      Team: await prisma.team.count(),
       User: await prisma.user.count(),
+      RolePermission: await prisma.rolePermission.count(),
       BrokerPhoneNumber: await prisma.brokerPhoneNumber.count(),
       Contact: await prisma.contact.count(),
       ContactIdentity: await prisma.contactIdentity.count(),
@@ -51,6 +56,7 @@ async function cleanDatabase() {
       InboundCampaign: await prisma.inboundCampaign.count(),
       WebhookEventInbox: await prisma.webhookEventInbox.count(),
       Lead: await prisma.lead.count(),
+      LeadAssignment: await prisma.leadAssignment.count(),
       CommunicationLog: await prisma.communicationLog.count(),
       BuyerRequirement: await prisma.buyerRequirement.count(),
       ClientPortal: await prisma.clientPortal.count(),

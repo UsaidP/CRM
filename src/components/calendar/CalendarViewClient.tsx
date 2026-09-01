@@ -63,33 +63,33 @@ const NEW_ACTION_TYPE_OPTIONS: CustomSelectOption[] = [
 ];
 
 const PRIORITY_OPTIONS: CustomSelectOption[] = [
-  { value: 'URGENT', label: '🔴 Urgent', dotColor: 'bg-red-500' },
-  { value: 'HIGH', label: '🟡 High', dotColor: 'bg-amber-500' },
-  { value: 'MEDIUM', label: '⚪ Medium', dotColor: 'bg-blue-500' },
-  { value: 'LOW', label: '🟢 Low', dotColor: 'bg-emerald-500' },
+  { value: 'URGENT', label: 'Urgent', dotColor: 'bg-red-500' },
+  { value: 'HIGH', label: 'High Priority', dotColor: 'bg-amber-500' },
+  { value: 'MEDIUM', label: 'Medium Priority', dotColor: 'bg-blue-500' },
+  { value: 'LOW', label: 'Low Priority', dotColor: 'bg-emerald-500' },
 ];
 
 const NEW_PRIORITY_OPTIONS: CustomSelectOption[] = [
-  { value: 'URGENT', label: '🔴 Urgent', dotColor: 'bg-red-500' },
-  { value: 'HIGH', label: '🟡 High Priority', dotColor: 'bg-amber-500' },
-  { value: 'MEDIUM', label: '⚪ Medium', dotColor: 'bg-blue-500' },
-  { value: 'LOW', label: '🟢 Low', dotColor: 'bg-emerald-500' },
+  { value: 'URGENT', label: 'Urgent', dotColor: 'bg-red-500' },
+  { value: 'HIGH', label: 'High Priority', dotColor: 'bg-amber-500' },
+  { value: 'MEDIUM', label: 'Medium Priority', dotColor: 'bg-blue-500' },
+  { value: 'LOW', label: 'Low Priority', dotColor: 'bg-emerald-500' },
 ];
 
 const SITE_VISIT_STATUS_OPTIONS: CustomSelectOption[] = [
-  { value: 'SCHEDULED', label: '🗓️ Scheduled', dotColor: 'bg-blue-500' },
-  { value: 'CONFIRMED', label: '✅ Confirmed', dotColor: 'bg-emerald-500' },
-  { value: 'IN_PROGRESS', label: '🚗 In Progress', dotColor: 'bg-purple-500' },
-  { value: 'COMPLETED', label: '🏁 Completed', dotColor: 'bg-emerald-600' },
-  { value: 'CANCELLED', label: '❌ Cancelled', dotColor: 'bg-red-500' },
-  { value: 'NO_SHOW', label: '⚠️ No Show', dotColor: 'bg-amber-500' },
+  { value: 'SCHEDULED', label: 'Scheduled', dotColor: 'bg-blue-500' },
+  { value: 'CONFIRMED', label: 'Confirmed', dotColor: 'bg-emerald-500' },
+  { value: 'IN_PROGRESS', label: 'In Progress', dotColor: 'bg-purple-500' },
+  { value: 'COMPLETED', label: 'Completed', dotColor: 'bg-emerald-600' },
+  { value: 'CANCELLED', label: 'Cancelled', dotColor: 'bg-red-500' },
+  { value: 'NO_SHOW', label: 'No Show', dotColor: 'bg-amber-500' },
 ];
 
 const REMINDER_STATUS_OPTIONS: CustomSelectOption[] = [
-  { value: 'PENDING', label: '⏳ Pending', dotColor: 'bg-amber-500' },
-  { value: 'COMPLETED', label: '✅ Completed', dotColor: 'bg-emerald-500' },
-  { value: 'SNOOZED', label: '⏰ Snoozed', dotColor: 'bg-purple-500' },
-  { value: 'CANCELLED', label: '❌ Cancelled', dotColor: 'bg-red-500' },
+  { value: 'PENDING', label: 'Pending', dotColor: 'bg-amber-500' },
+  { value: 'COMPLETED', label: 'Completed', dotColor: 'bg-emerald-500' },
+  { value: 'SNOOZED', label: 'Snoozed', dotColor: 'bg-purple-500' },
+  { value: 'CANCELLED', label: 'Cancelled', dotColor: 'bg-red-500' },
 ];
 
 interface CalendarEvent {

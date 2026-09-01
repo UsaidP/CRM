@@ -33,6 +33,8 @@ import { AccessibleDialog } from '@/components/ui/AccessibleDialog';
 import { formatDateFull, formatTimeShort } from '@/lib/date-utils';
 import { exportDealsToCsv } from '@/lib/export-utils';
 import { toast } from '@/lib/client/toast';
+import { FeedbackAlert } from '@/components/ui/FeedbackAlert';
+import { EmptyState } from '@/components/ui/EmptyState';
 
 export function DealsLedgerClient({
   initialDeals = [],
@@ -351,10 +353,16 @@ export function DealsLedgerClient({
       </div>
 
       {(requestError || actionError) && (
-        <div role="alert" className="rounded-xl border border-status-danger/40 bg-status-danger-surface p-3.5 text-xs text-status-danger font-semibold shadow-xs">
-          <p>{requestError || actionError}</p>
-          {requestError && <button type="button" onClick={fetchDealsAndData} className="mt-1 font-bold text-status-danger underline underline-offset-2">Retry deal records</button>}
-        </div>
+        <FeedbackAlert
+          variant="error"
+          error={requestError || actionError}
+          actionLabel={requestError ? 'Retry Deals' : undefined}
+          onAction={requestError ? fetchDealsAndData : undefined}
+          onDismiss={() => {
+            setRequestError(null);
+            setActionError(null);
+          }}
+        />
       )}
 
       {/* Financial Overview Row */}
@@ -698,8 +706,14 @@ export function DealsLedgerClient({
 
                 {filteredDeals.length === 0 && (
                   <tr>
-                    <td colSpan={9} className="p-8 text-center text-slate-400 text-xs">
-                      No closed deal records found matching current status filter.
+                    <td colSpan={9} className="p-8">
+                      <EmptyState
+                        type="filter"
+                        title="No Deals Found"
+                        description="No closed deal files match the selected milestone filter or search term. Try switching status tabs."
+                        actionLabel="View All Deals"
+                        onAction={() => setSelectedStatus('ALL')}
+                      />
                     </td>
                   </tr>
                 )}
@@ -739,8 +753,12 @@ export function DealsLedgerClient({
         </div>
 
         {actionError && (
-          <div role="alert" className="rounded-xl border border-status-danger/40 bg-status-danger-surface p-3 text-xs text-status-danger font-medium mt-3">
-            {actionError}
+          <div className="mt-3">
+            <FeedbackAlert
+              variant="error"
+              error={actionError}
+              onDismiss={() => setActionError(null)}
+            />
           </div>
         )}
 
@@ -898,8 +916,12 @@ export function DealsLedgerClient({
             </div>
 
             {actionError && (
-              <div role="alert" className="rounded-xl border border-status-danger/40 bg-status-danger-surface p-3 text-xs text-status-danger font-medium mt-3">
-                {actionError}
+              <div className="mt-3">
+                <FeedbackAlert
+                  variant="error"
+                  error={actionError}
+                  onDismiss={() => setActionError(null)}
+                />
               </div>
             )}
 

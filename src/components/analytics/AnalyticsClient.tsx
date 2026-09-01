@@ -16,6 +16,7 @@ import { YoutubeIcon, InstagramIcon } from '@/components/icons/SocialIcons';
 import { HallmarkStamp } from '@/components/ui/HallmarkStamp';
 import { exportAnalyticsToCsv } from '@/lib/export-utils';
 import { analyticsApi } from '@/lib/client/analytics';
+import { FeedbackAlert } from '@/components/ui/FeedbackAlert';
 
 export function AnalyticsClient({
   initialRoi = [],
@@ -151,10 +152,13 @@ export function AnalyticsClient({
       </div>
 
       {uiError && (
-        <div role="alert" className="rounded-xl border border-status-danger/40 bg-status-danger-surface p-3.5 text-xs text-status-danger font-semibold shadow-xs">
-          <p>{uiError}</p>
-          <button type="button" onClick={fetchAllAnalytics} className="mt-1 font-bold text-status-danger underline underline-offset-2">Retry analytics</button>
-        </div>
+        <FeedbackAlert
+          variant="error"
+          error={uiError}
+          actionLabel="Retry Analytics"
+          onAction={fetchAllAnalytics}
+          onDismiss={() => setUiError(null)}
+        />
       )}
 
       {/* Top Level BI Metrics Grid */}

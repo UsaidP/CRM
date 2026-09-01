@@ -16,6 +16,7 @@ import {
   UserCheck,
 } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
+import { FeedbackAlert } from '@/components/ui/FeedbackAlert';
 import { setPassword } from '@/lib/client/auth';
 
 export function SetPasswordClient() {
@@ -109,17 +110,20 @@ export function SetPasswordClient() {
 
           <div className="p-6 md:p-8 space-y-5">
             {successMsg && (
-              <div className="p-3.5 bg-status-success-surface border border-status-success/30 rounded-2xl text-status-success text-xs font-bold flex items-center gap-2.5 animate-in fade-in">
-                <CheckCircle2 className="w-4 h-4 shrink-0" />
-                <span>{successMsg}</span>
-              </div>
+              <FeedbackAlert
+                variant="success"
+                title="Account Activated"
+                description={successMsg}
+                onDismiss={() => setSuccessMsg(null)}
+              />
             )}
 
             {errorMsg && (
-              <div className="p-3.5 bg-status-danger-surface border border-status-danger/30 rounded-2xl text-status-danger text-xs font-bold flex items-center gap-2.5 animate-in fade-in">
-                <AlertCircle className="w-4 h-4 shrink-0" />
-                <span>{errorMsg}</span>
-              </div>
+              <FeedbackAlert
+                variant="error"
+                error={errorMsg}
+                onDismiss={() => setErrorMsg(null)}
+              />
             )}
 
             {!token ? (

@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { AccessibleDialog } from '@/components/ui/AccessibleDialog';
 import { CustomSelect, type CustomSelectOption } from '@/components/ui/CustomSelect';
+import { FeedbackAlert } from '@/components/ui/FeedbackAlert';
 
 const NEXT_CHANNEL_OPTIONS: CustomSelectOption[] = [
   { value: 'CALL', label: '📞 Phone Call' },
@@ -190,9 +191,11 @@ export function CompleteReminderPrompt({
           </div>
 
           {error && (
-            <div role="alert" className="rounded-xl border border-status-danger/40 bg-status-danger-surface p-3 text-xs text-status-danger font-semibold">
-              {error}
-            </div>
+            <FeedbackAlert
+              variant="error"
+              error={error}
+              onDismiss={() => setError(null)}
+            />
           )}
 
           {/* Quick Outcome Presets */}

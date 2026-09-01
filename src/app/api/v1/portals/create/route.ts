@@ -58,7 +58,7 @@ export async function POST(req: Request) {
           token,
           title: `Curated Property Options for ${lead.fullName || 'Client'}`,
           customMessage,
-          createdById: createdById || lead.assignedBrokerId || null,
+          createdById: createdById || auth.session.userId || lead.assignedBrokerId || null,
           portalUnits: {
             create: units.map((u, idx) => ({
               propertyUnitId: u.id,

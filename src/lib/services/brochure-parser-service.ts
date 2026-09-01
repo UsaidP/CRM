@@ -29,20 +29,76 @@ export interface ConfidentialBrokerData {
   notes?: string;
 }
 
+export interface ProjectAssetRecord {
+  asset_id: string;
+  project_id?: string;
+  asset_type: 
+    | 'elevation' 
+    | 'floor_plan' 
+    | 'ground_floor_plan' 
+    | 'first_floor_plan' 
+    | 'typical_floor_plan' 
+    | 'unit_floor_plan' 
+    | 'site_plan' 
+    | 'master_plan' 
+    | 'location_map' 
+    | 'connectivity_map'
+    | 'amenity' 
+    | 'exterior' 
+    | 'interior' 
+    | 'logo' 
+    | 'diagram'
+    | 'table'
+    | 'other';
+  subtype: string;
+  title: string;
+  file_url: string;
+  page_number: number;
+  original: boolean;
+  display_position: string;
+  sort_order: number;
+  confidence?: number;
+  source_position?: string;
+  bbox?: { x: number; y: number; width: number; height: number };
+  bhk?: number;
+  carpetAreaSqft?: number;
+  description?: string;
+}
+
+export interface ExtractedFloorPlanDetail {
+  floor: string;
+  plan_type: string;
+  page_number: number;
+  image_asset?: string;
+  file_url?: string;
+  units?: any[];
+  orientation?: string;
+  original_image: boolean;
+  title?: string;
+  room_dimensions?: Record<string, string>;
+}
+
 export interface ClassifiedMediaSummary {
   elevationsCount: number;
   floorPlansCount: number;
   hasMasterPlan: boolean;
-  elevations?: Array<{ title: string; viewAngle: string; url?: string; description?: string }>;
-  floorPlans?: Array<{ bhk: number; carpetAreaSqft: number; title: string; url?: string; description?: string }>;
+  elevations?: Array<{ title: string; viewAngle: string; url?: string; description?: string; page_number?: number }>;
+  floorPlans?: Array<{ bhk: number; carpetAreaSqft: number; title: string; url?: string; description?: string; page_number?: number }>;
+  groundFloorPlans?: Array<{ title: string; url?: string; page_number?: number }>;
+  firstFloorPlans?: Array<{ title: string; url?: string; page_number?: number }>;
+  typicalFloorPlans?: Array<{ title: string; url?: string; page_number?: number }>;
+  locationMaps?: Array<{ title: string; url?: string; page_number?: number }>;
+  amenities?: Array<{ title: string; url?: string; page_number?: number }>;
 }
 
 export interface ExtractedBrochureData {
   projectName: string;
   developerName: string;
-  reraNumber: string;
+  reraNumber?: string;
   microMarket: string;
   subLocality?: string;
+  coverImageUrl?: string;
+  masterPlanUrl?: string;
   elevation: string;
   totalTowers: number;
   totalFloors: number;
@@ -71,6 +127,16 @@ export interface ExtractedBrochureData {
   standardCommissionPercent: number;
   confidentialBrokerData?: ConfidentialBrokerData;
   classifiedMedia?: ClassifiedMediaSummary;
+  assetRecords?: ProjectAssetRecord[];
+  floorPlansList?: ExtractedFloorPlanDetail[];
+  imagesCategorized?: Record<string, ProjectAssetRecord[]>;
+  pages?: Array<{ page_number: number; page_title?: string; page_type: string; visual_assets?: any[] }>;
+  extractionMetadata?: {
+    total_pages?: number;
+    images_extracted?: number;
+    text_extracted?: boolean;
+    original_images_preserved?: boolean;
+  };
   units: ExtractedBrochureUnit[];
   rawTextPreview?: string;
 }
@@ -217,12 +283,16 @@ export function parseBrochureText(rawText: string, filename: string = 'brochure.
 
   // 2. MAHARERA NUMBER
   const reraMatch = normalizedText.match(/\b(P\d{11})\b/i);
-  const detectedRera = reraMatch ? reraMatch[1].toUpperCase() : 'P52000079818';
-  const reraCheck = validateReraNumber(detectedRera);
-  const reraNumber = reraCheck.isValid && reraCheck.normalized ? reraCheck.normalized : 'P52000079818';
+  let reraNumber: string | undefined;
+  if (reraMatch) {
+    const reraCheck = validateReraNumber(reraMatch[1].toUpperCase());
+    if (reraCheck.isValid && reraCheck.normalized) {
+      reraNumber = reraCheck.normalized;
+    }
+  }
 
   // 3. MICRO-MARKET & SUB-LOCALITY
-  let microMarket = 'Taloja Phase II';
+  let microMarket = 'Navi Mumbai';
   for (const m of MICRO_MARKETS) {
     const match = normalizedText.match(m.match);
     if (match) {
@@ -231,7 +301,7 @@ export function parseBrochureText(rawText: string, filename: string = 'brochure.
     }
   }
 
-  let subLocality = 'Near Metro Station';
+  let subLocality = '';
   const sectorMatch = normalizedText.match(/Sector[\s-]*(\d+[A-Za-z]?)/i);
   const plotMatch = normalizedText.match(/Plot\s*(?:No\.?)?\s*([A-Za-z0-9-]+)/i);
   if (sectorMatch && plotMatch) {
@@ -241,12 +311,12 @@ export function parseBrochureText(rawText: string, filename: string = 'brochure.
   }
 
   // 4. ELEVATION & FLOORS
-  let elevation = 'G+7 Storey Residential Project';
-  let totalFloors = 7;
+  let elevation = 'Residential Project';
+  let totalFloors = 1;
   const elevationMatch = normalizedText.match(/(G\s*\+\s*(\d+))\s*(?:storey|floor|slab|tower|building)?/i);
   if (elevationMatch) {
     const floorsCount = parseInt(elevationMatch[2], 10);
-    totalFloors = Math.max(floorsCount, 7);
+    totalFloors = Math.max(floorsCount, 1);
     elevation = `${elevationMatch[1].replace(/\s+/g, '')} Storey Residential & Commercial Project`;
   }
 
@@ -256,7 +326,7 @@ export function parseBrochureText(rawText: string, filename: string = 'brochure.
   const hasOccupancyCertificate = /occupancy\s*certificate|oc\s*received|ready\s*to\s*move/i.test(normalizedText);
   const possessionStatus = hasOccupancyCertificate ? 'READY_TO_MOVE' : 'UNDER_CONSTRUCTION';
 
-  let expectedPossessionDate = 'December 2026';
+  let expectedPossessionDate: string | undefined;
   const dateMatch = normalizedText.match(/(?:possession|completion|rera\s*target|target\s*date)[:\s]+([A-Za-z]+\s+\d{4}|\d{2}[/-]\d{2}[/-]\d{4})/i);
   if (dateMatch) {
     expectedPossessionDate = dateMatch[1].trim();
@@ -271,16 +341,6 @@ export function parseBrochureText(rawText: string, filename: string = 'brochure.
         break;
       }
     }
-  }
-  if (extractedAmenities.length === 0) {
-    extractedAmenities.push(
-      'Taste-Fully Designed Entrance & Floor Lobbies',
-      'Branded High-Speed Passenger Elevators',
-      'Power Backup for Lifts & Common Areas',
-      'Rainwater Harvesting System & Eco Management',
-      '24/7 Security CCTV & Intercom Facility',
-      'Grand Lifestyle Clubhouse & Gym'
-    );
   }
 
   // 7. DEVELOPER POC & CONSULTANTS
@@ -310,7 +370,7 @@ export function parseBrochureText(rawText: string, filename: string = 'brochure.
   if (rccMatch) rccConsultants = rccMatch[1].trim();
 
   // 8. BASE PRICING PER SQFT
-  let basePricePerSqft = 6500;
+  let basePricePerSqft = 0;
   if (microMarket.includes('Kharghar')) basePricePerSqft = 10500;
   else if (microMarket.includes('Taloja')) basePricePerSqft = 6500;
   else if (microMarket.includes('Ulwe')) basePricePerSqft = 8200;
@@ -324,16 +384,7 @@ export function parseBrochureText(rawText: string, filename: string = 'brochure.
   if (/2\s*(?:BHK|Bed)/i.test(normalizedText)) detectedBhks.add(2);
   if (/3\s*(?:BHK|Bed)/i.test(normalizedText)) detectedBhks.add(3);
 
-  if (detectedBhks.size === 0) {
-    detectedBhks.add(1);
-    detectedBhks.add(2);
-  }
-
-  const carpetAreaMap: Record<number, number> = {
-    1: 445,
-    2: 650,
-    3: 980,
-  };
+  const carpetAreaMap: Record<number, number> = {};
 
   const bhk1Match = normalizedText.match(/1\s*(?:BHK|Bed)[^\d]{1,40}(\d{3,4})\s*(?:sq\.?\s*ft|sqft)/i);
   if (bhk1Match && bhk1Match[1]) carpetAreaMap[1] = parseInt(bhk1Match[1], 10);
@@ -341,26 +392,43 @@ export function parseBrochureText(rawText: string, filename: string = 'brochure.
   const bhk2Match = normalizedText.match(/2\s*(?:BHK|Bed)[^\d]{1,40}(\d{3,4})\s*(?:sq\.?\s*ft|sqft)/i);
   if (bhk2Match && bhk2Match[1]) carpetAreaMap[2] = parseInt(bhk2Match[1], 10);
 
+  const bhk3Match = normalizedText.match(/3\s*(?:BHK|Bed)[^\d]{1,40}(\d{3,4})\s*(?:sq\.?\s*ft|sqft)/i);
+  if (bhk3Match && bhk3Match[1]) carpetAreaMap[3] = parseInt(bhk3Match[1], 10);
+
   let unitIndex = 1;
   for (const bhk of Array.from(detectedBhks).sort()) {
-    const carpetArea = carpetAreaMap[bhk] || (bhk === 1 ? 445 : 650);
+    const carpetArea = carpetAreaMap[bhk] || 0;
     const floorNumber = Math.min(totalFloors, Math.max(1, bhk === 1 ? 1 : 2));
-    const agreementValue = Math.round(carpetArea * basePricePerSqft);
+    const agreementValue = carpetArea > 0 && basePricePerSqft > 0 ? Math.round(carpetArea * basePricePerSqft) : 0;
 
-    const statutory = calculateAllInCost({
+    const statutory = agreementValue > 0 ? calculateAllInCost({
       agreementValue,
       isFemaleBuyer: false,
       hasOccupancyCertificate,
       floorNumber,
       carpetAreaSqft: carpetArea,
-      parkingCharges: bhk === 1 ? 150000 : 250000,
-      societyDevCharges: bhk === 1 ? 100000 : 150000,
-    });
+      parkingCharges: 0,
+      societyDevCharges: 0,
+    }) : {
+      stampDutyRate: 0.07,
+      stampDutyAmount: 0,
+      registrationFee: 30000,
+      gstRate: hasOccupancyCertificate ? 0 : 0.05,
+      gstAmount: 0,
+      parkingCharges: 0,
+      societyDevCharges: 0,
+      totalAllInCost: 0,
+    };
+
+    const highlights: string[] = [];
+    if (carpetArea > 0) highlights.push(`${carpetArea} sq.ft RERA Carpet Area`);
+    if (reraNumber) highlights.push(`MahaRERA ID: ${reraNumber}`);
+    highlights.push(`Floor ${floorNumber} of ${totalFloors}`);
 
     units.push({
-      unitNumber: `Flat ${floorNumber}0${unitIndex}`,
+      unitNumber: `Unit ${floorNumber}0${unitIndex}`,
       bhk,
-      bhkLabel: `${bhk} BHK Spacious Flat with Balcony`,
+      bhkLabel: `${bhk} BHK Residential Unit`,
       carpetAreaSqft: carpetArea,
       bathrooms: bhk >= 2 ? 2 : 1,
       balconies: bhk >= 2 ? 2 : 1,
@@ -377,13 +445,8 @@ export function parseBrochureText(rawText: string, filename: string = 'brochure.
       societyDevelopmentCharges: statutory.societyDevCharges,
       allInTotalCost: statutory.totalAllInCost,
       possessionStatus,
-      description: `Spacious, Vastu-compliant ${bhk} BHK flat with private balcony, 2'x2' vitrified tiles, granite kitchen platform, and marble door frames.`,
-      featureHighlights: [
-        `${carpetArea} sq.ft RERA Carpet Area with Balcony`,
-        `MahaRERA ID: ${reraNumber}`,
-        `Floor ${floorNumber} of ${totalFloors} (Clear Title CIDCO Transfer Plot)`,
-        `3 mins walk to Metro Station`,
-      ],
+      description: `${bhk} BHK residential apartment in ${projectName}.`,
+      featureHighlights: highlights,
     });
 
     unitIndex++;

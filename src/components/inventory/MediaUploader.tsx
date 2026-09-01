@@ -1,7 +1,9 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { ArrowDown, ArrowUp, Film, Image as ImageIcon, Loader2, Trash2, UploadCloud } from 'lucide-react';
+import { ArrowDown, ArrowUp, Film, Image as ImageIcon, Loader2, Sparkles, Trash2, UploadCloud } from 'lucide-react';
+import { FeedbackAlert } from '@/components/ui/FeedbackAlert';
+import { compressImageFile, isCompressibleImage, formatBytes } from '@/lib/client/image-compressor';
 
 export interface MediaAsset {
   id: string;
@@ -29,11 +31,17 @@ export function MediaUploader({
   value,
   onChange,
   label = 'Property media',
-  helpText = 'Upload sharp property photos, plot plans, and walkthrough videos. Images up to 25 MB; videos up to 250 MB.',
+  helpText = 'High-resolution photos are automatically compressed before uploading to save Cloudinary storage. Supports photos up to 50 MB and walkthrough videos up to 300 MB.',
   maxItems = 12,
 }: MediaUploaderProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+  const [compressing, setCompressing] = useState(false);
+  const [compressionStats, setCompressionStats] = useState<{
+    originalSize: number;
+    compressedSize: number;
+    savedPercent: number;
+  } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const uploadFiles = async (files: File[]) => {
@@ -44,9 +52,43 @@ export function MediaUploader({
     }
     setError(null);
     setUploading(true);
+    setCompressing(true);
+
     try {
+      let totalOriginalBytes = 0;
+      let totalCompressedBytes = 0;
+
+      // Compress all image files on the client before network transmission
+      const processedFiles: File[] = [];
+      for (const file of files) {
+        if (isCompressibleImage(file)) {
+          totalOriginalBytes += file.size;
+          const compressed = await compressImageFile(file, {
+            maxWidth: 2048,
+            maxHeight: 2048,
+            quality: 0.82,
+          });
+          totalCompressedBytes += compressed.compressedBytes;
+          processedFiles.push(compressed.file);
+        } else {
+          processedFiles.push(file);
+        }
+      }
+
+      setCompressing(false);
+
+      if (totalOriginalBytes > 0) {
+        const savedBytes = Math.max(0, totalOriginalBytes - totalCompressedBytes);
+        const savedPercent = Math.round((savedBytes / totalOriginalBytes) * 100);
+        setCompressionStats({
+          originalSize: totalOriginalBytes,
+          compressedSize: totalCompressedBytes,
+          savedPercent,
+        });
+      }
+
       const formData = new FormData();
-      files.forEach((file) => formData.append('files', file));
+      processedFiles.forEach((file) => formData.append('files', file));
       const response = await fetch('/api/v1/inventory/media', { method: 'POST', body: formData });
       const data = await response.json();
       if (!response.ok || !data.success) throw new Error(data.error || 'Media upload failed.');
@@ -55,6 +97,7 @@ export function MediaUploader({
       setError(uploadError.message || 'Media upload failed. Try a smaller file or another format.');
     } finally {
       setUploading(false);
+      setCompressing(false);
       if (inputRef.current) inputRef.current.value = '';
     }
   };
@@ -102,11 +145,40 @@ export function MediaUploader({
         disabled={uploading || value.length >= maxItems}
         className="flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-dashed border-accent/40 bg-surface-subtle px-3 py-2 text-xs font-semibold text-accent-text transition hover:border-accent hover:bg-surface-raised disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <UploadCloud className="h-4 w-4" />}
-        {uploading ? 'Uploading media…' : 'Choose images or videos'}
+        {uploading ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          <UploadCloud className="h-4 w-4" />
+        )}
+        {compressing
+          ? 'Optimizing & compressing images…'
+          : uploading
+          ? 'Uploading to Cloudinary CDN…'
+          : 'Choose images or videos'}
       </button>
 
-      {error && <p role="alert" className="rounded-md border border-status-danger/40 bg-status-danger-surface px-2.5 py-2 text-[10px] text-status-danger">{error}</p>}
+      {compressionStats && compressionStats.savedPercent > 0 && (
+        <div className="flex items-center justify-between rounded-lg border border-status-success/30 bg-status-success-surface px-3 py-2 text-[11px] text-status-success">
+          <div className="flex items-center gap-1.5 font-medium">
+            <Sparkles className="h-3.5 w-3.5 text-status-success shrink-0" />
+            <span>
+              Compressed {formatBytes(compressionStats.originalSize)} ➔{' '}
+              {formatBytes(compressionStats.compressedSize)}
+            </span>
+          </div>
+          <span className="font-bold font-mono">
+            {compressionStats.savedPercent}% Cloudinary space saved
+          </span>
+        </div>
+      )}
+
+      {error && (
+        <FeedbackAlert
+          variant="error"
+          error={error}
+          onDismiss={() => setError(null)}
+        />
+      )}
 
       {value.length > 0 && (
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">

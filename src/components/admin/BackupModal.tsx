@@ -22,6 +22,7 @@ import {
   Copy
 } from 'lucide-react';
 import { toast } from '@/lib/client/toast';
+import { FeedbackAlert } from '@/components/ui/FeedbackAlert';
 
 interface BackupModalProps {
   isOpen: boolean;
@@ -313,10 +314,11 @@ export function BackupModal({
 
           {/* Error Message */}
           {error && (
-            <div className="p-4 rounded-2xl bg-status-danger-surface border border-status-danger/30 flex items-center gap-3 text-status-danger text-xs">
-              <AlertCircle className="w-4 h-4 shrink-0" />
-              <span>{error}</span>
-            </div>
+            <FeedbackAlert
+              variant="error"
+              error={error}
+              onDismiss={() => setError(null)}
+            />
           )}
 
           {/* Primary Action Button */}

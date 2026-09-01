@@ -61,3 +61,43 @@ export function parseInventoryContent<T extends { amenities?: string[]; keyHighl
     mediaGallery: record.mediaGallery ?? normalizeMediaGallery(record.mediaGalleryJson, record.photoGalleryJson),
   };
 }
+
+/**
+ * Resolves a valid URL string from any media asset object or string shape
+ */
+export function resolveAssetUrl(asset: any): string {
+  if (!asset) return '';
+  if (typeof asset === 'string') return asset.trim();
+  return (
+    asset.secureUrl ||
+    asset.secure_url ||
+    asset.url ||
+    asset.file_url ||
+    asset.mediaAsset?.secureUrl ||
+    asset.mediaAsset?.secure_url ||
+    asset.mediaAsset?.url ||
+    asset.mediaAsset?.file_url ||
+    ''
+  ).trim();
+}
+
+/**
+ * Robustly parses a gallery that might be a JSON string, array, or object into an array of clean URL strings
+ */
+export function parseGalleryUrls(value: any): string[] {
+  if (!value) return [];
+  let array: any[] = [];
+  if (Array.isArray(value)) {
+    array = value;
+  } else if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value);
+      array = Array.isArray(parsed) ? parsed : [value];
+    } catch {
+      array = value ? [value] : [];
+    }
+  } else if (typeof value === 'object') {
+    array = [value];
+  }
+  return array.map(resolveAssetUrl).filter(Boolean);
+}

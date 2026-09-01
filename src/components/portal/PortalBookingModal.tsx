@@ -97,7 +97,7 @@ export function PortalBookingModal({
                 Visit Request Confirmed!
               </h4>
               <p className="text-xs text-slate-600 max-w-sm mx-auto leading-relaxed">
-                Your dedicated advisor <strong>{advisor.fullName || 'Suhel Patel'}</strong> has received your preferred slot ({selectedSlot}) and will WhatsApp your driver details &amp; itinerary shortly.
+                Your dedicated advisor <strong>{advisor.fullName || 'your property advisor'}</strong> has received your preferred slot ({selectedSlot}) and will WhatsApp your driver details &amp; itinerary shortly.
               </p>
             </motion.div>
           ) : (

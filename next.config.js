@@ -5,6 +5,10 @@ const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ['lucide-react', 'goey-toast'],
   experimental: {
+    proxyClientMaxBodySize: '100mb',
+    serverActions: {
+      bodySizeLimit: '100mb',
+    },
     optimizePackageImports: ['lucide-react', 'date-fns', 'goey-toast', 'framer-motion', 'clsx', 'tailwind-merge'],
   },
   compiler: {

@@ -1,0 +1,199 @@
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 800" width="1280" height="800">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#090d16"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <linearGradient id="facadeGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="50%" stop-color="#334155"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <linearGradient id="podium" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#020617"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Sky Atmosphere -->
+  <rect width="1280" height="800" fill="url(#sky)"/>
+
+  <!-- Background Ambient Lights / Stars -->
+  <circle cx="150" cy="120" r="1.5" fill="#fff" opacity="0.8"/>
+  <circle cx="1100" cy="90" r="2" fill="#c6a869" opacity="0.6"/>
+  <circle cx="950" cy="180" r="1" fill="#fff" opacity="0.7"/>
+
+  <!-- Project Elevation Header -->
+  <g transform="translate(60, 60)">
+    <text x="0" y="24" fill="#c6a869" font-family="sans-serif" font-size="22" font-weight="900" letter-spacing="1">
+      SARAS BROCHURS 13X9 INCH
+    </text>
+    <text x="0" y="48" fill="#e2e8f0" font-family="sans-serif" font-size="13" opacity="0.85">
+      By Premier Developer • 7 Storeys • FRONT FACADE
+    </text>
+  </g>
+
+  <!-- High-Rise Tower Elevation Architecture -->
+  <g transform="translate(420, 100)">
+    <!-- Tower Body -->
+    <rect x="0" y="60" width="440" height="540" fill="url(#facadeGrad)" stroke="#c6a869" stroke-width="2" rx="4"/>
+
+    <!-- Architectural Crown / Rooftop Sky Lounge -->
+    <polygon points="0,60 220,0 440,60" fill="#0f172a" stroke="#c6a869" stroke-width="2"/>
+    <line x1="220" y1="0" x2="220" y2="-40" stroke="#c6a869" stroke-width="3"/>
+    <circle cx="220" cy="-40" r="4" fill="#c6a869"/>
+
+    <!-- Vertical Glass Curtain Spine -->
+    <rect x="180" y="60" width="80" height="540" fill="rgba(56, 189, 248, 0.25)" stroke="#c6a869" stroke-width="1.5"/>
+
+    <!-- Floor Balconies & Windows Grid -->
+    
+        <!-- Left Wing Windows -->
+        <rect x="25" y="80" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <rect x="95" y="80" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <!-- Right Wing Windows -->
+        <rect x="285" y="80" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <rect x="355" y="80" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <!-- Balcony Railings -->
+        <line x1="20" y1="106" x2="160" y2="106" stroke="#c6a869" stroke-width="1"/>
+        <line x1="280" y1="106" x2="420" y2="106" stroke="#c6a869" stroke-width="1"/>
+      
+        <!-- Left Wing Windows -->
+        <rect x="25" y="116" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <rect x="95" y="116" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <!-- Right Wing Windows -->
+        <rect x="285" y="116" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <rect x="355" y="116" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <!-- Balcony Railings -->
+        <line x1="20" y1="142" x2="160" y2="142" stroke="#c6a869" stroke-width="1"/>
+        <line x1="280" y1="142" x2="420" y2="142" stroke="#c6a869" stroke-width="1"/>
+      
+        <!-- Left Wing Windows -->
+        <rect x="25" y="152" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <rect x="95" y="152" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <!-- Right Wing Windows -->
+        <rect x="285" y="152" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <rect x="355" y="152" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <!-- Balcony Railings -->
+        <line x1="20" y1="178" x2="160" y2="178" stroke="#c6a869" stroke-width="1"/>
+        <line x1="280" y1="178" x2="420" y2="178" stroke="#c6a869" stroke-width="1"/>
+      
+        <!-- Left Wing Windows -->
+        <rect x="25" y="188" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <rect x="95" y="188" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <!-- Right Wing Windows -->
+        <rect x="285" y="188" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <rect x="355" y="188" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <!-- Balcony Railings -->
+        <line x1="20" y1="214" x2="160" y2="214" stroke="#c6a869" stroke-width="1"/>
+        <line x1="280" y1="214" x2="420" y2="214" stroke="#c6a869" stroke-width="1"/>
+      
+        <!-- Left Wing Windows -->
+        <rect x="25" y="224" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <rect x="95" y="224" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <!-- Right Wing Windows -->
+        <rect x="285" y="224" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <rect x="355" y="224" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <!-- Balcony Railings -->
+        <line x1="20" y1="250" x2="160" y2="250" stroke="#c6a869" stroke-width="1"/>
+        <line x1="280" y1="250" x2="420" y2="250" stroke="#c6a869" stroke-width="1"/>
+      
+        <!-- Left Wing Windows -->
+        <rect x="25" y="260" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <rect x="95" y="260" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <!-- Right Wing Windows -->
+        <rect x="285" y="260" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <rect x="355" y="260" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <!-- Balcony Railings -->
+        <line x1="20" y1="286" x2="160" y2="286" stroke="#c6a869" stroke-width="1"/>
+        <line x1="280" y1="286" x2="420" y2="286" stroke="#c6a869" stroke-width="1"/>
+      
+        <!-- Left Wing Windows -->
+        <rect x="25" y="296" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <rect x="95" y="296" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <!-- Right Wing Windows -->
+        <rect x="285" y="296" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <rect x="355" y="296" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <!-- Balcony Railings -->
+        <line x1="20" y1="322" x2="160" y2="322" stroke="#c6a869" stroke-width="1"/>
+        <line x1="280" y1="322" x2="420" y2="322" stroke="#c6a869" stroke-width="1"/>
+      
+        <!-- Left Wing Windows -->
+        <rect x="25" y="332" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <rect x="95" y="332" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <!-- Right Wing Windows -->
+        <rect x="285" y="332" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <rect x="355" y="332" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <!-- Balcony Railings -->
+        <line x1="20" y1="358" x2="160" y2="358" stroke="#c6a869" stroke-width="1"/>
+        <line x1="280" y1="358" x2="420" y2="358" stroke="#c6a869" stroke-width="1"/>
+      
+        <!-- Left Wing Windows -->
+        <rect x="25" y="368" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <rect x="95" y="368" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <!-- Right Wing Windows -->
+        <rect x="285" y="368" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <rect x="355" y="368" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <!-- Balcony Railings -->
+        <line x1="20" y1="394" x2="160" y2="394" stroke="#c6a869" stroke-width="1"/>
+        <line x1="280" y1="394" x2="420" y2="394" stroke="#c6a869" stroke-width="1"/>
+      
+        <!-- Left Wing Windows -->
+        <rect x="25" y="404" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <rect x="95" y="404" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <!-- Right Wing Windows -->
+        <rect x="285" y="404" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <rect x="355" y="404" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <!-- Balcony Railings -->
+        <line x1="20" y1="430" x2="160" y2="430" stroke="#c6a869" stroke-width="1"/>
+        <line x1="280" y1="430" x2="420" y2="430" stroke="#c6a869" stroke-width="1"/>
+      
+        <!-- Left Wing Windows -->
+        <rect x="25" y="440" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <rect x="95" y="440" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <!-- Right Wing Windows -->
+        <rect x="285" y="440" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <rect x="355" y="440" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <!-- Balcony Railings -->
+        <line x1="20" y1="466" x2="160" y2="466" stroke="#c6a869" stroke-width="1"/>
+        <line x1="280" y1="466" x2="420" y2="466" stroke="#c6a869" stroke-width="1"/>
+      
+        <!-- Left Wing Windows -->
+        <rect x="25" y="476" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <rect x="95" y="476" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <!-- Right Wing Windows -->
+        <rect x="285" y="476" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <rect x="355" y="476" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <!-- Balcony Railings -->
+        <line x1="20" y1="502" x2="160" y2="502" stroke="#c6a869" stroke-width="1"/>
+        <line x1="280" y1="502" x2="420" y2="502" stroke="#c6a869" stroke-width="1"/>
+      
+        <!-- Left Wing Windows -->
+        <rect x="25" y="512" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <rect x="95" y="512" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <!-- Right Wing Windows -->
+        <rect x="285" y="512" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <rect x="355" y="512" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <!-- Balcony Railings -->
+        <line x1="20" y1="538" x2="160" y2="538" stroke="#c6a869" stroke-width="1"/>
+        <line x1="280" y1="538" x2="420" y2="538" stroke="#c6a869" stroke-width="1"/>
+      
+        <!-- Left Wing Windows -->
+        <rect x="25" y="548" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <rect x="95" y="548" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <!-- Right Wing Windows -->
+        <rect x="285" y="548" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <rect x="355" y="548" width="60" height="22" fill="rgba(147, 197, 253, 0.35)" stroke="rgba(255,255,255,0.2)" rx="2"/>
+        <!-- Balcony Railings -->
+        <line x1="20" y1="574" x2="160" y2="574" stroke="#c6a869" stroke-width="1"/>
+        <line x1="280" y1="574" x2="420" y2="574" stroke="#c6a869" stroke-width="1"/>
+      
+
+    <!-- Ground Level Grand Entrance Lobby & Podium -->
+    <rect x="-60" y="580" width="560" height="120" fill="url(#podium)" stroke="#c6a869" stroke-width="2" rx="6"/>
+    <text x="220" y="645" text-anchor="middle" fill="#c6a869" font-family="sans-serif" font-size="14" font-weight="bold" letter-spacing="2">
+      DOUBLE-HEIGHT AIR-CONDITIONED ENTRANCE LOBBY
+    </text>
+  </g>
+</svg>

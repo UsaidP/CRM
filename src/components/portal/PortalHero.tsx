@@ -21,6 +21,7 @@ interface PortalHeroProps {
     fullName?: string;
     phoneE164?: string;
     email?: string;
+    role?: string;
   };
   unitsCount: number;
   priceRange: { min: number; max: number };
@@ -86,52 +87,77 @@ export function PortalHero({
         </div>
 
         {/* Dedicated Advisor Card */}
-        <motion.div
-          whileHover={{ y: -2 }}
-          transition={{ duration: 0.2 }}
-          className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl bg-white/95 backdrop-blur-md border border-amber-200/90 shadow-sm"
-        >
-          <div className="flex items-center gap-3.5 min-w-0">
-            <div className="relative">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-[#DFBA73] via-[#B38A38] to-[#8C641E] p-0.5 shadow-sm shrink-0">
-                <div className="w-full h-full rounded-full bg-white flex items-center justify-center font-bold text-sm text-[#8C641E] font-serif">
-                  {advisor.fullName
-                    ?.split(' ')
-                    .map((n: string) => n[0])
-                    .join('') || 'SP'}
+        {(() => {
+          const initials = (advisor.fullName || '')
+            .trim()
+            .split(/\s+/)
+            .map((n: string) => n[0])
+            .filter(Boolean)
+            .join('')
+            .slice(0, 2)
+            .toUpperCase() || 'PA';
+
+          const roleLabel =
+            advisor.role === 'SUPER_ADMIN' || advisor.role === 'ADMIN'
+              ? 'Principal Advisor'
+              : advisor.role === 'MANAGER'
+              ? 'Senior Portfolio Manager'
+              : advisor.role === 'TELECALLER'
+              ? 'Client Relationship Executive'
+              : 'Senior Property Advisor';
+
+          return (
+            <motion.div
+              whileHover={{ y: -2 }}
+              transition={{ duration: 0.2 }}
+              className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl bg-white/95 backdrop-blur-md border border-amber-200/90 shadow-sm"
+            >
+              <div className="flex items-center gap-3.5 min-w-0">
+                <div className="relative">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-[#DFBA73] via-[#B38A38] to-[#8C641E] p-0.5 shadow-sm shrink-0">
+                    <div className="w-full h-full rounded-full bg-white flex items-center justify-center font-bold text-sm text-[#8C641E] font-serif">
+                      {initials}
+                    </div>
+                  </div>
+                  <span
+                    className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white shadow-2xs"
+                    title="Advisor Online & Available"
+                  />
+                </div>
+
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-sm font-bold text-slate-900 font-serif">
+                      {advisor.fullName || 'Property Advisor'}
+                    </span>
+                    <span className="inline-flex items-center gap-1 text-[11px] text-[#8C641E] font-semibold bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
+                      <Award className="w-3 h-3 text-[#8C641E]" />
+                      {roleLabel}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 truncate mt-0.5">
+                    Direct:{' '}
+                    <span className="font-mono text-slate-700">
+                      {advisor.phoneE164 || '+91 99677 31071'}
+                    </span>{' '}
+                    • {portal.organization?.name || 'ZamZam'} Private Desk
+                  </p>
                 </div>
               </div>
-              <span
-                className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white shadow-2xs"
-                title="Advisor Online & Available"
-              />
-            </div>
 
-            <div className="min-w-0">
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="text-sm font-bold text-slate-900 font-serif">{advisor.fullName || 'Suhel Patel'}</span>
-                <span className="inline-flex items-center gap-1 text-[11px] text-[#8C641E] font-semibold bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
-                  <Award className="w-3 h-3 text-[#8C641E]" />
-                  Senior Property Advisor
-                </span>
-              </div>
-              <p className="text-xs text-slate-500 truncate mt-0.5">
-                Direct: <span className="font-mono text-slate-700">{advisor.phoneE164 || '+91 99677 31071'}</span> • ZamZam Private Desk
-              </p>
-            </div>
-          </div>
-
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.97 }}
-            type="button"
-            onClick={onWhatsAppAdvisor}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4.5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white text-xs font-bold shadow-xs shadow-emerald-700/20 transition-all cursor-pointer shrink-0"
-          >
-            <Send className="w-3.5 h-3.5" />
-            <span>Message on WhatsApp</span>
-          </motion.button>
-        </motion.div>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
+                type="button"
+                onClick={onWhatsAppAdvisor}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#25D366] hover:bg-[#20BD5A] text-white text-xs font-bold shadow-xs transition-all cursor-pointer shrink-0 whitespace-nowrap"
+              >
+                <Send className="w-3.5 h-3.5" />
+                <span>Message on WhatsApp</span>
+              </motion.button>
+            </motion.div>
+          );
+        })()}
 
         {/* Portfolio Key Stats Matrix */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5 pt-1">

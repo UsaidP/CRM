@@ -16,7 +16,27 @@ export const inventoryMediaAssetSchema = z.object({
   durationSeconds: z.number().nonnegative().optional(),
 });
 
-const mediaGallery = z.array(inventoryMediaAssetSchema).max(40).default([]);
+export const flexibleMediaAssetSchema = z.union([
+  inventoryMediaAssetSchema,
+  z.string(),
+  z.object({
+    asset_id: z.string().optional(),
+    project_id: z.string().optional(),
+    asset_type: z.string().optional(),
+    subtype: z.string().optional(),
+    title: z.string().optional(),
+    file_url: z.string().optional(),
+    url: z.string().optional(),
+    page_number: z.number().optional(),
+    original: z.boolean().optional(),
+    display_position: z.string().optional(),
+    sort_order: z.number().optional(),
+    confidence: z.number().optional(),
+    description: z.string().optional(),
+  }).passthrough(),
+]);
+
+const mediaGallery = z.array(flexibleMediaAssetSchema).max(100).default([]);
 const highlights = z.array(z.string().trim().min(2).max(240)).max(20).default([]);
 
 export const createProjectSchema = z.object({

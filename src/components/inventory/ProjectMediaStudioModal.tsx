@@ -25,6 +25,8 @@ import {
 } from 'lucide-react';
 import { AccessibleDialog } from '@/components/ui/AccessibleDialog';
 import { HallmarkStamp } from '@/components/ui/HallmarkStamp';
+import { FeedbackAlert } from '@/components/ui/FeedbackAlert';
+import { resolveAssetUrl, parseGalleryUrls } from '@/lib/inventory-media';
 
 export interface ProjectMediaStudioModalProps {
   open: boolean;
@@ -47,19 +49,10 @@ export function ProjectMediaStudioModal({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [extractedResult, setExtractedResult] = useState<any>(null);
 
-  const extractUrls = (raw: any): string[] => {
-    try {
-      const list = typeof raw === 'string' ? JSON.parse(raw) : Array.isArray(raw) ? raw : [];
-      return list.map((item: any) => typeof item === 'string' ? item : (item?.url || item?.secureUrl)).filter(Boolean);
-    } catch {
-      return [];
-    }
-  };
-
   // Elevation State
   const [coverImage, setCoverImage] = useState<string>(project?.coverImageUrl || '');
   const [elevationGallery, setElevationGallery] = useState<string[]>(() => {
-    const urls = extractUrls(project?.mediaGalleryJson);
+    const urls = parseGalleryUrls(project?.mediaGalleryJson);
     if (project?.coverImageUrl && !urls.includes(project.coverImageUrl)) {
       urls.unshift(project.coverImageUrl);
     }
@@ -81,7 +74,7 @@ export function ProjectMediaStudioModal({
     if (open) {
       fetchStorageStatus();
       setCoverImage(project?.coverImageUrl || '');
-      const urls = extractUrls(project?.mediaGalleryJson);
+      const urls = parseGalleryUrls(project?.mediaGalleryJson);
       if (project?.coverImageUrl && !urls.includes(project.coverImageUrl)) {
         urls.unshift(project.coverImageUrl);
       }
@@ -130,9 +123,9 @@ export function ProjectMediaStudioModal({
       setExtractedResult(data.result);
       setSuccessMessage(data.message || 'Successfully extracted elevations and floor plans from brochure!');
       if (data.result?.elevations?.length > 0) {
-        const firstElev = data.result.elevations[0].mediaAsset.secureUrl || data.result.elevations[0].mediaAsset.url;
+        const firstElev = resolveAssetUrl(data.result.elevations[0]);
         setCoverImage(firstElev);
-        setElevationGallery(data.result.elevations.map((e: any) => e.mediaAsset.secureUrl || e.mediaAsset.url));
+        setElevationGallery(data.result.elevations.map(resolveAssetUrl));
       }
       onUpdated();
     } catch (err: any) {
@@ -142,45 +135,56 @@ export function ProjectMediaStudioModal({
     }
   }
 
-  async function handleFileUpload(file: File, category: 'elevations' | 'floor-plans' | 'brochures' | 'videos') {
+  async function handleFileUpload(fileInput: File | FileList | File[], category: 'elevations' | 'floor-plans' | 'brochures' | 'videos') {
     if (!project?.id) return;
+    const files = fileInput instanceof File ? [fileInput] : Array.from(fileInput);
+    if (files.length === 0) return;
+
     setLoading(true);
     setErrorMessage(null);
     setSuccessMessage(null);
 
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('category', category);
-      formData.append('projectId', project.id);
+      const uploadedUrls: string[] = [];
 
-      if (category === 'elevations') {
-        formData.append('isCover', 'true');
-      } else if (category === 'floor-plans' && selectedUnitId) {
-        formData.append('unitId', selectedUnitId);
-        formData.append('isFloorPlan', 'true');
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('category', category);
+        formData.append('projectId', project.id);
+
+        if (category === 'elevations') {
+          if (i === 0 && !coverImage) formData.append('isCover', 'true');
+        } else if (category === 'floor-plans' && selectedUnitId) {
+          formData.append('unitId', selectedUnitId);
+          formData.append('isFloorPlan', 'true');
+        }
+
+        const res = await fetch('/api/v1/media/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || `Upload failed for ${file.name}`);
+        }
+
+        const url = resolveAssetUrl(data.asset);
+        if (url) uploadedUrls.push(url);
       }
 
-      const res = await fetch('/api/v1/media/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || 'Upload failed.');
-      }
-
-      const uploadedUrl = data.asset.secureUrl || data.asset.url;
-
       if (category === 'elevations') {
-        setCoverImage(uploadedUrl);
-        setElevationGallery((prev) => [uploadedUrl, ...prev]);
-        setSuccessMessage(`Elevation render uploaded to ${data.asset.storageProvider} and set as cover image!`);
+        if (!coverImage && uploadedUrls.length > 0) {
+          setCoverImage(uploadedUrls[0]);
+        }
+        setElevationGallery((prev) => [...uploadedUrls, ...prev]);
+        setSuccessMessage(`Successfully uploaded ${uploadedUrls.length} photo(s) to cloud media vault!`);
       } else if (category === 'floor-plans') {
-        setSuccessMessage(`Floor plan uploaded to ${data.asset.storageProvider} and linked to Unit ${selectedUnit?.unitNumber || selectedUnit?.bhk + ' BHK'}!`);
+        setSuccessMessage(`Floor plan blueprint(s) uploaded and linked to Unit ${selectedUnit?.unitNumber || selectedUnit?.bhk + ' BHK'}!`);
       } else if (category === 'videos') {
-        setSuccessMessage(`Walkthrough video uploaded to ${data.asset.storageProvider}!`);
+        setSuccessMessage(`Walkthrough video uploaded to cloud vault!`);
       }
 
       onUpdated();
@@ -307,6 +311,7 @@ export function ProjectMediaStudioModal({
         <input
           ref={fileInputRef}
           type="file"
+          multiple
           className="hidden"
           accept={
             uploadCategory === 'videos'
@@ -316,9 +321,8 @@ export function ProjectMediaStudioModal({
               : 'image/jpeg,image/png,image/webp,image/svg+xml'
           }
           onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) {
-              handleFileUpload(file, uploadCategory);
+            if (e.target.files?.length) {
+              handleFileUpload(e.target.files, uploadCategory);
             }
           }}
         />
@@ -388,7 +392,7 @@ export function ProjectMediaStudioModal({
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {/* Elevations Preview */}
                   {extractedResult.elevations.map((elev: any, idx: number) => {
-                    const imgUrl = elev.mediaAsset.secureUrl || elev.mediaAsset.url;
+                    const imgUrl = resolveAssetUrl(elev);
                     return (
                       <div key={idx} className="group relative rounded-xl border border-border bg-surface overflow-hidden shadow-sm">
                         <div className="relative h-44 w-full bg-slate-950 flex items-center justify-center overflow-hidden">
@@ -418,7 +422,7 @@ export function ProjectMediaStudioModal({
 
                   {/* Floor Plans Preview */}
                   {extractedResult.floorPlans.map((fp: any, idx: number) => {
-                    const imgUrl = fp.mediaAsset.secureUrl || fp.mediaAsset.url;
+                    const imgUrl = resolveAssetUrl(fp);
                     return (
                       <div key={idx} className="group relative rounded-xl border border-sky-500/30 bg-surface overflow-hidden shadow-sm">
                         <div className="relative h-44 w-full bg-slate-950 flex items-center justify-center overflow-hidden">
@@ -466,10 +470,10 @@ export function ProjectMediaStudioModal({
                   setUploadCategory('elevations');
                   fileInputRef.current?.click();
                 }}
-                className="flex items-center gap-2 rounded-xl bg-accent px-4 py-2 text-xs font-bold text-accent-contrast hover:bg-accent/90"
+                className="flex items-center gap-2 rounded-xl bg-accent px-4 py-2 text-xs font-bold text-accent-contrast hover:bg-accent/90 cursor-pointer shadow-sm"
               >
                 <UploadCloud className="h-4 w-4" />
-                Upload New Elevation
+                Add Photos (Select Multiple)
               </button>
             </div>
 
@@ -565,10 +569,10 @@ export function ProjectMediaStudioModal({
                   setUploadCategory('floor-plans');
                   fileInputRef.current?.click();
                 }}
-                className="flex items-center gap-2 rounded-xl bg-accent px-4 py-2 text-xs font-bold text-accent-contrast hover:bg-accent/90"
+                className="flex items-center gap-2 rounded-xl bg-accent px-4 py-2 text-xs font-bold text-accent-contrast hover:bg-accent/90 cursor-pointer shadow-sm"
               >
                 <UploadCloud className="h-4 w-4" />
-                Upload Unit Floor Plan
+                Add Floor Plans (Select Multiple)
               </button>
             </div>
 

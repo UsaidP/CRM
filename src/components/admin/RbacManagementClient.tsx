@@ -35,6 +35,8 @@ import { AccessibleDialog } from '@/components/ui/AccessibleDialog';
 import { FormInput } from '@/components/ui/FormInput';
 import { Button } from '@/components/ui/Button';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { FeedbackAlert } from '@/components/ui/FeedbackAlert';
+import { EmptyState } from '@/components/ui/EmptyState';
 import {
   ALL_PERMISSIONS,
   DEFAULT_ROLE_PERMISSIONS,
@@ -416,17 +418,20 @@ export function RbacManagementClient() {
 
         {/* Quick Notification Banners */}
         {successMsg && (
-          <div className="p-3.5 bg-status-success-surface border border-status-success/30 rounded-xl text-status-success font-bold flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-status-success" />
-            <span>{successMsg}</span>
-          </div>
+          <FeedbackAlert
+            variant="success"
+            title="Team Update"
+            description={successMsg}
+            onDismiss={() => setSuccessMsg(null)}
+          />
         )}
 
         {errorMsg && (
-          <div className="p-3.5 bg-status-danger-surface border border-status-danger/30 rounded-xl text-status-danger font-bold flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-status-danger" />
-            <span>{errorMsg}</span>
-          </div>
+          <FeedbackAlert
+            variant="error"
+            error={errorMsg}
+            onDismiss={() => setErrorMsg(null)}
+          />
         )}
       </div>
 
@@ -462,8 +467,20 @@ export function RbacManagementClient() {
       </div>
 
       {/* Team Roster Cards Matrix */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredUsers.map((user) => {
+      {filteredUsers.length === 0 ? (
+        <EmptyState
+          type="filter"
+          title="No Team Members Found"
+          description="No users match your active search query or role filter. Try resetting filters."
+          actionLabel="Clear Filters"
+          onAction={() => {
+            setSearchQuery('');
+            setSelectedRoleFilter('ALL');
+          }}
+        />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredUsers.map((user) => {
           let customOverridesCount = 0;
           if (user.customPermissionsJson) {
             try {
@@ -591,6 +608,7 @@ export function RbacManagementClient() {
           );
         })}
       </div>
+      )}
 
       {/* Edit User Permissions Modal */}
       <AccessibleDialog
@@ -832,10 +850,11 @@ export function RbacManagementClient() {
 
           <form onSubmit={handleCreateUser} className="p-6 md:p-8 space-y-6 text-xs">
             {errorMsg && (
-              <div className="p-4 bg-status-danger-surface border border-status-danger/30 rounded-2xl text-status-danger font-bold flex items-center gap-3">
-                <AlertCircle className="w-5 h-5 text-status-danger shrink-0" />
-                <span className="text-xs">{errorMsg}</span>
-              </div>
+              <FeedbackAlert
+                variant="error"
+                error={errorMsg}
+                onDismiss={() => setErrorMsg(null)}
+              />
             )}
 
             {/* 1. Identity Information */}

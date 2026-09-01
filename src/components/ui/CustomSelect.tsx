@@ -226,6 +226,10 @@ export function CustomSelect({
     md: 'px-4 py-2.5 text-xs font-semibold rounded-xl gap-2.5',
   }[size];
 
+  function getDisplayLabel(opt: CustomSelectOption, useShort = false): string {
+    return useShort && opt.shortLabel ? opt.shortLabel : opt.label;
+  }
+
   function renderOptionItem(opt: CustomSelectOption) {
     const isSelected = opt.value === value;
 
@@ -254,7 +258,7 @@ export function CustomSelect({
           )}
           {opt.icon && <span className="shrink-0">{opt.icon}</span>}
           <div className="truncate">
-            <div className="truncate leading-tight font-medium">{opt.label}</div>
+            <div className="truncate leading-tight font-medium">{getDisplayLabel(opt)}</div>
             {opt.description && (
               <div className="text-[10px] text-content-muted font-normal mt-0.5 truncate">
                 {opt.description}
@@ -353,7 +357,7 @@ export function CustomSelect({
           )}
           {selectedOption?.icon && <span className="shrink-0">{selectedOption.icon}</span>}
           <span className={`truncate font-semibold ${selectedOption ? 'text-content' : 'text-content-muted'}`}>
-            {selectedOption ? (selectedOption.shortLabel || selectedOption.label) : placeholder}
+            {selectedOption ? getDisplayLabel(selectedOption, true) : placeholder}
           </span>
         </div>
 

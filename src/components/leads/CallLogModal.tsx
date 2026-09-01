@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Phone, PhoneCall, PhoneMissed, PhoneOutgoing, User, Check, X, ShieldAlert, Sparkles } from 'lucide-react';
 import { OFFICIAL_BROKER_NUMBERS } from '@/lib/constants/broker-constants';
+import { FeedbackAlert } from '@/components/ui/FeedbackAlert';
 
 interface CallLogModalProps {
   isOpen: boolean;
@@ -87,10 +88,11 @@ export function CallLogModal({ isOpen, onClose, onSuccess }: CallLogModalProps) 
         {/* Body Form */}
         <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4">
           {error && (
-            <div className="p-3 bg-status-danger-surface border border-status-danger/30 rounded-xl text-status-danger text-xs flex items-center gap-2">
-              <ShieldAlert className="w-4 h-4 shrink-0 text-status-danger" />
-              <span>{error}</span>
-            </div>
+            <FeedbackAlert
+              variant="error"
+              error={error}
+              onDismiss={() => setError(null)}
+            />
           )}
 
           {/* Broker Line Selection */}

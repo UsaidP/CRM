@@ -30,6 +30,8 @@ import { HallmarkStamp } from '@/components/ui/HallmarkStamp';
 import { AccessibleDialog } from '@/components/ui/AccessibleDialog';
 import { CustomSelect, type CustomSelectOption } from '@/components/ui/CustomSelect';
 import { formatSiteVisitWhatsApp } from '@/lib/export-utils';
+import { FeedbackAlert } from '@/components/ui/FeedbackAlert';
+import { EmptyState } from '@/components/ui/EmptyState';
 
 export default function SiteVisitsPage() {
   const [visits, setVisits] = useState<any[]>([]);
@@ -218,10 +220,13 @@ export default function SiteVisitsPage() {
       </div>
 
       {requestError && (
-        <div role="alert" className="rounded-xl border border-status-danger/40 bg-status-danger-surface p-3.5 text-xs text-status-danger font-semibold shadow-xs">
-          <p>{requestError}</p>
-          <button type="button" onClick={fetchVisitsAndData} className="mt-1 font-bold text-status-danger underline underline-offset-2">Retry site visit data</button>
-        </div>
+        <FeedbackAlert
+          variant="error"
+          error={requestError}
+          actionLabel="Retry Tours"
+          onAction={fetchVisitsAndData}
+          onDismiss={() => setRequestError(null)}
+        />
       )}
 
       {/* Filter and Status Bar */}
@@ -263,11 +268,15 @@ export default function SiteVisitsPage() {
           <span>Loading scheduled site visits...</span>
         </div>
       ) : !requestError && filteredVisits.length === 0 ? (
-        <div className="p-12 rounded-2xl bg-surface border border-border text-center text-content-muted text-xs space-y-2 shadow-xs">
-          <AlertCircle className="w-8 h-8 text-status-warning mx-auto" />
-          <p className="text-content font-semibold">No scheduled site visit tours found.</p>
-          <p>Click &quot;Schedule Site Tour&quot; above to dispatch a multi-stop itinerary.</p>
-        </div>
+        <EmptyState
+          type="filter"
+          title="No Scheduled Site Tours"
+          description="No property tours match the selected status category. Click 'Schedule Site Tour' above to create a curated buyer itinerary."
+          actionLabel="Schedule Site Tour"
+          onAction={() => setShowScheduleModal(true)}
+          secondaryActionLabel="Show All Tours"
+          onSecondaryAction={() => setSelectedStatus('ALL')}
+        />
       ) : (
         <div className="space-y-4">
           {filteredVisits.map((visit) => {
@@ -431,7 +440,13 @@ export default function SiteVisitsPage() {
             <button type="button" data-dialog-close aria-label="Close schedule site visit" onClick={() => setShowScheduleModal(false)} className="p-1 rounded-lg text-content-muted hover:text-content">✕</button>
           </div>
 
-          {actionError && <div role="alert" className="rounded-xl border border-status-danger/40 bg-status-danger-surface p-3 text-xs text-status-danger font-semibold">{actionError}</div>}
+          {actionError && (
+            <FeedbackAlert
+              variant="error"
+              error={actionError}
+              onDismiss={() => setActionError(null)}
+            />
+          )}
 
           <form onSubmit={handleScheduleVisit} className="space-y-3.5 pt-2 text-xs">
             <div>
@@ -567,7 +582,13 @@ export default function SiteVisitsPage() {
               <button type="button" data-dialog-close aria-label="Close post-tour outcome" onClick={() => setFeedbackVisit(null)} className="p-1 rounded-lg text-content-muted hover:text-content">✕</button>
             </div>
 
-            {actionError && <div role="alert" className="rounded-xl border border-status-danger/40 bg-status-danger-surface p-3 text-xs text-status-danger font-semibold">{actionError}</div>}
+            {actionError && (
+              <FeedbackAlert
+                variant="error"
+                error={actionError}
+                onDismiss={() => setActionError(null)}
+              />
+            )}
 
             <form onSubmit={handleSaveFeedback} className="space-y-3.5 text-xs">
               <div>
