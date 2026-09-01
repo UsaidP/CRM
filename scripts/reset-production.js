@@ -13,16 +13,46 @@ if (fs.existsSync(envPath)) {
   }
 }
 
-const targetUrl = process.argv[2] || 'https://crm-dusky-xi.vercel.app/api/v1/admin/reset-database';
+const targetBase = process.argv[2] || 'https://crm-dusky-xi.vercel.app';
+const loginUrl = `${targetBase}/api/v1/auth/login`;
+const resetUrl = `${targetBase}/api/v1/admin/reset-database`;
 
 async function resetRemoteProduction() {
-  console.log(`🚀 Sending Remote Production Database Purge Request to: ${targetUrl}\n`);
+  console.log(`🔑 Logging into Remote Production at: ${loginUrl}...`);
 
   try {
-    const res = await fetch(targetUrl, {
+    // 1. Try standard Super Admin login
+    const loginRes = await fetch(loginUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'CREDENTIALS',
+        email: 'usaid@zamzamproperties.in',
+        password: 'ZamZam@2026',
+      }),
+    });
+
+    const cookieHeader = loginRes.headers.get('set-cookie');
+    const loginData = await loginRes.json();
+
+    if (!loginRes.ok || !loginData.success) {
+      console.warn('⚠️ Standard password login returned:', loginData.error || loginData);
+      console.log('🔄 Attempting Super Admin Key authentication...');
+    }
+
+    // Extract cookie
+    let cookie = '';
+    if (cookieHeader) {
+      const match = cookieHeader.match(/(zamzam_session=[^;]+)/);
+      if (match) cookie = match[1];
+    }
+
+    console.log(`🚀 Sending Reset Request to: ${resetUrl}...`);
+    const resetRes = await fetch(resetUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        ...(cookie ? { Cookie: cookie } : {}),
         'x-admin-key': superAdminKey,
       },
       body: JSON.stringify({
@@ -31,18 +61,18 @@ async function resetRemoteProduction() {
       }),
     });
 
-    const data = await res.json();
-    if (!res.ok || !data.success) {
-      console.error('❌ Remote reset failed:', data.error || data);
+    const resetData = await resetRes.json();
+    if (!resetRes.ok || !resetData.success) {
+      console.error('❌ Remote reset failed:', resetData.error || resetData);
       process.exit(1);
     }
 
-    console.log('====================================================');
+    console.log('\n====================================================');
     console.log('✅ REMOTE PRODUCTION DATABASE PURGED & RESET TO FRESH!');
     console.log('====================================================');
-    console.log(`Response: ${data.message}`);
-    console.log(`Org Name: ${data.data?.organization?.name}`);
-    console.log(`Super Admin: ${data.data?.superAdmin?.fullName} (${data.data?.superAdmin?.email})`);
+    console.log(`Response: ${resetData.message}`);
+    console.log(`Org:      ${resetData.data?.organization?.name}`);
+    console.log(`Admin:    ${resetData.data?.superAdmin?.fullName} (${resetData.data?.superAdmin?.email})`);
     console.log('Role:     SUPER_ADMIN');
     console.log('====================================================\n');
   } catch (err) {
