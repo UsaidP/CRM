@@ -30,7 +30,13 @@ export const metadata: Metadata = {
   },
   description: 'Real estate CRM for lead attribution, property records, calculated all-in costs, requirements matching, private client portals, site visits, and deal tracking.',
   icons: {
-    icon: '/icon.svg',
+    icon: [
+      { url: '/images/zamzam-logo-dark.jpg' },
+      { url: '/images/zamzam-logo-dark.jpg', sizes: '32x32', type: 'image/jpeg' },
+      { url: '/images/zamzam-logo-dark.jpg', sizes: '16x16', type: 'image/jpeg' },
+    ],
+    shortcut: '/images/zamzam-logo-dark.jpg',
+    apple: '/images/zamzam-logo-dark.jpg',
   },
 };
 
