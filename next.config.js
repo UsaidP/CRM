@@ -1,3 +1,5 @@
+const { withSentryConfig } = require('@sentry/nextjs/config');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -78,5 +80,13 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+const sentryWebpackPluginOptions = {
+  silent: true,
+  org: process.env.SENTRY_ORG || 'zamzam-crm',
+  project: process.env.SENTRY_PROJECT || 'crm-web',
+  widenClientFileUpload: true,
+  hideSourceMaps: true,
+  disableLogger: true,
+};
 
+module.exports = withSentryConfig(nextConfig, sentryWebpackPluginOptions);

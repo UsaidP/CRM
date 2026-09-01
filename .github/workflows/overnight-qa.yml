@@ -1,0 +1,41 @@
+name: Overnight Autonomous QA Sweep
+
+on:
+  schedule:
+    # Runs everyday at 20:30 UTC (2:00 AM IST)
+    - cron: '30 20 * * *'
+  workflow_dispatch:
+
+jobs:
+  overnight-qa:
+    name: Overnight QA Sweep & Triage Generation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun Environment
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile || bun install
+
+      - name: Generate Prisma Client
+        run: bunx prisma generate
+
+      - name: Execute Overnight QA Test Suite
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL || 'http://localhost:3000' }}
+        run: bun test test/overnight/
+
+      - name: Upload Morning QA Triage Report as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: morning-qa-triage-report
+          path: output/qa-reports/
+          retention-days: 14

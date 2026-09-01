@@ -5,7 +5,7 @@ import { v2 as cloudinary } from 'cloudinary';
 
 export { cloudinary };
 
-export type MediaCategory = 'elevations' | 'floor-plans' | 'brochures' | 'videos' | 'gallery' | 'general';
+export type MediaCategory = 'elevations' | 'floor-plans' | 'brochures' | 'videos' | 'gallery' | 'general' | 'rera-certificates';
 
 export interface UploadedMediaAsset {
   url: string;
@@ -150,24 +150,64 @@ export async function uploadToLocalStorage(
 ): Promise<UploadedMediaAsset> {
   const nodeBuffer = Buffer.isBuffer(buffer) ? buffer : Buffer.from(buffer as ArrayBuffer);
   
-  const uploadDir = path.join(process.cwd(), 'public', 'uploads', category);
-  if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-  }
-
   const ext = path.extname(fileName) || (mimeType === 'application/pdf' ? '.pdf' : mimeType.startsWith('video/') ? '.mp4' : '.jpg');
   const safeName = path.basename(fileName, ext).replace(/[^a-zA-Z0-9_-]/g, '_');
   const uniqueFileName = `${safeName}_${crypto.randomUUID().slice(0, 8)}${ext}`;
-  const filePath = path.join(uploadDir, uniqueFileName);
 
-  fs.writeFileSync(filePath, nodeBuffer);
+  // Try standard local public/uploads directory first (works on standard Node / local dev)
+  try {
+    const isServerless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+    if (!isServerless) {
+      const uploadDir = path.join(process.cwd(), 'public', 'uploads', category);
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
 
-  const publicUrl = `/uploads/${category}/${uniqueFileName}`;
+      const filePath = path.join(uploadDir, uniqueFileName);
+      fs.writeFileSync(filePath, nodeBuffer);
+
+      const publicUrl = `/uploads/${category}/${uniqueFileName}`;
+
+      return {
+        url: publicUrl,
+        secureUrl: publicUrl,
+        publicId: `local_${category}_${uniqueFileName}`,
+        storageProvider: 'LOCAL',
+        fileName,
+        fileSizeBytes: nodeBuffer.length,
+        mimeType,
+        category,
+        format: ext.replace('.', ''),
+        createdAt: new Date().toISOString(),
+      };
+    }
+  } catch (fsErr: any) {
+    console.warn(`[MEDIA] Direct public/uploads write failed (${fsErr.message}), falling back to serverless data URI & /tmp`);
+  }
+
+  // Fallback for Vercel / AWS Lambda / Serverless read-only filesystem
+  try {
+    const tmpUploadDir = path.join('/tmp', 'uploads', category);
+    if (!fs.existsSync(tmpUploadDir)) {
+      fs.mkdirSync(tmpUploadDir, { recursive: true });
+    }
+    fs.writeFileSync(path.join(tmpUploadDir, uniqueFileName), nodeBuffer);
+  } catch {
+    // ignore /tmp errors
+  }
+
+  // Generate valid Data URL for browser rendering
+  let dataUrl: string;
+  if (mimeType === 'image/svg+xml') {
+    dataUrl = `data:image/svg+xml;utf8,${encodeURIComponent(nodeBuffer.toString('utf-8'))}`;
+  } else {
+    dataUrl = `data:${mimeType};base64,${nodeBuffer.toString('base64')}`;
+  }
 
   return {
-    url: publicUrl,
-    secureUrl: publicUrl,
-    publicId: `local_${category}_${uniqueFileName}`,
+    url: dataUrl,
+    secureUrl: dataUrl,
+    publicId: `serverless_${category}_${uniqueFileName}`,
     storageProvider: 'LOCAL',
     fileName,
     fileSizeBytes: nodeBuffer.length,

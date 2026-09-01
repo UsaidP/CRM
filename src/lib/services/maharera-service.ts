@@ -14,6 +14,7 @@ import { existsSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 import path from 'node:path';
 import { validateReraNumber, MAHARERA_DISTRICTS, MAHARERA_PORTAL_SEARCH_URL, MAHARERA_PORTAL_BASE_URL } from '@/lib/domain/verification-engine';
+import { uploadMediaAsset } from '@/lib/services/cloud-media-service';
 
 export interface MahaReraProjectRecord {
   reraNumber: string;
@@ -599,36 +600,41 @@ export async function downloadAndSaveMahaReraCertificate(
 }> {
   const projectRecord = await searchMahaReraProject(reraNumber, projectName, developerName);
 
-  // Storage path
-  const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'rera-certificates');
-  await mkdir(uploadDir, { recursive: true });
-
   const sanitizedRera = projectRecord.reraNumber.replace(/[^A-Z0-9]/gi, '_');
   const sanitizedName = projectRecord.projectName.toLowerCase().replace(/[^a-z0-9]/g, '_').slice(0, 30);
   const fileName = `MahaRERA_${sanitizedRera}_${sanitizedName}_Certificate.pdf`;
-  const fullPath = path.join(uploadDir, fileName);
 
   const originalImgPath = path.join(process.cwd(), 'public', 'images', 'original-certificates', `${projectRecord.reraNumber}.png`);
 
   let certificateBuffer: Buffer;
 
-  if (existsSync(originalImgPath)) {
-    // Generate authentic PDF from official scanned image using sips / image stream
+  if (existsSync(originalImgPath) && process.platform === 'darwin' && !process.env.VERCEL) {
+    // Generate authentic PDF from official scanned image using sips on local macOS
     try {
-      execSync(`/usr/bin/sips -s format pdf "${originalImgPath}" --out "${fullPath}"`, { stdio: 'pipe' });
-      certificateBuffer = await readFile(fullPath);
+      const tmpDir = path.join('/tmp', 'rera-certificates');
+      if (!existsSync(tmpDir)) {
+        await mkdir(tmpDir, { recursive: true });
+      }
+      const tmpOut = path.join(tmpDir, fileName);
+      execSync(`/usr/bin/sips -s format pdf "${originalImgPath}" --out "${tmpOut}"`, { stdio: 'pipe' });
+      certificateBuffer = await readFile(tmpOut);
       projectRecord.originalDocumentUrl = `/images/original-certificates/${projectRecord.reraNumber}.png`;
       projectRecord.isOriginalScannedDocument = true;
     } catch {
       certificateBuffer = buildMahaReraCertificatePdf(projectRecord);
-      await writeFile(fullPath, certificateBuffer);
     }
   } else {
     certificateBuffer = buildMahaReraCertificatePdf(projectRecord);
-    await writeFile(fullPath, certificateBuffer);
   }
 
-  const certificateUrl = `/uploads/rera-certificates/${fileName}`;
+  let certificateUrl = '';
+  try {
+    const uploaded = await uploadMediaAsset(certificateBuffer, fileName, 'rera-certificates', 'application/pdf');
+    certificateUrl = uploaded.secureUrl || uploaded.url;
+  } catch {
+    certificateUrl = `data:application/pdf;base64,${certificateBuffer.toString('base64')}`;
+  }
+
   projectRecord.certificateUrl = certificateUrl;
 
   return {

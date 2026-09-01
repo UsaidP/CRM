@@ -1,0 +1,69 @@
+name: CI Automated Test Suite
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-and-typecheck:
+    name: Code Quality & Static Invariants
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun Environment
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile || bun install
+
+      - name: Generate Prisma Client
+        run: bunx prisma generate
+
+      - name: Execute ESLint Check
+        run: bun run lint
+
+      - name: Execute TypeScript Strict Typecheck
+        run: bunx tsc --noEmit
+
+  unit-and-security-tests:
+    name: Unit, Invariants & Security Suites
+    runs-on: ubuntu-latest
+    needs: lint-and-typecheck
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun Environment
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile || bun install
+
+      - name: Generate Prisma Client
+        run: bunx prisma generate
+
+      - name: Run Master Test Suite
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET || 'test-ci-jwt-secret-key-32-chars-long' }}
+          SUPER_ADMIN_KEY: ${{ secrets.SUPER_ADMIN_KEY || 'test-ci-super-admin-key-64-characters-long' }}
+        run: bun test/run-all-tests.js
+
+      - name: Run Coverage Report
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+        run: bun run test:coverage

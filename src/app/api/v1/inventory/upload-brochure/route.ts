@@ -1,11 +1,9 @@
-import { randomUUID } from 'node:crypto';
 import { requireSession } from '@/lib/services/api-auth';
-import { mkdir, writeFile } from 'node:fs/promises';
-import path from 'node:path';
 import { NextResponse } from 'next/server';
 import { parseBrochureAsync, parseBrochureText } from '@/lib/services/brochure-parser-service';
 import { downloadAndSaveMahaReraCertificate } from '@/lib/services/maharera-service';
 import { extractAndProcessBrochure } from '@/lib/services/brochure-extractor';
+import { uploadMediaAsset } from '@/lib/services/cloud-media-service';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -84,15 +82,19 @@ export async function POST(req: Request) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Save file to public/uploads/brochures/
-    const uploadId = randomUUID();
-    const sanitizedName = file.name.toLowerCase().replace(/[^a-z0-9.]/g, '_');
-    const storedFileName = `${uploadId}_${sanitizedName}`;
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'brochures');
-    await mkdir(uploadDir, { recursive: true });
-    await writeFile(path.join(uploadDir, storedFileName), buffer);
-
-    const brochureUrl = `/uploads/brochures/${storedFileName}`;
+    // Upload/store brochure using universal cloud/serverless-safe media uploader
+    let brochureUrl: string | null = null;
+    try {
+      const brochureAsset = await uploadMediaAsset(
+        buffer,
+        file.name,
+        'brochures',
+        file.type || 'application/pdf'
+      );
+      brochureUrl = brochureAsset.secureUrl || brochureAsset.url;
+    } catch (uploadErr: any) {
+      console.warn('Brochure upload warning:', uploadErr.message);
+    }
 
     // Process with AI-first multimodal parsing
     const { data: extracted, extractionMethod, modelUsed, note } = await parseBrochureAsync(

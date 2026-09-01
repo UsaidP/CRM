@@ -101,13 +101,10 @@ async function runMahaReraAutomationTests() {
       'Balaji Group'
     );
 
-    assert(result.certificateUrl.startsWith('/uploads/rera-certificates/'), 'Expected valid relative URL');
+    assert(typeof result.certificateUrl === 'string' && result.certificateUrl.length > 0, 'Expected valid certificate URL');
     assert(result.fileSizeBytes > 500, 'Expected written file size');
 
-    const filePath = path.join(process.cwd(), 'public', result.certificateUrl);
-    assert(fs.existsSync(filePath), 'Expected file to exist on local disk');
-
-    console.log('  ✅ PASS: Test 4: Local Certificate File Ingestion & Storage (/public' + result.certificateUrl + ')');
+    console.log('  ✅ PASS: Test 4: Certificate File Ingestion & Cloud Upload (' + result.fileName + ')');
     passed++;
   } catch (err) {
     console.error('  ❌ FAIL: Test 4: Download & Save Certificate', err.message);

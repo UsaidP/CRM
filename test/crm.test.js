@@ -288,7 +288,7 @@ describe('UI regression contracts', () => {
     const projectRoute = readSource('../src/app/api/v1/inventory/projects/[id]/route.ts');
     const unitRoute = readSource('../src/app/api/v1/inventory/units/[id]/route.ts');
     const mediaRoute = readSource('../src/app/api/v1/inventory/media/route.ts');
-    const portalPage = readSource('../src/components/portal/ClientPortalView.tsx') + readSource('../src/app/p/[token]/page.tsx');
+    const portalPage = readSource('../src/components/portal/ClientPortalView.tsx') + readSource('../src/components/portal/PortalVideoModal.tsx') + readSource('../src/components/portal/PropertyMediaHub.tsx') + readSource('../src/app/p/[token]/page.tsx');
     expect(inventory).toContain('openEditProject');
     expect(inventory).toContain('openEditUnit');
     expect(inventory).toContain('Save project changes');

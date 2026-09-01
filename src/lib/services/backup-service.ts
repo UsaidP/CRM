@@ -3,9 +3,10 @@ import path from 'path';
 import { execSync } from 'child_process';
 import { prisma } from '@/lib/db/prisma';
 
-const ROOT_DIR = process.cwd();
-const DB_PATH = path.join(ROOT_DIR, 'prisma', 'dev.db');
-const UPLOADS_PATH = path.join(ROOT_DIR, 'public', 'uploads');
+const IS_SERVERLESS = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+const ROOT_DIR = IS_SERVERLESS ? '/tmp' : process.cwd();
+const DB_PATH = path.join(process.cwd(), 'prisma', 'dev.db');
+const UPLOADS_PATH = path.join(process.cwd(), 'public', 'uploads');
 const BACKUPS_DIR = path.join(ROOT_DIR, 'backups');
 const RETENTION_DAYS = 30;
 

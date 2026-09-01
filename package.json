@@ -12,6 +12,13 @@
     "db:seed": "bun prisma/seed.js",
     "db:clean": "bun scripts/clean-db.js",
     "test": "bun test/run-all-tests.js",
+    "test:unit": "bun test test/unit/ test/crm.test.js test/money-format.test.ts test/toast.test.ts",
+    "test:api": "bun test test/api/",
+    "test:security": "bun test test/security/",
+    "test:performance": "bun test test/performance/",
+    "test:overnight": "bun test test/overnight/",
+    "test:coverage": "bun test --coverage test/unit/ test/crm.test.js test/money-format.test.ts test/toast.test.ts test/api-auth-coverage.test.ts test/tenant-context.test.ts test/session-route.test.ts",
+    "test:ci": "bun test test/unit/ test/crm.test.js test/money-format.test.ts test/toast.test.ts test/api-auth-coverage.test.ts test/tenant-context.test.ts test/session-route.test.ts test/security/ test/api/ test/overnight/",
     "backup": "bun scripts/backup.ts",
     "restore": "bun scripts/restore.ts",
     "open:brave": "open -a 'Brave Browser' http://localhost:3000"
@@ -19,6 +26,7 @@
   "dependencies": {
     "@google/genai": "^2.19.0",
     "@prisma/client": "^6.4.1",
+    "@sentry/nextjs": "^10.73.0",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
     "agentation": "^3.0.2",
