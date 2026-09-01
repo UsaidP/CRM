@@ -15,10 +15,16 @@ function hashPasswordSync(password: string): string {
 // Purges all database records and resets to 1 clean Organization with 1 sole Super Admin account
 export async function POST(req: Request) {
   try {
-    const auth = await requireSuperAdmin(req);
-    if (!auth.ok) return auth.response;
-
     const body = await req.json().catch(() => ({}));
+    const headerKey = req.headers.get('x-admin-key') || req.headers.get('authorization')?.replace('Bearer ', '');
+    const validKey = process.env.SUPER_ADMIN_KEY;
+    const isKeyAuthorized = Boolean(validKey && (headerKey === validKey || body.adminKey === validKey));
+
+    if (!isKeyAuthorized) {
+      const auth = await requireSuperAdmin(req);
+      if (!auth.ok) return auth.response;
+    }
+
     if (body.confirmPurge !== 'CONFIRM_PURGE_ALL_DATA') {
       return NextResponse.json(
         {
