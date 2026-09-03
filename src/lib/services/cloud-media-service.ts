@@ -19,6 +19,8 @@ export interface UploadedMediaAsset {
   width?: number;
   height?: number;
   format: string;
+  pages?: number;
+  version?: number | string;
   createdAt: string;
 }
 
@@ -155,16 +157,21 @@ export async function uploadToCloudinary(
   const publicId = `${baseName}_${Date.now()}`;
 
   const isVideo = mimeType.startsWith('video/') || fileName.match(/\.(mp4|mov|webm)$/i);
-  const isRaw = mimeType.includes('pdf') || fileName.match(/\.(pdf|doc|docx|zip)$/i);
+  const isPdf = mimeType.includes('pdf') || fileName.match(/\.pdf$/i);
+  const isRaw = !isPdf && fileName.match(/\.(doc|docx|zip|xls|xlsx|csv)$/i);
+  // Upload PDFs as 'image' with format 'pdf' so Cloudinary provides multi-page rasterization (pg_1, pg_2, etc.)
   const resourceType = isVideo ? 'video' : isRaw ? 'raw' : 'image';
 
   return new Promise<UploadedMediaAsset>((resolve, reject) => {
-    const uploadOptions = {
+    const uploadOptions: Record<string, any> = {
       folder,
       public_id: publicId,
       resource_type: resourceType as any,
       chunk_size: 6000000, // 6 MB chunks for large file support
     };
+    if (isPdf) {
+      uploadOptions.format = 'pdf';
+    }
 
     const handleResult = (error: any, result: any) => {
       if (error || !result) {
@@ -183,7 +190,9 @@ export async function uploadToCloudinary(
         category,
         width: result.width,
         height: result.height,
-        format: result.format || path.extname(fileName).replace('.', '') || (isRaw ? 'pdf' : 'jpg'),
+        format: result.format || path.extname(fileName).replace('.', '') || (isPdf ? 'pdf' : 'jpg'),
+        pages: result.pages || undefined,
+        version: result.version || undefined,
         createdAt: result.created_at || new Date().toISOString(),
       });
     };

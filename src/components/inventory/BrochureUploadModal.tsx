@@ -787,7 +787,7 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
                 }`}
               >
                 <ImageIcon className="w-3.5 h-3.5" />
-                <span>Extracted Media &amp; Renders ({((projectData.elevations?.length || 0) + (projectData.floorPlans?.length || 0) + (projectData.masterPlan ? 1 : 0)) || 4})</span>
+                <span>Extracted Media &amp; Renders ({(projectData.elevations?.length || 0) + (projectData.floorPlans?.length || 0) + (projectData.masterPlan ? 1 : 0)})</span>
               </button>
 
               <button

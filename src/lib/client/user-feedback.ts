@@ -102,9 +102,19 @@ const ERROR_PATTERNS: Array<{
       actionType: 'dismiss',
     }),
   },
+  // 8b. Database Schema / Migration (e.g. column or table does not exist)
+  {
+    pattern: /column\s+.*does\s*not\s*exist|relation\s+.*does\s*not\s*exist|table\s+.*does\s*not\s*exist|prisma/i,
+    resolve: (_str) => ({
+      title: 'Database Schema Synchronization',
+      description: 'The database schema is pending a schema update or synchronization. Please retry after sync.',
+      actionLabel: 'Retry',
+      actionType: 'retry',
+    }),
+  },
   // 9. Not Found (404)
   {
-    pattern: /not\s*found|404|does\s*not\s*exist|could\s*not\s*find/i,
+    pattern: /not\s*found|404|could\s*not\s*find/i,
     resolve: (_str, context) => ({
       title: context ? `${context} Not Found` : 'Record Not Found',
       description: 'The requested record or item could not be located. It may have been archived or removed.',
