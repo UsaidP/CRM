@@ -139,22 +139,30 @@ export async function POST(req: Request) {
         );
       }
 
-      // If we don't have a Cloudinary brochureUrl yet, try uploading it to cloud media vault
-      if (!brochureUrl) {
-        try {
-          const brochureAsset = await uploadMediaAsset(buffer, filename, 'brochures', mimeType);
-          brochureUrl = resolveAssetUrl(brochureAsset);
-        } catch (uploadErr: any) {
-          console.warn('[BROCHURE] Cloud media vault upload warning:', uploadErr.message);
-        }
-      }
-
-      // AI-first multimodal parsing
+      // 1. AI-first multimodal parsing to identify project facts & specifications
       const { data: extracted, extractionMethod, modelUsed, note } = await parseBrochureAsync(
         buffer,
         mimeType,
         filename
       );
+
+      const targetProjectName = extracted?.projectName || filename.replace(/\.[^/.]+$/, '');
+
+      // 2. Upload original brochure document into the project's folder in Cloudinary/Vault
+      if (!brochureUrl) {
+        try {
+          const brochureAsset = await uploadMediaAsset(
+            buffer,
+            filename,
+            'brochures',
+            mimeType,
+            targetProjectName
+          );
+          brochureUrl = resolveAssetUrl(brochureAsset);
+        } catch (uploadErr: any) {
+          console.warn('[BROCHURE] Cloud media vault upload warning:', uploadErr.message);
+        }
+      }
 
       let reraCertificateUrl: string | undefined;
       let reraVerification: any = null;
@@ -173,6 +181,7 @@ export async function POST(req: Request) {
         }
       }
 
+      // 3. Extract and upload all genuine architectural elevations, floor plans, and renders to project folder
       const mediaResult = await extractAndProcessBrochure(
         buffer,
         filename,
@@ -191,10 +200,21 @@ export async function POST(req: Request) {
         }
       );
 
+      const primaryElevationUrl = resolveAssetUrl(mediaResult.elevations[0]) || null;
+      const primaryMasterPlanUrl = resolveAssetUrl(mediaResult.masterPlan) || null;
+
+      // 4. Enrich extracted units by pre-binding BHK-matched brochure floor plans
+      const enrichedUnits = (extracted.units || []).map((u: any, idx: number) => {
+        const matchingPlan = (mediaResult.floorPlans || []).find((fp: any) => Number(fp.bhk) === Number(u.bhk));
+        const unitFloorPlanUrl = u.floorPlanUrl || resolveAssetUrl(matchingPlan) || null;
+        return {
+          ...u,
+          unitNumber: u.unitNumber || `Flat-0${idx + 1}`,
+          floorPlanUrl: unitFloorPlanUrl,
+        };
+      });
+
       // Server-side atomic sync if projectId was provided.
-      // persistBrochureExtraction() is the single authoritative media writer:
-      // structured fields, metadata-preserving gallery merge, and BHK-matched
-      // unit pre-fill. Scalar spec sync happens separately below.
       let updatedProject: any = null;
       if (projectId) {
         try {
@@ -210,6 +230,8 @@ export async function POST(req: Request) {
               keyHighlightsJson: extracted.keyHighlights?.length ? JSON.stringify(extracted.keyHighlights) : undefined,
               developerSalesPocName: extracted.confidentialBrokerData?.developerSalesPocName || undefined,
               developerSalesPocPhone: extracted.confidentialBrokerData?.developerSalesPocPhone || undefined,
+              coverImageUrl: primaryElevationUrl || undefined,
+              masterPlanUrl: primaryMasterPlanUrl || undefined,
             },
           });
           void persistedProject;
@@ -222,6 +244,8 @@ export async function POST(req: Request) {
         success: true,
         data: {
           ...extracted,
+          coverImageUrl: primaryElevationUrl || extracted.coverImageUrl || null,
+          masterPlanUrl: primaryMasterPlanUrl || extracted.masterPlanUrl || null,
           brochureUrl,
           reraCertificateUrl,
           reraVerification,
@@ -231,6 +255,7 @@ export async function POST(req: Request) {
           masterPlan: mediaResult.masterPlan,
           assetRecords: mediaResult.assetRecords || extracted.assetRecords || [],
           confidentialBrokerData: extracted.confidentialBrokerData,
+          units: enrichedUnits,
           updatedProject,
         },
         extractionMethod,

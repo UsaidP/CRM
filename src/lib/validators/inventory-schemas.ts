@@ -11,9 +11,10 @@ export const inventoryMediaAssetSchema = z.object({
   caption: z.string().max(240).optional(),
   mimeType: z.string().max(80).optional(),
   bytes: z.number().int().nonnegative().optional(),
-  width: z.number().int().positive().optional(),
-  height: z.number().int().positive().optional(),
+  width: z.number().nonnegative().optional(),
+  height: z.number().nonnegative().optional(),
   durationSeconds: z.number().nonnegative().optional(),
+  category: z.string().optional(),
 });
 
 export const flexibleMediaAssetSchema = z.union([

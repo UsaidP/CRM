@@ -68,14 +68,14 @@ export function DealsLedgerClient({
   const [repSplitPercent, setRepSplitPercent] = useState(50);
   const [coBrokerName, setCoBrokerName] = useState('');
   const [coBrokerSharePercent, setCoBrokerSharePercent] = useState(0);
-  const [notes, setNotes] = useState('Closed after physical sample flat inspection tour');
+  const [notes, setNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   // Status Update Modal State
   const [updateDeal, setUpdateDeal] = useState<any | null>(null);
   const [invoiceDeal, setInvoiceDeal] = useState<any | null>(null);
   const [newStatus, setNewStatus] = useState('INVOICE_SENT');
-  const [invoiceNumber, setInvoiceNumber] = useState('ZP-INV-2026-08');
+  const [invoiceNumber, setInvoiceNumber] = useState('');
   const [savingStatus, setSavingStatus] = useState(false);
 
   const fetchDealsAndData = async () => {

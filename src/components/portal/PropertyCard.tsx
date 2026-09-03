@@ -130,7 +130,9 @@ export function PropertyCard({
             <span className="text-slate-300">•</span>
             <span className="text-emerald-700 font-bold flex items-center gap-1 font-serif">
               <CheckCircle2 className="w-3.5 h-3.5" />
-              Ready Possession with Full OC
+              {project.hasOccupancyCertificate || unit.possessionStatus === 'READY_TO_MOVE'
+                ? 'Ready Possession (Full OC)'
+                : 'Under Construction (MahaRERA Sanctioned)'}
             </span>
           </div>
           <h3 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 font-serif tracking-tight">
@@ -139,7 +141,7 @@ export function PropertyCard({
           <p className="text-xs sm:text-sm text-slate-600 flex items-center gap-1.5">
             <MapPin className="w-4 h-4 text-gold shrink-0" />
             <span>
-              {project.microMarket} • {project.distanceToMetroKm ? `${project.distanceToMetroKm} km to Metro` : 'Near Metro Station'}
+              {project.microMarket} • {project.distanceToMetroKm ? `${project.distanceToMetroKm} km to Metro` : 'Near Metro Corridor'}
             </span>
           </p>
         </div>
@@ -159,27 +161,37 @@ export function PropertyCard({
               <li className="flex items-start gap-2.5 p-2.5 rounded-xl bg-slate-50/80 border border-slate-200/80">
                 <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                 <span>
-                  <strong>Full Occupancy Certificate (OC):</strong> 100% legal title clearance with 0% GST liability.
+                  {project.hasOccupancyCertificate ? (
+                    <><strong>Full Occupancy Certificate (OC):</strong> 100% legal title clearance with 0% GST liability.</>
+                  ) : (
+                    <><strong>Statutory Sanction:</strong> MahaRERA approved project ({project.reraNumber || 'Verified'}) under active development.</>
+                  )}
                 </span>
               </li>
-              <li className="flex items-start gap-2.5 p-2.5 rounded-xl bg-slate-50/80 border border-slate-200/80">
-                <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                <span>
-                  <strong>Prime Connectivity:</strong> Only {project.distanceToMetroKm || 1.6} km from Metro Station &amp; central 24m arterial road.
-                </span>
-              </li>
-              <li className="flex items-start gap-2.5 p-2.5 rounded-xl bg-slate-50/80 border border-slate-200/80">
-                <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                <span>
-                  <strong>Vastu Compliant:</strong> {unit.facing?.replace('_', ' ')} entrance orientation with natural cross-ventilation.
-                </span>
-              </li>
-              <li className="flex items-start gap-2.5 p-2.5 rounded-xl bg-slate-50/80 border border-slate-200/80">
-                <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                <span>
-                  <strong>Floor Level:</strong> High floor ({unit.floorNumber} of {unit.totalFloors}) with panoramic green views.
-                </span>
-              </li>
+              {project.distanceToMetroKm ? (
+                <li className="flex items-start gap-2.5 p-2.5 rounded-xl bg-slate-50/80 border border-slate-200/80">
+                  <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <span>
+                    <strong>Transit Connectivity:</strong> {project.distanceToMetroKm} km from Metro Station &amp; central arterial link.
+                  </span>
+                </li>
+              ) : null}
+              {unit.facing ? (
+                <li className="flex items-start gap-2.5 p-2.5 rounded-xl bg-slate-50/80 border border-slate-200/80">
+                  <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <span>
+                    <strong>Unit Orientation:</strong> {unit.facing.replace('_', ' ')} facing entry with natural cross-ventilation.
+                  </span>
+                </li>
+              ) : null}
+              {unit.floorNumber && unit.totalFloors ? (
+                <li className="flex items-start gap-2.5 p-2.5 rounded-xl bg-slate-50/80 border border-slate-200/80">
+                  <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <span>
+                    <strong>Elevation:</strong> Floor {unit.floorNumber} of {unit.totalFloors} in tower structure.
+                  </span>
+                </li>
+              ) : null}
             </ul>
 
             {unit.description && (
@@ -205,7 +217,7 @@ export function PropertyCard({
                   Configuration
                 </span>
                 <strong className="text-xs sm:text-sm font-bold text-slate-900 block truncate font-serif">
-                  {unit.bhk} BHK Luxury
+                  {unit.bhk} BHK
                 </strong>
               </div>
 
@@ -255,7 +267,7 @@ export function PropertyCard({
                   To Metro
                 </span>
                 <strong className="text-xs sm:text-sm font-bold text-slate-900 block truncate font-serif">
-                  {project.distanceToMetroKm || 1.6} km
+                  {project.distanceToMetroKm ? `${project.distanceToMetroKm} km` : 'Transit Corridor'}
                 </strong>
               </div>
             </div>

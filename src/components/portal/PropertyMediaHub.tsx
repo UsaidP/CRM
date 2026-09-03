@@ -79,13 +79,10 @@ export function PropertyMediaHub({
           url: unit.videoReelUrl || project.youtubeWalkthroughUrl,
           kind: 'video' as const,
           title: `${project.projectName} ${unit.bhk} BHK Host Walkthrough Tour`,
-          hostName: advisor.fullName || 'Suhel Patel',
-          hostRole: 'Senior Property Specialist • ZamZam Properties',
+          hostName: advisor.fullName || 'Property Advisor',
+          hostRole: 'Property Specialist • ZamZam Properties',
           duration: '1:15',
-          posterUrl:
-            photos[0]?.url ||
-            project.coverImageUrl ||
-            '/images/projects/today-callisto-taloja-phase-2-sec21/cover.jpg',
+          posterUrl: photos[0]?.url || project.coverImageUrl || '',
         }
       : null);
 

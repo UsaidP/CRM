@@ -156,6 +156,25 @@ export async function POST(req: Request) {
       floorPlanUrl = resolveAssetUrl(floorPlanImages[0]) || null;
     }
 
+    // Auto-extract videos and photos from mediaGallery if not explicitly partitioned
+    let videos = validated.videos || [];
+    if (videos.length === 0 && Array.isArray(validated.mediaGallery)) {
+      videos = validated.mediaGallery.filter((item: any) => typeof item === 'object' && item.kind === 'video');
+    }
+
+    let videoReelUrl = validated.videoReelUrl || null;
+    if (!videoReelUrl && videos.length > 0) {
+      videoReelUrl = resolveAssetUrl(videos[0]) || null;
+    }
+
+    let photoGallery = validated.photoGallery || [];
+    if (photoGallery.length === 0 && Array.isArray(validated.mediaGallery)) {
+      photoGallery = validated.mediaGallery
+        .filter((item: any) => typeof item === 'string' || (typeof item === 'object' && item.kind === 'image'))
+        .map((item: any) => resolveAssetUrl(item))
+        .filter(Boolean);
+    }
+
     const unit = await prisma.propertyUnit.create({
       data: {
         projectId: validated.projectId,
@@ -175,7 +194,7 @@ export async function POST(req: Request) {
         mediaGalleryJson: JSON.stringify(validated.mediaGallery || []),
         elevationImagesJson: JSON.stringify(elevationImages),
         floorPlanImagesJson: JSON.stringify(floorPlanImages),
-        videosJson: JSON.stringify(validated.videos || []),
+        videosJson: JSON.stringify(videos),
         
         agreementValue: costResult.agreementValue,
         stampDutyRate: costResult.stampDutyRate,
@@ -189,8 +208,8 @@ export async function POST(req: Request) {
         verificationStatus: validated.verificationStatus,
         lastVerifiedAt: new Date(),
         verificationNotes: validated.verificationNotes,
-        photoGalleryJson: JSON.stringify(validated.photoGallery || []),
-        videoReelUrl: validated.videoReelUrl,
+        photoGalleryJson: JSON.stringify(photoGallery),
+        videoReelUrl,
         isHotDeal: validated.isHotDeal,
         isExclusive: validated.isExclusive,
       },
@@ -208,8 +227,12 @@ export async function POST(req: Request) {
       },
     }, { status: 201 });
   } catch (error: any) {
+    console.error('[INVENTORY_UNIT_CREATE_ERROR]', error);
+    const errorMessage = error?.issues
+      ? error.issues.map((i: any) => `${i.path.join('.') || 'field'}: ${i.message}`).join('; ')
+      : error?.message || 'Failed to create unit';
     return NextResponse.json(
-      { success: false, error: error.errors || error.message || 'Failed to create unit' },
+      { success: false, error: errorMessage },
       { status: 400 }
     );
   }

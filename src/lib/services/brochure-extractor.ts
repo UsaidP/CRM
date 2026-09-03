@@ -23,6 +23,7 @@ export interface BrochureExtractionResult {
   brochurePhotos: ExtractedBrochureAsset[];
   masterPlan?: ExtractedBrochureAsset;
   assetRecords?: ProjectAssetRecord[];
+  coverImageUrl?: string;
   confidentialBrokerData?: {
     developerSalesPocName?: string;
     developerSalesPocPhone?: string;
@@ -81,12 +82,13 @@ export async function extractAndProcessBrochure(
   else if (['jpg', 'jpeg'].includes(ext)) mimeType = 'image/jpeg';
   else if (['webp'].includes(ext)) mimeType = 'image/webp';
 
-  // 1. Upload original brochure/spec document to Cloud/Local Media Vault
+  // 1. Upload original brochure/spec document to Cloud/Local Media Vault under project folder
   const brochureAsset = await uploadMediaAsset(
     brochureBuffer,
     fileName,
     'brochures',
-    mimeType
+    mimeType,
+    projectName
   );
 
   const elevations: ExtractedBrochureAsset[] = [];
@@ -115,7 +117,7 @@ export async function extractAndProcessBrochure(
     }
   }
 
-  // 3. Process and Upload Real Extracted JPEG/PNG Images
+  // 3. Process and Upload Real Extracted JPEG/PNG Images to Project Folder
   if (realPdfAssets && realPdfAssets.length > 0) {
     const uploadedAssetMap = new Map<string, UploadedMediaAsset>();
 
@@ -127,7 +129,13 @@ export async function extractAndProcessBrochure(
 
       let uploaded = uploadedAssetMap.get(item.fileName);
       if (!uploaded) {
-        uploaded = await uploadMediaAsset(item.buffer, item.fileName, category, item.mimeType || 'image/jpeg');
+        uploaded = await uploadMediaAsset(
+          item.buffer,
+          item.fileName,
+          category,
+          item.mimeType || 'image/jpeg',
+          projectName
+        );
         uploadedAssetMap.set(item.fileName, uploaded);
       }
 
@@ -202,6 +210,8 @@ export async function extractAndProcessBrochure(
   // (src/lib/services/brochure-persistence.ts). This extractor is pure:
   // it extracts and returns data, it never writes to the database.
 
+  const primaryElevationUrl = elevations[0] ? resolveAssetUrl(elevations[0].mediaAsset) : undefined;
+
   return {
     projectName,
     developerName,
@@ -212,6 +222,7 @@ export async function extractAndProcessBrochure(
     brochurePhotos,
     masterPlan,
     assetRecords,
+    coverImageUrl: primaryElevationUrl,
     confidentialBrokerData: confidentialBrokerData ? {
       ...confidentialBrokerData,
       brokerShieldActive: true,

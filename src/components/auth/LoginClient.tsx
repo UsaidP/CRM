@@ -15,7 +15,6 @@ import {
   AlertCircle,
   CheckCircle2,
   Phone,
-  UserCheck,
   HelpCircle,
 } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
@@ -84,19 +83,6 @@ export function LoginClient({
     } finally {
       setLoading(false);
     }
-  };
-
-  const fillDemoAccount = (demoEmail: string, demoRole: string) => {
-    setAuthMode('CREDENTIALS');
-    setEmail(demoEmail);
-    setPassword('ZamZam@2026');
-    setErrorMsg(null);
-  };
-
-  const fillSuperAdminDemoKey = () => {
-    setAuthMode('SUPER_ADMIN_KEY');
-    setSuperAdminKey('zamzam-superadmin-secret-2026');
-    setErrorMsg(null);
   };
 
   return (
@@ -293,70 +279,6 @@ export function LoginClient({
                 <ArrowRight className="w-4 h-4" />
               </button>
             </form>
-
-            {/* Quick Demo Credentials Assistant */}
-            <div className="pt-4 border-t border-border/80 space-y-2.5">
-              <div className="flex items-center justify-between text-xs text-content-secondary font-bold">
-                <span className="flex items-center gap-1.5 font-mono uppercase tracking-wider">
-                  <UserCheck className="w-4 h-4 text-accent" /> Quick Fill Demo Accounts
-                </span>
-                <span className="text-[11px] font-mono text-content-secondary font-semibold">(Pass: ZamZam@2026)</span>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2.5">
-                <button
-                  type="button"
-                  onClick={() => fillDemoAccount('usaid@zamzamproperties.in', 'SUPER_ADMIN')}
-                  className="p-3 min-h-[48px] rounded-xl bg-surface-subtle hover:bg-accent-soft border border-border hover:border-accent/40 text-left transition-colors cursor-pointer group"
-                >
-                  <div className="font-bold text-xs text-content group-hover:text-accent-text truncate font-display">
-                    Usaid Patel
-                  </div>
-                  <div className="text-[11px] text-content-secondary group-hover:text-accent-text font-mono truncate font-medium">
-                    👑 Super Admin
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => fillDemoAccount('safwan@zamzamproperties.in', 'MANAGER')}
-                  className="p-3 min-h-[48px] rounded-xl bg-surface-subtle hover:bg-accent-soft border border-border hover:border-accent/40 text-left transition-colors cursor-pointer group"
-                >
-                  <div className="font-bold text-xs text-content group-hover:text-accent-text truncate font-display">
-                    Safwan Diwan
-                  </div>
-                  <div className="text-[11px] text-content-secondary group-hover:text-accent-text font-mono truncate font-medium">
-                    👔 Team Manager
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => fillDemoAccount('suhel@zamzamproperties.in', 'AGENT')}
-                  className="p-3 min-h-[48px] rounded-xl bg-surface-subtle hover:bg-accent-soft border border-border hover:border-accent/40 text-left transition-colors cursor-pointer group"
-                >
-                  <div className="font-bold text-xs text-content group-hover:text-accent-text truncate font-display">
-                    Suhel Patel
-                  </div>
-                  <div className="text-[11px] text-content-secondary group-hover:text-accent-text font-mono truncate font-medium">
-                    💼 Senior Agent
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => fillDemoAccount('samrin@zamzamproperties.in', 'TELECALLER')}
-                  className="p-3 min-h-[48px] rounded-xl bg-surface-subtle hover:bg-accent-soft border border-border hover:border-accent/40 text-left transition-colors cursor-pointer group"
-                >
-                  <div className="font-bold text-xs text-content group-hover:text-accent-text truncate font-display">
-                    Samrin Merchant
-                  </div>
-                  <div className="text-[11px] text-content-secondary group-hover:text-accent-text font-mono truncate font-medium">
-                    🎧 Telecaller Desk
-                  </div>
-                </button>
-              </div>
-            </div>
           </div>
         </div>
       </main>

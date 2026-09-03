@@ -13,6 +13,7 @@ export async function GET(req: NextRequest) {
   const category = (searchParams.get('category') as MediaCategory) || 'brochures';
   const fileName = searchParams.get('filename') || 'upload.pdf';
   const resourceType = (searchParams.get('resourceType') as 'image' | 'video' | 'raw' | 'auto') || 'auto';
+  const projectName = searchParams.get('projectName') || searchParams.get('project') || undefined;
 
   if (!isCloudinaryConfigured()) {
     return NextResponse.json({
@@ -22,7 +23,7 @@ export async function GET(req: NextRequest) {
     });
   }
 
-  const signed = generateCloudinaryUploadSignature(category, fileName, resourceType);
+  const signed = generateCloudinaryUploadSignature(category, fileName, resourceType, projectName);
   if (!signed) {
     return NextResponse.json(
       {

@@ -228,10 +228,49 @@ export async function POST(req: Request) {
         const bhkNum = Math.max(1, Math.min(6, parseInt(u.bhk || 2, 10)));
         const carpetNum = Math.max(100, parseInt(u.carpetAreaSqft || 650, 10));
 
-        // Matching floor plans for unit BHK
+        // Matching floor plans for unit BHK (Zero-fabrication: only match unit's BHK)
         const matchingFloorPlans = projFloorPlanImages.filter((fp: any) => Number(fp.bhk) === bhkNum);
-        const unitFloorPlanImages = matchingFloorPlans.length > 0 ? matchingFloorPlans : projFloorPlanImages;
+        const unitFloorPlanImages = matchingFloorPlans.length > 0 ? matchingFloorPlans : [];
         const defaultFloorPlanUrl = u.floorPlanUrl || resolveAssetUrl(unitFloorPlanImages[0]) || null;
+
+        // Build unit media gallery containing its floor plan and project elevation
+        const unitMediaGallery: any[] = [];
+        if (defaultFloorPlanUrl) {
+          unitMediaGallery.push({
+            id: `unit_fp_${syncedUnits.length + 1}`,
+            url: defaultFloorPlanUrl,
+            title: `${bhkNum} BHK Floor Plan Layout`,
+            kind: 'image',
+            category: 'floor-plans',
+            bhk: bhkNum,
+          });
+        }
+        if (validated.coverImageUrl) {
+          unitMediaGallery.push({
+            id: `unit_elev_${syncedUnits.length + 1}`,
+            url: validated.coverImageUrl,
+            title: `${validated.projectName} Architectural Elevation`,
+            kind: 'image',
+            category: 'elevations',
+          });
+        }
+        if (Array.isArray(u.mediaGallery)) {
+          for (const item of u.mediaGallery) {
+            const url = resolveAssetUrl(item);
+            if (url && !unitMediaGallery.some((existing) => existing.url === url)) {
+              unitMediaGallery.push(item);
+            }
+          }
+        }
+
+        const unitPhotos = unitMediaGallery.filter((a) => a.kind === 'image').map((a) => resolveAssetUrl(a));
+        const unitVideos = u.videos || (validated.youtubeWalkthroughUrl ? [{
+          id: `unit_video_${syncedUnits.length + 1}`,
+          url: validated.youtubeWalkthroughUrl,
+          kind: 'video',
+          title: `${validated.projectName} Walkthrough Video`,
+        }] : []);
+        const unitVideoReel = u.videoReelUrl || validated.youtubeWalkthroughUrl || null;
 
         // Check if matching unit already exists
         let matchedUnit: any = null;
@@ -256,6 +295,11 @@ export async function POST(req: Request) {
               allInTotalCost,
               floorPlanUrl: defaultFloorPlanUrl || matchedUnit.floorPlanUrl,
               totalFloors: validated.totalFloors || matchedUnit.totalFloors,
+              floorPlanImagesJson: unitFloorPlanImages.length > 0 ? JSON.stringify(unitFloorPlanImages) : matchedUnit.floorPlanImagesJson,
+              mediaGalleryJson: unitMediaGallery.length > 0 ? JSON.stringify(unitMediaGallery) : matchedUnit.mediaGalleryJson,
+              photoGalleryJson: unitPhotos.length > 0 ? JSON.stringify(unitPhotos) : matchedUnit.photoGalleryJson,
+              videosJson: unitVideos.length > 0 ? JSON.stringify(unitVideos) : matchedUnit.videosJson,
+              videoReelUrl: unitVideoReel || matchedUnit.videoReelUrl,
               lastVerifiedAt: new Date(),
             },
           });
@@ -285,6 +329,10 @@ export async function POST(req: Request) {
               floorPlanUrl: defaultFloorPlanUrl,
               elevationImagesJson: JSON.stringify(projElevationImages),
               floorPlanImagesJson: JSON.stringify(unitFloorPlanImages),
+              mediaGalleryJson: JSON.stringify(unitMediaGallery),
+              photoGalleryJson: JSON.stringify(unitPhotos),
+              videosJson: JSON.stringify(unitVideos),
+              videoReelUrl: unitVideoReel,
               verificationStatus: 'ACTIVE_MARKETABLE',
               verificationNotes: u.verificationNotes || `Extracted from official brochure for ${validated.projectName}. Verified MahaRERA ${normalizedRera}.`,
               description: u.description || `${bhkNum} BHK residential flat in ${validated.projectName}, ${validated.microMarket}.`,

@@ -31,12 +31,13 @@ export function MediaUploader({
   value,
   onChange,
   label = 'Property media',
-  helpText = 'High-resolution photos are automatically compressed before uploading to save Cloudinary storage. Supports photos up to 50 MB and walkthrough videos up to 300 MB.',
+  helpText = 'High-resolution photos are automatically optimized before uploading. Supports JPEG, PNG, WebP, AVIF, HEIC, and walkthrough videos (MP4, MOV, WebM).',
   maxItems = 12,
 }: MediaUploaderProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [compressing, setCompressing] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const [compressionStats, setCompressionStats] = useState<{
     originalSize: number;
     compressedSize: number;
@@ -47,7 +48,7 @@ export function MediaUploader({
   const uploadFiles = async (files: File[]) => {
     if (!files.length) return;
     if (value.length + files.length > maxItems) {
-      setError(`Keep up to ${maxItems} media items per record.`);
+      setError(`Keep up to ${maxItems} media items per record. You tried to add ${files.length}, but can only add ${Math.max(0, maxItems - value.length)} more.`);
       return;
     }
     setError(null);
@@ -58,18 +59,24 @@ export function MediaUploader({
       let totalOriginalBytes = 0;
       let totalCompressedBytes = 0;
 
-      // Compress all image files on the client before network transmission
+      // Compress all compressible image files on the client before network transmission
       const processedFiles: File[] = [];
       for (const file of files) {
         if (isCompressibleImage(file)) {
           totalOriginalBytes += file.size;
-          const compressed = await compressImageFile(file, {
-            maxWidth: 2048,
-            maxHeight: 2048,
-            quality: 0.82,
-          });
-          totalCompressedBytes += compressed.compressedBytes;
-          processedFiles.push(compressed.file);
+          try {
+            const compressed = await compressImageFile(file, {
+              maxWidth: 2048,
+              maxHeight: 2048,
+              quality: 0.82,
+            });
+            totalCompressedBytes += compressed.compressedBytes;
+            processedFiles.push(compressed.file);
+          } catch (compErr: any) {
+            console.warn(`[COMPRESS_FALLBACK] Using original file for "${file.name}":`, compErr);
+            totalCompressedBytes += file.size;
+            processedFiles.push(file);
+          }
         } else {
           processedFiles.push(file);
         }
@@ -77,7 +84,7 @@ export function MediaUploader({
 
       setCompressing(false);
 
-      if (totalOriginalBytes > 0) {
+      if (totalOriginalBytes > 0 && totalCompressedBytes < totalOriginalBytes) {
         const savedBytes = Math.max(0, totalOriginalBytes - totalCompressedBytes);
         const savedPercent = Math.round((savedBytes / totalOriginalBytes) * 100);
         setCompressionStats({
@@ -91,7 +98,9 @@ export function MediaUploader({
       processedFiles.forEach((file) => formData.append('files', file));
       const response = await fetch('/api/v1/inventory/media', { method: 'POST', body: formData });
       const data = await response.json();
-      if (!response.ok || !data.success) throw new Error(data.error || 'Media upload failed.');
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Media upload failed.');
+      }
       onChange([...value, ...(data.data as MediaAsset[])]);
     } catch (uploadError: any) {
       setError(uploadError.message || 'Media upload failed. Try a smaller file or another format.');
@@ -118,6 +127,27 @@ export function MediaUploader({
     onChange(next);
   };
 
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isDragging) setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      uploadFiles(Array.from(e.dataTransfer.files));
+    }
+  };
+
   return (
     <section className="space-y-2.5 rounded-xl border border-border bg-surface p-3" aria-label={label}>
       <div className="flex items-start justify-between gap-3">
@@ -134,28 +164,45 @@ export function MediaUploader({
       <input
         ref={inputRef}
         type="file"
-        accept="image/jpeg,image/png,image/webp,image/avif,video/mp4,video/webm,video/quicktime"
+        accept="image/*,video/*,image/jpeg,image/png,image/webp,image/avif,video/mp4,video/webm,video/quicktime,video/x-m4v"
         multiple
         className="sr-only"
         onChange={(event) => uploadFiles(Array.from(event.target.files || []))}
       />
-      <button
-        type="button"
-        onClick={() => inputRef.current?.click()}
-        disabled={uploading || value.length >= maxItems}
-        className="flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-dashed border-accent/40 bg-surface-subtle px-3 py-2 text-xs font-semibold text-accent-text transition hover:border-accent hover:bg-surface-raised disabled:cursor-not-allowed disabled:opacity-60"
+      <div
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        onClick={() => {
+          if (!uploading && value.length < maxItems) {
+            inputRef.current?.click();
+          }
+        }}
+        className={`flex min-h-16 w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed p-3 text-center transition ${
+          isDragging
+            ? 'border-accent bg-accent/10 scale-[1.01]'
+            : 'border-accent/40 bg-surface-subtle hover:border-accent hover:bg-surface-raised'
+        } ${uploading || value.length >= maxItems ? 'cursor-not-allowed opacity-60' : ''}`}
       >
         {uploading ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
+          <div className="flex items-center gap-2 text-xs font-semibold text-accent-text">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span>
+              {compressing ? 'Optimizing & compressing images…' : 'Saving media to cloud vault…'}
+            </span>
+          </div>
         ) : (
-          <UploadCloud className="h-4 w-4" />
+          <>
+            <div className="flex items-center gap-1.5 text-xs font-bold text-accent-text">
+              <UploadCloud className="h-4 w-4 text-accent" />
+              <span>Click to browse or drag &amp; drop photos and walkthrough videos</span>
+            </div>
+            <p className="text-[10px] text-content-muted">
+              JPG, PNG, WebP, AVIF, HEIC, MP4, MOV, WebM • Photos up to 50 MB • Videos up to 300 MB
+            </p>
+          </>
         )}
-        {compressing
-          ? 'Optimizing & compressing images…'
-          : uploading
-          ? 'Uploading to Cloudinary CDN…'
-          : 'Choose images or videos'}
-      </button>
+      </div>
 
       {compressionStats && compressionStats.savedPercent > 0 && (
         <div className="flex items-center justify-between rounded-lg border border-status-success/30 bg-status-success-surface px-3 py-2 text-[11px] text-status-success">

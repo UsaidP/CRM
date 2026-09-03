@@ -74,6 +74,31 @@ export function isCloudinaryConfigured(): boolean {
 }
 
 /**
+ * Sanitizes project name to create safe, clean directory names in Cloudinary and Local Vault
+ */
+export function sanitizeProjectFolderName(projectName?: string): string {
+  if (!projectName || typeof projectName !== 'string') return '';
+  return projectName
+    .trim()
+    .replace(/[^a-zA-Z0-9_\-\s]/g, '')
+    .replace(/\s+/g, '_')
+    .replace(/_+/g, '_')
+    .slice(0, 60);
+}
+
+/**
+ * Resolves Cloudinary folder path.
+ * When projectName is provided, organizes under `zamzam_crm/projects/<Project_Name>/<category>`.
+ */
+export function getCloudinaryFolder(category: MediaCategory = 'general', projectName?: string): string {
+  const cleanProject = sanitizeProjectFolderName(projectName);
+  if (cleanProject) {
+    return `zamzam_crm/projects/${cleanProject}/${category}`;
+  }
+  return `zamzam_crm/${category}`;
+}
+
+/**
  * Generate signed upload parameters for direct client-to-Cloudinary uploads
  * Allows browser to upload large files (e.g. 10MB - 100MB) directly to CDN,
  * completely bypassing Vercel's 4.5MB Serverless Function payload limit.
@@ -81,13 +106,14 @@ export function isCloudinaryConfigured(): boolean {
 export function generateCloudinaryUploadSignature(
   category: MediaCategory = 'general',
   fileName = 'upload',
-  resourceType: 'image' | 'video' | 'raw' | 'auto' = 'auto'
+  resourceType: 'image' | 'video' | 'raw' | 'auto' = 'auto',
+  projectName?: string
 ) {
   const config = getCloudinaryConfig();
   if (!config) return null;
 
   const timestamp = Math.floor(Date.now() / 1000);
-  const folder = `zamzam_crm/${category}`;
+  const folder = getCloudinaryFolder(category, projectName);
   const ext = path.extname(fileName);
   const baseName = path.basename(fileName, ext).replace(/[^a-zA-Z0-9_-]/g, '_');
   const publicId = `${baseName}_${Date.now()}`;
@@ -115,7 +141,8 @@ export async function uploadToCloudinary(
   buffer: Buffer | ArrayBuffer | Uint8Array,
   fileName: string,
   category: MediaCategory = 'general',
-  mimeType = 'image/jpeg'
+  mimeType = 'image/jpeg',
+  projectName?: string
 ): Promise<UploadedMediaAsset> {
   const config = getCloudinaryConfig();
   if (!config) {
@@ -123,7 +150,7 @@ export async function uploadToCloudinary(
   }
 
   const nodeBuffer = Buffer.isBuffer(buffer) ? buffer : Buffer.from(buffer as ArrayBuffer);
-  const folder = `zamzam_crm/${category}`;
+  const folder = getCloudinaryFolder(category, projectName);
   const baseName = path.basename(fileName, path.extname(fileName)).replace(/[^a-zA-Z0-9_-]/g, '_');
   const publicId = `${baseName}_${Date.now()}`;
 
@@ -177,15 +204,28 @@ export async function uploadToLocalStorage(
   buffer: Buffer | ArrayBuffer | Uint8Array,
   fileName: string,
   category: MediaCategory = 'general',
-  mimeType = 'image/jpeg'
+  mimeType = 'image/jpeg',
+  projectName?: string
 ): Promise<UploadedMediaAsset> {
   const nodeBuffer = Buffer.isBuffer(buffer) ? buffer : Buffer.from(buffer as ArrayBuffer);
-  const ext = path.extname(fileName) || (mimeType.includes('pdf') ? '.pdf' : '.jpg');
+  let ext = path.extname(fileName);
+  if (!ext) {
+    if (mimeType.includes('pdf')) ext = '.pdf';
+    else if (mimeType.startsWith('video/')) {
+      ext = mimeType.includes('webm') ? '.webm' : mimeType.includes('quicktime') ? '.mov' : '.mp4';
+    } else if (mimeType.includes('png')) ext = '.png';
+    else if (mimeType.includes('webp')) ext = '.webp';
+    else if (mimeType.includes('avif')) ext = '.avif';
+    else if (mimeType.includes('svg')) ext = '.svg';
+    else ext = '.jpg';
+  }
   const baseName = path.basename(fileName, ext).replace(/[^a-zA-Z0-9_-]/g, '_');
   const uniqueFileName = `${baseName}_${Date.now()}${ext}`;
+  const cleanProject = sanitizeProjectFolderName(projectName);
 
   try {
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads', category);
+    const relativeSubdir = cleanProject ? path.join('projects', cleanProject, category) : category;
+    const uploadDir = path.join(process.cwd(), 'public', 'uploads', relativeSubdir);
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
@@ -193,7 +233,7 @@ export async function uploadToLocalStorage(
     const filePath = path.join(uploadDir, uniqueFileName);
     fs.writeFileSync(filePath, nodeBuffer);
 
-    const publicUrl = `/uploads/${category}/${uniqueFileName}`;
+    const publicUrl = `/uploads/${relativeSubdir}/${uniqueFileName}`;
 
     return {
       url: publicUrl,
@@ -236,17 +276,18 @@ export async function uploadMediaAsset(
   buffer: Buffer | ArrayBuffer | Uint8Array,
   fileName: string,
   category: MediaCategory = 'general',
-  mimeType = 'image/jpeg'
+  mimeType = 'image/jpeg',
+  projectName?: string
 ): Promise<UploadedMediaAsset> {
   if (isCloudinaryConfigured()) {
     try {
-      return await uploadToCloudinary(buffer, fileName, category, mimeType);
+      return await uploadToCloudinary(buffer, fileName, category, mimeType, projectName);
     } catch (err: any) {
       console.warn(`[MEDIA] Cloudinary upload notice (${err.message}). Storing in local media vault.`);
-      return await uploadToLocalStorage(buffer, fileName, category, mimeType);
+      return await uploadToLocalStorage(buffer, fileName, category, mimeType, projectName);
     }
   }
-  return await uploadToLocalStorage(buffer, fileName, category, mimeType);
+  return await uploadToLocalStorage(buffer, fileName, category, mimeType, projectName);
 }
 
 /**

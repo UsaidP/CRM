@@ -102,7 +102,23 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     if ('possessionDate' in validated) data.possessionDate = parseSafeDate(validated.possessionDate);
     if ('featureHighlights' in validated) data.featureHighlightsJson = JSON.stringify(validated.featureHighlights || []);
     if ('floorPlanUrl' in validated) data.floorPlanUrl = validated.floorPlanUrl || null;
-    if ('mediaGallery' in validated) data.mediaGalleryJson = JSON.stringify(validated.mediaGallery || []);
+    if ('mediaGallery' in validated) {
+      data.mediaGalleryJson = JSON.stringify(validated.mediaGallery || []);
+      if (!('videos' in validated) && Array.isArray(validated.mediaGallery)) {
+        const extractedVideos = validated.mediaGallery.filter((item: any) => typeof item === 'object' && item.kind === 'video');
+        data.videosJson = JSON.stringify(extractedVideos);
+        if (!validated.videoReelUrl && extractedVideos.length > 0) {
+          data.videoReelUrl = (extractedVideos[0] as any).url || null;
+        }
+      }
+      if (!('photoGallery' in validated) && Array.isArray(validated.mediaGallery)) {
+        const extractedPhotos = validated.mediaGallery
+          .filter((item: any) => typeof item === 'string' || (typeof item === 'object' && item.kind === 'image'))
+          .map((item: any) => (typeof item === 'string' ? item : item.url))
+          .filter(Boolean);
+        data.photoGalleryJson = JSON.stringify(extractedPhotos);
+      }
+    }
     if ('photoGallery' in validated) data.photoGalleryJson = JSON.stringify(validated.photoGallery || []);
     if ('elevationImages' in validated) data.elevationImagesJson = JSON.stringify(validated.elevationImages || []);
     if ('floorPlanImages' in validated) data.floorPlanImagesJson = JSON.stringify(validated.floorPlanImages || []);
@@ -159,8 +175,12 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       data: { ...unit, ...parseInventoryContent(unit) },
     });
   } catch (error: any) {
+    console.error('[INVENTORY_UNIT_UPDATE_ERROR]', error);
+    const errorMessage = error?.issues
+      ? error.issues.map((i: any) => `${i.path.join('.') || 'field'}: ${i.message}`).join('; ')
+      : error?.message || 'Failed to update property unit';
     return NextResponse.json(
-      { success: false, error: error.errors || error.message || 'Failed to update property unit' },
+      { success: false, error: errorMessage },
       { status: 400 },
     );
   }

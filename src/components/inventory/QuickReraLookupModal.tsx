@@ -11,7 +11,6 @@ import {
   Copy,
   Check,
   AlertCircle,
-  Sparkles,
   Info,
 } from 'lucide-react';
 import { ReraVerificationBadge } from './ReraVerificationBadge';
@@ -27,23 +26,9 @@ export function QuickReraLookupModal({
   onClose,
   initialRera = '',
 }: QuickReraLookupModalProps) {
-  const [reraInput, setReraInput] = useState(initialRera || 'P52000028714');
-  const [copiedSample, setCopiedSample] = useState<string | null>(null);
+  const [reraInput, setReraInput] = useState(initialRera);
 
   if (!isOpen) return null;
-
-  const sampleNumbers = [
-    { label: 'Kharghar Node (Raigad)', rera: 'P52000028714' },
-    { label: 'Navi Mumbai Hub', rera: 'P52000018920' },
-    { label: 'Mumbai Suburban', rera: 'P51800001234' },
-    { label: 'Thane City / Kalyan', rera: 'P51700022415' },
-    { label: 'Pune Hinjawadi', rera: 'P52100030112' },
-    { label: 'MahaRERA Broker/Agent', rera: 'A52000029381' },
-  ];
-
-  const handleSelectSample = (sample: string) => {
-    setReraInput(sample);
-  };
 
   return (
     <div
@@ -109,32 +94,6 @@ export function QuickReraLookupModal({
             showPortalLink={true}
             showCopyButton={true}
           />
-
-          {/* Quick Test Samples */}
-          <div className="space-y-2 pt-2 border-t border-border">
-            <div className="text-xs font-medium text-content-secondary flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-accent" />
-              <span>Quick Test Samples from Navi Mumbai &amp; Maharashtra:</span>
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {sampleNumbers.map((s) => (
-                <button
-                  key={s.rera}
-                  type="button"
-                  onClick={() => handleSelectSample(s.rera)}
-                  className={`px-2.5 py-1 rounded-md text-xs font-mono border transition-all cursor-pointer ${
-                    reraInput.trim().toUpperCase() === s.rera
-                      ? 'bg-accent text-white border-accent font-semibold shadow-sm'
-                      : 'bg-surface-raised text-content-secondary border-border hover:border-accent/50 hover:text-content'
-                  }`}
-                >
-                  <span className="font-sans text-[11px] opacity-75 mr-1">{s.label}:</span>
-                  <span>{s.rera}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
           {/* Statutory Guide Note */}
           <div className="p-3.5 rounded-xl border border-border-subtle bg-surface-raised/50 text-xs text-content-muted space-y-1">
             <div className="font-semibold text-content flex items-center gap-1.5">

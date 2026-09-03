@@ -41,7 +41,7 @@ export function PortalHero({
   onWhatsAppAdvisor,
 }: PortalHeroProps) {
   const clientName = portal.lead?.fullName || 'Valued Client';
-  const advisorName = advisor.fullName || 'Suhel Patel';
+  const advisorName = advisor.fullName || 'Your Property Advisor';
 
   // Determine microMarket / configuration summary
   const configs = Array.from(
@@ -49,7 +49,7 @@ export function PortalHero({
   ).join(', ');
 
   const primaryLocality =
-    portal.portalUnits?.[0]?.propertyUnit?.project?.microMarket || 'Kharghar & Taloja • Navi Mumbai';
+    portal.portalUnits?.[0]?.propertyUnit?.project?.microMarket || 'Navi Mumbai';
 
   const customGreeting =
     portal.customMessage ||

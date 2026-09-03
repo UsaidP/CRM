@@ -24,11 +24,12 @@ interface PropertyPricingBreakdownProps {
 export function PropertyPricingBreakdown({ unit, project }: PropertyPricingBreakdownProps) {
   const [showLedger, setShowLedger] = useState(false);
 
-  const agreementVal = unit.agreementValue || unit.allInTotalCost || 4500000;
+  const agreementVal = unit.agreementValue || unit.allInTotalCost || 0;
   const stampDutyRate = unit.stampDutyRate ?? 6.0;
   const stampDutyAmount = Math.round(agreementVal * (stampDutyRate / 100));
   const registrationFee = unit.registrationFee ?? 30000;
-  const gstRate = unit.gstRate ?? 0.0;
+  const isOcReady = Boolean(project?.hasOccupancyCertificate || unit.possessionStatus === 'READY_TO_MOVE');
+  const gstRate = isOcReady ? 0.0 : (unit.gstRate ?? 5.0);
   const gstAmount = Math.round(agreementVal * (gstRate / 100));
   const parkingCharges = unit.parkingCharges ?? 0;
   const societyDevCharges = unit.societyDevelopmentCharges ?? 0;
@@ -38,10 +39,10 @@ export function PropertyPricingBreakdown({ unit, project }: PropertyPricingBreak
     agreementVal + stampDutyAmount + registrationFee + gstAmount + parkingCharges + societyDevCharges + floorRise;
 
   // Approx monthly EMI for quick badge
-  const approxEmi = Math.round(
+  const approxEmi = agreementVal > 0 ? Math.round(
     ((totalAllIn * 0.8 * (0.085 / 12)) * Math.pow(1 + 0.085 / 12, 240)) /
       (Math.pow(1 + 0.085 / 12, 240) - 1)
-  );
+  ) : 0;
 
   return (
     <div className="rounded-2xl sm:rounded-3xl bg-gradient-to-br from-amber-50/80 via-[#FFFDF9] to-amber-50/50 border border-amber-300/85 p-4 sm:p-6 shadow-sm space-y-4">
@@ -67,15 +68,21 @@ export function PropertyPricingBreakdown({ unit, project }: PropertyPricingBreak
 
         {/* Quick Badges */}
         <div className="flex flex-wrap md:flex-col md:items-end gap-2 shrink-0">
-          <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-emerald-100/90 border border-emerald-300 text-emerald-800 text-xs font-bold shadow-2xs">
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-            0% GST (Full OC Ready)
+          <span className={`inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-bold shadow-2xs ${
+            gstRate === 0
+              ? 'bg-emerald-100/90 border border-emerald-300 text-emerald-800'
+              : 'bg-amber-100/90 border border-amber-300 text-amber-800'
+          }`}>
+            <CheckCircle2 className={`w-3.5 h-3.5 ${gstRate === 0 ? 'text-emerald-600' : 'text-amber-600'}`} />
+            {gstRate === 0 ? '0% GST (Full OC Ready)' : `${gstRate}% GST (Under Construction)`}
           </span>
 
-          <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white border border-amber-300 text-gold text-xs font-bold shadow-2xs font-mono">
-            <Calculator className="w-3.5 h-3.5 text-gold" />
-            Approx. {formatIndianRupees(approxEmi)}/mo EMI
-          </span>
+          {approxEmi > 0 && (
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white border border-amber-300 text-gold text-xs font-bold shadow-2xs font-mono">
+              <Calculator className="w-3.5 h-3.5 text-gold" />
+              Approx. {formatIndianRupees(approxEmi)}/mo EMI
+            </span>
+          )}
         </div>
       </div>
 
@@ -127,11 +134,13 @@ export function PropertyPricingBreakdown({ unit, project }: PropertyPricingBreak
                 </div>
 
                 <div className="p-3 bg-white rounded-xl border border-amber-200/80 shadow-2xs space-y-0.5">
-                  <span className="text-[10px] text-slate-400 font-mono block">GST Status</span>
-                  <strong className="text-emerald-700 font-bold font-mono block truncate">
-                    ₹0 (0% GST)
+                  <span className="text-[10px] text-slate-400 font-mono block">GST ({gstRate}%)</span>
+                  <strong className={`${gstRate === 0 ? 'text-emerald-700' : 'text-amber-800'} font-bold font-mono block truncate`}>
+                    {gstRate === 0 ? '₹0 (0% GST)' : formatIndianRupees(gstAmount)}
                   </strong>
-                  <span className="text-[10px] text-emerald-700 font-semibold">OC Received Exemption</span>
+                  <span className={`text-[10px] ${gstRate === 0 ? 'text-emerald-700 font-semibold' : 'text-slate-500'}`}>
+                    {gstRate === 0 ? 'OC Received Exemption' : 'Under-Construction Statutory'}
+                  </span>
                 </div>
 
                 {parkingCharges > 0 && (

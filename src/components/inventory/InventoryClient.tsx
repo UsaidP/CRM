@@ -114,30 +114,30 @@ export function InventoryClient({
   const [showAddModal, setShowAddModal] = useState(false);
   const [unitForm, setUnitForm] = useState({
     projectId: initialProjects[0]?.id || '',
-    unitNumber: 'A-1204',
-    bhk: 2,
-    bathrooms: 2,
-    balconies: 1,
-    floorNumber: 12,
-    totalFloors: 22,
-    carpetAreaSqft: 685,
+    unitNumber: '',
+    bhk: 1,
+    bathrooms: 1,
+    balconies: 0,
+    floorNumber: 1,
+    totalFloors: 7,
+    carpetAreaSqft: 0,
     facing: 'EAST',
-    possessionStatus: 'READY_TO_MOVE',
-    possessionDate: '2026-12-31',
-    agreementValue: 6800000,
+    possessionStatus: 'UNDER_CONSTRUCTION',
+    possessionDate: '',
+    agreementValue: 0,
     stampDutyRate: 6.0,
     registrationFee: 30000,
-    parkingCharges: 250000,
-    societyDevelopmentCharges: 150000,
+    parkingCharges: 0,
+    societyDevelopmentCharges: 0,
     verificationStatus: 'ACTIVE_MARKETABLE',
-    verificationNotes: 'Physically inspected sample unit and developer inventory sheet.',
+    verificationNotes: '',
     description: '',
     featureHighlights: [] as string[],
     floorPlanUrl: '',
     mediaGallery: [] as MediaAsset[],
     videoReelUrl: '',
     photoUrls: [] as string[],
-    isHotDeal: true,
+    isHotDeal: false,
     isExclusive: false,
   });
   const [creatingUnit, setCreatingUnit] = useState(false);
@@ -148,6 +148,7 @@ export function InventoryClient({
     if (!e.target.files || !e.target.files[0]) return;
     const file = e.target.files[0];
     setUploadingUnitFloorPlan(true);
+    setActionError(null);
     try {
       const formData = new FormData();
       formData.append('file', file);
@@ -164,11 +165,11 @@ export function InventoryClient({
         const url = resolveAssetUrl(data.asset);
         setUnitForm((prev) => ({ ...prev, floorPlanUrl: url }));
       } else {
-        alert(data.error || 'Failed to upload floor plan image.');
+        setActionError(data.error || 'Failed to upload floor plan image.');
       }
     } catch (err: any) {
       console.error('Floor plan upload failed:', err);
-      alert('Floor plan upload failed: ' + (err.message || err));
+      setActionError('Floor plan upload failed: ' + (err.message || err));
     } finally {
       setUploadingUnitFloorPlan(false);
       e.target.value = '';
@@ -178,31 +179,31 @@ export function InventoryClient({
   // Add Developer Project Form State
   const [showAddProjectModal, setShowAddProjectModal] = useState(false);
   const [projectForm, setProjectForm] = useState({
-    developerName: 'Crown Lifespaces',
-    projectName: 'Crown Heights Luxury Towers',
-    reraNumber: 'P52000018920',
-    microMarket: 'Kharghar Sector 35',
-    subLocality: 'Upper Kharghar Valley Road',
+    developerName: '',
+    projectName: '',
+    reraNumber: '',
+    microMarket: '',
+    subLocality: '',
     shortDescription: '',
     description: '',
     locationDescription: '',
     keyHighlights: [] as string[],
     mediaGallery: [] as MediaAsset[],
     coverImageUrl: '',
-    distanceToMetroKm: 0.45,
-    hasOccupancyCertificate: true,
-    commencementCertificateDate: '2021-03-15',
-    expectedPossessionDate: '2026-12-31',
-    totalTowers: 2,
-    totalFloors: 22,
-    basePricePerSqft: 14850,
+    distanceToMetroKm: 0,
+    hasOccupancyCertificate: false,
+    commencementCertificateDate: '',
+    expectedPossessionDate: '',
+    totalTowers: 1,
+    totalFloors: 7,
+    basePricePerSqft: 0,
     brochureUrl: '',
     youtubeWalkthroughUrl: '',
     masterPlanUrl: '',
-    amenities: ['Clubhouse', 'Swimming Pool', 'Gymnasium', 'Valley Facing Views'],
-    developerSalesPocName: 'Vikram Joshi',
-    developerSalesPocPhone: '+919819001122',
-    standardCommissionPercent: 2.5,
+    amenities: [] as string[],
+    developerSalesPocName: '',
+    developerSalesPocPhone: '',
+    standardCommissionPercent: 2.0,
   });
   const [creatingProject, setCreatingProject] = useState(false);
 
@@ -261,8 +262,23 @@ export function InventoryClient({
       setActionError('Select a developer project before creating the unit.');
       return;
     }
+    if (!unitForm.carpetAreaSqft || Number(unitForm.carpetAreaSqft) <= 0) {
+      setActionError('Please enter a valid Carpet Area in Sq.Ft (must be greater than 0).');
+      return;
+    }
+    if (!unitForm.agreementValue || Number(unitForm.agreementValue) <= 0) {
+      setActionError('Please enter a valid Agreement Base Value (₹) greater than 0.');
+      return;
+    }
     setActionError(null);
     setCreatingUnit(true);
+
+    const videoAssets = unitForm.mediaGallery.filter((asset) => asset.kind === 'video');
+    const photoUrls = unitForm.photoUrls.length > 0
+      ? unitForm.photoUrls
+      : unitForm.mediaGallery.filter((a) => a.kind === 'image').map((a) => a.url);
+    const videoReelUrl = unitForm.videoReelUrl || videoAssets[0]?.url || '';
+
     try {
       const res = await fetch(editingUnitId ? `/api/v1/inventory/units/${editingUnitId}` : '/api/v1/inventory/units', {
         method: editingUnitId ? 'PUT' : 'POST',
@@ -282,7 +298,9 @@ export function InventoryClient({
           featureHighlights: unitForm.featureHighlights,
           floorPlanUrl: unitForm.floorPlanUrl,
           mediaGallery: unitForm.mediaGallery,
-          photoGallery: unitForm.photoUrls,
+          photoGallery: photoUrls,
+          videos: videoAssets,
+          videoReelUrl: videoReelUrl || null,
         }),
       });
       const data = await res.json();
@@ -290,6 +308,11 @@ export function InventoryClient({
         setShowAddModal(false);
         setEditingUnitId(null);
         fetchInventory();
+        setBannerToast({
+          text: data.message || (editingUnitId ? 'Property unit updated successfully.' : 'Property unit listed successfully.'),
+          type: 'success',
+        });
+        setTimeout(() => setBannerToast(null), 5000);
       } else {
         setActionError(data.error || 'The property unit could not be created. Review the fields, then try again.');
       }
@@ -304,6 +327,12 @@ export function InventoryClient({
     e.preventDefault();
     setActionError(null);
     setCreatingProject(true);
+
+    const videoAssets = projectForm.mediaGallery.filter((asset) => asset.kind === 'video');
+    const imageAssets = projectForm.mediaGallery.filter((asset) => asset.kind === 'image');
+    const coverUrl = projectForm.coverImageUrl || imageAssets[0]?.url || '';
+    const walkthroughUrl = projectForm.youtubeWalkthroughUrl || videoAssets[0]?.url || '';
+
     try {
       const res = await fetch(editingProjectId ? `/api/v1/inventory/projects/${editingProjectId}` : '/api/v1/inventory/projects', {
         method: editingProjectId ? 'PUT' : 'POST',
@@ -320,7 +349,14 @@ export function InventoryClient({
           locationDescription: projectForm.locationDescription,
           keyHighlights: projectForm.keyHighlights,
           mediaGallery: projectForm.mediaGallery,
-          coverImageUrl: projectForm.coverImageUrl,
+          coverImageUrl: coverUrl || null,
+          youtubeWalkthroughUrl: walkthroughUrl || null,
+          elevationImages: imageAssets.map((asset) => ({
+            url: asset.url,
+            title: asset.title || `${projectForm.projectName} Elevation`,
+            viewAngle: 'FRONT_FACADE',
+          })),
+          videos: videoAssets,
         }),
       });
       const data = await res.json();
@@ -341,6 +377,70 @@ export function InventoryClient({
     } finally {
       setCreatingProject(false);
     }
+  };
+
+  const handlePrefillFromBrochure = (data: any) => {
+    if (!data) return;
+    const extractedElevations = data.elevations || data.classifiedMedia?.elevations || [];
+    const extractedFloorPlans = data.floorPlans || data.classifiedMedia?.floorPlans || [];
+    const primaryElevationUrl = data.coverImageUrl || resolveAssetUrl(extractedElevations[0]) || '';
+
+    const imageAssets = extractedElevations.map((e: any, idx: number) => ({
+      id: e.mediaAsset?.publicId || `elev_${idx + 1}`,
+      url: resolveAssetUrl(e),
+      title: e.title || `${data.projectName} Elevation`,
+      kind: 'image' as const,
+      category: 'elevations' as const,
+    })).filter((a: any) => Boolean(a.url));
+
+    const floorAssets = extractedFloorPlans.map((fp: any, idx: number) => ({
+      id: fp.mediaAsset?.publicId || `fp_${idx + 1}`,
+      url: resolveAssetUrl(fp),
+      title: fp.title || `${fp.bhk ? fp.bhk + ' BHK' : 'Floor'} Plan`,
+      kind: 'image' as const,
+      category: 'floor-plans' as const,
+      bhk: fp.bhk,
+      carpetAreaSqft: fp.carpetAreaSqft,
+    })).filter((a: any) => Boolean(a.url));
+
+    const combinedGallery = [...imageAssets, ...floorAssets];
+
+    setProjectForm({
+      developerName: data.developerName || '',
+      projectName: data.projectName || '',
+      reraNumber: data.reraNumber || '',
+      microMarket: data.microMarket || '',
+      subLocality: data.subLocality || '',
+      shortDescription: data.shortDescription || (data.projectName ? `${data.projectName} by ${data.developerName || 'Developer'} in ${data.microMarket || 'Navi Mumbai'}` : ''),
+      description: data.description || '',
+      locationDescription: data.plotDetails || data.siteAddress || '',
+      keyHighlights: Array.isArray(data.keyHighlights) ? data.keyHighlights : [],
+      mediaGallery: combinedGallery,
+      coverImageUrl: primaryElevationUrl,
+      distanceToMetroKm: data.distanceToMetroKm ? Number(data.distanceToMetroKm) : 0,
+      hasOccupancyCertificate: Boolean(data.hasOccupancyCertificate),
+      commencementCertificateDate: data.commencementCertificateDate || '',
+      expectedPossessionDate: data.expectedPossessionDate ? String(data.expectedPossessionDate).slice(0, 10) : '',
+      totalTowers: Number(data.totalTowers) || 1,
+      totalFloors: Number(data.totalFloors) || 7,
+      basePricePerSqft: Number(data.basePricePerSqft) || 0,
+      brochureUrl: data.brochureUrl || '',
+      youtubeWalkthroughUrl: data.youtubeWalkthroughUrl || '',
+      masterPlanUrl: data.masterPlanUrl || '',
+      amenities: Array.isArray(data.amenities) ? data.amenities : [],
+      developerSalesPocName: data.developerSalesPocName || data.confidentialBrokerData?.developerSalesPocName || '',
+      developerSalesPocPhone: data.developerSalesPocPhone || data.confidentialBrokerData?.developerSalesPocPhone || '',
+      standardCommissionPercent: Number(data.standardCommissionPercent) || 2.0,
+    });
+
+    setEditingProjectId(null);
+    setShowBrochureModal(false);
+    setShowAddProjectModal(true);
+    setBannerToast({
+      text: `Specifications from brochure for "${data.projectName || 'Project'}" prefilled into the project form! Review details and save to CRM.`,
+      type: 'info',
+    });
+    setTimeout(() => setBannerToast(null), 6000);
   };
 
   const handleDeleteProject = async (projectId: string, projectName: string) => {
@@ -402,6 +502,33 @@ export function InventoryClient({
   const openNewProject = () => {
     setActionError(null);
     setEditingProjectId(null);
+    setProjectForm({
+      developerName: '',
+      projectName: '',
+      reraNumber: '',
+      microMarket: '',
+      subLocality: '',
+      shortDescription: '',
+      description: '',
+      locationDescription: '',
+      keyHighlights: [],
+      mediaGallery: [],
+      coverImageUrl: '',
+      distanceToMetroKm: 0,
+      hasOccupancyCertificate: false,
+      commencementCertificateDate: '',
+      expectedPossessionDate: '',
+      totalTowers: 1,
+      totalFloors: 7,
+      basePricePerSqft: 0,
+      brochureUrl: '',
+      youtubeWalkthroughUrl: '',
+      masterPlanUrl: '',
+      amenities: [],
+      developerSalesPocName: '',
+      developerSalesPocPhone: '',
+      standardCommissionPercent: 2.0,
+    });
     setShowAddProjectModal(true);
   };
 
@@ -445,12 +572,34 @@ export function InventoryClient({
   const openNewUnit = (targetProjectId?: string) => {
     setActionError(null);
     setEditingUnitId(null);
-    if (targetProjectId) {
-      setUnitForm((prev) => ({
-        ...prev,
-        projectId: targetProjectId,
-      }));
-    }
+    setUnitForm({
+      projectId: targetProjectId || initialProjects[0]?.id || '',
+      unitNumber: '',
+      bhk: 1,
+      bathrooms: 1,
+      balconies: 0,
+      floorNumber: 1,
+      totalFloors: 7,
+      carpetAreaSqft: 0,
+      facing: 'EAST',
+      possessionStatus: 'UNDER_CONSTRUCTION',
+      possessionDate: '',
+      agreementValue: 0,
+      stampDutyRate: 6.0,
+      registrationFee: 30000,
+      parkingCharges: 0,
+      societyDevelopmentCharges: 0,
+      verificationStatus: 'ACTIVE_MARKETABLE',
+      verificationNotes: '',
+      description: '',
+      featureHighlights: [],
+      floorPlanUrl: '',
+      mediaGallery: [],
+      videoReelUrl: '',
+      photoUrls: [],
+      isHotDeal: false,
+      isExclusive: false,
+    });
     setShowAddModal(true);
   };
 
@@ -1670,336 +1819,453 @@ export function InventoryClient({
           </div>
         )}
 
-        <form onSubmit={handleCreateUnit} className="space-y-4 pt-3">
-          <div>
-            <CustomSelect
-              id="unit-project-select"
-              label="Developer Project *"
-              value={unitForm.projectId}
-              onChange={(val) => setUnitForm({ ...unitForm, projectId: val })}
-              searchable
-              searchPlaceholder="Search project by name or locality..."
-              options={projects.map((p) => ({
-                value: p.id,
-                label: p.projectName,
-                description: `${p.developerName || 'Developer'} • ${p.microMarket || 'Navi Mumbai'}`,
-              }))}
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
-              <label className="text-xs font-bold text-content block mb-1">Unit Number</label>
-              <input
-                aria-label="Unit number"
-                type="text"
-                placeholder="e.g. A-1204"
-                value={unitForm.unitNumber}
-                onChange={(e) => setUnitForm({ ...unitForm, unitNumber: e.target.value })}
-                className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content font-mono focus:outline-hidden focus:border-accent font-medium"
-              />
-            </div>
-            <div>
-              <CustomSelect
-                id="unit-bhk-select"
-                label="BHK Config"
-                value={String(unitForm.bhk)}
-                onChange={(val) => setUnitForm({ ...unitForm, bhk: Number(val) })}
-                options={[
-                  { value: '1', label: '1 BHK', badge: 'Compact' },
-                  { value: '2', label: '2 BHK', badge: 'Standard' },
-                  { value: '3', label: '3 BHK', badge: 'Premium' },
-                  { value: '4', label: '4 BHK', badge: 'Luxury' },
-                ]}
-              />
-            </div>
-            <div>
-              <label className="text-xs font-bold text-content block mb-1">Carpet Area (Sq.Ft) *</label>
-              <input
-                aria-label="Carpet area in square feet"
-                type="number"
-                required
-                value={unitForm.carpetAreaSqft}
-                onChange={(e) => setUnitForm({ ...unitForm, carpetAreaSqft: Number(e.target.value) })}
-                className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content font-mono focus:outline-hidden focus:border-accent font-medium"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div>
-              <label className="text-xs font-bold text-content block mb-1">Bathrooms</label>
-              <input
-                aria-label="Number of bathrooms"
-                type="number"
-                min={1}
-                value={unitForm.bathrooms}
-                onChange={(e) => setUnitForm({ ...unitForm, bathrooms: Number(e.target.value) })}
-                className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content font-mono focus:outline-hidden focus:border-accent font-medium"
-              />
-            </div>
-            <div>
-              <label className="text-xs font-bold text-content block mb-1">Balconies</label>
-              <input
-                aria-label="Number of balconies"
-                type="number"
-                min={0}
-                value={unitForm.balconies}
-                onChange={(e) => setUnitForm({ ...unitForm, balconies: Number(e.target.value) })}
-                className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content font-mono focus:outline-hidden focus:border-accent font-medium"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
-              <label className="text-xs font-bold text-content block mb-1">Floor Number</label>
-              <input
-                aria-label="Floor number"
-                type="number"
-                value={unitForm.floorNumber}
-                onChange={(e) => setUnitForm({ ...unitForm, floorNumber: Number(e.target.value) })}
-                className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content font-mono focus:outline-hidden focus:border-accent font-medium"
-              />
-            </div>
-            <div>
-              <label className="text-xs font-bold text-content block mb-1">Total Floors</label>
-              <input
-                aria-label="Total floors"
-                type="number"
-                value={unitForm.totalFloors}
-                onChange={(e) => setUnitForm({ ...unitForm, totalFloors: Number(e.target.value) })}
-                className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content font-mono focus:outline-hidden focus:border-accent font-medium"
-              />
-            </div>
-            <div>
-              <CustomSelect
-                id="unit-facing-select"
-                label="Facing"
-                value={unitForm.facing}
-                onChange={(val) => setUnitForm({ ...unitForm, facing: val })}
-                options={[
-                  { value: 'EAST', label: 'East (Morning Sunlight)' },
-                  { value: 'WEST', label: 'West (Sunset View)' },
-                  { value: 'NORTH', label: 'North' },
-                  { value: 'SOUTH', label: 'South' },
-                  { value: 'NORTH_EAST', label: 'North-East (Vastu Compliant)' },
-                  { value: 'NORTH_WEST', label: 'North-West' },
-                  { value: 'SOUTH_EAST', label: 'South-East' },
-                  { value: 'SOUTH_WEST', label: 'South-West' },
-                ]}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs font-bold text-content block mb-1">Agreement Base Value (₹) *</label>
-              <input
-                aria-label="Agreement base value"
-                type="number"
-                required
-                step="10000"
-                value={unitForm.agreementValue}
-                onChange={(e) => setUnitForm({ ...unitForm, agreementValue: Number(e.target.value) })}
-                className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content font-mono font-bold focus:outline-hidden focus:border-accent focus:ring-1 focus:ring-accent"
-              />
-            </div>
-            <div>
-              <CustomSelect
-                id="unit-possession-status-select"
-                label="Possession Status"
-                value={unitForm.possessionStatus}
-                onChange={(val) => setUnitForm({ ...unitForm, possessionStatus: val })}
-                options={[
-                  {
-                    value: 'READY_TO_MOVE',
-                    label: 'Ready to Move',
-                    description: '0% GST with Occupancy Certificate (OC)',
-                    dotColor: 'bg-status-success',
-                  },
-                  {
-                    value: 'UNDER_CONSTRUCTION',
-                    label: 'Under Construction',
-                    description: '5% GST applicable as per statutory guidelines',
-                    dotColor: 'bg-status-warning',
-                  },
-                ]}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-3 rounded-2xl border border-border bg-surface-subtle/50 p-4">
-            <div>
-              <label className="text-xs font-bold text-content block mb-1">Client-facing unit description</label>
-              <textarea
-                aria-label="Unit description"
-                rows={3}
-                maxLength={4000}
-                placeholder="Describe the light, outlook, layout, finishes, and the kind of buyer this home suits."
-                value={unitForm.description}
-                onChange={(e) => setUnitForm({ ...unitForm, description: e.target.value })}
-                className="w-full bg-surface border border-border rounded-xl p-2.5 text-xs text-content placeholder-content-muted focus:outline-hidden focus:border-accent font-medium"
-              />
-            </div>
-            <div>
-              <label className="text-xs font-bold text-content block mb-1">
-                Feature highlights <span className="text-content-muted font-normal">(one per line)</span>
-              </label>
-              <textarea
-                aria-label="Unit feature highlights"
-                rows={2}
-                placeholder="Corner living room&#10;Morning light&#10;Two covered parking bays"
-                value={unitForm.featureHighlights.join('\n')}
-                onChange={(e) => setUnitForm({ ...unitForm, featureHighlights: e.target.value.split('\n').map((item) => item.trim()).filter(Boolean) })}
-                className="w-full bg-surface border border-border rounded-xl p-2.5 text-xs text-content placeholder-content-muted focus:outline-hidden focus:border-accent font-medium"
-              />
-            </div>
-            {/* Unit Floor Plan Selector & Uploader */}
-            <div className="p-3 bg-surface-subtle border border-border rounded-xl space-y-2.5">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-bold text-content flex items-center gap-1.5">
-                  <Home className="w-3.5 h-3.5 text-accent" />
-                  <span>Floor Plan &amp; Layout Blueprint</span>
-                </label>
-                {unitForm.floorPlanUrl && (
-                  <button
-                    type="button"
-                    onClick={() => setPreviewUnitFloorPlanUrl(unitForm.floorPlanUrl)}
-                    className="text-[11px] font-bold text-accent hover:underline flex items-center gap-1 cursor-pointer"
-                  >
-                    <Eye className="w-3 h-3" />
-                    <span>Preview Current Plan</span>
-                  </button>
-                )}
-              </div>
-
-              {/* Select from parent project's brochure floor plans */}
-              {(() => {
-                const selectedProj = projects.find((p) => p.id === unitForm.projectId);
-                const rawGallery: any[] = Array.isArray(selectedProj?.mediaGallery) 
-                  ? selectedProj.mediaGallery 
-                  : (typeof selectedProj?.mediaGalleryJson === 'string' ? JSON.parse(selectedProj.mediaGalleryJson || '[]') : []);
-
-                const extractedPlans = rawGallery.filter((item: any) => {
-                  if (typeof item === 'object') {
-                    const typeStr = (item.asset_type || item.type || item.subtype || item.title || '').toLowerCase();
-                    return typeStr.includes('floor') || typeStr.includes('plan') || typeStr.includes('layout') || item.category === 'floorplan';
-                  }
-                  return typeof item === 'string' && (item.includes('floor') || item.includes('plan'));
-                });
-
-                if (selectedProj?.masterPlanUrl) {
-                  extractedPlans.unshift({ url: selectedProj.masterPlanUrl, title: `${selectedProj.projectName} Master Layout Plan` });
-                }
-
-                if (extractedPlans.length > 0) {
-                  return (
-                    <div className="space-y-1">
-                      <CustomSelect
-                        id="unit-extracted-plans-select"
-                        label="Pick from Project Extracted Floor Plans:"
-                        placeholder="-- Select from Project Brochure Floor Plans --"
-                        value={unitForm.floorPlanUrl || ''}
-                        onChange={(val) => setUnitForm({ ...unitForm, floorPlanUrl: val })}
-                        options={[
-                          { value: '', label: '-- Custom Upload / None --' },
-                          ...extractedPlans.map((plan: any, pIdx: number) => ({
-                            value: resolveAssetUrl(plan),
-                            label: plan.title || (plan.bhk ? `${plan.bhk} BHK Floor Plan` : `Layout Plan ${pIdx + 1}`),
-                          })),
-                        ]}
-                      />
-                    </div>
-                  );
-                }
-                return null;
-              })()}
-
-              <div className="flex items-center gap-2">
-                <input
-                  aria-label="Floor plan URL"
-                  type="url"
-                  placeholder="Or enter custom image URL (https://…)"
-                  value={unitForm.floorPlanUrl}
-                  onChange={(e) => setUnitForm({ ...unitForm, floorPlanUrl: e.target.value })}
-                  className="flex-1 bg-surface border border-border rounded-xl p-2 text-xs text-content placeholder-content-muted focus:outline-hidden focus:border-accent font-medium"
-                />
-                <label className="px-3 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 shrink-0">
-                  <Upload className="w-3.5 h-3.5 text-accent" />
-                  <span>{uploadingUnitFloorPlan ? 'Uploading…' : 'Upload Image'}</span>
-                  <input
-                    type="file"
-                    accept="image/*,application/pdf"
-                    className="hidden"
-                    disabled={uploadingUnitFloorPlan}
-                    onChange={handleUnitFloorPlanFileUpload}
-                  />
-                </label>
-              </div>
-
-              {unitForm.floorPlanUrl && (
-                <div className="mt-2 relative w-full h-32 bg-slate-950 rounded-lg overflow-hidden border border-border flex items-center justify-center group">
-                  <img
-                    src={unitForm.floorPlanUrl}
-                    alt="Unit floor plan preview"
-                    className="max-h-full max-w-full object-contain cursor-pointer"
-                    onClick={() => setPreviewUnitFloorPlanUrl(unitForm.floorPlanUrl)}
-                  />
-                  <div 
-                    onClick={() => setPreviewUnitFloorPlanUrl(unitForm.floorPlanUrl)}
-                    className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold gap-1.5 cursor-pointer"
-                  >
-                    <Eye className="w-4 h-4" />
-                    <span>Click to Zoom</span>
-                  </div>
-                </div>
-              )}
-            </div>
-            <div>
-              <label className="text-xs font-bold text-content block mb-1">
-                External walkthrough URL <span className="text-content-muted font-normal">(optional)</span>
-              </label>
-              <input
-                aria-label="External walkthrough URL"
-                type="url"
-                placeholder="YouTube, Vimeo, or builder walkthrough link"
-                value={unitForm.videoReelUrl}
-                onChange={(e) => setUnitForm({ ...unitForm, videoReelUrl: e.target.value })}
-                className="w-full bg-surface border border-border rounded-xl p-2.5 text-xs text-content placeholder-content-muted focus:outline-hidden focus:border-accent font-medium"
-              />
-            </div>
-            <MediaUploader value={unitForm.mediaGallery} onChange={(mediaGallery) => setUnitForm({ ...unitForm, mediaGallery, photoUrls: mediaGallery.filter((asset) => asset.kind === 'image').map((asset) => asset.url) })} label="Unit gallery and walkthrough" />
-          </div>
-
-          <div>
-            <label className="text-xs font-bold text-content block mb-1">Audit Log / Inspection Verification Notes</label>
-            <textarea
-              aria-label="Audit log and inspection verification notes"
-              rows={2}
-              value={unitForm.verificationNotes}
-              onChange={(e) => setUnitForm({ ...unitForm, verificationNotes: e.target.value })}
-              className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content placeholder-content-muted focus:outline-hidden focus:border-accent font-medium"
-            />
-          </div>
-
-          <div className="pt-3 flex justify-end gap-2 border-t border-border">
+        {projects.length === 0 ? (
+          <div className="my-4 rounded-xl border border-status-warning/40 bg-status-warning-surface p-5 text-center">
+            <Building2 className="mx-auto h-8 w-8 text-status-warning" />
+            <h3 className="mt-2 text-sm font-bold text-content">No Developer Projects Found</h3>
+            <p className="mt-1 text-xs text-content-muted max-w-md mx-auto">
+              Real estate units must belong to a developer project (which holds the RERA registration, micro-market, and statutory details). Please create a developer project first before adding property units.
+            </p>
             <button
               type="button"
-              onClick={() => setShowAddModal(false)}
-              className="px-4 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-bold transition-colors cursor-pointer"
+              onClick={() => {
+                setShowAddModal(false);
+                openNewProject();
+              }}
+              className="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-accent px-4 py-2.5 text-xs font-bold text-white shadow-sm hover:opacity-90 transition cursor-pointer"
             >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={creatingUnit}
-              className="px-5 py-2 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold shadow-sm transition-all cursor-pointer"
-            >
-              {creatingUnit ? 'Saving…' : editingUnitId ? 'Save unit changes' : 'Add property unit'}
+              <Plus className="h-3.5 w-3.5" />
+              <span>+ Create Developer Project First</span>
             </button>
           </div>
-        </form>
+        ) : (
+          <form onSubmit={handleCreateUnit} className="space-y-4 pt-3">
+            <div>
+              <CustomSelect
+                id="unit-project-select"
+                label="Developer Project *"
+                value={unitForm.projectId}
+                onChange={(val) => {
+                  const selectedProj = projects.find((p) => p.id === val);
+                  let matchedPlanUrl = '';
+                  let matchedCarpet = unitForm.carpetAreaSqft;
+                  if (selectedProj) {
+                    const allPlans: any[] = [
+                      ...(Array.isArray(selectedProj.floorPlanImages) ? selectedProj.floorPlanImages : JSON.parse(selectedProj.floorPlanImagesJson || '[]')),
+                      ...(Array.isArray(selectedProj.mediaGallery) ? selectedProj.mediaGallery : JSON.parse(selectedProj.mediaGalleryJson || '[]')),
+                    ];
+                    const matched = allPlans.find((p: any) => Number(p?.bhk) === Number(unitForm.bhk));
+                    if (matched) {
+                      matchedPlanUrl = resolveAssetUrl(matched) || '';
+                      if (matched.carpetAreaSqft && (!matchedCarpet || matchedCarpet === 0)) {
+                        matchedCarpet = matched.carpetAreaSqft;
+                      }
+                    }
+                  }
+                  setUnitForm((prev) => ({
+                    ...prev,
+                    projectId: val,
+                    floorPlanUrl: matchedPlanUrl || prev.floorPlanUrl,
+                    carpetAreaSqft: matchedCarpet,
+                  }));
+                }}
+                searchable
+                searchPlaceholder="Search project by name or locality..."
+                options={projects.map((p) => ({
+                  value: p.id,
+                  label: p.projectName,
+                  description: `${p.developerName || 'Developer'} • ${p.microMarket || 'Navi Mumbai'}`,
+                }))}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label className="text-xs font-bold text-content block mb-1">Unit Number</label>
+                <input
+                  aria-label="Unit number"
+                  type="text"
+                  placeholder="e.g. A-1204"
+                  value={unitForm.unitNumber}
+                  onChange={(e) => setUnitForm({ ...unitForm, unitNumber: e.target.value })}
+                  className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content font-mono focus:outline-hidden focus:border-accent font-medium"
+                />
+              </div>
+              <div>
+                <CustomSelect
+                  id="unit-bhk-select"
+                  label="BHK Config"
+                  value={String(unitForm.bhk)}
+                  onChange={(val) => {
+                    const newBhk = Number(val);
+                    const selectedProj = projects.find((p) => p.id === unitForm.projectId);
+                    let matchedPlanUrl = unitForm.floorPlanUrl;
+                    let matchedCarpet = unitForm.carpetAreaSqft;
+
+                    if (selectedProj) {
+                      const allPlans: any[] = [
+                        ...(Array.isArray(selectedProj.floorPlanImages) ? selectedProj.floorPlanImages : JSON.parse(selectedProj.floorPlanImagesJson || '[]')),
+                        ...(Array.isArray(selectedProj.mediaGallery) ? selectedProj.mediaGallery : JSON.parse(selectedProj.mediaGalleryJson || '[]')),
+                      ];
+                      const matched = allPlans.find((p: any) => Number(p?.bhk) === newBhk);
+                      if (matched) {
+                        matchedPlanUrl = resolveAssetUrl(matched) || matchedPlanUrl;
+                        if (matched.carpetAreaSqft && (!matchedCarpet || matchedCarpet === 0)) {
+                          matchedCarpet = matched.carpetAreaSqft;
+                        }
+                      }
+                    }
+                    setUnitForm((prev) => ({
+                      ...prev,
+                      bhk: newBhk,
+                      floorPlanUrl: matchedPlanUrl,
+                      carpetAreaSqft: matchedCarpet,
+                    }));
+                  }}
+                  options={[
+                    { value: '1', label: '1 BHK', badge: 'Compact' },
+                    { value: '2', label: '2 BHK', badge: 'Standard' },
+                    { value: '3', label: '3 BHK', badge: 'Premium' },
+                    { value: '4', label: '4 BHK', badge: 'Luxury' },
+                  ]}
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-content block mb-1">Carpet Area (Sq.Ft) *</label>
+                <input
+                  aria-label="Carpet area in square feet"
+                  type="number"
+                  required
+                  value={unitForm.carpetAreaSqft}
+                  onChange={(e) => setUnitForm({ ...unitForm, carpetAreaSqft: Number(e.target.value) })}
+                  className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content font-mono focus:outline-hidden focus:border-accent font-medium"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div>
+                <label className="text-xs font-bold text-content block mb-1">Bathrooms</label>
+                <input
+                  aria-label="Number of bathrooms"
+                  type="number"
+                  min={1}
+                  value={unitForm.bathrooms}
+                  onChange={(e) => setUnitForm({ ...unitForm, bathrooms: Number(e.target.value) })}
+                  className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content font-mono focus:outline-hidden focus:border-accent font-medium"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-content block mb-1">Balconies</label>
+                <input
+                  aria-label="Number of balconies"
+                  type="number"
+                  min={0}
+                  value={unitForm.balconies}
+                  onChange={(e) => setUnitForm({ ...unitForm, balconies: Number(e.target.value) })}
+                  className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content font-mono focus:outline-hidden focus:border-accent font-medium"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label className="text-xs font-bold text-content block mb-1">Floor Number</label>
+                <input
+                  aria-label="Floor number"
+                  type="number"
+                  value={unitForm.floorNumber}
+                  onChange={(e) => setUnitForm({ ...unitForm, floorNumber: Number(e.target.value) })}
+                  className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content font-mono focus:outline-hidden focus:border-accent font-medium"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-content block mb-1">Total Floors</label>
+                <input
+                  aria-label="Total floors"
+                  type="number"
+                  value={unitForm.totalFloors}
+                  onChange={(e) => setUnitForm({ ...unitForm, totalFloors: Number(e.target.value) })}
+                  className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content font-mono focus:outline-hidden focus:border-accent font-medium"
+                />
+              </div>
+              <div>
+                <CustomSelect
+                  id="unit-facing-select"
+                  label="Facing"
+                  value={unitForm.facing}
+                  onChange={(val) => setUnitForm({ ...unitForm, facing: val })}
+                  options={[
+                    { value: 'EAST', label: 'East (Morning Sunlight)' },
+                    { value: 'WEST', label: 'West (Sunset View)' },
+                    { value: 'NORTH', label: 'North' },
+                    { value: 'SOUTH', label: 'South' },
+                    { value: 'NORTH_EAST', label: 'North-East (Vastu Compliant)' },
+                    { value: 'NORTH_WEST', label: 'North-West' },
+                    { value: 'SOUTH_EAST', label: 'South-East' },
+                    { value: 'SOUTH_WEST', label: 'South-West' },
+                  ]}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-bold text-content block mb-1">Agreement Base Value (₹) *</label>
+                <input
+                  aria-label="Agreement base value"
+                  type="number"
+                  required
+                  step="10000"
+                  value={unitForm.agreementValue}
+                  onChange={(e) => setUnitForm({ ...unitForm, agreementValue: Number(e.target.value) })}
+                  className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content font-mono font-bold focus:outline-hidden focus:border-accent focus:ring-1 focus:ring-accent"
+                />
+              </div>
+              <div>
+                <CustomSelect
+                  id="unit-possession-status-select"
+                  label="Possession Status"
+                  value={unitForm.possessionStatus}
+                  onChange={(val) => setUnitForm({ ...unitForm, possessionStatus: val })}
+                  options={[
+                    {
+                      value: 'READY_TO_MOVE',
+                      label: 'Ready to Move',
+                      description: '0% GST with Occupancy Certificate (OC)',
+                      dotColor: 'bg-status-success',
+                    },
+                    {
+                      value: 'UNDER_CONSTRUCTION',
+                      label: 'Under Construction',
+                      description: '5% GST applicable as per statutory guidelines',
+                      dotColor: 'bg-status-warning',
+                    },
+                  ]}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-3 rounded-2xl border border-border bg-surface-subtle/50 p-4">
+              <div>
+                <label className="text-xs font-bold text-content block mb-1">Client-facing unit description</label>
+                <textarea
+                  aria-label="Unit description"
+                  rows={3}
+                  maxLength={4000}
+                  placeholder="Describe the light, outlook, layout, finishes, and the kind of buyer this home suits."
+                  value={unitForm.description}
+                  onChange={(e) => setUnitForm({ ...unitForm, description: e.target.value })}
+                  className="w-full bg-surface border border-border rounded-xl p-2.5 text-xs text-content placeholder-content-muted focus:outline-hidden focus:border-accent font-medium"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-content block mb-1">
+                  Feature highlights <span className="text-content-muted font-normal">(one per line)</span>
+                </label>
+                <textarea
+                  aria-label="Unit feature highlights"
+                  rows={2}
+                  placeholder="Corner living room&#10;Morning light&#10;Two covered parking bays"
+                  value={unitForm.featureHighlights.join('\n')}
+                  onChange={(e) => setUnitForm({ ...unitForm, featureHighlights: e.target.value.split('\n').map((item) => item.trim()).filter(Boolean) })}
+                  className="w-full bg-surface border border-border rounded-xl p-2.5 text-xs text-content placeholder-content-muted focus:outline-hidden focus:border-accent font-medium"
+                />
+              </div>
+              {/* Unit Floor Plan Selector & Uploader */}
+              <div className="p-3 bg-surface-subtle border border-border rounded-xl space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-content flex items-center gap-1.5">
+                    <Home className="w-3.5 h-3.5 text-accent" />
+                    <span>Floor Plan &amp; Layout Blueprint</span>
+                  </label>
+                  {unitForm.floorPlanUrl && (
+                    <button
+                      type="button"
+                      onClick={() => setPreviewUnitFloorPlanUrl(unitForm.floorPlanUrl)}
+                      className="text-[11px] font-bold text-accent hover:underline flex items-center gap-1 cursor-pointer"
+                    >
+                      <Eye className="w-3 h-3" />
+                      <span>Preview Current Plan</span>
+                    </button>
+                  )}
+                </div>
+
+                {/* Select from parent project's brochure floor plans */}
+                {(() => {
+                  const selectedProj = projects.find((p) => p.id === unitForm.projectId);
+                  const rawGallery: any[] = Array.isArray(selectedProj?.mediaGallery) 
+                    ? selectedProj.mediaGallery 
+                    : (typeof selectedProj?.mediaGalleryJson === 'string' ? JSON.parse(selectedProj.mediaGalleryJson || '[]') : []);
+
+                  const rawFloorPlans: any[] = Array.isArray(selectedProj?.floorPlanImages)
+                    ? selectedProj.floorPlanImages
+                    : (typeof selectedProj?.floorPlanImagesJson === 'string' ? JSON.parse(selectedProj.floorPlanImagesJson || '[]') : []);
+
+                  const combined = [...rawFloorPlans, ...rawGallery];
+                  const seenUrls = new Set<string>();
+                  const extractedPlans: any[] = [];
+
+                  for (const item of combined) {
+                    const url = resolveAssetUrl(item);
+                    if (!url || seenUrls.has(url)) continue;
+
+                    let isPlan = false;
+                    let title = '';
+                    let bhkVal = item?.bhk;
+
+                    if (typeof item === 'object') {
+                      const typeStr = (item.asset_type || item.type || item.subtype || item.title || item.category || '').toLowerCase();
+                      isPlan = typeStr.includes('floor') || typeStr.includes('plan') || typeStr.includes('layout') || item.category === 'floor-plans' || item.category === 'floorplan';
+                      title = item.title;
+                    } else if (typeof item === 'string') {
+                      isPlan = item.includes('floor') || item.includes('plan');
+                    }
+
+                    if (isPlan) {
+                      seenUrls.add(url);
+                      extractedPlans.push({
+                        url,
+                        title: title || (bhkVal ? `${bhkVal} BHK Floor Plan` : 'Floor Plan Layout'),
+                        bhk: bhkVal,
+                        carpetAreaSqft: item.carpetAreaSqft,
+                      });
+                    }
+                  }
+
+                  if (selectedProj?.masterPlanUrl && !seenUrls.has(selectedProj.masterPlanUrl)) {
+                    extractedPlans.unshift({ url: selectedProj.masterPlanUrl, title: `${selectedProj.projectName} Master Layout Plan` });
+                  }
+
+                  if (extractedPlans.length > 0) {
+                    return (
+                      <div className="space-y-1">
+                        <CustomSelect
+                          id="unit-extracted-plans-select"
+                          label="Pick from Project Extracted Floor Plans:"
+                          placeholder="-- Select from Project Brochure Floor Plans --"
+                          value={unitForm.floorPlanUrl || ''}
+                          onChange={(val) => {
+                            const chosen = extractedPlans.find((p) => p.url === val);
+                            setUnitForm((prev) => ({
+                              ...prev,
+                              floorPlanUrl: val,
+                              carpetAreaSqft: (prev.carpetAreaSqft === 0 && chosen?.carpetAreaSqft) ? chosen.carpetAreaSqft : prev.carpetAreaSqft,
+                            }));
+                          }}
+                          options={[
+                            { value: '', label: '-- Custom Upload / None --' },
+                            ...extractedPlans.map((plan: any, pIdx: number) => ({
+                              value: plan.url,
+                              label: plan.title || (plan.bhk ? `${plan.bhk} BHK Floor Plan` : `Layout Plan ${pIdx + 1}`),
+                              badge: plan.bhk ? `${plan.bhk} BHK` : undefined,
+                            })),
+                          ]}
+                        />
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
+
+                <div className="flex items-center gap-2">
+                  <input
+                    aria-label="Floor plan URL"
+                    type="url"
+                    placeholder="Or enter custom image URL (https://…)"
+                    value={unitForm.floorPlanUrl}
+                    onChange={(e) => setUnitForm({ ...unitForm, floorPlanUrl: e.target.value })}
+                    className="flex-1 bg-surface border border-border rounded-xl p-2 text-xs text-content placeholder-content-muted focus:outline-hidden focus:border-accent font-medium"
+                  />
+                  <label className="px-3 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 shrink-0">
+                    <Upload className="w-3.5 h-3.5 text-accent" />
+                    <span>{uploadingUnitFloorPlan ? 'Uploading…' : 'Upload Image'}</span>
+                    <input
+                      type="file"
+                      accept="image/*,application/pdf"
+                      className="hidden"
+                      disabled={uploadingUnitFloorPlan}
+                      onChange={handleUnitFloorPlanFileUpload}
+                    />
+                  </label>
+                </div>
+
+                {unitForm.floorPlanUrl && (
+                  <div className="mt-2 relative w-full h-32 bg-slate-950 rounded-lg overflow-hidden border border-border flex items-center justify-center group">
+                    <img
+                      src={unitForm.floorPlanUrl}
+                      alt="Unit floor plan preview"
+                      className="max-h-full max-w-full object-contain cursor-pointer"
+                      onClick={() => setPreviewUnitFloorPlanUrl(unitForm.floorPlanUrl)}
+                    />
+                    <div 
+                      onClick={() => setPreviewUnitFloorPlanUrl(unitForm.floorPlanUrl)}
+                      className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold gap-1.5 cursor-pointer"
+                    >
+                      <Eye className="w-4 h-4" />
+                      <span>Click to Zoom</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <div>
+                <label className="text-xs font-bold text-content block mb-1">
+                  External walkthrough URL <span className="text-content-muted font-normal">(optional)</span>
+                </label>
+                <input
+                  aria-label="External walkthrough URL"
+                  type="url"
+                  placeholder="YouTube, Vimeo, or builder walkthrough link"
+                  value={unitForm.videoReelUrl}
+                  onChange={(e) => setUnitForm({ ...unitForm, videoReelUrl: e.target.value })}
+                  className="w-full bg-surface border border-border rounded-xl p-2.5 text-xs text-content placeholder-content-muted focus:outline-hidden focus:border-accent font-medium"
+                />
+              </div>
+              <MediaUploader
+                value={unitForm.mediaGallery}
+                onChange={(mediaGallery) => {
+                  const photos = mediaGallery.filter((asset) => asset.kind === 'image').map((asset) => asset.url);
+                  const firstVideo = mediaGallery.find((asset) => asset.kind === 'video');
+                  setUnitForm((prev) => ({
+                    ...prev,
+                    mediaGallery,
+                    photoUrls: photos,
+                    videoReelUrl: prev.videoReelUrl || firstVideo?.url || '',
+                  }));
+                }}
+                label="Unit gallery and walkthrough"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-content block mb-1">Audit Log / Inspection Verification Notes</label>
+              <textarea
+                aria-label="Audit log and inspection verification notes"
+                rows={2}
+                value={unitForm.verificationNotes}
+                onChange={(e) => setUnitForm({ ...unitForm, verificationNotes: e.target.value })}
+                className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content placeholder-content-muted focus:outline-hidden focus:border-accent font-medium"
+              />
+            </div>
+
+            <div className="pt-3 flex justify-end gap-2 border-t border-border">
+              <button
+                type="button"
+                onClick={() => setShowAddModal(false)}
+                className="px-4 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-bold transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={creatingUnit}
+                className="px-5 py-2 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold shadow-sm transition-all cursor-pointer"
+              >
+                {creatingUnit ? 'Saving…' : editingUnitId ? 'Save unit changes' : 'Add property unit'}
+              </button>
+            </div>
+          </form>
+        )}
       </AccessibleDialog>
 
       {/* ========================================================================= */}
@@ -2398,6 +2664,7 @@ export function InventoryClient({
       <BrochureUploadModal
         open={showBrochureModal}
         onClose={() => setShowBrochureModal(false)}
+        onPrefillProjectForm={(data) => handlePrefillFromBrochure(data)}
         onSuccess={(project) => {
           setShowBrochureModal(false);
           setBannerToast({

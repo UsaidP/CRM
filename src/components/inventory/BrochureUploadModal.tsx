@@ -48,79 +48,10 @@ export interface BrochureUploadModalProps {
   open: boolean;
   onClose: () => void;
   onSuccess: (project: any) => void;
+  onPrefillProjectForm?: (projectData: any) => void;
 }
 
-const SAMPLE_BROCHURES = [
-  {
-    label: 'City Avenue (Sector 24, Taloja Phase II)',
-    badge: 'NEW BROCHURE',
-    text: `CITY AVENUE by City Space
-Plot No. 12D, Sector-24, Taloja Phase II, Navi Mumbai-410208
-MahaRERA Registration Number: P52000079818
-ABOUT PROJECT:
-- G+7 with Commercial & Residential Project
-- Taste-Fully Designed Entrance & Floor Lobbies
-- Branded High Speed Elevators
-- Clear Title CIDCO Transfer Plot
-- 1 BHK & 2 BHK Spacious Flats with Balcony
-- 1st Floor 7 Flat & 2nd to 7th Slab 8 Flat Each Floor
-- Power Backup For Lifts & Common Area
-AMENITIES & SPECIFICATIONS:
-- 2'x2' Vitrified flooring tiles in all rooms
-- Granite kitchen platform with stainless steel sink & ceramic tiles dado
-- Decorative lamination finish main door & internal wooden doors with marble frames
-- Concealed plumbing with branded sanitary fittings, glazed tiles up to full height
-- Powder Coated Aluminum sliding windows with glass in living room, bedroom & kitchen
-- Concealed copper wiring with modular switches, telephone & cable TV points
-- Special water proofing treatment with china chips on terrace
-- Intercom facility & Rain water harvesting system
-- Underground & overhead water storage tank
-LOCATION CONNECTIVITY:
-- 3 mins walk to Taloja Phase II Metro Station
-- 7 mins drive to Central Park & Kharghar Golf Course
-- 10 mins drive to Taloja Railway Station
-- 15 mins drive from Navi Mumbai International Airport
-- 20 mins drive from Navi Mumbai Trans-Harbour Link (MTHL)
-A Project By: City Space
-Office Add: #35, 1st Floor, Hiranandani Crystal Plaza, Sector-7, Kharghar
-Site Add: Plot No. 12D, Sector-24, Taloja Phase II, Navi Mumbai-410208
-Email: citygroup36@gmail.com
-Architects: Destination Architecture Interior Designs | RCC: SRS Consultants
-Contact for Booking: MOHD SAQLAIN - 9920540484`
-  },
-  {
-    label: 'Crown Heights (Kharghar Sec 35)',
-    badge: 'LUXURY TOWER',
-    text: `CROWN HEIGHTS by Paradise Group Presents G+24 Storey Iconic Luxury Landmark
-MahaRERA Registration Number: P52000028714
-Location: Sector 35, Kharghar, Navi Mumbai (Near Metro Station)
-Configuration:
-- 1 BHK Grand: 450 sq.ft RERA Carpet Area
-- 2 BHK Premium: 685 sq.ft RERA Carpet Area
-- 3 BHK Royal: 1050 sq.ft RERA Carpet Area
-Base Rate: ₹10,500 / sqft
-Possession Date: December 2027 (Under Construction)
-Amenities:
-Infinity Edge Swimming Pool & Kids Splash Pool, State-of-the-Art Fitness Center & Gymnasium, Grand Lifestyle Clubhouse & Community Hall, Rooftop Sky Lounge & Stargazing Deck, Double Height Designer Entrance Lobby, Multi-Level Podium Car Parking, 3-Tier Security with 24/7 CCTV, EV Car Charging Stations, Landscaped Podium Garden with Gazebo.
-Sales Contact: Site Sales Desk (+91 98201 23456)`
-  },
-  {
-    label: 'Riverview Residency (Taloja Phase 1)',
-    badge: 'TWIN TOWERS',
-    text: `RIVERVIEW RESIDENCY by Today Global Developers
-MahaRERA Reg No: P52000019842
-Location: Sector 14, Taloja Phase 1, Navi Mumbai (Near Pendhar Metro Station)
-Elevation: G+18 Storey High-Rise Twin Towers (2 Wings)
-Typologies:
-- 1 BHK Executive: 420 sq.ft Carpet Area (Rate: ₹6,800/sqft)
-- 2 BHK Deluxe: 640 sq.ft Carpet Area (Rate: ₹6,800/sqft)
-Status: Under Construction • RERA Target: June 2028
-Amenities:
-Swimming Pool, Modern Gymnasium, Clubhouse, Children Play Park, Jogging Track, Automatic Elevators, 24x7 Security, Power Backup, Rainwater Harvesting.`
-  }
-];
-
-export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUploadModalProps) {
+export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProjectForm }: BrochureUploadModalProps) {
   const [step, setStep] = useState<'upload' | 'review'>('upload');
   const [uploadMode, setUploadMode] = useState<'file' | 'text'>('file');
   const [file, setFile] = useState<File | null>(null);
@@ -735,35 +666,6 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
               </div>
             )}
 
-            {/* Quick Demo Pre-Fill Buttons */}
-            <div className="p-3.5 bg-surface rounded-xl border border-border space-y-2.5">
-              <span className="text-[10px] font-mono font-bold uppercase text-content-muted block">
-                ⭐ Featured Real Estate Brochures (Click to Test Instantly):
-              </span>
-              <div className="flex flex-wrap gap-2">
-                {SAMPLE_BROCHURES.map((sample, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => {
-                      setUploadMode('text');
-                      setPastedText(sample.text);
-                    }}
-                    className={`px-3.5 py-2 rounded-xl border text-[11px] font-semibold flex items-center gap-2 transition-all cursor-pointer ${
-                      idx === 0
-                        ? 'bg-accent/10 border-accent/40 text-accent-text font-bold shadow-xs hover:bg-accent/15'
-                        : 'bg-surface-subtle hover:bg-surface border-border text-content'
-                    }`}
-                  >
-                    <Building2 className="w-4 h-4 text-accent" />
-                    <span>{sample.label}</span>
-                    <span className="text-[9px] px-1.5 py-0.5 rounded font-mono font-bold bg-surface border border-border text-content-muted">
-                      {sample.badge}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
 
             {/* Parsing Progress Animation */}
             {parsing && (
@@ -1157,39 +1059,66 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
               <div className="space-y-4">
                 {/* Elevation Renders */}
                 <div className="p-4 bg-surface rounded-2xl border border-border space-y-3.5">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <h3 className="font-bold text-xs uppercase font-mono text-accent-text flex items-center gap-1.5">
-                      <Building2 className="w-4 h-4 text-accent" /> High-Resolution Architectural Elevations ({projectData.elevations?.length || 3})
+                      <Building2 className="w-4 h-4 text-accent" /> High-Resolution Architectural Elevations ({projectData.elevations?.length || 0})
                     </h3>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent-soft text-accent-text font-mono font-bold">
-                      Stored &amp; Categorized in zamzam_crm/elevations
+                    <span className="text-[10px] px-2.5 py-1 rounded-lg bg-accent-soft text-accent-text font-mono font-bold border border-accent/20 truncate">
+                      Cloudinary: zamzam_crm/projects/{projectData.projectName ? projectData.projectName.replace(/[^a-zA-Z0-9_-]/g, '_') : 'project'}/elevations
                     </span>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    {(projectData.elevations || []).map((elev: any, idx: number) => (
-                      <div key={idx} className="p-3 bg-surface-subtle rounded-xl border border-border space-y-2 group hover:border-accent/40 transition-all">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-accent/10 text-accent font-mono">
-                            {elev.viewAngle?.replace(/_/g, ' ') || 'ELEVATION'}
-                          </span>
-                          <span className="text-[10px] text-content-muted font-mono">{elev.page_number ? `Page ${elev.page_number}` : 'Original Media'}</span>
+                    {(projectData.elevations || []).map((elev: any, idx: number) => {
+                      const elevUrl = resolveAssetUrl(elev);
+                      const isCover = (projectData.coverImageUrl === elevUrl) || (!projectData.coverImageUrl && idx === 0);
+                      return (
+                        <div
+                          key={idx}
+                          className={`p-3 rounded-xl border space-y-2 group transition-all ${
+                            isCover
+                              ? 'border-accent bg-accent-soft/20 shadow-xs ring-1 ring-accent/30'
+                              : 'bg-surface-subtle border-border hover:border-accent/40'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-accent/10 text-accent font-mono">
+                              {elev.viewAngle?.replace(/_/g, ' ') || 'ELEVATION'}
+                            </span>
+                            {isCover ? (
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-accent text-white font-mono flex items-center gap-1">
+                                <Check className="w-2.5 h-2.5" /> Cover Image
+                              </span>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => setProjectData({ ...projectData, coverImageUrl: elevUrl })}
+                                className="text-[10px] text-accent font-bold hover:underline cursor-pointer"
+                              >
+                                Set as Cover
+                              </button>
+                            )}
+                          </div>
+                          <p className="text-xs font-bold text-content truncate font-display">{elev.title}</p>
+                          <p className="text-[11px] text-content-secondary line-clamp-2">{elev.description}</p>
+                          {elevUrl ? (
+                            <div className="flex items-center justify-between pt-1">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setPreviewLightboxUrl(elevUrl);
+                                  setPreviewLightboxTitle(elev.title || 'Architectural Elevation');
+                                }}
+                                className="inline-flex items-center gap-1 text-[11px] font-bold text-accent hover:underline cursor-pointer"
+                              >
+                                <Eye className="w-3.5 h-3.5" />
+                                <span>Preview Image</span>
+                              </button>
+                            </div>
+                          ) : null}
                         </div>
-                        <p className="text-xs font-bold text-content truncate font-display">{elev.title}</p>
-                        <p className="text-[11px] text-content-secondary line-clamp-2">{elev.description}</p>
-                        {resolveAssetUrl(elev) ? (
-                          <a
-                            href={resolveAssetUrl(elev)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-[11px] font-bold text-accent hover:underline pt-1"
-                          >
-                            <Eye className="w-3.5 h-3.5" />
-                            <span>Preview Image</span>
-                          </a>
-                        ) : null}
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -1600,6 +1529,20 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
                 >
                   Cancel
                 </button>
+
+                {onPrefillProjectForm && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onPrefillProjectForm(projectData);
+                      handleCloseModal();
+                    }}
+                    className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-surface hover:bg-surface-subtle text-accent border border-accent/40 hover:border-accent text-xs font-bold shadow-2xs transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
+                  >
+                    <Building2 className="w-3.5 h-3.5" />
+                    <span>Prefill into Project Form</span>
+                  </button>
+                )}
 
                 <button
                   type="button"

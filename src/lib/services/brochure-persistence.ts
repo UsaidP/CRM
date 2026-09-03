@@ -125,6 +125,42 @@ export async function persistBrochureExtraction(
       unitData.floorPlanImagesJson = JSON.stringify(matchingPlans);
       unitData.floorPlanUrl = matchingPlans[0].url;
     }
+
+    // Populate unit's mediaGalleryJson & photoGalleryJson with floor plan and elevation assets
+    const existingUnitGallery = parseJsonArray<any>(unit.mediaGalleryJson);
+    const existingUrls = new Set(existingUnitGallery.map((item: any) => resolveAssetUrl(item)).filter(Boolean));
+    const newUnitGallery = [...existingUnitGallery];
+
+    if (matchingPlans.length > 0) {
+      for (const fp of matchingPlans) {
+        if (fp.url && !existingUrls.has(fp.url)) {
+          existingUrls.add(fp.url);
+          newUnitGallery.push({
+            id: fp.id || `fp_${unit.bhk}`,
+            url: fp.url,
+            title: fp.title || `${unit.bhk} BHK Floor Plan Layout`,
+            kind: 'image',
+            category: 'floor-plans',
+            bhk: unit.bhk,
+          });
+        }
+      }
+    }
+
+    if (elevationImagesData.length > 0 && elevationImagesData[0]?.url && !existingUrls.has(elevationImagesData[0].url)) {
+      existingUrls.add(elevationImagesData[0].url);
+      newUnitGallery.push({
+        id: elevationImagesData[0].id || 'elev_cover',
+        url: elevationImagesData[0].url,
+        title: elevationImagesData[0].title || 'Architectural Elevation',
+        kind: 'image',
+        category: 'elevations',
+      });
+    }
+
+    unitData.mediaGalleryJson = JSON.stringify(newUnitGallery);
+    unitData.photoGalleryJson = JSON.stringify(newUnitGallery.filter((a: any) => a.kind === 'image').map((a: any) => resolveAssetUrl(a)));
+
     await prisma.propertyUnit.update({ where: { id: unit.id }, data: unitData });
     unitsUpdated++;
   }

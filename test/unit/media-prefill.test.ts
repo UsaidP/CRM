@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'bun:test';
-import { prisma } from '@/lib/db/prisma';
 import { calculateAllInCost } from '@/lib/domain/cost-calculator';
+import { sanitizeProjectFolderName, getCloudinaryFolder } from '@/lib/services/cloud-media-service';
+import { matchFloorPlansForUnit } from '@/lib/services/brochure-persistence';
 
 describe('Unit Media Pre-fill and Management API', () => {
   it('calculates statutory costs properly without fabricating rates', () => {
@@ -28,14 +29,34 @@ describe('Unit Media Pre-fill and Management API', () => {
       { id: 'fp-3', url: 'https://cdn.com/fp-3bhk.jpg', title: '3 BHK Floor Plan', bhk: 3, carpetAreaSqft: 1050 },
     ];
 
-    const unit2Bhk = { bhk: 2 };
-    const matching2Bhk = projectFloorPlans.filter((fp) => fp.bhk === unit2Bhk.bhk);
+    const matching2Bhk = matchFloorPlansForUnit(2, projectFloorPlans);
     expect(matching2Bhk).toHaveLength(1);
     expect(matching2Bhk[0].url).toBe('https://cdn.com/fp-2bhk.jpg');
 
-    const unit4Bhk = { bhk: 4 };
-    const matching4Bhk = projectFloorPlans.filter((fp) => fp.bhk === unit4Bhk.bhk);
-    const fallback4Bhk = matching4Bhk.length > 0 ? matching4Bhk : projectFloorPlans;
-    expect(fallback4Bhk).toHaveLength(3);
+    // Zero-fabrication: unmatched BHK must NOT broadcast other floor plans
+    const matching4Bhk = matchFloorPlansForUnit(4, projectFloorPlans);
+    expect(matching4Bhk).toHaveLength(0);
+  });
+
+  it('sanitizes project folder names and routes assets to dedicated Cloudinary folders', () => {
+    expect(sanitizeProjectFolderName('Godrej Horizon')).toBe('Godrej_Horizon');
+    expect(sanitizeProjectFolderName('Saras-Icon / Tower A & B!')).toBe('Saras-Icon_Tower_A_B');
+    expect(sanitizeProjectFolderName('')).toBe('');
+
+    expect(getCloudinaryFolder('brochures', 'Godrej Horizon')).toBe('zamzam_crm/projects/Godrej_Horizon/brochures');
+    expect(getCloudinaryFolder('elevations', 'Godrej Horizon')).toBe('zamzam_crm/projects/Godrej_Horizon/elevations');
+    expect(getCloudinaryFolder('floor-plans', 'Godrej Horizon')).toBe('zamzam_crm/projects/Godrej_Horizon/floor-plans');
+    expect(getCloudinaryFolder('gallery', 'Godrej Horizon')).toBe('zamzam_crm/projects/Godrej_Horizon/gallery');
+    expect(getCloudinaryFolder('general')).toBe('zamzam_crm/general');
+  });
+
+  it('sets default coverImageUrl to the primary elevation render', () => {
+    const elevations = [
+      { id: 'el-1', url: 'https://cloudinary.com/proj/elevations/front_facade.jpg', title: 'Front Facade Elevation' },
+      { id: 'el-2', url: 'https://cloudinary.com/proj/elevations/aerial_view.jpg', title: 'Aerial View' },
+    ];
+
+    const defaultCoverImageUrl = elevations[0]?.url || null;
+    expect(defaultCoverImageUrl).toBe('https://cloudinary.com/proj/elevations/front_facade.jpg');
   });
 });

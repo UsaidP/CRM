@@ -29,9 +29,9 @@ export const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 // 3. gemini-1.5-flash (Reliable free tier fallback)
 // 4. gemini-1.5-pro (Deep vision fallback for high-density architectural plans)
 export const GEMINI_MODEL_CANDIDATES = [
-  process.env.GEMINI_MODEL || 'gemini-3.6-flash',
-  'gemini-3.5-flash-lite',
-  'gemini-2.5-flash',
+  process.env.GEMINI_MODEL || 'gemini-2.5-flash',
+  'gemini-2.0-flash',
+  'gemini-1.5-flash',
 ];
 
 export function isRateLimitError(err: any): boolean {

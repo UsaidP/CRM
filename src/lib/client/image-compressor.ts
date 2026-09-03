@@ -120,90 +120,120 @@ export async function compressImageFile(
     };
   }
 
-  // Load image into an Image element
-  const imageBitmap = await new Promise<HTMLImageElement>((resolve, reject) => {
-    const img = new Image();
-    const objectUrl = URL.createObjectURL(file);
+  try {
+    // Load image into an Image element
+    const imageBitmap = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const img = new Image();
+      const objectUrl = URL.createObjectURL(file);
 
-    img.onload = () => {
-      URL.revokeObjectURL(objectUrl);
-      resolve(img);
-    };
-    img.onerror = () => {
-      URL.revokeObjectURL(objectUrl);
-      reject(new Error(`Failed to decode image file "${file.name}" for compression.`));
-    };
-    img.src = objectUrl;
-  });
+      img.onload = () => {
+        URL.revokeObjectURL(objectUrl);
+        resolve(img);
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+        reject(new Error(`Failed to decode image file "${file.name}" for compression.`));
+      };
+      img.src = objectUrl;
+    });
 
-  const { width, height } = calculateAspectRatioFit(
-    imageBitmap.naturalWidth || imageBitmap.width,
-    imageBitmap.naturalHeight || imageBitmap.height,
-    maxWidth,
-    maxHeight
-  );
+    const naturalWidth = imageBitmap.naturalWidth || imageBitmap.width || 0;
+    const naturalHeight = imageBitmap.naturalHeight || imageBitmap.height || 0;
 
-  // Render to canvas
-  const canvas = document.createElement('canvas');
-  canvas.width = width;
-  canvas.height = height;
-
-  const ctx = canvas.getContext('2d', { alpha: true });
-  if (!ctx) {
-    throw new Error('Canvas 2D context is not available for image compression.');
-  }
-
-  // Enable high-quality image smoothing
-  ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = 'high';
-  ctx.drawImage(imageBitmap, 0, 0, width, height);
-
-  // Convert canvas to blob
-  const compressedBlob = await new Promise<Blob>((resolve, reject) => {
-    canvas.toBlob(
-      (blob) => {
-        if (blob) {
-          resolve(blob);
-        } else {
-          // If webp fails on older browser, fallback to jpeg
-          canvas.toBlob(
-            (fallbackBlob) => {
-              if (fallbackBlob) resolve(fallbackBlob);
-              else reject(new Error('Canvas toBlob compression failed.'));
-            },
-            'image/jpeg',
-            quality
-          );
-        }
-      },
-      targetMimeType,
-      quality
+    const { width, height } = calculateAspectRatioFit(
+      naturalWidth || maxWidth,
+      naturalHeight || maxHeight,
+      maxWidth,
+      maxHeight
     );
-  });
 
-  const compressedBytes = compressedBlob.size;
-  const savedBytes = Math.max(0, originalBytes - compressedBytes);
-  const savedPercent = originalBytes > 0 ? Math.round((savedBytes / originalBytes) * 100) : 0;
+    // Render to canvas
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
 
-  // Determine output filename with appropriate extension
-  const extension = targetMimeType === 'image/webp' ? '.webp' : '.jpg';
-  const baseName = file.name.replace(/\.[^/.]+$/, '');
-  const newFileName = `${baseName}${extension}`;
+    const ctx = canvas.getContext('2d', { alpha: true });
+    if (!ctx) {
+      // If Canvas 2D context is restricted (e.g. Brave shields / fingerprinting protection), fallback to original file
+      console.warn(`[COMPRESSOR] Canvas 2D context unavailable for "${file.name}". Using original file.`);
+      return {
+        file,
+        blob: file,
+        originalBytes,
+        compressedBytes: originalBytes,
+        savedBytes: 0,
+        savedPercent: 0,
+        width: naturalWidth,
+        height: naturalHeight,
+        mimeType: file.type || 'image/jpeg',
+      };
+    }
 
-  const compressedFile = new File([compressedBlob], newFileName, {
-    type: compressedBlob.type || targetMimeType,
-    lastModified: Date.now(),
-  });
+    // Enable high-quality image smoothing
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(imageBitmap, 0, 0, width, height);
 
-  return {
-    file: compressedFile,
-    blob: compressedBlob,
-    originalBytes,
-    compressedBytes,
-    savedBytes,
-    savedPercent,
-    width,
-    height,
-    mimeType: compressedBlob.type || targetMimeType,
-  };
+    // Convert canvas to blob
+    const compressedBlob = await new Promise<Blob>((resolve, reject) => {
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            resolve(blob);
+          } else {
+            // If webp fails on older browser, fallback to jpeg
+            canvas.toBlob(
+              (fallbackBlob) => {
+                if (fallbackBlob) resolve(fallbackBlob);
+                else reject(new Error('Canvas toBlob compression failed.'));
+              },
+              'image/jpeg',
+              quality
+            );
+          }
+        },
+        targetMimeType,
+        quality
+      );
+    });
+
+    const compressedBytes = compressedBlob.size;
+    const savedBytes = Math.max(0, originalBytes - compressedBytes);
+    const savedPercent = originalBytes > 0 ? Math.round((savedBytes / originalBytes) * 100) : 0;
+
+    // Determine output filename with appropriate extension
+    const extension = targetMimeType === 'image/webp' ? '.webp' : '.jpg';
+    const baseName = file.name.replace(/\.[^/.]+$/, '');
+    const newFileName = `${baseName}${extension}`;
+
+    const compressedFile = new File([compressedBlob], newFileName, {
+      type: compressedBlob.type || targetMimeType,
+      lastModified: Date.now(),
+    });
+
+    return {
+      file: compressedFile,
+      blob: compressedBlob,
+      originalBytes,
+      compressedBytes,
+      savedBytes,
+      savedPercent,
+      width,
+      height,
+      mimeType: compressedBlob.type || targetMimeType,
+    };
+  } catch (err: any) {
+    console.warn(`[COMPRESSOR] Client-side compression bypassed for "${file.name}":`, err?.message || err);
+    return {
+      file,
+      blob: file,
+      originalBytes,
+      compressedBytes: originalBytes,
+      savedBytes: 0,
+      savedPercent: 0,
+      width: 0,
+      height: 0,
+      mimeType: file.type || 'image/jpeg',
+    };
+  }
 }
