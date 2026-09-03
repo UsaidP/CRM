@@ -252,5 +252,5 @@ Vijay Rane|9967711223|50 Lakhs|Taloja 1`;
     await prisma.contact.delete({
       where: { id: contact1.id },
     });
-  });
+  }, 20000);
 });

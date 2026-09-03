@@ -611,7 +611,12 @@ export function parseExcelBuffer(
     // Check if headerless
     let isHeaderless = false;
     if (highestScore === 0) {
-      isHeaderless = true;
+      if (cleanGrid.length > 1 && !isLikelyDataRow(cleanGrid[0]) && isLikelyDataRow(cleanGrid[1])) {
+        bestHeaderRowIndex = 0;
+        isHeaderless = false;
+      } else {
+        isHeaderless = true;
+      }
     }
 
     let headers: string[] = [];

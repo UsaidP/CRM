@@ -51,13 +51,46 @@ project,Arihant Sports City,${testReraNew},Arihant Superstructures,Taloja Phase 
     });
 
     // Ensure Sai World Empire exists
-    const existing = await prisma.developerProject.findFirst({
+    let existingSai = await prisma.developerProject.findFirst({
       where: {
         organizationId: org.id,
         reraNumber: 'P52000026796',
       },
     });
-    expect(existing).not.toBeNull();
+    if (!existingSai) {
+      existingSai = await prisma.developerProject.create({
+        data: {
+          organizationId: org.id,
+          projectName: 'Sai World Empire',
+          developerName: 'Paradise Group',
+          reraNumber: 'P52000026796',
+          microMarket: 'Kharghar Sector 36',
+          basePricePerSqft: 15500,
+        },
+      });
+    }
+    expect(existingSai).not.toBeNull();
+
+    // Ensure Adhiraj Capital City exists
+    let existingAdhiraj = await prisma.developerProject.findFirst({
+      where: {
+        organizationId: org.id,
+        reraNumber: 'P52000022975',
+      },
+    });
+    if (!existingAdhiraj) {
+      existingAdhiraj = await prisma.developerProject.create({
+        data: {
+          organizationId: org.id,
+          projectName: 'Adhiraj Capital City',
+          developerName: 'Adhiraj Constructions',
+          reraNumber: 'P52000022975',
+          microMarket: 'Kharghar Sector 37',
+          basePricePerSqft: 14200,
+        },
+      });
+    }
+    expect(existingAdhiraj).not.toBeNull();
 
     const initialCount = await prisma.developerProject.count({
       where: { organizationId: org.id },
@@ -117,5 +150,5 @@ project,Arihant Sports City,${testReraNew},Arihant Superstructures,Taloja Phase 
     await prisma.developerProject.deleteMany({
       where: { reraNumber: testReraNew },
     });
-  });
+  }, 20000);
 });

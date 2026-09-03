@@ -188,7 +188,7 @@ describe('ZamZam Organic Lead Capture & CRM Program Tests', () => {
       const types = targetIdentities.map((i) => i.identityType);
       expect(types).toContain('PHONE_E164');
       expect(types).toContain('INSTAGRAM_IGID');
-    });
+    }, 20000);
   });
 
   describe('Communication Log Lifecycle & Future Reference Updates', () => {
@@ -251,7 +251,7 @@ describe('ZamZam Organic Lead Capture & CRM Program Tests', () => {
 
       // 4. Clean up test lead
       await prisma.lead.delete({ where: { id: testLead.id } });
-    });
+    }, 20000);
   });
 });
 

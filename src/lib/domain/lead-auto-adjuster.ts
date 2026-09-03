@@ -610,27 +610,55 @@ export function resolveMicroMarket(input?: string): {
 
   const raw = input.toLowerCase();
 
-  // Specific Sector match for Kharghar e.g. "Sector 35", "Sec 35", "35"
-  const secMatch = raw.match(/(?:kharghar\s*)?(?:sec(?:tor)?\.?\s*)?(\d{1,2})/i);
-  if (raw.includes('kharghar') || secMatch) {
-    if (secMatch) {
-      const secNum = parseInt(secMatch[1], 10);
-      if (secNum >= 1 && secNum <= 37) {
-        return { canonical: `Kharghar Sector ${secNum}`, region: 'KHARGHAR' };
-      }
+  // 1. Taloja priority checks
+  if (
+    raw.includes('taloja 2') ||
+    raw.includes('taloja phase 2') ||
+    raw.includes('phase 2') ||
+    raw.includes('phase2') ||
+    raw.includes('sec 26') ||
+    raw.includes('sector 26') ||
+    raw.includes('sector 21') ||
+    raw.includes('sector 28')
+  ) {
+    return { canonical: 'Taloja Phase 2', region: 'TALOJA_2' };
+  }
+  if (
+    raw.includes('taloja 1') ||
+    raw.includes('taloja phase 1') ||
+    raw.includes('phase 1') ||
+    raw.includes('phase1') ||
+    raw.includes('taloja') ||
+    raw.includes('sec 11') ||
+    raw.includes('sector 11') ||
+    raw.includes('sec 4') ||
+    raw.includes('sec 6')
+  ) {
+    return { canonical: 'Taloja Phase 1', region: 'TALOJA_1' };
+  }
+
+  // 2. Specific Sector match for Kharghar e.g. "Kharghar Sec 35", "Sector 35", "Upper Kharghar 37"
+  const secMatch =
+    raw.match(/(?:kharghar\s*)?(?:sec(?:tor)?\.?\s*)(\d{1,2})/i) ||
+    raw.match(/kharghar.*?(\d{1,2})/i);
+  if (secMatch) {
+    const secNum = parseInt(secMatch[1], 10);
+    if (secNum >= 1 && secNum <= 37) {
+      return { canonical: `Kharghar Sector ${secNum}`, region: 'KHARGHAR' };
     }
   }
 
-  if (raw.includes('taloja 2') || raw.includes('phase 2') || raw.includes('phase2') || raw.includes('sec 26') || raw.includes('sector 26') || raw.includes('sector 21') || raw.includes('sector 28')) {
-    return { canonical: 'Taloja Phase 2', region: 'TALOJA_2' };
-  }
-  if (raw.includes('taloja 1') || raw.includes('phase 1') || raw.includes('phase1') || raw.includes('taloja') || raw.includes('sec 11') || raw.includes('sector 11') || raw.includes('sec 4') || raw.includes('sec 6')) {
-    return { canonical: 'Taloja Phase 1', region: 'TALOJA_1' };
-  }
-  if (raw.includes('upper kharghar') || raw.includes('sec 36') || raw.includes('sec 37') || raw.includes('36') || raw.includes('37')) {
+  if (raw.includes('upper kharghar')) {
+    const numMatch = raw.match(/(\d{1,2})/);
+    if (numMatch) {
+      const num = parseInt(numMatch[1], 10);
+      if (num >= 1 && num <= 37) {
+        return { canonical: `Kharghar Sector ${num}`, region: 'KHARGHAR' };
+      }
+    }
     return { canonical: 'Upper Kharghar (Sec 36-37)', region: 'KHARGHAR' };
   }
-  if (raw.includes('central park') || raw.includes('utsav') || raw.includes('golf') || raw.includes('sec 20') || raw.includes('sec 23')) {
+  if (raw.includes('central park') || raw.includes('utsav') || raw.includes('golf')) {
     return { canonical: 'Kharghar Central Park', region: 'KHARGHAR' };
   }
   if (raw.includes('panvel') || raw.includes('karanjade') || raw.includes('new panvel')) {
@@ -638,6 +666,9 @@ export function resolveMicroMarket(input?: string): {
   }
   if (raw.includes('ulwe') || raw.includes('dronagiri') || raw.includes('seawoods') || raw.includes('vashi') || raw.includes('nerul')) {
     return { canonical: input.trim(), region: 'OTHER' };
+  }
+  if (raw.includes('kharghar')) {
+    return { canonical: 'Kharghar', region: 'KHARGHAR' };
   }
 
   return { canonical: input.trim() || 'Kharghar', region: 'KHARGHAR' };
