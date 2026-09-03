@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import { CrmRole } from '@/types/crm';
 export type { CrmRole };
 
@@ -110,7 +111,7 @@ export async function verifyPassword(password: string, storedHash: string): Prom
     .map((b) => b.toString(16).padStart(2, '0'))
     .join('');
 
-  return computedHashHex === expectedHashHex;
+  return timingSafeStringEqual(computedHashHex, expectedHashHex);
 }
 
 // ==========================================
@@ -215,17 +216,14 @@ export async function verifySessionToken(token?: string | null): Promise<Session
 // ==========================================
 
 /**
- * Compares two secrets without leaking length or content via timing.
+ * Compares two secrets in true constant time without leaking length or content.
+ * Hashes both strings to fixed 32-byte SHA-256 digests before calling crypto.timingSafeEqual.
  */
 function timingSafeStringEqual(a: string, b: string): boolean {
-  if (a.length !== b.length) {
-    return false;
-  }
-  let diff = 0;
-  for (let i = 0; i < a.length; i++) {
-    diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  }
-  return diff === 0;
+  if (!a || !b) return false;
+  const hashA = crypto.createHash('sha256').update(a).digest();
+  const hashB = crypto.createHash('sha256').update(b).digest();
+  return crypto.timingSafeEqual(hashA, hashB);
 }
 
 /**

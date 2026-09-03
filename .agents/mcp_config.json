@@ -12,6 +12,10 @@
         "--port",
         "4747"
       ]
+    },
+    "openship": {
+      "url": "http://127.0.0.1:60134/api/mcp",
+      "serverUrl": "http://127.0.0.1:60134/api/mcp"
     }
   }
 }

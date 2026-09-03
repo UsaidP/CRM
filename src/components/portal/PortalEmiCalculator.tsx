@@ -291,13 +291,13 @@ export function PortalEmiCalculator({
                     />
 
                     {/* Quick Presets */}
-                    <div className="flex flex-wrap items-center justify-between gap-1 pt-1">
+                    <div className="flex flex-wrap items-center gap-1.5 pt-1">
                       {DOWN_PAYMENT_PRESETS.map((pct) => (
                         <button
                           key={pct}
                           type="button"
                           onClick={() => setDownPaymentPct(pct)}
-                          className={`px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition-[background-color,border-color,box-shadow,transform] duration-200 cursor-pointer ${
+                          className={`flex-1 min-w-[52px] py-1 px-2 rounded-lg text-xs font-mono font-bold transition-[background-color,border-color,box-shadow,transform] duration-200 cursor-pointer text-center ${
                             downPaymentPct === pct
                               ? 'bg-gold text-white shadow-2xs'
                               : 'bg-slate-100 hover:bg-amber-50 hover:text-gold text-slate-700'
@@ -337,13 +337,13 @@ export function PortalEmiCalculator({
                     />
 
                     {/* Quick Presets */}
-                    <div className="flex flex-wrap items-center justify-between gap-1 pt-1">
+                    <div className="flex flex-wrap items-center gap-1.5 pt-1">
                       {TENURE_PRESETS.map((yr) => (
                         <button
                           key={yr}
                           type="button"
                           onClick={() => setTenureYears(yr)}
-                          className={`px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition-[background-color,border-color,box-shadow,transform] duration-200 cursor-pointer ${
+                          className={`flex-1 min-w-[52px] py-1 px-2 rounded-lg text-xs font-mono font-bold transition-[background-color,border-color,box-shadow,transform] duration-200 cursor-pointer text-center ${
                             tenureYears === yr
                               ? 'bg-gold text-white shadow-2xs'
                               : 'bg-slate-100 hover:bg-amber-50 hover:text-gold text-slate-700'

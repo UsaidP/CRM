@@ -82,6 +82,9 @@ const nextConfig = {
       },
     ];
   },
+  turbopack: {
+    root: __dirname,
+  },
 };
 
 const sentryWebpackPluginOptions = {
@@ -90,7 +93,6 @@ const sentryWebpackPluginOptions = {
   project: process.env.SENTRY_PROJECT || 'crm-web',
   widenClientFileUpload: true,
   hideSourceMaps: true,
-  disableLogger: true,
 };
 
 module.exports = withSentryConfig(nextConfig, sentryWebpackPluginOptions);

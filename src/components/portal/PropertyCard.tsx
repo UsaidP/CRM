@@ -211,7 +211,7 @@ export function PropertyCard({
               Key Specifications
             </h4>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3">
-              <div className="p-3 sm:p-3.5 rounded-2xl bg-white border border-amber-200/90 hover:border-amber-400 shadow-2xs transition-colors space-y-1">
+              <div className="p-3 sm:p-3.5 rounded-2xl bg-white border border-amber-200/90 hover:border-amber-400 shadow-2xs transition-colors space-y-1 min-w-0">
                 <span className="text-[10px] uppercase text-slate-400 font-mono flex items-center gap-1 font-bold truncate">
                   <Home className="w-3 h-3 text-gold shrink-0" />
                   Configuration
@@ -221,7 +221,7 @@ export function PropertyCard({
                 </strong>
               </div>
 
-              <div className="p-3 sm:p-3.5 rounded-2xl bg-white border border-amber-200/90 hover:border-amber-400 shadow-2xs transition-colors space-y-1">
+              <div className="p-3 sm:p-3.5 rounded-2xl bg-white border border-amber-200/90 hover:border-amber-400 shadow-2xs transition-colors space-y-1 min-w-0">
                 <span className="text-[10px] uppercase text-slate-400 font-mono flex items-center gap-1 font-bold truncate">
                   <Maximize2 className="w-3 h-3 text-gold shrink-0" />
                   Carpet Area
@@ -231,7 +231,7 @@ export function PropertyCard({
                 </strong>
               </div>
 
-              <div className="p-3 sm:p-3.5 rounded-2xl bg-white border border-amber-200/90 hover:border-amber-400 shadow-2xs transition-colors space-y-1">
+              <div className="p-3 sm:p-3.5 rounded-2xl bg-white border border-amber-200/90 hover:border-amber-400 shadow-2xs transition-colors space-y-1 min-w-0">
                 <span className="text-[10px] uppercase text-slate-400 font-mono flex items-center gap-1 font-bold truncate">
                   <Bath className="w-3 h-3 text-gold shrink-0" />
                   Baths / Deck
@@ -241,7 +241,7 @@ export function PropertyCard({
                 </strong>
               </div>
 
-              <div className="p-3 sm:p-3.5 rounded-2xl bg-white border border-amber-200/90 hover:border-amber-400 shadow-2xs transition-colors space-y-1">
+              <div className="p-3 sm:p-3.5 rounded-2xl bg-white border border-amber-200/90 hover:border-amber-400 shadow-2xs transition-colors space-y-1 min-w-0">
                 <span className="text-[10px] uppercase text-slate-400 font-mono flex items-center gap-1 font-bold truncate">
                   <Layers className="w-3 h-3 text-gold shrink-0" />
                   Floor Level
@@ -251,7 +251,7 @@ export function PropertyCard({
                 </strong>
               </div>
 
-              <div className="p-3 sm:p-3.5 rounded-2xl bg-white border border-amber-200/90 hover:border-amber-400 shadow-2xs transition-colors space-y-1">
+              <div className="p-3 sm:p-3.5 rounded-2xl bg-white border border-amber-200/90 hover:border-amber-400 shadow-2xs transition-colors space-y-1 min-w-0">
                 <span className="text-[10px] uppercase text-slate-400 font-mono flex items-center gap-1 font-bold truncate">
                   <Compass className="w-3 h-3 text-gold shrink-0" />
                   Facing
@@ -261,7 +261,7 @@ export function PropertyCard({
                 </strong>
               </div>
 
-              <div className="p-3 sm:p-3.5 rounded-2xl bg-white border border-amber-200/90 hover:border-amber-400 shadow-2xs transition-colors space-y-1">
+              <div className="p-3 sm:p-3.5 rounded-2xl bg-white border border-amber-200/90 hover:border-amber-400 shadow-2xs transition-colors space-y-1 min-w-0">
                 <span className="text-[10px] uppercase text-slate-400 font-mono flex items-center gap-1 font-bold truncate">
                   <Train className="w-3 h-3 text-gold shrink-0" />
                   To Metro
@@ -403,17 +403,17 @@ export function PropertyCard({
             <span>{project.brochureUrl ? 'Download Brochure (PDF)' : 'Export Property Dossier (PDF)'}</span>
           </motion.button>
 
-          <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
+          <div className="flex flex-col xs:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
             {/* Schedule Physical Site Visit Button */}
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               type="button"
               onClick={() => onOpenBooking(unit)}
-              className="flex-1 sm:flex-initial rounded-2xl border border-amber-300 bg-gradient-to-r from-amber-50 to-amber-100/80 hover:from-amber-100 hover:to-amber-200/80 px-5 py-3 text-xs font-bold text-gold flex items-center justify-center gap-1.5 transition-[background-color,border-color,box-shadow] duration-200 shadow-xs cursor-pointer min-w-[150px] font-serif"
+              className="flex-1 sm:flex-initial rounded-2xl border border-amber-300 bg-gradient-to-r from-amber-50 to-amber-100/80 hover:from-amber-100 hover:to-amber-200/80 px-4 sm:px-5 py-3 text-xs font-bold text-gold flex items-center justify-center gap-1.5 transition-[background-color,border-color,box-shadow] duration-200 shadow-xs cursor-pointer font-serif min-w-0 text-center"
             >
-              <Calendar className="w-4 h-4 text-gold" />
-              <span>Book Physical Visit</span>
+              <Calendar className="w-4 h-4 text-gold shrink-0" />
+              <span className="truncate">Book Physical Visit</span>
             </motion.button>
 
             {/* Ask on WhatsApp Button */}
@@ -422,10 +422,10 @@ export function PropertyCard({
               whileTap={{ scale: 0.98 }}
               type="button"
               onClick={() => onWhatsAppInquiry(unit)}
-              className="w-full xs:w-auto flex-1 sm:flex-initial rounded-2xl bg-gradient-to-r from-gold-light to-gold px-5.5 py-3 text-xs font-extrabold text-white shadow-md hover:brightness-105 flex items-center justify-center gap-2 transition-[background-color,border-color,box-shadow] duration-200 cursor-pointer min-w-[150px] font-serif"
+              className="flex-1 sm:flex-initial rounded-2xl bg-gradient-to-r from-gold-light to-gold px-4 sm:px-5.5 py-3 text-xs font-extrabold text-white shadow-md hover:brightness-105 flex items-center justify-center gap-2 transition-[background-color,border-color,box-shadow] duration-200 cursor-pointer font-serif min-w-0 text-center"
             >
-              <Send className="w-4 h-4" />
-              <span>Ask on WhatsApp</span>
+              <Send className="w-4 h-4 shrink-0" />
+              <span className="truncate">Ask on WhatsApp</span>
             </motion.button>
           </div>
         </div>

@@ -51,11 +51,11 @@ export function PortalDossierModal({
       titleId="dossier-modal-title"
       descriptionId="dossier-modal-description"
       size="xl"
-      panelClassName="p-0 rounded-3xl border border-amber-300 shadow-2xl overflow-hidden bg-white max-h-[90vh] flex flex-col text-slate-900"
+      panelClassName="p-0 rounded-2xl sm:rounded-3xl border border-amber-300 shadow-2xl overflow-hidden bg-white max-h-[90vh] flex flex-col text-slate-900"
     >
       <div className="flex flex-col h-full overflow-y-auto">
         {/* Dossier Header */}
-        <div className="p-4 sm:p-6 bg-gradient-to-r from-[#FFFDF9] via-[#FAF6EE] to-[#F5EEDB] border-b border-amber-200/80 flex items-center justify-between gap-3 sticky top-0 z-20 backdrop-blur-md">
+        <div className="p-3.5 sm:p-6 bg-gradient-to-r from-[#FFFDF9] via-[#FAF6EE] to-[#F5EEDB] border-b border-amber-200/80 flex items-center justify-between gap-2 sm:gap-3 sticky top-0 z-20 backdrop-blur-md">
           <div className="flex items-center gap-3 min-w-0">
             <BrandLogo
               variant="light"
@@ -101,7 +101,7 @@ export function PortalDossierModal({
         </div>
 
         {/* Dossier Content Body */}
-        <div className="p-5 sm:p-7 space-y-6">
+        <div className="p-4 sm:p-7 space-y-5 sm:space-y-6">
           {/* Project Headline & MahaRERA Verification */}
           <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-5 border-b border-slate-200">
             <div>
@@ -187,14 +187,17 @@ export function PortalDossierModal({
           </div>
 
           {/* Transparent Statutory Financial Breakdown */}
-          <div className="p-5 rounded-2xl bg-gradient-to-br from-amber-50/70 to-white border border-amber-200 space-y-3">
+          <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-amber-50/70 to-white border border-amber-200 space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <h4 className="text-xs font-bold uppercase tracking-wider text-gold font-serif flex items-center gap-1.5">
                 <Calculator className="w-4 h-4 text-gold" />
                 Transparent On-Road Financial Breakdown
               </h4>
-              <strong className="text-base sm:text-lg font-extrabold text-gold font-mono">
-                Total All-In: {formatLakhCr(totalAllIn)} ({formatIndianRupees(totalAllIn)})
+              <strong className="text-sm sm:text-base lg:text-lg font-extrabold text-gold font-mono break-words">
+                Total All-In: {formatLakhCr(totalAllIn)}{' '}
+                <span className="text-xs font-normal text-slate-600 block sm:inline">
+                  ({formatIndianRupees(totalAllIn)})
+                </span>
               </strong>
             </div>
 

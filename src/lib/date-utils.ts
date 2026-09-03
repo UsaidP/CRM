@@ -63,9 +63,15 @@ export function parseSafeDate(dateInput: string | number | Date | null | undefin
   if (dateInput instanceof Date) {
     return isNaN(dateInput.getTime()) ? null : dateInput;
   }
-  if (typeof dateInput !== 'string' && typeof dateInput !== 'number') return null;
+  if (typeof dateInput === 'number') {
+    // Epoch timestamps (ms): parse directly. Stringifying large numbers breaks
+    // every downstream date/regex parse and incorrectly returns null.
+    const num = new Date(dateInput);
+    return isNaN(num.getTime()) ? null : num;
+  }
+  if (typeof dateInput !== 'string') return null;
 
-  const str = String(dateInput).trim();
+  const str = dateInput.trim();
   if (!str || str.toLowerCase() === 'null' || str.toLowerCase() === 'undefined' || str.toLowerCase() === 'n/a') {
     return null;
   }

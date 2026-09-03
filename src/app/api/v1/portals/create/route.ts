@@ -14,7 +14,6 @@ export async function POST(req: Request) {
       leadId,
       selectedUnitIds = [],
       customMessage = 'Here are property options selected from current broker records for your requirements.',
-      createdById,
     } = body;
 
     if (!leadId) {
@@ -58,7 +57,7 @@ export async function POST(req: Request) {
           token,
           title: `Curated Property Options for ${lead.fullName || 'Client'}`,
           customMessage,
-          createdById: createdById || auth.session.userId || lead.assignedBrokerId || null,
+          createdById: auth.session.userId || lead.assignedBrokerId || null,
           portalUnits: {
             create: units.map((u, idx) => ({
               propertyUnitId: u.id,
@@ -120,7 +119,8 @@ export async function POST(req: Request) {
         waShareText,
       },
     }, { status: 201 });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    console.error('[PORTALS] Failed to create portal:', error);
+    return NextResponse.json({ success: false, error: 'Failed to create property portal' }, { status: 500 });
   }
 }

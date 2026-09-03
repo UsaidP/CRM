@@ -11,14 +11,28 @@ function hashPasswordSync(password: string): string {
   return `pbkdf2:sha512:100000:${salt.toString('hex')}:${derivedKey.toString('hex')}`;
 }
 
+function constantTimeCompare(a: string, b: string): boolean {
+  if (!a || !b) return false;
+  const hashA = crypto.createHash('sha256').update(a).digest();
+  const hashB = crypto.createHash('sha256').update(b).digest();
+  return crypto.timingSafeEqual(hashA, hashB);
+}
+
 // POST /api/v1/admin/reset-database
 // Purges all database records and resets to 1 clean Organization with 1 sole Super Admin account
 export async function POST(req: Request) {
+  // 1. Mandatory Kill-Switch: Endpoint returns 404 unless ENABLE_DB_RESET=true is explicitly set in environment
+  if (process.env.ENABLE_DB_RESET !== 'true') {
+    return NextResponse.json({ success: false, error: 'Not found' }, { status: 404 });
+  }
+
   try {
     const body = await req.json().catch(() => ({}));
-    const headerKey = req.headers.get('x-admin-key') || req.headers.get('authorization')?.replace('Bearer ', '');
-    const validKey = process.env.SUPER_ADMIN_KEY;
-    const isKeyAuthorized = Boolean(validKey && (headerKey === validKey || body.adminKey === validKey));
+    const headerKey = req.headers.get('x-admin-key') || req.headers.get('authorization')?.replace('Bearer ', '') || '';
+    const validKey = process.env.SUPER_ADMIN_KEY || '';
+
+    // Security: Only accept secret via HTTP header (never in JSON body). Use constant-time comparison.
+    const isKeyAuthorized = Boolean(validKey && headerKey && constantTimeCompare(headerKey, validKey));
 
     if (!isKeyAuthorized) {
       const auth = await requireSuperAdmin(req);
@@ -84,8 +98,14 @@ export async function POST(req: Request) {
     });
 
     // 3. Create the Sole Super Admin Account
-    const defaultPassword = process.env.SUPER_ADMIN_PASSWORD || 'ZamZam@2026';
-    const passwordHash = hashPasswordSync(defaultPassword);
+    const superAdminPassword = process.env.SUPER_ADMIN_PASSWORD;
+    if (!superAdminPassword) {
+      return NextResponse.json(
+        { success: false, error: 'SUPER_ADMIN_PASSWORD environment variable is not configured.' },
+        { status: 500 }
+      );
+    }
+    const passwordHash = hashPasswordSync(superAdminPassword);
 
     const superAdmin = await prisma.user.create({
       data: {
@@ -114,10 +134,10 @@ export async function POST(req: Request) {
         },
       },
     });
-  } catch (error: any) {
-    console.error('Error during database reset API:', error);
+  } catch (error: unknown) {
+    console.error('[SECURITY] Error during database reset API:', error);
     return NextResponse.json(
-      { success: false, error: error?.message || 'Failed to reset database' },
+      { success: false, error: 'Failed to reset database' },
       { status: 500 }
     );
   }

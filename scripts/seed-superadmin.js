@@ -44,8 +44,12 @@ async function main() {
     console.log(`🏢 Found Organization: ${org.name} (${org.id})`);
   }
 
-  // 2. Hash default password
-  const password = 'ZamZam@2026';
+  // 2. Hash default password from environment variable
+  const password = process.env.SUPER_ADMIN_PASSWORD;
+  if (!password) {
+    console.error('❌ Error: SUPER_ADMIN_PASSWORD environment variable is required to seed superadmin.');
+    process.exit(1);
+  }
   const passwordHash = hashPasswordSync(password);
 
   // 3. Create or update Super Admin

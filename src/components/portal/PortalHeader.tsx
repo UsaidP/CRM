@@ -57,9 +57,9 @@ export function PortalHeader({
       transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
       className="sticky top-0 z-40 bg-white/90 backdrop-blur-2xl border-b border-amber-200/75 shadow-[0_4px_25px_-4px_rgba(180,130,50,0.08)]"
     >
-      <div className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 py-2.5 sm:py-3.5 flex items-center justify-between gap-2 sm:gap-4">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2 sm:py-3.5 flex items-center justify-between gap-2 sm:gap-4">
         {/* Left: Brand Identity & Advisory Badge */}
-        <div className="flex items-center gap-2.5 sm:gap-4 min-w-0">
+        <div className="flex items-center gap-2 sm:gap-4 min-w-0">
           <BrandLogo
             variant="light"
             mode="horizontal"
@@ -161,11 +161,13 @@ export function PortalHeader({
             whileTap={{ scale: 0.96 }}
             href={`tel:${advisor.phoneE164 || '+919967731071'}`}
             onClick={() => sendTelemetry('CALL_CLICK')}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-700 hover:to-teal-800 text-white px-3.5 sm:px-4 py-1.5 text-xs font-extrabold transition-[background-color,border-color,box-shadow] duration-200 shadow-xs shadow-emerald-700/25"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-700 hover:to-teal-800 text-white px-3 sm:px-4 py-1.5 text-xs font-extrabold transition-[background-color,border-color,box-shadow] duration-200 shadow-xs shadow-emerald-700/25"
             title={`Call Advisor: ${advisor.fullName || 'Property Advisor'}`}
           >
             <PhoneCall className="w-3.5 h-3.5 text-white shrink-0" />
-            <span className="text-[11px] sm:text-xs font-serif">Call Advisor</span>
+            <span className="text-[11px] sm:text-xs font-serif">
+              Call <span className="hidden sm:inline">Advisor</span>
+            </span>
           </motion.a>
         </div>
       </div>

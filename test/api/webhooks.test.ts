@@ -27,5 +27,31 @@ describe('API Integration: Webhooks Handlers (/api/v1/webhooks/*)', () => {
       // Fails closed if missing signature header or invalid signature
       expect([401, 403, 500]).toContain(res.status);
     });
+
+    it('fails closed on an empty POST body without crashing', async () => {
+      const req = new Request('http://localhost:3000/api/v1/webhooks/whatsapp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: '',
+      });
+      const res = await whatsappPostHandler(req);
+      expect([400, 401, 403, 500]).toContain(res.status);
+    });
+
+    it('fails closed on a malformed JSON POST body', async () => {
+      const req = new Request('http://localhost:3000/api/v1/webhooks/whatsapp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: '{{{not json',
+      });
+      const res = await whatsappPostHandler(req);
+      expect([400, 401, 403, 500]).toContain(res.status);
+    });
+
+    it('rejects a GET handshake missing hub.mode / hub.challenge parameters', async () => {
+      const req = new Request('http://localhost:3000/api/v1/webhooks/whatsapp');
+      const res = await whatsappVerifyHandler(req);
+      expect([400, 403, 500]).toContain(res.status);
+    });
   });
 });

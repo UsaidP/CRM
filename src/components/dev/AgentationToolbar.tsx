@@ -12,5 +12,5 @@ export function AgentationToolbar() {
     return null;
   }
 
-  return <Agentation endpoint="http://localhost:4747" />;
+  return <Agentation endpoint="http://localhost:4747" className="!bottom-20 sm:!bottom-4" />;
 }

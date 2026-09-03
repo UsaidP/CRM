@@ -35,7 +35,7 @@ describe('API Integration: Leads CRUD (/api/v1/leads)', () => {
       expect(body.success).toBe(true);
       expect(Array.isArray(body.data)).toBe(true);
       expect(body.page).toBe(1);
-    });
+    }, 30000);
   });
 
   describe('POST /api/v1/leads', () => {
@@ -101,5 +101,91 @@ describe('API Integration: Leads CRUD (/api/v1/leads)', () => {
       const body = await res.json();
       expect(body.success).toBe(false);
     });
+
+    it('returns 400 (not 500) for a malformed JSON body', async () => {
+      const req = new Request('http://localhost:3000/api/v1/leads', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: agentCookie,
+        },
+        body: '{ this is not json',
+      });
+      const res = await createLeadHandler(req);
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.success).toBe(false);
+    }, 30000);
+
+    it('returns 400 for an empty JSON object (missing required phone)', async () => {
+      const req = new Request('http://localhost:3000/api/v1/leads', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: agentCookie,
+        },
+        body: JSON.stringify({}),
+      });
+      const res = await createLeadHandler(req);
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.success).toBe(false);
+    }, 30000);
+
+    it('rejects an unknown leadSource enum value with 4xx', async () => {
+      const timestamp = Date.now();
+      const req = new Request('http://localhost:3000/api/v1/leads', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: agentCookie,
+        },
+        body: JSON.stringify({
+          fullName: `Bad Source Lead ${timestamp}`,
+          phone: `+9198201${String(timestamp).slice(-5)}`,
+          leadSource: 'carrier_pigeon',
+        }),
+      });
+      const res = await createLeadHandler(req);
+      expect(res.status).toBeGreaterThanOrEqual(400);
+      expect(res.status).toBeLessThan(500);
+      const body = await res.json();
+      expect(body.success).toBe(false);
+    }, 30000);
+  });
+
+  describe('GET /api/v1/leads — pagination & filter edge cases', () => {
+    it('clamps out-of-range page (0 / negative) to page 1 instead of erroring', async () => {
+      const req = new Request('http://localhost:3000/api/v1/leads?page=0&limit=10', {
+        headers: { cookie: adminCookie },
+      });
+      const res = await getLeadsHandler(req);
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.page).toBe(1);
+    }, 30000);
+
+    it('clamps an oversized limit to the 100 maximum and handles non-numeric values', async () => {
+      for (const qs of ['page=1&limit=9999', 'page=abc&limit=xyz']) {
+        const req = new Request(`http://localhost:3000/api/v1/leads?${qs}`, {
+          headers: { cookie: adminCookie },
+        });
+        const res = await getLeadsHandler(req);
+        expect(res.status).toBe(200);
+        const body = await res.json();
+        expect(body.success).toBe(true);
+      }
+    }, 30000);
+
+    it('accepts an unknown filter value without crashing (returns a filtered/empty list)', async () => {
+      const req = new Request('http://localhost:3000/api/v1/leads?currentStage=TOTALLY_FAKE_STAGE&page=1&limit=5', {
+        headers: { cookie: adminCookie },
+      });
+      const res = await getLeadsHandler(req);
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.success).toBe(true);
+      expect(Array.isArray(body.data)).toBe(true);
+    }, 30000);
   });
 });

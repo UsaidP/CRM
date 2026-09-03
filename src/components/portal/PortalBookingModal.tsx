@@ -53,7 +53,7 @@ export function PortalBookingModal({
       titleId="booking-modal-title"
       descriptionId="booking-modal-description"
       size="md"
-      panelClassName="p-6 rounded-3xl border border-amber-300 shadow-2xl space-y-4 bg-white text-slate-900"
+      panelClassName="p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-amber-300 shadow-2xl space-y-4 bg-white text-slate-900 max-h-[90vh] overflow-y-auto"
     >
       <div>
         {/* Modal Header */}

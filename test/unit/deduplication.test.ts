@@ -36,4 +36,80 @@ describe('Media Deduplication & Asset Resolution', () => {
     expect(parsed.videos[0].url).toBe('https://cdn.com/video1.mp4');
     expect(parsed.photoGallery).toEqual(['https://cdn.com/p1.jpg', 'https://cdn.com/p2.jpg']);
   });
+
+  it('survives malformed JSON in every media field without throwing', () => {
+    const record = {
+      id: 'unit-broken',
+      elevationImagesJson: '{ broken json',
+      floorPlanImagesJson: 'not json at all',
+      videosJson: '[[[',
+      photoGalleryJson: undefined,
+    };
+    const parsed = parseInventoryContent(record as any);
+    expect(parsed.elevationImages).toEqual([]);
+    expect(parsed.floorPlanImages).toEqual([]);
+    expect(parsed.videos).toEqual([]);
+  });
+
+  it('returns fallbacks (not undefined) for non-array JSON values', () => {
+    const record = {
+      id: 'unit-nonarray',
+      elevationImagesJson: JSON.stringify({ url: 'https://x.com/a.jpg' }), // object, not array
+      photoGalleryJson: JSON.stringify({ nested: true }),
+    };
+    const parsed = parseInventoryContent(record as any);
+    expect(parsed.elevationImages).toEqual([]);
+    // Non-array JSON string round-trips as a single raw-string gallery entry
+    expect(parsed.photoGallery).toEqual(['{"nested":true}']);
+  });
+
+  it('parses a legacy photoGallery and preserves duplicate URLs (no dedup in parser)', () => {
+    const gallery = JSON.stringify([
+      'https://cdn.com/same.jpg',
+      'https://cdn.com/same.jpg',
+      '',
+      null,
+    ]);
+    const parsed = parseInventoryContent({ id: 'u', photoGalleryJson: gallery } as any);
+    // Empty/falsy entries are filtered, but genuine duplicates pass through —
+    // dedup happens at the DB/storage layer, not here.
+    expect(parsed.photoGallery).toEqual(['https://cdn.com/same.jpg', 'https://cdn.com/same.jpg']);
+  });
+
+  it('falls back to a legacy videoReelUrl when videosJson is empty', () => {
+    const parsed = parseInventoryContent({
+      id: 'u',
+      videosJson: '[]',
+      videoReelUrl: 'https://youtube.com/watch?v=abc',
+    } as any);
+    expect(parsed.videos).toHaveLength(1);
+    expect(parsed.videos[0].url).toBe('https://youtube.com/watch?v=abc');
+  });
+
+  it('prefers explicit mediaGallery fields over re-parsing JSON', () => {
+    const explicit = [{ id: 'm1', url: 'https://cdn.com/explicit.jpg', kind: 'image' as const }];
+    const parsed = parseInventoryContent({
+      id: 'u',
+      mediaGallery: explicit,
+      mediaGalleryJson: JSON.stringify(['https://cdn.com/legacy.jpg']),
+    } as any);
+    expect(parsed.mediaGallery).toBe(explicit);
+  });
+
+  it('resolveAssetUrl edge cases: whitespace, nested file_url, unknown shapes', () => {
+    expect(resolveAssetUrl('  https://cdn.com/pad.jpg  ')).toBe('https://cdn.com/pad.jpg');
+    expect(resolveAssetUrl({ file_url: 'https://docs.google.com/file.pdf' })).toBe('https://docs.google.com/file.pdf');
+    expect(resolveAssetUrl({ secure_url: 'https://cdn.com/snake.jpg' })).toBe('https://cdn.com/snake.jpg');
+    expect(resolveAssetUrl({})).toBe('');
+    expect(resolveAssetUrl(42)).toBe('');
+    expect(resolveAssetUrl({ mediaAsset: { file_url: 'https://nested.com/f.mp4' } })).toBe('https://nested.com/f.mp4');
+  });
+
+  it('parseGalleryUrls handles a bare non-JSON string and a single object', () => {
+    expect(parseGalleryUrls('https://cdn.com/plain.jpg')).toEqual(['https://cdn.com/plain.jpg']);
+    expect(parseGalleryUrls({ url: 'https://cdn.com/obj.jpg' })).toEqual(['https://cdn.com/obj.jpg']);
+    // Non-array JSON string is kept as the raw string entry
+    expect(parseGalleryUrls('{"notAnArray":true}')).toEqual(['{"notAnArray":true}']);
+    expect(parseGalleryUrls(0)).toEqual([]);
+  });
 });

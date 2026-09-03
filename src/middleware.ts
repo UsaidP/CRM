@@ -18,7 +18,6 @@ const PUBLIC_PATHS = [
 
 const PUBLIC_API_PREFIXES = [
   '/api/v1/auth',
-  '/api/v1/portals',
   '/api/v1/webhooks',
   '/api/v1/track',
   '/api/v1/health',

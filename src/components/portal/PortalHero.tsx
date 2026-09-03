@@ -99,21 +99,21 @@ export function PortalHero({
         <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <motion.span
             whileHover={{ scale: 1.03 }}
-            className="inline-flex items-center gap-1.5 rounded-full bg-white/95 backdrop-blur-md px-4 py-1 text-xs font-bold text-gold border border-amber-300/90 shadow-2xs font-serif tracking-wide"
+            className="inline-flex flex-wrap items-center gap-1.5 rounded-full bg-white/95 backdrop-blur-md px-3.5 sm:px-4 py-1.5 sm:py-1 text-[11px] sm:text-xs font-bold text-gold border border-amber-300/90 shadow-2xs font-serif tracking-wide max-w-full"
           >
-            <Sparkles className="w-3.5 h-3.5 text-gold animate-pulse" />
+            <Sparkles className="w-3.5 h-3.5 text-gold animate-pulse shrink-0" />
             <span>Private Dossier Prepared For: <strong>{clientName}</strong></span>
           </motion.span>
 
-          <span className="inline-flex items-center gap-1.5 text-xs text-slate-700 font-mono bg-white/80 backdrop-blur-md px-3.5 py-1 rounded-full border border-amber-200/90 shadow-2xs font-semibold">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block ring-2 ring-emerald-300 animate-pulse" />
+          <span className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs text-slate-700 font-mono bg-white/80 backdrop-blur-md px-3 sm:px-3.5 py-1 rounded-full border border-amber-200/90 shadow-2xs font-semibold shrink-0">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block ring-2 ring-emerald-300 animate-pulse shrink-0" />
             <strong className="text-slate-900 font-bold">{unitsCount} Verified</strong> {unitsCount === 1 ? 'Property' : 'Properties'}
           </span>
         </div>
 
         {/* Personalized Headline & Intro Message */}
         <div className="space-y-2.5">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-slate-900 font-serif leading-tight">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-slate-900 font-serif leading-tight break-words">
             {portal.title || `Curated Property Portfolio for ${clientName}`}
           </h1>
           <p className="text-xs sm:text-sm lg:text-base text-slate-700 leading-relaxed max-w-3xl font-sans">
@@ -125,11 +125,11 @@ export function PortalHero({
         <motion.div
           whileHover={{ y: -2 }}
           transition={{ duration: 0.2 }}
-          className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4.5 sm:p-5.5 rounded-2xl bg-white/95 backdrop-blur-md border border-amber-200/90 shadow-xs"
+          className="w-full min-w-0 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 sm:p-5.5 rounded-2xl bg-white/95 backdrop-blur-md border border-amber-200/90 shadow-xs"
         >
-          <div className="flex items-center gap-3.5 min-w-0">
-            <div className="relative">
-              <div className="w-13 h-13 rounded-full bg-gradient-to-tr from-gold-lighter via-gold-light to-gold p-0.5 shadow-sm shrink-0">
+          <div className="flex items-center gap-3 sm:gap-3.5 w-full sm:w-auto min-w-0 flex-1">
+            <div className="relative shrink-0">
+              <div className="w-12 h-12 sm:w-13 sm:h-13 rounded-full bg-gradient-to-tr from-gold-lighter via-gold-light to-gold p-0.5 shadow-sm shrink-0">
                 <div className="w-full h-full rounded-full bg-white flex items-center justify-center font-extrabold text-sm text-gold font-serif">
                   {initials}
                 </div>
@@ -140,33 +140,36 @@ export function PortalHero({
               />
             </div>
 
-            <div className="min-w-0">
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="text-sm sm:text-base font-bold text-slate-900 font-serif">
+            <div className="min-w-0 flex-1 space-y-0.5">
+              <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+                <span className="text-sm sm:text-base font-bold text-slate-900 font-serif truncate max-w-full">
                   {advisor.fullName || 'Property Advisor'}
                 </span>
-                <span className="inline-flex items-center gap-1 text-[11px] text-gold font-bold bg-amber-50/90 px-2 py-0.5 rounded-md border border-amber-200 font-serif">
-                  <Award className="w-3 h-3 text-gold" />
-                  {roleLabel}
+                <span className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] text-gold font-bold bg-amber-50/90 px-2 py-0.5 rounded-md border border-amber-200 font-serif shrink-0">
+                  <Award className="w-3 h-3 text-gold shrink-0" />
+                  <span>{roleLabel}</span>
                 </span>
               </div>
-              <p className="text-xs text-slate-500 truncate mt-0.5">
-                Direct:{' '}
-                <span className="font-mono font-semibold text-slate-800">
-                  {advisor.phoneE164 || '+91 99677 31071'}
-                </span>{' '}
-                • {cleanOrgName} Private Desk
-              </p>
+              <div className="text-xs text-slate-500 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 min-w-0">
+                <span>
+                  Direct:{' '}
+                  <strong className="font-mono font-semibold text-slate-800">
+                    {advisor.phoneE164 || '+91 99677 31071'}
+                  </strong>
+                </span>
+                <span className="text-slate-300 hidden xs:inline">•</span>
+                <span className="text-slate-600">{cleanOrgName} Private Desk</span>
+              </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 w-full sm:w-auto">
+          <div className="flex items-center gap-2 w-full sm:w-auto shrink-0 pt-1 sm:pt-0">
             <a
               href={`tel:${(advisor.phoneE164 || '+919967731071').replace(/\s+/g, '')}`}
               className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition shadow-2xs cursor-pointer shrink-0"
               title={`Call ${advisor.fullName || 'Advisor'}`}
             >
-              <PhoneCall className="w-3.5 h-3.5 text-slate-700" />
+              <PhoneCall className="w-3.5 h-3.5 text-slate-700 shrink-0" />
               <span className="hidden xs:inline">Call</span>
             </a>
 
@@ -175,9 +178,9 @@ export function PortalHero({
               whileTap={{ scale: 0.97 }}
               type="button"
               onClick={onWhatsAppAdvisor}
-              className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#25D366] hover:bg-[#20BD5A] text-white text-xs font-bold shadow-xs transition-[background-color,border-color,box-shadow] duration-200 cursor-pointer shrink-0 whitespace-nowrap"
+              className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl bg-[#25D366] hover:bg-[#20BD5A] text-white text-xs font-bold shadow-xs transition-[background-color,border-color,box-shadow] duration-200 cursor-pointer text-center whitespace-nowrap"
             >
-              <Send className="w-3.5 h-3.5" />
+              <Send className="w-3.5 h-3.5 shrink-0" />
               <span>Message on WhatsApp</span>
             </motion.button>
           </div>
@@ -185,49 +188,52 @@ export function PortalHero({
 
         {/* Portfolio Key Stats Matrix */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5 pt-1">
-          <div className="p-3.5 sm:p-4 rounded-2xl bg-white/90 backdrop-blur-md border border-amber-200/80 shadow-2xs hover:border-amber-300 transition-colors">
+          <div className="p-3 sm:p-4 rounded-2xl bg-white/90 backdrop-blur-md border border-amber-200/80 shadow-2xs hover:border-amber-300 transition-colors min-w-0">
             <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 font-mono block truncate flex items-center gap-1">
-              <Home className="w-3 h-3 text-gold" />
-              Handpicked Homes
+              <Home className="w-3 h-3 text-gold shrink-0" />
+              <span>Handpicked Homes</span>
             </span>
-            <strong className="text-base sm:text-lg font-extrabold text-slate-900 block mt-1 truncate font-serif">
+            <strong className="text-sm sm:text-base lg:text-lg font-extrabold text-slate-900 block mt-1 truncate font-serif">
               {unitsCount} Verified Units
             </strong>
           </div>
 
-          <div className="p-3.5 sm:p-4 rounded-2xl bg-white/90 backdrop-blur-md border border-amber-200/80 shadow-2xs hover:border-amber-300 transition-colors">
+          <div className="p-3 sm:p-4 rounded-2xl bg-white/90 backdrop-blur-md border border-amber-200/80 shadow-2xs hover:border-amber-300 transition-colors min-w-0">
             <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 font-mono block truncate flex items-center gap-1">
-              <Banknote className="w-3 h-3 text-gold" />
-              All-In Price Range
+              <Banknote className="w-3 h-3 text-gold shrink-0" />
+              <span>All-In Price Range</span>
             </span>
-            <strong className="text-base sm:text-lg font-extrabold text-gold block mt-1 truncate font-mono">
+            <strong className="text-sm sm:text-base lg:text-lg font-extrabold text-gold block mt-1 truncate font-mono">
               {formattedPrice}
             </strong>
           </div>
 
-          <div className="p-3.5 sm:p-4 rounded-2xl bg-white/90 backdrop-blur-md border border-amber-200/80 shadow-2xs hover:border-amber-300 transition-colors">
+          <div className="p-3 sm:p-4 rounded-2xl bg-white/90 backdrop-blur-md border border-amber-200/80 shadow-2xs hover:border-amber-300 transition-colors min-w-0">
             <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 font-mono block truncate flex items-center gap-1">
-              <Layers className="w-3 h-3 text-gold" />
-              Configuration
+              <Layers className="w-3 h-3 text-gold shrink-0" />
+              <span>Configuration</span>
             </span>
-            <strong className="text-base sm:text-lg font-extrabold text-slate-900 block mt-1 truncate font-serif">
+            <strong className="text-sm sm:text-base lg:text-lg font-extrabold text-slate-900 block mt-1 truncate font-serif">
               {configs} Layouts
             </strong>
           </div>
 
-          <div className="p-3.5 sm:p-4 rounded-2xl bg-white/90 backdrop-blur-md border border-amber-200/80 shadow-2xs hover:border-amber-300 transition-colors">
+          <div className="p-3 sm:p-4 rounded-2xl bg-white/90 backdrop-blur-md border border-amber-200/80 shadow-2xs hover:border-amber-300 transition-colors min-w-0">
             <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 font-mono block truncate flex items-center gap-1">
-              <MapPin className="w-3 h-3 text-gold" />
-              Target Locality
+              <MapPin className="w-3 h-3 text-gold shrink-0" />
+              <span>Target Locality</span>
             </span>
-            <strong className="text-base sm:text-lg font-extrabold text-slate-900 block mt-1 truncate font-serif">
+            <strong
+              className="text-sm sm:text-base lg:text-lg font-extrabold text-slate-900 block mt-1 line-clamp-2 break-words leading-tight font-serif"
+              title={primaryLocality}
+            >
               {primaryLocality}
             </strong>
           </div>
         </div>
 
         {/* Advisory Trust Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-2 px-1 text-xs text-slate-600 font-serif border-t border-amber-200/60">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 pt-2 px-1 text-xs text-slate-600 font-serif border-t border-amber-200/60">
           <div className="flex items-center gap-1.5">
             <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
             <span>100% MahaRERA Sanctioned Records</span>

@@ -5,23 +5,18 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const projectCount = await prisma.developerProject.count();
-    const unitCount = await prisma.propertyUnit.count();
+    // Lightweight database connectivity ping
+    await prisma.$queryRaw`SELECT 1`;
 
     return NextResponse.json({
       status: 'healthy',
-      system: 'ZamZam Properties Real Estate CRM',
       timestamp: new Date().toISOString(),
-      database: {
-        connected: true,
-        projectCount,
-        unitCount,
-      },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    console.error('[HEALTH] Database health check failed:', error);
     return NextResponse.json(
-      { status: 'unhealthy', error: error.message },
-      { status: 500 }
+      { status: 'unhealthy' },
+      { status: 503 }
     );
   }
 }

@@ -70,9 +70,15 @@ export async function generateFullBackup(triggeredBy?: {
   fs.mkdirSync(jsonExportDir, { recursive: true });
 
   try {
-    // 1. Safe SQLite Snapshot
+    // 1. Safe Database Snapshot:
+    // Only attempt SQLite VACUUM if running on local SQLite. In production PostgreSQL/Supabase, skip this.
+    const isPostgres = Boolean(
+      process.env.DATABASE_URL?.startsWith('postgres://') ||
+      process.env.DATABASE_URL?.startsWith('postgresql://')
+    );
+
     const tempDbSnapshot = path.join(stagingDir, 'dev.db');
-    if (fs.existsSync(DB_PATH)) {
+    if (!isPostgres && fs.existsSync(DB_PATH)) {
       try {
         await prisma.$queryRawUnsafe(`VACUUM INTO '${tempDbSnapshot.replace(/'/g, "''")}'`);
       } catch {
@@ -171,7 +177,7 @@ export async function generateFullBackup(triggeredBy?: {
       app: 'ZamZam Real Estate CRM',
       version: '1.0.0',
       retentionDays: RETENTION_DAYS,
-      databaseType: 'SQLite',
+      databaseType: isPostgres ? 'PostgreSQL' : 'SQLite',
       recordCounts,
       totalRecords,
       triggeredBy: triggeredBy || { userName: 'System Admin', role: 'SUPER_ADMIN' }
@@ -286,11 +292,12 @@ export function getAvailableBackups(): BackupListItem[] {
 }
 
 /**
- * Prune backups older than retention policy
+ * Prune backups older than retention policy (retains at most 3 local archives)
  */
 function pruneOldBackups() {
   if (!fs.existsSync(BACKUPS_DIR)) return;
 
+  const MAX_LOCAL_RETENTION = 3;
   const allFiles = fs.readdirSync(BACKUPS_DIR)
     .filter(f => f.startsWith('backup-zamzam-crm-') && f.endsWith('.tar.gz'))
     .map(f => ({
@@ -299,8 +306,8 @@ function pruneOldBackups() {
     }))
     .sort((a, b) => b.time - a.time);
 
-  if (allFiles.length > RETENTION_DAYS) {
-    const toDelete = allFiles.slice(RETENTION_DAYS);
+  if (allFiles.length > MAX_LOCAL_RETENTION) {
+    const toDelete = allFiles.slice(MAX_LOCAL_RETENTION);
     for (const item of toDelete) {
       try {
         fs.unlinkSync(item.path);

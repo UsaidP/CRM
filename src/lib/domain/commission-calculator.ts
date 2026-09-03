@@ -29,9 +29,11 @@ export interface CommissionCalculationResult {
 
 export function calculateDealCommission(input: CommissionCalculationInput): CommissionCalculationResult {
   const agreementValue = Number(input.agreementValue);
-  const brokeragePercent = input.brokeragePercent ? Number(input.brokeragePercent) : 2.5;
-  const repSplitPercent = input.repSplitPercent ? Number(input.repSplitPercent) : 50;
-  const coBrokerSharePercent = input.coBrokerSharePercent ? Number(input.coBrokerSharePercent) : 0;
+  // Explicit 0 must be respected (e.g. 0% brokerage direct deals, 0% rep split
+  // house deals). Only fall back to defaults when the field is omitted/null.
+  const brokeragePercent = input.brokeragePercent != null ? Number(input.brokeragePercent) : 2.5;
+  const repSplitPercent = input.repSplitPercent != null ? Number(input.repSplitPercent) : 50;
+  const coBrokerSharePercent = input.coBrokerSharePercent != null ? Number(input.coBrokerSharePercent) : 0;
 
   const grossBrokerageAmount = Math.round((agreementValue * brokeragePercent) / 100);
   const gstAmount = Math.round(grossBrokerageAmount * 0.18);

@@ -48,9 +48,10 @@ export async function GET(req: Request) {
       },
       currentUser,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    console.error('[BACKUP] Failed to fetch backup status:', error);
     return NextResponse.json(
-      { success: false, error: error?.message || 'Failed to fetch backup status' },
+      { success: false, error: 'Failed to fetch backup status' },
       { status: 500 }
     );
   }
@@ -93,10 +94,10 @@ export async function POST(req: Request) {
         ? '🎉 Duty shift ended and data backup secured to Google Drive!'
         : '🎉 CRM Data Backup created and secured to Google Drive!',
     });
-  } catch (error: any) {
-    console.error('Backup API Error:', error);
+  } catch (error: unknown) {
+    console.error('[BACKUP] Backup API Error:', error);
     return NextResponse.json(
-      { success: false, error: error?.message || 'Backup failed' },
+      { success: false, error: 'Backup failed' },
       { status: 500 }
     );
   }

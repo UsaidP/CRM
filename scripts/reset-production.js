@@ -3,14 +3,29 @@ const path = require('path');
 
 // Load environment variables from .env
 const envPath = path.join(__dirname, '..', '.env');
-let superAdminKey = '0415020fa7254b4ae80f67e2aef49530b872c1361aa04f64f703fc60ce3abfc8';
+let superAdminKey = process.env.SUPER_ADMIN_KEY || '';
+let superAdminPassword = process.env.SUPER_ADMIN_PASSWORD || '';
+let superAdminEmail = process.env.SUPER_ADMIN_EMAIL || 'usaid@zamzamproperties.in';
 
 if (fs.existsSync(envPath)) {
   const content = fs.readFileSync(envPath, 'utf8');
-  const match = content.match(/SUPER_ADMIN_KEY=["']?([^"'\r\n]+)["']?/);
-  if (match && match[1]) {
-    superAdminKey = match[1];
+  const keyMatch = content.match(/SUPER_ADMIN_KEY=["']?([^"'\r\n]+)["']?/);
+  if (keyMatch && keyMatch[1] && !superAdminKey) {
+    superAdminKey = keyMatch[1];
   }
+  const passMatch = content.match(/SUPER_ADMIN_PASSWORD=["']?([^"'\r\n]+)["']?/);
+  if (passMatch && passMatch[1] && !superAdminPassword) {
+    superAdminPassword = passMatch[1];
+  }
+  const emailMatch = content.match(/SUPER_ADMIN_EMAIL=["']?([^"'\r\n]+)["']?/);
+  if (emailMatch && emailMatch[1] && !process.env.SUPER_ADMIN_EMAIL) {
+    superAdminEmail = emailMatch[1];
+  }
+}
+
+if (!superAdminKey && !superAdminPassword) {
+  console.error('❌ Error: SUPER_ADMIN_KEY or SUPER_ADMIN_PASSWORD must be configured in environment or .env');
+  process.exit(1);
 }
 
 const targetBase = process.argv[2] || 'https://crm-dusky-xi.vercel.app';
@@ -18,22 +33,31 @@ const loginUrl = `${targetBase}/api/v1/auth/login`;
 const resetUrl = `${targetBase}/api/v1/admin/reset-database`;
 
 async function resetRemoteProduction() {
-  console.log(`🔑 Logging into Remote Production at: ${loginUrl}...`);
+  console.log(`🔑 Authenticating to Remote Production at: ${loginUrl}...`);
 
   try {
-    // 1. Try standard Super Admin login
-    const loginRes = await fetch(loginUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        type: 'CREDENTIALS',
-        email: 'usaid@zamzamproperties.in',
-        password: 'ZamZam@2026',
-      }),
-    });
+    let cookie = '';
 
-    const cookieHeader = loginRes.headers.get('set-cookie');
-    const loginData = await loginRes.json();
+    // 1. Try password login if password is provided
+    if (superAdminPassword) {
+      const loginRes = await fetch(loginUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'CREDENTIALS',
+          email: superAdminEmail,
+          password: superAdminPassword,
+        }),
+      });
+
+      const cookieHeader = loginRes.headers.get('set-cookie');
+      const loginData = await loginRes.json();
+
+      if (cookieHeader) {
+        const match = cookieHeader.match(/(zamzam_session=[^;]+)/);
+        if (match) cookie = match[1];
+      }
+    }
 
     if (!loginRes.ok || !loginData.success) {
       console.warn('⚠️ Standard password login returned:', loginData.error || loginData);
@@ -57,7 +81,6 @@ async function resetRemoteProduction() {
       },
       body: JSON.stringify({
         confirmPurge: 'CONFIRM_PURGE_ALL_DATA',
-        adminKey: superAdminKey,
       }),
     });
 

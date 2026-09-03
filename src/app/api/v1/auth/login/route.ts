@@ -9,11 +9,19 @@ import {
   verifySuperAdminKey,
 } from '@/lib/services/auth-service';
 import { getUserEffectivePermissions } from '@/lib/domain/rbac-engine';
+import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/security/rate-limiter';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   try {
+    // 1. Enforce rate limiting: max 5 login attempts per 15 min per IP
+    const clientIp = getClientIp(req);
+    const rateLimit = checkRateLimit(`login:${clientIp}`, 5, 15 * 60 * 1000);
+    if (!rateLimit.allowed) {
+      return rateLimitResponse(rateLimit.retryAfterSec);
+    }
+
     const body = await req.json();
     const { type, email, password, superAdminKey } = body;
 
@@ -183,9 +191,10 @@ export async function POST(req: Request) {
     });
 
     return response;
-  } catch (error: any) {
+  } catch (error: unknown) {
+    console.error('[AUTH] Login route error:', error);
     return NextResponse.json(
-      { success: false, error: error?.message || 'Authentication error' },
+      { success: false, error: 'Authentication failed' },
       { status: 500 }
     );
   }

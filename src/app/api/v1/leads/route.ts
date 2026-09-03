@@ -25,9 +25,10 @@ export async function GET(req: Request) {
     const currentStage = searchParams.get('currentStage');
     const search = searchParams.get('search');
     
-    // Pagination parameters
-    const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
-    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '50', 10)));
+    // Pagination parameters — fall back to defaults on non-numeric input
+    // (parseInt('abc') is NaN, which would reach Prisma as skip/take NaN → 500)
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '50', 10) || 50));
     const skip = (page - 1) * limit;
 
     // Scope-aware filter: respects GLOBAL, ORGANIZATION, TEAM, OWN_AND_ASSIGNED, OWN
@@ -128,9 +129,24 @@ export async function POST(req: Request) {
 
     const body = await req.json();
 
+    // Enforce the documented API contract (createLeadSchema requires a valid
+    // phone etc.). Previously the schema was imported but never applied, so
+    // payloads missing required fields silently created empty leads.
+    const parsed = createLeadSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: parsed.error.issues[0]?.message || 'Invalid lead payload',
+          issues: parsed.error.issues.map((i) => ({ path: i.path.join('.'), message: i.message })),
+        },
+        { status: 400 }
+      );
+    }
+
     const result = await createLead(
       { organizationId: auth.session.organizationId, userId: auth.session.userId },
-      body as CreateLeadInput
+      parsed.data as CreateLeadInput
     );
 
     const lead = await prisma.lead.findUnique({
@@ -152,6 +168,13 @@ export async function POST(req: Request) {
       return NextResponse.json(
         { success: false, error: error.message },
         { status: error.status }
+      );
+    }
+    // Malformed / non-JSON request body is a client error, not a server fault
+    if (error instanceof SyntaxError) {
+      return NextResponse.json(
+        { success: false, error: 'Request body must be valid JSON' },
+        { status: 400 }
       );
     }
     return NextResponse.json(

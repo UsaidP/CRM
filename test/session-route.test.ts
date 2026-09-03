@@ -1,6 +1,7 @@
 import { describe, it, expect, mock, beforeAll } from 'bun:test';
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { fromAny } from '@total-typescript/shoehorn';
 
 /**
  * Regression tests for the auth bypass in GET /api/v1/auth/session.
@@ -29,10 +30,10 @@ const ROUTE_SRC = readFileSync(
   'utf8'
 );
 
-async function callGet() {
+async function callGet(): Promise<Response> {
   const { GET } = await import('../src/app/api/v1/auth/session/route');
   const res = await GET();
-  return res as Response;
+  return fromAny(res);
 }
 
 describe('GET /api/v1/auth/session must never mint sessions for unauthenticated callers', () => {

@@ -59,6 +59,38 @@ describe('Universal Lead File Parser Unit Tests', () => {
       expect(result.totalRows).toBe(0);
       expect(result.leads.length).toBe(0);
     });
+
+    it('flags rows lacking both a valid phone and email as INVALID, phone-only failures as WARNING', () => {
+      const csvContent = 'Name,Mobile,Email\nGood Lead,9820011223,good@example.com\nBad Lead,notaphone,bad@example.com\nHopeless Lead,notaphone,';
+      const result = parseDelimitedText(csvContent, 'csv');
+      expect(result.leads.length).toBe(3);
+      const byStatus = (s: string) => result.leads.filter((l: any) => l.status === s).length;
+      // Invalid phone but reachable via email -> WARNING; no phone and no email -> INVALID
+      expect(byStatus('INVALID')).toBe(1);
+      expect(byStatus('WARNING')).toBe(1);
+      expect(result.invalidCount).toBe(1);
+    });
+
+    it('handles CRLF (Windows Excel) line endings', () => {
+      const csvContent = 'Name,Mobile\r\nCRLF Lead,9820011223';
+      const result = parseDelimitedText(csvContent, 'csv');
+      expect(result.leads.length).toBe(1);
+      expect(result.leads[0].phoneE164).toContain('9820011223');
+    });
+
+    it('tolerates a UTF-8 BOM at the start of the file', () => {
+      const csvContent = '\uFEFFName,Mobile\nBOM Lead,9820011223';
+      const result = parseDelimitedText(csvContent, 'csv');
+      expect(result.leads.length).toBe(1);
+      expect(result.leads[0].phoneE164).toContain('9820011223');
+    });
+
+    it('does not crash on rows with fewer columns than the header', () => {
+      const csvContent = 'Name,Mobile,Email,Extra\nShort Row,9820011223';
+      const result = parseDelimitedText(csvContent, 'csv');
+      expect(result.leads.length).toBe(1);
+      expect(Number.isNaN(result.readyCount)).toBe(false);
+    });
   });
 
   describe('Unstructured Text Parsing', () => {

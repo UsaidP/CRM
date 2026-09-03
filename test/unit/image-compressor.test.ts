@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'bun:test';
+import { fromPartial } from '@total-typescript/shoehorn';
 import {
   isCompressibleImage,
   calculateAspectRatioFit,
@@ -9,16 +10,16 @@ import {
 describe('Client-Side Image Compressor & Storage Optimizer', () => {
   describe('isCompressibleImage format detection', () => {
     it('identifies JPG, PNG, WEBP, and AVIF as compressible', () => {
-      expect(isCompressibleImage({ type: 'image/jpeg' } as File)).toBe(true);
-      expect(isCompressibleImage({ type: 'image/png' } as File)).toBe(true);
-      expect(isCompressibleImage({ type: 'image/webp' } as File)).toBe(true);
-      expect(isCompressibleImage({ type: 'image/avif' } as File)).toBe(true);
+      expect(isCompressibleImage(fromPartial({ type: 'image/jpeg' }))).toBe(true);
+      expect(isCompressibleImage(fromPartial({ type: 'image/png' }))).toBe(true);
+      expect(isCompressibleImage(fromPartial({ type: 'image/webp' }))).toBe(true);
+      expect(isCompressibleImage(fromPartial({ type: 'image/avif' }))).toBe(true);
     });
 
     it('rejects PDF, video, and non-image files', () => {
-      expect(isCompressibleImage({ type: 'application/pdf' } as File)).toBe(false);
-      expect(isCompressibleImage({ type: 'video/mp4' } as File)).toBe(false);
-      expect(isCompressibleImage({ type: 'text/plain' } as File)).toBe(false);
+      expect(isCompressibleImage(fromPartial({ type: 'application/pdf' }))).toBe(false);
+      expect(isCompressibleImage(fromPartial({ type: 'video/mp4' }))).toBe(false);
+      expect(isCompressibleImage(fromPartial({ type: 'text/plain' }))).toBe(false);
     });
   });
 
