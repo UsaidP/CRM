@@ -1,3 +1,4 @@
+require('dotenv').config();
 const { PrismaClient } = require('@prisma/client');
 const crypto = require('crypto');
 
@@ -69,14 +70,19 @@ async function resetToSuperAdmin() {
 
     // 3. Create the Sole Super Admin Account
     console.log('\n👤 Creating Sole Super Admin Account...');
-    const defaultPassword = process.env.SUPER_ADMIN_PASSWORD || 'ZamZam@2026';
-    const passwordHash = hashPasswordSync(defaultPassword);
+    const superAdminPassword = process.env.SUPER_ADMIN_PASSWORD;
+    if (!superAdminPassword) {
+      console.error('❌ Error: SUPER_ADMIN_PASSWORD must be configured in .env');
+      process.exit(1);
+    }
+    const superAdminEmail = process.env.SUPER_ADMIN_EMAIL || 'usaid@zamzamproperties.in';
+    const passwordHash = hashPasswordSync(superAdminPassword);
 
     const superAdmin = await prisma.user.create({
       data: {
         organizationId: org.id,
         fullName: 'Usaid Patel',
-        email: 'usaid@zamzamproperties.in',
+        email: superAdminEmail,
         phoneE164: '+919820123456',
         role: 'SUPER_ADMIN',
         passwordHash,
@@ -105,7 +111,7 @@ async function resetToSuperAdmin() {
     console.log(`Organization: ${org.name}`);
     console.log(`Super Admin:  ${superAdmin.fullName}`);
     console.log(`Email:        ${superAdmin.email}`);
-    console.log(`Password:     ${defaultPassword}`);
+    console.log(`Password:     [Configured securely via SUPER_ADMIN_PASSWORD in .env]`);
     console.log(`Role:         ${superAdmin.role}`);
     console.log('====================================================\n');
 

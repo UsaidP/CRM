@@ -57,18 +57,17 @@ async function resetRemoteProduction() {
         const match = cookieHeader.match(/(zamzam_session=[^;]+)/);
         if (match) cookie = match[1];
       }
+
+      if (!loginRes.ok || !loginData.success) {
+        console.warn('⚠️ Standard password login returned:', loginData.error || loginData);
+      } else {
+        console.log(`✅ Logged in as ${loginData.user?.fullName} (${loginData.user?.role})`);
+      }
     }
 
-    if (!loginRes.ok || !loginData.success) {
-      console.warn('⚠️ Standard password login returned:', loginData.error || loginData);
-      console.log('🔄 Attempting Super Admin Key authentication...');
-    }
-
-    // Extract cookie
-    let cookie = '';
-    if (cookieHeader) {
-      const match = cookieHeader.match(/(zamzam_session=[^;]+)/);
-      if (match) cookie = match[1];
+    if (!cookie && !superAdminKey) {
+      console.error('❌ Could not authenticate via password or SUPER_ADMIN_KEY');
+      process.exit(1);
     }
 
     console.log(`🚀 Sending Reset Request to: ${resetUrl}...`);
@@ -77,10 +76,12 @@ async function resetRemoteProduction() {
       headers: {
         'Content-Type': 'application/json',
         ...(cookie ? { Cookie: cookie } : {}),
-        'x-admin-key': superAdminKey,
+        ...(superAdminKey ? { 'x-admin-key': superAdminKey } : {}),
       },
       body: JSON.stringify({
         confirmPurge: 'CONFIRM_PURGE_ALL_DATA',
+        superAdminPassword: superAdminPassword,
+        superAdminEmail: superAdminEmail,
       }),
     });
 
