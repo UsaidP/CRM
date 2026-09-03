@@ -123,10 +123,11 @@ export async function POST(req: Request) {
       }
     }
 
-    // Compute exact statutory all-in cost
+    // Compute exact statutory all-in cost synced with project OC and unit possession status
+    const isOcReady = Boolean(project.hasOccupancyCertificate || validated.possessionStatus === 'READY_TO_MOVE');
     const costResult = calculateAllInCost({
       agreementValue: validated.agreementValue,
-      hasOccupancyCertificate: project.hasOccupancyCertificate,
+      hasOccupancyCertificate: isOcReady,
       floorNumber: validated.floorNumber,
       carpetAreaSqft: validated.carpetAreaSqft,
       parkingCharges: validated.parkingCharges,
@@ -186,7 +187,7 @@ export async function POST(req: Request) {
         totalFloors: validated.totalFloors,
         carpetAreaSqft: validated.carpetAreaSqft,
         facing: validated.facing,
-        possessionStatus: validated.possessionStatus,
+        possessionStatus: isOcReady ? 'READY_TO_MOVE' : validated.possessionStatus,
         possessionDate: parseSafeDate(validated.possessionDate),
         description: validated.description,
         featureHighlightsJson: JSON.stringify(validated.featureHighlights || []),

@@ -17,6 +17,7 @@ import {
   Calculator,
   X,
   Send,
+  Calendar,
 } from 'lucide-react';
 import { formatLakhCr, formatIndianRupees } from '@/lib/money';
 import { AccessibleDialog } from '@/components/ui/AccessibleDialog';
@@ -247,14 +248,27 @@ export function PortalComparisonTray({
                   </tr>
                   <tr>
                     <td className="py-3 px-3 font-bold text-slate-500 font-mono text-[11px]">Possession &amp; OC</td>
-                    {units.map((item: any) => (
-                      <td key={item.id} className="py-3 px-3 text-emerald-800 font-semibold">
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-[10px] font-bold">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                          Ready OC (0% GST)
-                        </span>
-                      </td>
-                    ))}
+                    {units.map((item: any) => {
+                      const isOc = Boolean(
+                        item.propertyUnit.project?.hasOccupancyCertificate ||
+                        item.propertyUnit.possessionStatus === 'READY_TO_MOVE'
+                      );
+                      return (
+                        <td key={item.id} className="py-3 px-3 font-semibold">
+                          {isOc ? (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-[10px] font-bold text-emerald-800">
+                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                              Ready OC (0% GST)
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-[10px] font-bold text-amber-800">
+                              <Calendar className="w-3.5 h-3.5 text-amber-600" />
+                              Under Construction (5% GST)
+                            </span>
+                          )}
+                        </td>
+                      );
+                    })}
                   </tr>
                   <tr>
                     <td className="py-3 px-3 font-bold text-slate-500 font-mono text-[11px]">Floor &amp; Facing</td>

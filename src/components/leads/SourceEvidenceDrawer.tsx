@@ -21,7 +21,9 @@ import {
   UserCheck, 
   Sparkles,
   MapPin,
-  FileText
+  FileText,
+  Maximize2,
+  Minimize2
 } from 'lucide-react';
 import { YoutubeIcon, InstagramIcon } from '@/components/icons/SocialIcons';
 import { OFFICIAL_BROKER_NUMBERS } from '@/lib/constants/broker-constants';
@@ -84,6 +86,7 @@ export function SourceEvidenceDrawer({
   const [communications, setCommunications] = useState<any[]>(lead?.communications || []);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingLogId, setEditingLogId] = useState<string | null>(null);
+  const [isFullScreen, setIsFullScreen] = useState(true);
 
   // New Log Form State
   const [channel, setChannel] = useState('PHONE_CALL');
@@ -284,9 +287,15 @@ export function SourceEvidenceDrawer({
         aria-hidden="true"
       />
 
-      <div className="fixed inset-y-0 right-0 z-[70] w-full max-w-full sm:max-w-xl md:max-w-2xl bg-surface border-l border-border shadow-2xl overflow-y-auto touch-scroll h-dvh max-h-dvh pb-safe animate-in slide-in-from-right duration-200 text-content flex flex-col font-sans">
+      <div 
+        className={`fixed inset-y-0 right-0 z-[70] bg-surface shadow-2xl overflow-y-auto touch-scroll h-dvh max-h-dvh pb-safe text-content flex flex-col font-sans transition-all duration-300 ${
+          isFullScreen 
+            ? 'inset-0 w-full max-w-full border-none animate-in fade-in' 
+            : 'w-full max-w-full sm:max-w-xl md:max-w-2xl border-l border-border animate-in slide-in-from-right'
+        }`}
+      >
         {/* Sticky Header */}
-        <div className="sticky top-0 z-10 px-4 sm:px-6 py-3.5 sm:py-5 bg-surface/95 backdrop-blur border-b border-border flex items-center justify-between">
+        <div className="sticky top-0 z-20 px-4 sm:px-6 py-3.5 sm:py-4 bg-surface/95 backdrop-blur border-b border-border flex items-center justify-between">
           <div className="flex items-center gap-3 min-w-0 pr-2">
             <div className="p-2 sm:p-2.5 bg-accent-soft border border-accent/20 rounded-xl text-accent shrink-0">
               {getSourceIcon(lead.leadSource)}
@@ -301,113 +310,133 @@ export function SourceEvidenceDrawer({
               </p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-lg text-content-muted hover:text-content hover:bg-surface-subtle transition-colors shrink-0"
-            aria-label="Close details"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button
+              type="button"
+              onClick={() => setIsFullScreen(!isFullScreen)}
+              className="p-2 rounded-xl text-content-muted hover:text-content hover:bg-surface-subtle transition-colors shrink-0 cursor-pointer border border-transparent hover:border-border"
+              title={isFullScreen ? "Minimize to side drawer" : "Maximize to full screen"}
+              aria-label={isFullScreen ? "Minimize to side drawer" : "Maximize to full screen"}
+            >
+              {isFullScreen ? (
+                <Minimize2 className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
+              ) : (
+                <Maximize2 className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-2 rounded-xl text-content-muted hover:text-content hover:bg-surface-subtle transition-colors shrink-0 cursor-pointer border border-transparent hover:border-border"
+              aria-label="Close details"
+            >
+              <X className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
+            </button>
+          </div>
         </div>
 
         {/* Content Area */}
-        <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 flex-1">
-          
-          {/* Feedback Message */}
-          {feedbackMsg && (
-            <div className={`p-3.5 rounded-xl border text-xs flex items-center gap-2 ${
-              feedbackMsg.type === 'success' ? 'bg-status-success-surface border-status-success/30 text-status-success' : 'bg-status-danger-surface border-status-danger/30 text-status-danger'
-            }`}>
-              {feedbackMsg.type === 'success' ? <CheckCircle2 className="w-4 h-4 text-status-success" /> : <AlertCircle className="w-4 h-4 text-status-danger" />}
-              <span>{feedbackMsg.text}</span>
-            </div>
-          )}
-
-          {/* Attribution & Stated Source Code Banner */}
-          <div className="p-4 rounded-2xl bg-surface-subtle border border-border space-y-3">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-content-muted">Campaign Source Code:</span>
-              <span className="font-mono font-bold text-accent-text px-2 py-0.5 rounded bg-accent-soft border border-accent/20">
-                {lead.sourceCode || 'NO_EXPLICIT_CODE'}
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-content-muted">Assigned Broker Lead:</span>
-              <span className="text-accent-text font-semibold flex items-center gap-1.5">
-                <UserCheck className="w-3.5 h-3.5" />
-                {lead.assignedBroker?.fullName || 'Safwan Diwan'}
-              </span>
-            </div>
-
-            {lead.campaign && (
-              <div className="flex items-center justify-between text-xs pt-2 border-t border-border">
-                <span className="text-content-muted">Linked Campaign:</span>
-                <span className="text-content font-medium">{lead.campaign.campaignName}</span>
-              </div>
-            )}
-          </div>
-
-          {/* Multi-Channel Identities */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-content-muted flex items-center gap-2">
-                <Layers className="w-3.5 h-3.5 text-accent" />
-                Durable Identities ({identities.length || (lead.phoneE164 ? 1 : 0)})
-              </h3>
-              <button
-                onClick={() => onOpenMergeModal(lead)}
-                className="text-xs text-accent hover:underline flex items-center gap-1 font-medium transition-colors"
-              >
-                <GitMerge className="w-3.5 h-3.5" />
-                Merge Duplicates
-              </button>
-            </div>
-
-            <div className="space-y-2">
-              {identities.length > 0 ? (
-                identities.map((id: any) => (
-                  <div
-                    key={id.id}
-                    className="p-3 bg-surface-inset border border-border rounded-xl flex items-center justify-between text-xs"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-surface-subtle text-content-muted border border-border">
-                        {id.identityType}
-                      </span>
-                      <span className="font-mono text-content font-medium">{id.identityValue}</span>
-                    </div>
-                    {id.isPrimary && (
-                      <span className="text-[10px] uppercase font-semibold text-accent-text bg-accent-soft px-2 py-0.5 rounded border border-accent/20">
-                        Primary
-                      </span>
-                    )}
-                  </div>
-                ))
-              ) : (
-                <div className="p-3 bg-surface-inset border border-border rounded-xl flex items-center justify-between text-xs">
-                  <span className="font-mono text-content-muted">PHONE_E164</span>
-                  <span className="font-mono text-content">{lead.phoneE164 || 'No Phone (Social Inbound)'}</span>
+        <div className={`p-4 sm:p-6 flex-1 ${isFullScreen ? 'max-w-7xl w-full mx-auto' : ''}`}>
+          <div className={isFullScreen ? 'grid grid-cols-1 lg:grid-cols-12 gap-6' : 'space-y-4 sm:space-y-6'}>
+            
+            {/* Column 1: Prospect Profile, Attribution & Durable Identities */}
+            <div className={isFullScreen ? 'lg:col-span-4 space-y-4' : 'space-y-4'}>
+              {/* Feedback Message */}
+              {feedbackMsg && (
+                <div className={`p-3.5 rounded-xl border text-xs flex items-center gap-2 ${
+                  feedbackMsg.type === 'success' ? 'bg-status-success-surface border-status-success/30 text-status-success' : 'bg-status-danger-surface border-status-danger/30 text-status-danger'
+                }`}>
+                  {feedbackMsg.type === 'success' ? <CheckCircle2 className="w-4 h-4 text-status-success" /> : <AlertCircle className="w-4 h-4 text-status-danger" />}
+                  <span>{feedbackMsg.text}</span>
                 </div>
               )}
-            </div>
-          </div>
 
-          {/* Communication Logs & Caller Reference Section */}
-          <div className="space-y-4 pt-2 border-t border-border">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-content-muted flex items-center gap-2">
-                <MessageSquare className="w-3.5 h-3.5 text-accent" />
-                Communication Logs &amp; Audit Trail ({communications.length})
-              </h3>
-              <button
-                onClick={() => setShowAddForm(!showAddForm)}
-                className="px-3 py-1.5 rounded-lg bg-accent-soft hover:bg-accent-soft/80 border border-accent/20 text-accent-text text-xs font-semibold flex items-center gap-1.5 transition-all"
-              >
-                <PlusCircle className="w-3.5 h-3.5" />
-                {showAddForm ? 'Hide Form' : '+ Log Call / Note'}
-              </button>
+              {/* Attribution & Stated Source Code Banner */}
+              <div className="p-4 rounded-2xl bg-surface-subtle border border-border space-y-3">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-content-muted">Campaign Source Code:</span>
+                  <span className="font-mono font-bold text-accent-text px-2 py-0.5 rounded bg-accent-soft border border-accent/20">
+                    {lead.sourceCode || 'NO_EXPLICIT_CODE'}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-content-muted">Assigned Broker Lead:</span>
+                  <span className="text-accent-text font-semibold flex items-center gap-1.5">
+                    <UserCheck className="w-3.5 h-3.5" />
+                    {lead.assignedBroker?.fullName || 'Safwan Diwan'}
+                  </span>
+                </div>
+
+                {lead.campaign && (
+                  <div className="flex items-center justify-between text-xs pt-2 border-t border-border">
+                    <span className="text-content-muted">Linked Campaign:</span>
+                    <span className="text-content font-medium">{lead.campaign.campaignName}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Multi-Channel Identities */}
+              <div className="p-4 rounded-2xl bg-surface-subtle border border-border space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-content-muted flex items-center gap-2">
+                    <Layers className="w-3.5 h-3.5 text-accent" />
+                    Durable Identities ({identities.length || (lead.phoneE164 ? 1 : 0)})
+                  </h3>
+                  <button
+                    onClick={() => onOpenMergeModal(lead)}
+                    className="text-xs text-accent hover:underline flex items-center gap-1 font-medium transition-colors cursor-pointer"
+                  >
+                    <GitMerge className="w-3.5 h-3.5" />
+                    Merge Duplicates
+                  </button>
+                </div>
+
+                <div className="space-y-2">
+                  {identities.length > 0 ? (
+                    identities.map((id: any) => (
+                      <div
+                        key={id.id}
+                        className="p-3 bg-surface-inset border border-border rounded-xl flex items-center justify-between text-xs"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-surface-subtle text-content-muted border border-border">
+                            {id.identityType}
+                          </span>
+                          <span className="font-mono text-content font-medium">{id.identityValue}</span>
+                        </div>
+                        {id.isPrimary && (
+                          <span className="text-[10px] uppercase font-semibold text-accent-text bg-accent-soft px-2 py-0.5 rounded border border-accent/20">
+                            Primary
+                          </span>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="p-3 bg-surface-inset border border-border rounded-xl flex items-center justify-between text-xs">
+                      <span className="font-mono text-content-muted">PHONE_E164</span>
+                      <span className="font-mono text-content">{lead.phoneE164 || 'No Phone (Social Inbound)'}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
+
+            {/* Column 2: Communication Logs & Audit Trail */}
+            <div className={isFullScreen ? 'lg:col-span-8 space-y-4' : 'space-y-4 pt-2 border-t border-border'}>
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-content-muted flex items-center gap-2">
+                  <MessageSquare className="w-3.5 h-3.5 text-accent" />
+                  Communication Logs &amp; Audit Trail ({communications.length})
+                </h3>
+                <button
+                  onClick={() => setShowAddForm(!showAddForm)}
+                  className="px-3 py-1.5 rounded-lg bg-accent-soft hover:bg-accent-soft/80 border border-accent/20 text-accent-text text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer"
+                >
+                  <PlusCircle className="w-3.5 h-3.5" />
+                  {showAddForm ? 'Hide Form' : '+ Log Call / Note'}
+                </button>
+              </div>
 
             {/* New Communication Log Form */}
             {showAddForm && (
@@ -710,35 +739,38 @@ export function SourceEvidenceDrawer({
             </div>
           </div>
         </div>
+      </div>
 
         {/* Footer 1-Click Action Toolbar */}
-        <div className="sticky bottom-0 p-5 bg-surface/95 backdrop-blur border-t border-border flex items-center gap-3">
-          {lead.phoneE164 ? (
-            <>
-              <a
-                href={`https://wa.me/${lead.phoneE164.replace(/\D/g, '')}?text=${encodeURIComponent(
-                  `Hello ${lead.fullName || 'Sir/Ma\'am'}, Safwan from ZamZam Properties here regarding your inquiry for ${lead.sourceCode || 'Navi Mumbai luxury projects'}.`
-                )}`}
-                target="_blank"
-                rel="noreferrer"
-                className="flex-1 py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-md flex items-center justify-center gap-2 transition-all"
-              >
-                <MessageSquare className="w-4 h-4" />
-                1-Click WhatsApp
-              </a>
-              <a
-                href={`tel:${lead.phoneE164}`}
-                className="py-3 px-4 bg-surface hover:bg-surface-raised text-accent-text font-semibold text-xs rounded-xl border border-border flex items-center justify-center gap-2 transition-all shadow-sm"
-              >
-                <Phone className="w-4 h-4 text-accent" />
-                Call
-              </a>
-            </>
-          ) : (
-            <div className="w-full text-center py-2 text-xs text-content-muted">
-              Instagram Social Inbound • Reply via Direct Message or request phone number
-            </div>
-          )}
+        <div className="sticky bottom-0 p-4 sm:p-5 bg-surface/95 backdrop-blur border-t border-border z-20">
+          <div className={`flex items-center gap-3 ${isFullScreen ? 'max-w-7xl mx-auto' : ''}`}>
+            {lead.phoneE164 ? (
+              <>
+                <a
+                  href={`https://wa.me/${lead.phoneE164.replace(/\D/g, '')}?text=${encodeURIComponent(
+                    `Hello ${lead.fullName || 'Sir/Ma\'am'}, Safwan from ZamZam Properties here regarding your inquiry for ${lead.sourceCode || 'Navi Mumbai luxury projects'}.`
+                  )}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex-1 py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  1-Click WhatsApp
+                </a>
+                <a
+                  href={`tel:${lead.phoneE164}`}
+                  className="py-3 px-5 bg-surface hover:bg-surface-raised text-accent-text font-semibold text-xs rounded-xl border border-border flex items-center justify-center gap-2 transition-all shadow-sm cursor-pointer"
+                >
+                  <Phone className="w-4 h-4 text-accent" />
+                  Call
+                </a>
+              </>
+            ) : (
+              <div className="w-full text-center py-2 text-xs text-content-muted">
+                Instagram Social Inbound • Reply via Direct Message or request phone number
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </>

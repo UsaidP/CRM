@@ -80,6 +80,7 @@ export function ProjectDetailsModal({
   const [oneShotExtracting, setOneShotExtracting] = useState(false);
   const [oneShotExtractMsg, setOneShotExtractMsg] = useState<string | null>(null);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
+  const [deletingImageUrl, setDeletingImageUrl] = useState<string | null>(null);
 
   const handleSyncCertificate = async () => {
     if (!currentProject?.reraNumber) return;
@@ -189,6 +190,63 @@ export function ProjectDetailsModal({
       setUploadingFiles(false);
       if (elevationInputRef.current) elevationInputRef.current.value = '';
       if (floorplanInputRef.current) floorplanInputRef.current.value = '';
+    }
+  };
+
+  const handleDeleteImage = async (imgUrl: string) => {
+    if (!currentProject?.id || !imgUrl) return;
+
+    // Two-step confirmation: first click arms the button, second click deletes.
+    if (deletingImageUrl !== imgUrl) {
+      setDeletingImageUrl(imgUrl);
+      setTimeout(() => setDeletingImageUrl((cur) => (cur === imgUrl ? null : cur)), 4000);
+      return;
+    }
+    setDeletingImageUrl(null);
+    setUploadingFiles(true);
+    setUploadProgressMsg('Removing image from project gallery...');
+
+    try {
+      const existing = parseGalleryUrls(currentProject.mediaGalleryJson || currentProject.mediaGallery);
+      const nextGallery = existing.filter((item: any) => {
+        const url = typeof item === 'string' ? item : (item?.url || item?.file_url || item?.secureUrl);
+        return url !== imgUrl;
+      });
+      const nextCover = currentProject.coverImageUrl === imgUrl ? null : currentProject.coverImageUrl;
+      const nextMaster = currentProject.masterPlanUrl === imgUrl ? null : currentProject.masterPlanUrl;
+
+      const res = await fetch(`/api/v1/inventory/projects/${currentProject.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mediaGallery: nextGallery,
+          ...(currentProject.coverImageUrl === imgUrl ? { coverImageUrl: nextCover } : {}),
+          ...(currentProject.masterPlanUrl === imgUrl ? { masterPlanUrl: nextMaster } : {}),
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to remove image from project gallery.');
+      }
+
+      setCurrentProject((prev: any) => ({
+        ...prev,
+        ...data.data,
+        mediaGalleryJson: nextGallery,
+        ...(currentProject.coverImageUrl === imgUrl ? { coverImageUrl: null } : {}),
+        ...(currentProject.masterPlanUrl === imgUrl ? { masterPlanUrl: null } : {}),
+      }));
+
+      setUploadProgressMsg('Image removed from project gallery.');
+      setTimeout(() => setUploadProgressMsg(null), 4000);
+      onProjectUpdated?.(data.data);
+    } catch (err: any) {
+      console.error('Delete image error:', err);
+      setUploadProgressMsg(`Failed to remove image: ${err.message || err}`);
+      setTimeout(() => setUploadProgressMsg(null), 5000);
+    } finally {
+      setUploadingFiles(false);
     }
   };
 
@@ -535,7 +593,7 @@ export function ProjectDetailsModal({
                     {currentProject.microMarket}
                   </span>
                 )}
-                {currentProject.hasOccupancyCertificate ? (
+                {(currentProject.hasOccupancyCertificate || unit?.possessionStatus === 'READY_TO_MOVE') ? (
                   <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-status-success-surface text-status-success border border-status-success/30 flex items-center gap-1">
                     <CheckCircle2 className="w-3 h-3" /> Ready OC (0% GST)
                   </span>
@@ -1123,9 +1181,31 @@ export function ProjectDetailsModal({
                           <span className="text-xs font-semibold text-white truncate pr-2">
                             {img.title || `Sanctioned Floor Plan Blueprint ${idx + 1}`}
                           </span>
-                          <span className="p-1.5 rounded-md bg-black/60 text-white group-hover:bg-accent group-hover:text-white transition-colors shrink-0">
-                            <Maximize2 className="w-3.5 h-3.5" />
-                          </span>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <span
+                              className="p-1.5 rounded-md bg-black/60 text-white group-hover:bg-accent group-hover:text-white transition-colors"
+                              title="View full size"
+                            >
+                              <Maximize2 className="w-3.5 h-3.5" />
+                            </span>
+                            <button
+                              type="button"
+                              disabled={uploadingFiles}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteImage(img.url);
+                              }}
+                              title={deletingImageUrl === img.url ? 'Click again to confirm removal' : 'Remove this image from project gallery'}
+                              aria-label={`Remove ${img.title || 'this floor plan image'}`}
+                              className={`p-1.5 rounded-md transition-colors disabled:opacity-50 cursor-pointer ${
+                                deletingImageUrl === img.url
+                                  ? 'bg-status-danger text-white hover:bg-status-danger/90'
+                                  : 'bg-black/60 text-white hover:bg-status-danger hover:text-white'
+                              }`}
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>

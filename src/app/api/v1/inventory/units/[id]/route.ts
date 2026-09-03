@@ -80,9 +80,13 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     const carpetAreaSqft = validated.carpetAreaSqft ?? existing.carpetAreaSqft;
     const parkingCharges = validated.parkingCharges ?? existing.parkingCharges;
     const societyDevelopmentCharges = validated.societyDevelopmentCharges ?? existing.societyDevelopmentCharges;
+    const isOcReady = Boolean(
+      project.hasOccupancyCertificate ||
+      (validated.possessionStatus ? validated.possessionStatus === 'READY_TO_MOVE' : existing.possessionStatus === 'READY_TO_MOVE')
+    );
     const costResult = calculateAllInCost({
       agreementValue,
-      hasOccupancyCertificate: project.hasOccupancyCertificate,
+      hasOccupancyCertificate: isOcReady,
       floorNumber,
       carpetAreaSqft,
       parkingCharges,

@@ -16,6 +16,7 @@ import {
   Sparkles,
   CheckCircle2,
   ShieldCheck,
+  Calendar,
 } from 'lucide-react';
 import { YoutubeIcon } from '@/components/icons/SocialIcons';
 import { InventoryMediaAsset } from '@/lib/inventory-media';
@@ -37,6 +38,8 @@ export function PropertyMediaHub({
   onOpenVideoPlayer,
   sendTelemetry,
 }: PropertyMediaHubProps) {
+  const isOcReady = Boolean(project?.hasOccupancyCertificate || unit?.possessionStatus === 'READY_TO_MOVE');
+
   // Extract and normalize media
   const unitMedia: InventoryMediaAsset[] = unit.mediaGallery || [];
   const projectMedia: InventoryMediaAsset[] = project.mediaGallery || [];
@@ -191,10 +194,17 @@ export function PropertyMediaHub({
                   <span className="px-3.5 py-1 rounded-xl bg-white/95 border border-amber-300 text-gold font-bold text-xs backdrop-blur-md shadow-sm font-serif">
                     {unit.bhk} BHK • {unit.carpetAreaSqft} sq.ft
                   </span>
-                  <span className="hidden xs:inline-flex items-center gap-1.5 px-3.5 py-1 rounded-xl bg-emerald-950/85 border border-emerald-500/50 text-emerald-300 font-bold text-xs backdrop-blur-md shadow-sm">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Ready OC (0% GST)</span>
-                  </span>
+                  {isOcReady ? (
+                    <span className="hidden xs:inline-flex items-center gap-1.5 px-3.5 py-1 rounded-xl bg-emerald-950/85 border border-emerald-500/50 text-emerald-300 font-bold text-xs backdrop-blur-md shadow-sm">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>Ready OC (0% GST)</span>
+                    </span>
+                  ) : (
+                    <span className="hidden xs:inline-flex items-center gap-1.5 px-3.5 py-1 rounded-xl bg-amber-950/85 border border-amber-500/50 text-amber-300 font-bold text-xs backdrop-blur-md shadow-sm">
+                      <Calendar className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Under Construction (5% GST)</span>
+                    </span>
+                  )}
                 </div>
 
                 {/* Bottom Caption Overlay with Fullscreen Button */}

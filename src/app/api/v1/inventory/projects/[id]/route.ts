@@ -94,6 +94,18 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     if ('brochurePhotos' in validated) data.brochurePhotosJson = JSON.stringify(validated.brochurePhotos || []);
 
     const project = await prisma.developerProject.update({ where: { id }, data });
+
+    if ('hasOccupancyCertificate' in validated) {
+      const isOc = Boolean(validated.hasOccupancyCertificate);
+      await prisma.propertyUnit.updateMany({
+        where: { projectId: id },
+        data: {
+          possessionStatus: isOc ? 'READY_TO_MOVE' : 'UNDER_CONSTRUCTION',
+          gstRate: isOc ? 0.0 : 5.0,
+        },
+      });
+    }
+
     return NextResponse.json({
       success: true,
       message: 'Developer project updated successfully',
