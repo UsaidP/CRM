@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   FileText,
   Upload,
@@ -38,6 +38,7 @@ import { HallmarkStamp } from '@/components/ui/HallmarkStamp';
 import { validateReraNumber } from '@/lib/domain/verification-engine';
 import { ReraVerificationBadge } from '@/components/inventory/ReraVerificationBadge';
 import { FeedbackAlert } from '@/components/ui/FeedbackAlert';
+import { CustomSelect } from '@/components/ui/CustomSelect';
 import { uploadToCloudinaryChunked } from '@/lib/client/cloudinary-chunked-upload';
 import { parseSafeDate } from '@/lib/date-utils';
 import { MahaReraCertificateModal } from '@/components/inventory/MahaReraCertificateModal';
@@ -142,7 +143,28 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
   const [previewLightboxUrl, setPreviewLightboxUrl] = useState<string | null>(null);
   const [previewLightboxTitle, setPreviewLightboxTitle] = useState<string>('');
 
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const progressTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleStopScan = () => {
+    if (abortControllerRef.current) {
+      try {
+        abortControllerRef.current.abort();
+      } catch (e) {
+        console.warn('[BROCHURE] Abort notice:', e);
+      }
+      abortControllerRef.current = null;
+    }
+    if (progressTimerRef.current) {
+      clearInterval(progressTimerRef.current);
+      progressTimerRef.current = null;
+    }
+    setParsing(false);
+    setParseProgressStep(0);
+  };
+
   const resetState = () => {
+    handleStopScan();
     setStep('upload');
     setUploadMode('file');
     setFile(null);
@@ -161,6 +183,25 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
     setCertificateSuccessMsg(null);
     setPreviewLightboxUrl(null);
   };
+
+  const handleCloseModal = () => {
+    handleStopScan();
+    resetState();
+    onClose();
+  };
+
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        try {
+          abortControllerRef.current.abort();
+        } catch {}
+      }
+      if (progressTimerRef.current) {
+        clearInterval(progressTimerRef.current);
+      }
+    };
+  }, []);
 
   const handleUpdateUnit = (idx: number, patch: any) => {
     if (!projectData || !Array.isArray(projectData.units)) return;
@@ -301,7 +342,18 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
     setParsing(true);
     setParseProgressStep(1);
 
-    const progressTimer = setInterval(() => {
+    if (abortControllerRef.current) {
+      try {
+        abortControllerRef.current.abort();
+      } catch {}
+    }
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
+    if (progressTimerRef.current) {
+      clearInterval(progressTimerRef.current);
+    }
+    progressTimerRef.current = setInterval(() => {
       setParseProgressStep((prev) => (prev < 5 ? prev + 1 : prev));
     }, 450);
 
@@ -321,13 +373,16 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
           console.warn('[BROCHURE] Base64 encoding notice:', base64Err);
         }
 
+        if (controller.signal.aborted) return;
+
         // Step 2: Direct Cloudinary chunked upload for permanent asset hosting (if configured)
         let directUploadedUrl: string | null = null;
         try {
           const isPdf = file.type?.includes('pdf') || file.name.match(/\.pdf$/i);
           const resourceType = isPdf ? 'raw' : 'auto';
           const signRes = await fetch(
-            `/api/v1/media/sign-upload?category=brochures&filename=${encodeURIComponent(file.name)}&resourceType=${resourceType}`
+            `/api/v1/media/sign-upload?category=brochures&filename=${encodeURIComponent(file.name)}&resourceType=${resourceType}`,
+            { signal: controller.signal }
           );
           if (signRes.ok) {
             const signData = await signRes.json();
@@ -340,9 +395,12 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
               directUploadedUrl = cloudAsset.secure_url || cloudAsset.url;
             }
           }
-        } catch (cloudUploadErr) {
+        } catch (cloudUploadErr: any) {
+          if (controller.signal.aborted || cloudUploadErr?.name === 'AbortError') return;
           console.warn('[UPLOAD] Direct Cloudinary chunked upload attempt warning:', cloudUploadErr);
         }
+
+        if (controller.signal.aborted) return;
 
         res = await fetch('/api/v1/inventory/upload-brochure', {
           method: 'POST',
@@ -353,16 +411,20 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
             filename: file.name,
             mimeType: file.type || 'application/pdf',
           }),
+          signal: controller.signal,
         });
       } else if (uploadMode === 'text' && pastedText.trim()) {
         res = await fetch('/api/v1/inventory/upload-brochure', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text: pastedText, filename: 'Developer_Brochure.pdf' }),
+          signal: controller.signal,
         });
       } else {
         throw new Error('Please select a PDF brochure or paste brochure specification text.');
       }
+
+      if (controller.signal.aborted) return;
 
       const rawText = await res.text();
       let json: any;
@@ -377,7 +439,12 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
         throw new Error(`Server returned HTTP ${res.status}: ${rawText.slice(0, 150)}`);
       }
 
-      clearInterval(progressTimer);
+      if (progressTimerRef.current) {
+        clearInterval(progressTimerRef.current);
+        progressTimerRef.current = null;
+      }
+
+      if (controller.signal.aborted) return;
 
       if (!res.ok || !json.success) {
         throw new Error(formatErrorMsg(json.error || 'Failed to extract project information from brochure.'));
@@ -390,10 +457,22 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
       setExtractionNote(json.note || null);
       setStep('review');
     } catch (err: any) {
-      clearInterval(progressTimer);
+      if (err?.name === 'AbortError' || controller.signal.aborted) {
+        console.log('[BROCHURE] Brochure extraction cancelled by user.');
+        return;
+      }
+      if (progressTimerRef.current) {
+        clearInterval(progressTimerRef.current);
+        progressTimerRef.current = null;
+      }
       setParseError(formatErrorMsg(err.message || err));
     } finally {
+      if (progressTimerRef.current) {
+        clearInterval(progressTimerRef.current);
+        progressTimerRef.current = null;
+      }
       setParsing(false);
+      abortControllerRef.current = null;
     }
   };
 
@@ -535,7 +614,7 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
   return (
     <AccessibleDialog
       open={open}
-      onClose={() => { onClose(); resetState(); }}
+      onClose={handleCloseModal}
       titleId="brochure-modal-title"
       descriptionId="brochure-modal-description"
       size="xl"
@@ -563,7 +642,7 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
             type="button"
             data-dialog-close
             aria-label="Close dialog"
-            onClick={() => { onClose(); resetState(); }}
+            onClick={handleCloseModal}
             className="p-1.5 rounded-lg text-content-muted hover:text-content hover:bg-surface-subtle transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
@@ -694,7 +773,18 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
                     <RefreshCw className="w-4 h-4 animate-spin text-accent" />
                     AI Brochure Scanner Active…
                   </span>
-                  <span>Step {parseProgressStep} of 6</span>
+                  <div className="flex items-center gap-2.5">
+                    <span>Step {parseProgressStep} of 6</span>
+                    <button
+                      type="button"
+                      onClick={handleStopScan}
+                      className="px-2.5 py-1 rounded-lg bg-status-danger/10 hover:bg-status-danger/20 text-status-danger border border-status-danger/30 text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1"
+                      title="Stop scanning and select another file"
+                    >
+                      <X className="w-3 h-3" />
+                      <span>Stop Scan</span>
+                    </button>
+                  </div>
                 </div>
                 <p className="text-[11px] text-content-secondary font-mono">
                   {parseSteps[parseProgressStep - 1] || 'Processing brochure streams…'}
@@ -709,11 +799,12 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
             )}
 
             {/* Actions */}
-            <div className="flex justify-end gap-2 pt-3 border-t border-border">
+            <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 pt-3 border-t border-border">
               <button
                 type="button"
-                onClick={onClose}
-                className="px-4 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-semibold cursor-pointer"
+                data-dialog-close
+                onClick={handleCloseModal}
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-semibold whitespace-nowrap transition-all cursor-pointer text-center"
               >
                 Cancel
               </button>
@@ -721,9 +812,9 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
                 type="button"
                 disabled={parsing || (uploadMode === 'file' && !file) || (uploadMode === 'text' && !pastedText.trim())}
                 onClick={handleStartParsing}
-                className="px-5 py-2 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold shadow-sm transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 whitespace-nowrap"
               >
-                <Sparkles className="w-4 h-4" />
+                <Sparkles className="w-4 h-4 shrink-0" />
                 <span>{parsing ? 'Scanning Brochure…' : 'Extract Project Information'}</span>
               </button>
             </div>
@@ -896,17 +987,17 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
                     />
 
                     {/* MahaRERA Official Statutory Certificate Card */}
-                    <div className="p-3.5 bg-surface-subtle border border-accent/30 rounded-2xl space-y-2.5">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                          <div className="p-2 rounded-xl bg-accent-soft text-accent-text border border-accent/20">
+                    <div className="p-3.5 bg-surface-subtle border border-accent/30 rounded-2xl space-y-2.5 overflow-hidden">
+                      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                        <div className="flex items-start sm:items-center gap-2.5 min-w-0">
+                          <div className="p-2 rounded-xl bg-accent-soft text-accent-text border border-accent/20 shrink-0 mt-0.5 sm:mt-0">
                             <FileCheck className="w-4 h-4 text-accent" />
                           </div>
-                          <div>
-                            <h4 className="text-xs font-bold text-content font-display">
+                          <div className="min-w-0">
+                            <h4 className="text-xs font-bold text-content font-display truncate">
                               Official MahaRERA Statutory Certificate
                             </h4>
-                            <p className="text-[11px] text-content-muted">
+                            <p className="text-[11px] text-content-muted line-clamp-2">
                               {projectData.reraCertificateUrl
                                 ? `Verified • Downloaded & Linked for ${projectData.reraVerification?.projectName || projectData.projectName}`
                                 : 'Synchronize official registration certificate directly from Maharashtra RERA registry.'}
@@ -914,11 +1005,11 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2 shrink-0">
+                        <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
                           <button
                             type="button"
                             onClick={() => setShowFormCModal(true)}
-                            className="px-3 py-1.5 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-bold shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer"
+                            className="flex-1 sm:flex-initial justify-center px-3 py-1.5 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-bold shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer shrink-0 min-w-[120px]"
                           >
                             <Eye className="w-3.5 h-3.5 text-accent" />
                             <span>Preview Form &lsquo;C&rsquo;</span>
@@ -929,7 +1020,7 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
                               href={projectData.reraCertificateUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="px-3 py-1.5 rounded-xl bg-accent text-white text-xs font-bold shadow-xs hover:bg-accent-hover transition-all flex items-center gap-1.5 cursor-pointer"
+                              className="flex-1 sm:flex-initial justify-center px-3 py-1.5 rounded-xl bg-accent text-white text-xs font-bold shadow-xs hover:bg-accent-hover transition-all flex items-center gap-1.5 cursor-pointer shrink-0 min-w-[120px]"
                             >
                               <Download className="w-3.5 h-3.5" />
                               <span>Download PDF</span>
@@ -940,17 +1031,17 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
                             type="button"
                             disabled={fetchingCertificate || !projectData.reraNumber}
                             onClick={handleFetchReraCertificate}
-                            className="px-3 py-1.5 rounded-xl bg-surface hover:bg-surface-subtle text-accent-text border border-accent/30 text-xs font-bold shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                            className="flex-1 sm:flex-initial justify-center px-3 py-1.5 rounded-xl bg-surface hover:bg-surface-subtle text-accent-text border border-accent/30 text-xs font-bold shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 shrink-0 min-w-[140px]"
                           >
                             {fetchingCertificate ? (
                               <>
                                 <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                                <span>Syncing from MahaRERA…</span>
+                                <span>Syncing…</span>
                               </>
                             ) : (
                               <>
                                 <RefreshCw className="w-3.5 h-3.5" />
-                                <span>{projectData.reraCertificateUrl ? 'Re-Sync Certificate' : 'Fetch MahaRERA Certificate'}</span>
+                                <span>{projectData.reraCertificateUrl ? 'Re-Sync Certificate' : 'Fetch Certificate'}</span>
                               </>
                             )}
                           </button>
@@ -968,17 +1059,23 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
 
                       {projectData.reraVerification && (
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2 border-t border-border/60 text-[11px]">
-                          <div className="p-2 rounded-xl bg-surface border border-border">
-                            <span className="text-content-muted block text-[10px]">Registered Legal Title</span>
-                            <strong className="text-content font-bold">{projectData.reraVerification.projectName}</strong>
+                          <div className="p-2.5 rounded-xl bg-surface border border-border min-w-0">
+                            <span className="text-content-muted block text-[10px] truncate">Registered Legal Title</span>
+                            <strong className="text-content font-bold block truncate" title={projectData.reraVerification.projectName}>
+                              {projectData.reraVerification.projectName}
+                            </strong>
                           </div>
-                          <div className="p-2 rounded-xl bg-surface border border-border">
-                            <span className="text-content-muted block text-[10px]">Promoter / Developer</span>
-                            <strong className="text-content font-bold">{projectData.reraVerification.promoterName}</strong>
+                          <div className="p-2.5 rounded-xl bg-surface border border-border min-w-0">
+                            <span className="text-content-muted block text-[10px] truncate">Promoter / Developer</span>
+                            <strong className="text-content font-bold block truncate" title={projectData.reraVerification.promoterName}>
+                              {projectData.reraVerification.promoterName}
+                            </strong>
                           </div>
-                          <div className="p-2 rounded-xl bg-surface border border-border">
-                            <span className="text-content-muted block text-[10px]">Validity / Completion</span>
-                            <strong className="text-status-success font-bold font-mono">Valid Until {projectData.reraVerification.validUntil}</strong>
+                          <div className="p-2.5 rounded-xl bg-surface border border-border min-w-0">
+                            <span className="text-content-muted block text-[10px] truncate">Validity / Completion</span>
+                            <strong className="text-status-success font-bold font-mono block truncate">
+                              Valid Until {projectData.reraVerification.validUntil}
+                            </strong>
                           </div>
                         </div>
                       )}
@@ -1204,19 +1301,20 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
                                     placeholder="Flat 101"
                                   />
                                 </td>
-                                <td className="p-2">
-                                  <select
-                                    value={u.bhk || 2}
-                                    onChange={(e) => handleUpdateUnit(idx, { bhk: Number(e.target.value) })}
-                                    className="bg-surface-inset border border-border rounded-lg p-1.5 text-xs text-content font-bold focus:outline-none focus:border-accent"
-                                  >
-                                    <option value={1}>1 BHK</option>
-                                    <option value={2}>2 BHK</option>
-                                    <option value={3}>3 BHK</option>
-                                    <option value={4}>4 BHK</option>
-                                    <option value={5}>5 BHK</option>
-                                    <option value={6}>6 BHK</option>
-                                  </select>
+                                <td className="p-2 min-w-[95px]">
+                                  <CustomSelect
+                                    size="xs"
+                                    value={String(u.bhk || 2)}
+                                    onChange={(val) => handleUpdateUnit(idx, { bhk: Number(val) })}
+                                    options={[
+                                      { value: '1', label: '1 BHK' },
+                                      { value: '2', label: '2 BHK' },
+                                      { value: '3', label: '3 BHK' },
+                                      { value: '4', label: '4 BHK' },
+                                      { value: '5', label: '5 BHK' },
+                                      { value: '6', label: '6 BHK' },
+                                    ]}
+                                  />
                                 </td>
                                 <td className="p-2">
                                   <div className="flex items-center gap-1">
@@ -1229,21 +1327,22 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
                                     <span className="text-[10px] text-content-muted">sqft</span>
                                   </div>
                                 </td>
-                                <td className="p-2 font-sans">
-                                  <select
+                                <td className="p-2 font-sans min-w-[130px]">
+                                  <CustomSelect
+                                    size="xs"
                                     value={u.facing || 'EAST'}
-                                    onChange={(e) => handleUpdateUnit(idx, { facing: e.target.value })}
-                                    className="bg-surface-inset border border-border rounded-lg p-1.5 text-xs text-content focus:outline-none focus:border-accent font-medium"
-                                  >
-                                    <option value="EAST">EAST</option>
-                                    <option value="WEST">WEST</option>
-                                    <option value="NORTH">NORTH</option>
-                                    <option value="SOUTH">SOUTH</option>
-                                    <option value="NORTH_EAST">NORTH EAST</option>
-                                    <option value="NORTH_WEST">NORTH WEST</option>
-                                    <option value="ROAD_FACING">ROAD FACING</option>
-                                    <option value="GARDEN_FACING">GARDEN FACING</option>
-                                  </select>
+                                    onChange={(val) => handleUpdateUnit(idx, { facing: val })}
+                                    options={[
+                                      { value: 'EAST', label: 'East' },
+                                      { value: 'WEST', label: 'West' },
+                                      { value: 'NORTH', label: 'North' },
+                                      { value: 'SOUTH', label: 'South' },
+                                      { value: 'NORTH_EAST', label: 'North East' },
+                                      { value: 'NORTH_WEST', label: 'North West' },
+                                      { value: 'ROAD_FACING', label: 'Road Facing' },
+                                      { value: 'GARDEN_FACING', label: 'Garden Facing' },
+                                    ]}
+                                  />
                                 </td>
                                 <td className="p-2">
                                   <input
@@ -1261,21 +1360,20 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
                                     className="w-28 bg-surface-inset border border-border rounded-lg p-1.5 text-xs text-content font-mono font-bold text-right focus:outline-none focus:border-accent"
                                   />
                                 </td>
-                                <td className="p-2 font-sans">
-                                  <div className="flex items-center gap-1.5 max-w-[220px]">
-                                    <select
-                                      value={u.floorPlanUrl || ''}
-                                      onChange={(e) => handleUpdateUnit(idx, { floorPlanUrl: e.target.value })}
-                                      className="w-full bg-surface-inset border border-border rounded-lg p-1.5 text-[11px] text-content truncate focus:outline-none focus:border-accent font-medium"
-                                    >
-                                      <option value="">Auto-matched Layout</option>
-                                      {availablePlans.map((fp: any, fIdx: number) => (
-                                        <option key={fIdx} value={resolveAssetUrl(fp)}>
-                                          {fp.title || `Floor Plan Page ${fp.page_number || fIdx + 1}`}
-                                        </option>
-                                      ))}
-                                    </select>
-                                  </div>
+                                <td className="p-2 font-sans min-w-[180px]">
+                                  <CustomSelect
+                                    size="xs"
+                                    placeholder="Auto-matched Layout"
+                                    value={u.floorPlanUrl || ''}
+                                    onChange={(val) => handleUpdateUnit(idx, { floorPlanUrl: val })}
+                                    options={[
+                                      { value: '', label: 'Auto-matched Layout' },
+                                      ...availablePlans.map((fp: any, fIdx: number) => ({
+                                        value: resolveAssetUrl(fp),
+                                        label: fp.title || `Floor Plan Page ${fp.page_number || fIdx + 1}`,
+                                      })),
+                                    ]}
+                                  />
                                 </td>
                                 <td className="p-2 pr-3 text-center">
                                   <div className="flex items-center justify-center gap-1.5">
@@ -1484,20 +1582,21 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
             )}
 
             {/* Actions */}
-            <div className="flex items-center justify-between pt-3 border-t border-border">
+            <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 pt-3 border-t border-border">
               <button
                 type="button"
                 onClick={() => setStep('upload')}
-                className="px-4 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-semibold cursor-pointer"
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-semibold whitespace-nowrap transition-all cursor-pointer text-center"
               >
                 ← Back to Upload
               </button>
 
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
                 <button
                   type="button"
-                  onClick={onClose}
-                  className="px-4 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-semibold cursor-pointer"
+                  data-dialog-close
+                  onClick={handleCloseModal}
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-semibold whitespace-nowrap transition-all cursor-pointer text-center"
                 >
                   Cancel
                 </button>
@@ -1506,9 +1605,9 @@ export function BrochureUploadModal({ open, onClose, onSuccess }: BrochureUpload
                   type="button"
                   disabled={saving}
                   onClick={handleSaveToCrm}
-                  className="px-5 py-2 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold shadow-sm transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 whitespace-nowrap"
                 >
-                  <CheckCircle2 className="w-4 h-4" />
+                  <CheckCircle2 className="w-4 h-4 shrink-0" />
                   <span>{saving ? 'Saving Project…' : 'Save Project & All Units to CRM'}</span>
                 </button>
               </div>

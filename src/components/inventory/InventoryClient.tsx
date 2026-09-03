@@ -639,7 +639,7 @@ export function InventoryClient({
       )}
 
       {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 p-6 rounded-2xl bg-surface border border-border shadow-xs">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 sm:gap-5 p-4 sm:p-6 rounded-2xl bg-surface border border-border shadow-xs">
         <div className="space-y-1.5">
           <div className="flex flex-wrap items-center gap-2">
             <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-accent-soft text-accent-text border border-accent/20 uppercase tracking-wider flex items-center gap-1">
@@ -651,7 +651,7 @@ export function InventoryClient({
               {projects.length} Projects • {units.length} Units Active
             </span>
           </div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-content font-display">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-content font-display">
             Projects &amp; Unit Inventory
           </h1>
           <p className="text-content-secondary text-xs max-w-2xl">
@@ -659,99 +659,54 @@ export function InventoryClient({
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 shrink-0">
-          {/* Utility Group: View Toggle + Refresh */}
-          <div className="flex items-center gap-1 p-1 rounded-xl bg-surface-subtle border border-border h-9">
-            <button
-              type="button"
-              onClick={() => setViewMode('table')}
-              aria-label="Show inventory table"
-              aria-pressed={viewMode === 'table'}
-              className={`h-7 px-2.5 rounded-lg flex items-center gap-1.5 text-xs transition-all ${viewMode === 'table' ? 'bg-accent text-white font-bold shadow-xs' : 'text-content-secondary hover:text-content font-medium'}`}
-              title="Dense Table View"
-            >
-              <Table className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline text-[11px]">Table</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode('cards')}
-              aria-label="Show inventory cards"
-              aria-pressed={viewMode === 'cards'}
-              className={`h-7 px-2.5 rounded-lg flex items-center gap-1.5 text-xs transition-all ${viewMode === 'cards' ? 'bg-accent text-white font-bold shadow-xs' : 'text-content-secondary hover:text-content font-medium'}`}
-              title="Card Grid View"
-            >
-              <LayoutGrid className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline text-[11px]">Cards</span>
-            </button>
-            <div className="w-px h-4 bg-border mx-0.5" />
-            <button
-              type="button"
-              onClick={fetchInventory}
-              disabled={loading}
-              aria-label="Refresh inventory"
-              className="h-7 w-7 grid place-items-center rounded-lg text-content-secondary hover:text-content transition-all"
-              title="Refresh Records"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-accent' : ''}`} />
-            </button>
-          </div>
+        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap shrink-0">
+          <button
+            type="button"
+            onClick={() => setShowQuickReraModal(true)}
+            className="h-9 px-3 rounded-xl bg-surface hover:bg-surface-subtle text-accent-text border border-border hover:border-accent/40 text-xs font-semibold transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer shrink-0"
+            title="Instant MahaRERA Registration & District Verifier"
+          >
+            <ShieldCheck className="w-3.5 h-3.5 text-accent" />
+            <span>Verify RERA</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowBrochureModal(true)}
+            className="h-9 px-3 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border hover:border-accent/40 text-xs font-semibold transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer shrink-0"
+            title="Upload Developer Brochure (PDF) with AI auto-extraction"
+          >
+            <Upload className="w-3.5 h-3.5 text-accent" />
+            <span>Brochure AI</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowCsvImportModal(true)}
+            className="h-9 px-3 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border hover:border-border-hover text-xs font-medium transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer shrink-0"
+            title="Import CSV"
+          >
+            <FileSpreadsheet className="w-3.5 h-3.5 text-accent" />
+            <span>CSV</span>
+          </button>
 
-          {/* Secondary Tools Group */}
-          <div className="flex items-center gap-1.5">
+          {inventoryTab === 'projects' ? (
             <button
               type="button"
-              onClick={() => setShowQuickReraModal(true)}
-              className="h-9 px-3 rounded-xl bg-surface hover:bg-surface-subtle text-accent-text border border-border hover:border-accent/40 text-xs font-semibold transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer shrink-0"
-              title="Instant MahaRERA Registration & District Verifier"
+              onClick={openNewProject}
+              className="h-9 px-4 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs hover:shadow-sm cursor-pointer shrink-0 active:scale-95"
             >
-              <ShieldCheck className="w-3.5 h-3.5 text-accent" />
-              <span>Verify RERA</span>
+              <Plus className="w-4 h-4" />
+              <span>Add Project</span>
             </button>
+          ) : (
             <button
               type="button"
-              onClick={() => setShowBrochureModal(true)}
-              className="h-9 px-3 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border hover:border-accent/40 text-xs font-semibold transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer shrink-0"
-              title="Upload Developer Brochure (PDF) with AI auto-extraction"
+              onClick={() => openNewUnit()}
+              className="h-9 px-4 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs hover:shadow-sm cursor-pointer shrink-0 active:scale-95"
             >
-              <Upload className="w-3.5 h-3.5 text-accent" />
-              <span className="hidden sm:inline">Brochure AI</span>
+              <Plus className="w-4 h-4" />
+              <span>Add Unit</span>
             </button>
-            <button
-              type="button"
-              onClick={() => setShowCsvImportModal(true)}
-              className="h-9 px-2.5 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border hover:border-border-hover text-xs font-medium transition-all flex items-center gap-1 shadow-2xs cursor-pointer shrink-0"
-              title="Import CSV"
-            >
-              <FileSpreadsheet className="w-3.5 h-3.5 text-accent" />
-              <span className="hidden md:inline">CSV</span>
-            </button>
-          </div>
-
-          <div className="w-px h-6 bg-border mx-0.5 hidden lg:block" />
-
-          {/* Single Contextual Primary Action Button */}
-          <div className="flex items-center gap-2">
-            {inventoryTab === 'projects' ? (
-              <button
-                type="button"
-                onClick={openNewProject}
-                className="h-9 px-4 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs hover:shadow-sm cursor-pointer shrink-0 active:scale-95"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Add Project</span>
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={() => openNewUnit()}
-                className="h-9 px-4 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs hover:shadow-sm cursor-pointer shrink-0 active:scale-95"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Add Unit</span>
-              </button>
-            )}
-          </div>
+          )}
         </div>
       </div>
 
@@ -765,35 +720,72 @@ export function InventoryClient({
         />
       )}
 
-      {/* Section View Tabs & Filter Bar */}
+      {/* Section View Tabs & View Mode Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-1 p-1 bg-surface-subtle border border-border rounded-xl w-fit text-xs font-bold shadow-2xs">
+        <div className="flex items-center gap-1 p-1 bg-surface-subtle border border-border rounded-xl w-full sm:w-fit text-xs font-bold shadow-2xs overflow-x-auto touch-scroll no-scrollbar">
           <button
             type="button"
             onClick={() => setInventoryTab('units')}
-            className={`px-3.5 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+            className={`flex-1 sm:flex-initial px-3 sm:px-3.5 py-1.5 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap ${
               inventoryTab === 'units' ? 'bg-accent text-white shadow-2xs font-bold' : 'text-content-muted hover:text-content'
             }`}
           >
-            <Table className="w-3.5 h-3.5" />
+            <Table className="w-3.5 h-3.5 shrink-0" />
             <span>Marketable Units Matrix ({filteredUnits.length})</span>
           </button>
           <button
             type="button"
             onClick={() => setInventoryTab('projects')}
-            className={`px-3.5 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+            className={`flex-1 sm:flex-initial px-3 sm:px-3.5 py-1.5 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap ${
               inventoryTab === 'projects' ? 'bg-accent text-white shadow-2xs font-bold' : 'text-content-muted hover:text-content'
             }`}
           >
-            <Building2 className="w-3.5 h-3.5" />
+            <Building2 className="w-3.5 h-3.5 shrink-0" />
             <span>Project Catalogue ({filteredProjects.length})</span>
+          </button>
+        </div>
+
+        {/* View Toggle (Table / Cards) + Refresh */}
+        <div className="flex items-center gap-1 p-1 rounded-xl bg-surface-subtle border border-border h-9 self-start sm:self-auto shrink-0 shadow-2xs">
+          <button
+            type="button"
+            onClick={() => setViewMode('table')}
+            aria-label="Show inventory table"
+            aria-pressed={viewMode === 'table'}
+            className={`h-7 px-2.5 rounded-lg flex items-center gap-1.5 text-xs transition-all ${viewMode === 'table' ? 'bg-accent text-white font-bold shadow-xs' : 'text-content-secondary hover:text-content font-medium'}`}
+            title="Dense Table View"
+          >
+            <Table className="w-3.5 h-3.5" />
+            <span className="text-[11px]">Table</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode('cards')}
+            aria-label="Show inventory cards"
+            aria-pressed={viewMode === 'cards'}
+            className={`h-7 px-2.5 rounded-lg flex items-center gap-1.5 text-xs transition-all ${viewMode === 'cards' ? 'bg-accent text-white font-bold shadow-xs' : 'text-content-secondary hover:text-content font-medium'}`}
+            title="Card Grid View"
+          >
+            <LayoutGrid className="w-3.5 h-3.5" />
+            <span className="text-[11px]">Cards</span>
+          </button>
+          <div className="w-px h-4 bg-border mx-0.5" />
+          <button
+            type="button"
+            onClick={fetchInventory}
+            disabled={loading}
+            aria-label="Refresh inventory"
+            className="h-7 w-7 grid place-items-center rounded-lg text-content-secondary hover:text-content transition-all"
+            title="Refresh Records"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-accent' : ''}`} />
           </button>
         </div>
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="p-4 rounded-2xl bg-surface border border-border shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs font-sans">
-        <div className="relative flex-1 min-w-[240px] flex items-center">
+      <div className="p-3 sm:p-4 rounded-2xl bg-surface border border-border shadow-xs flex flex-col lg:flex-row items-stretch lg:items-center gap-3 text-xs font-sans">
+        <div className="relative flex-1 min-w-0 flex items-center">
           <Search className="w-4 h-4 text-content-muted absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <label htmlFor="inventory-search" className="sr-only">Search inventory records</label>
           <input
@@ -803,43 +795,46 @@ export function InventoryClient({
             placeholder="Search by project, unit number, RERA ID, or micro-market…"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="search-input w-full bg-surface-inset border border-border rounded-xl pl-9 pr-12 py-2.5 text-xs text-content placeholder:text-content-muted focus:outline-none focus:border-accent shadow-2xs"
+            className="search-input w-full bg-surface-subtle/70 border border-border rounded-xl pl-9 pr-12 py-2.5 text-xs text-content placeholder:text-content-muted focus:outline-none focus:border-accent shadow-2xs"
           />
           <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 text-[10px] font-mono font-bold text-content-muted bg-surface border border-border rounded-md absolute right-3 top-1/2 -translate-y-1/2 shadow-2xs pointer-events-none">
             ⌘K
           </kbd>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2.5">
-          <CustomSelect
-            options={marketOptions}
-            value={selectedMarket}
-            onChange={(val) => setSelectedMarket(val)}
-            className="min-w-[220px]"
-          />
+        <div className="grid grid-cols-1 sm:grid-cols-3 lg:flex items-center gap-2.5 shrink-0">
+          <div className="w-full sm:w-auto lg:w-[220px]">
+            <CustomSelect
+              options={marketOptions}
+              value={selectedMarket}
+              onChange={(val) => setSelectedMarket(val)}
+            />
+          </div>
 
-          <CustomSelect
-            options={[
-              { value: 'ALL', label: 'All Configurations' },
-              { value: '1', label: '1 BHK' },
-              { value: '2', label: '2 BHK' },
-              { value: '3', label: '3 BHK' },
-            ]}
-            value={selectedBhk}
-            onChange={(val) => setSelectedBhk(val)}
-            className="min-w-[150px]"
-          />
+          <div className="w-full sm:w-auto lg:w-[155px]">
+            <CustomSelect
+              options={[
+                { value: 'ALL', label: 'All Configurations' },
+                { value: '1', label: '1 BHK' },
+                { value: '2', label: '2 BHK' },
+                { value: '3', label: '3 BHK' },
+              ]}
+              value={selectedBhk}
+              onChange={(val) => setSelectedBhk(val)}
+            />
+          </div>
 
-          <CustomSelect
-            options={[
-              { value: 'ALL', label: 'All Audit Statuses' },
-              { value: 'ACTIVE_MARKETABLE', label: 'Active Marketable (<14d)', dotColor: 'bg-emerald-500', description: 'Fresh & ready to pitch' },
-              { value: 'STALE_EXPIRED', label: 'Stale Expired (>14d)', dotColor: 'bg-rose-500', description: 'Requires physical audit' },
-            ]}
-            value={selectedStatus}
-            onChange={(val) => setSelectedStatus(val)}
-            className="min-w-[190px]"
-          />
+          <div className="w-full sm:w-auto lg:w-[195px]">
+            <CustomSelect
+              options={[
+                { value: 'ALL', label: 'All Audit Statuses' },
+                { value: 'ACTIVE_MARKETABLE', label: 'Active Marketable (<14d)', dotColor: 'bg-emerald-500', description: 'Fresh & ready to pitch' },
+                { value: 'STALE_EXPIRED', label: 'Stale Expired (>14d)', dotColor: 'bg-rose-500', description: 'Requires physical audit' },
+              ]}
+              value={selectedStatus}
+              onChange={(val) => setSelectedStatus(val)}
+            />
+          </div>
         </div>
       </div>
 
@@ -1479,20 +1474,20 @@ export function InventoryClient({
               />
             </div>
             <div>
-              <label className="text-xs font-bold text-content block mb-1">Micro-Market Locality *</label>
-              <select
-                aria-label="Micro-market locality"
+              <CustomSelect
+                id="project-micromarket-select"
+                label="Micro-Market Locality *"
                 value={projectForm.microMarket}
-                onChange={(e) => setProjectForm({ ...projectForm, microMarket: e.target.value })}
-                className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content focus:outline-hidden focus:border-accent focus:ring-1 focus:ring-accent font-medium"
-              >
-                <option value="Kharghar Sector 35" className="bg-surface text-content">Kharghar Sector 35</option>
-                <option value="Kharghar Sector 36" className="bg-surface text-content">Kharghar Sector 36</option>
-                <option value="Kharghar Sector 20" className="bg-surface text-content">Kharghar Sector 20</option>
-                <option value="Taloja Phase 1" className="bg-surface text-content">Taloja Phase 1</option>
-                <option value="Upper Kharghar" className="bg-surface text-content">Upper Kharghar</option>
-                <option value="Roadpali" className="bg-surface text-content">Roadpali</option>
-              </select>
+                onChange={(val) => setProjectForm({ ...projectForm, microMarket: val })}
+                options={[
+                  { value: 'Kharghar Sector 35', label: 'Kharghar Sector 35' },
+                  { value: 'Kharghar Sector 36', label: 'Kharghar Sector 36' },
+                  { value: 'Kharghar Sector 20', label: 'Kharghar Sector 20' },
+                  { value: 'Taloja Phase 1', label: 'Taloja Phase 1' },
+                  { value: 'Upper Kharghar', label: 'Upper Kharghar' },
+                  { value: 'Roadpali', label: 'Roadpali' },
+                ]}
+              />
             </div>
 
             {/* Full-width RERA Verification Badge */}
@@ -1677,20 +1672,19 @@ export function InventoryClient({
 
         <form onSubmit={handleCreateUnit} className="space-y-4 pt-3">
           <div>
-            <label className="text-xs font-bold text-content block mb-1">Developer Project *</label>
-            <select
-              aria-label="Developer project"
-              data-dialog-autofocus
+            <CustomSelect
+              id="unit-project-select"
+              label="Developer Project *"
               value={unitForm.projectId}
-              onChange={(e) => setUnitForm({ ...unitForm, projectId: e.target.value })}
-              className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content focus:outline-hidden focus:border-accent focus:ring-1 focus:ring-accent font-medium"
-            >
-              {projects.map((p) => (
-                <option key={p.id} value={p.id} className="bg-surface text-content">
-                  {p.projectName} ({p.developerName} • {p.microMarket})
-                </option>
-              ))}
-            </select>
+              onChange={(val) => setUnitForm({ ...unitForm, projectId: val })}
+              searchable
+              searchPlaceholder="Search project by name or locality..."
+              options={projects.map((p) => ({
+                value: p.id,
+                label: p.projectName,
+                description: `${p.developerName || 'Developer'} • ${p.microMarket || 'Navi Mumbai'}`,
+              }))}
+            />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -1706,18 +1700,18 @@ export function InventoryClient({
               />
             </div>
             <div>
-              <label className="text-xs font-bold text-content block mb-1">BHK Config</label>
-              <select
-                aria-label="BHK configuration"
-                value={unitForm.bhk}
-                onChange={(e) => setUnitForm({ ...unitForm, bhk: Number(e.target.value) })}
-                className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content focus:outline-hidden focus:border-accent font-medium"
-              >
-                <option value="1" className="bg-surface text-content">1 BHK</option>
-                <option value="2" className="bg-surface text-content">2 BHK</option>
-                <option value="3" className="bg-surface text-content">3 BHK</option>
-                <option value="4" className="bg-surface text-content">4 BHK</option>
-              </select>
+              <CustomSelect
+                id="unit-bhk-select"
+                label="BHK Config"
+                value={String(unitForm.bhk)}
+                onChange={(val) => setUnitForm({ ...unitForm, bhk: Number(val) })}
+                options={[
+                  { value: '1', label: '1 BHK', badge: 'Compact' },
+                  { value: '2', label: '2 BHK', badge: 'Standard' },
+                  { value: '3', label: '3 BHK', badge: 'Premium' },
+                  { value: '4', label: '4 BHK', badge: 'Luxury' },
+                ]}
+              />
             </div>
             <div>
               <label className="text-xs font-bold text-content block mb-1">Carpet Area (Sq.Ft) *</label>
@@ -1779,19 +1773,22 @@ export function InventoryClient({
               />
             </div>
             <div>
-              <label className="text-xs font-bold text-content block mb-1">Facing</label>
-              <select
-                aria-label="Unit facing"
+              <CustomSelect
+                id="unit-facing-select"
+                label="Facing"
                 value={unitForm.facing}
-                onChange={(e) => setUnitForm({ ...unitForm, facing: e.target.value })}
-                className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content focus:outline-hidden focus:border-accent font-medium"
-              >
-                <option value="EAST" className="bg-surface text-content">EAST</option>
-                <option value="WEST" className="bg-surface text-content">WEST</option>
-                <option value="NORTH" className="bg-surface text-content">NORTH</option>
-                <option value="SOUTH" className="bg-surface text-content">SOUTH</option>
-                <option value="NORTH_EAST" className="bg-surface text-content">NORTH_EAST</option>
-              </select>
+                onChange={(val) => setUnitForm({ ...unitForm, facing: val })}
+                options={[
+                  { value: 'EAST', label: 'East (Morning Sunlight)' },
+                  { value: 'WEST', label: 'West (Sunset View)' },
+                  { value: 'NORTH', label: 'North' },
+                  { value: 'SOUTH', label: 'South' },
+                  { value: 'NORTH_EAST', label: 'North-East (Vastu Compliant)' },
+                  { value: 'NORTH_WEST', label: 'North-West' },
+                  { value: 'SOUTH_EAST', label: 'South-East' },
+                  { value: 'SOUTH_WEST', label: 'South-West' },
+                ]}
+              />
             </div>
           </div>
 
@@ -1809,16 +1806,26 @@ export function InventoryClient({
               />
             </div>
             <div>
-              <label className="text-xs font-bold text-content block mb-1">Possession Status</label>
-              <select
-                aria-label="Possession status"
+              <CustomSelect
+                id="unit-possession-status-select"
+                label="Possession Status"
                 value={unitForm.possessionStatus}
-                onChange={(e) => setUnitForm({ ...unitForm, possessionStatus: e.target.value })}
-                className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content focus:outline-hidden focus:border-accent font-medium"
-              >
-                <option value="READY_TO_MOVE" className="bg-surface text-content">READY_TO_MOVE (0% GST with OC)</option>
-                <option value="UNDER_CONSTRUCTION" className="bg-surface text-content">UNDER_CONSTRUCTION (5% GST)</option>
-              </select>
+                onChange={(val) => setUnitForm({ ...unitForm, possessionStatus: val })}
+                options={[
+                  {
+                    value: 'READY_TO_MOVE',
+                    label: 'Ready to Move',
+                    description: '0% GST with Occupancy Certificate (OC)',
+                    dotColor: 'bg-status-success',
+                  },
+                  {
+                    value: 'UNDER_CONSTRUCTION',
+                    label: 'Under Construction',
+                    description: '5% GST applicable as per statutory guidelines',
+                    dotColor: 'bg-status-warning',
+                  },
+                ]}
+              />
             </div>
           </div>
 
@@ -1889,26 +1896,20 @@ export function InventoryClient({
                 if (extractedPlans.length > 0) {
                   return (
                     <div className="space-y-1">
-                      <label className="text-[11px] text-content-secondary block">
-                        Pick from Project Extracted Floor Plans:
-                      </label>
-                      <select
-                        aria-label="Pick from Project Extracted Floor Plans"
+                      <CustomSelect
+                        id="unit-extracted-plans-select"
+                        label="Pick from Project Extracted Floor Plans:"
+                        placeholder="-- Select from Project Brochure Floor Plans --"
                         value={unitForm.floorPlanUrl || ''}
-                        onChange={(e) => setUnitForm({ ...unitForm, floorPlanUrl: e.target.value })}
-                        className="w-full bg-surface border border-border rounded-xl p-2 text-xs text-content focus:outline-hidden focus:border-accent font-medium"
-                      >
-                        <option value="">-- Select from Project Brochure Floor Plans --</option>
-                        {extractedPlans.map((plan: any, pIdx: number) => {
-                          const url = resolveAssetUrl(plan);
-                          const label = plan.title || (plan.bhk ? `${plan.bhk} BHK Floor Plan` : `Layout Plan ${pIdx + 1}`);
-                          return (
-                            <option key={pIdx} value={url}>
-                              {label}
-                            </option>
-                          );
-                        })}
-                      </select>
+                        onChange={(val) => setUnitForm({ ...unitForm, floorPlanUrl: val })}
+                        options={[
+                          { value: '', label: '-- Custom Upload / None --' },
+                          ...extractedPlans.map((plan: any, pIdx: number) => ({
+                            value: resolveAssetUrl(plan),
+                            label: plan.title || (plan.bhk ? `${plan.bhk} BHK Floor Plan` : `Layout Plan ${pIdx + 1}`),
+                          })),
+                        ]}
+                      />
                     </div>
                   );
                 }
@@ -2062,19 +2063,38 @@ export function InventoryClient({
                   </div>
 
                   <div>
-                    <label className="text-xs font-bold text-content block mb-1">Target Verification Status:</label>
-                    <select
-                      aria-label="Target verification status"
-                      data-dialog-autofocus
+                    <CustomSelect
+                      id="unit-target-verification-status"
+                      label="Target Verification Status:"
                       value={targetStatus}
-                      onChange={(e) => setTargetStatus(e.target.value)}
-                      className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content focus:outline-hidden focus:border-accent focus:ring-1 focus:ring-accent font-medium"
-                    >
-                      <option value="ACTIVE_MARKETABLE" className="bg-surface text-content">ACTIVE_MARKETABLE (broker update &lt;14d)</option>
-                      <option value="PHYSICALLY_AUDITED" className="bg-surface text-content">PHYSICALLY_AUDITED (internal status)</option>
-                      <option value="STALE_EXPIRED" className="bg-surface text-content">STALE_EXPIRED</option>
-                      <option value="ARCHIVED_SOLD" className="bg-surface text-content">ARCHIVED_SOLD</option>
-                    </select>
+                      onChange={(val) => setTargetStatus(val)}
+                      options={[
+                        {
+                          value: 'ACTIVE_MARKETABLE',
+                          label: 'Active Marketable',
+                          description: 'Broker updated within <14 days',
+                          dotColor: 'bg-status-success',
+                        },
+                        {
+                          value: 'PHYSICALLY_AUDITED',
+                          label: 'Physically Audited',
+                          description: 'Internal site inspection verified',
+                          dotColor: 'bg-accent',
+                        },
+                        {
+                          value: 'STALE_EXPIRED',
+                          label: 'Stale / Expired',
+                          description: 'No broker updates for >30 days',
+                          dotColor: 'bg-status-warning',
+                        },
+                        {
+                          value: 'ARCHIVED_SOLD',
+                          label: 'Archived / Sold',
+                          description: 'Unit no longer available on market',
+                          dotColor: 'bg-content-muted',
+                        },
+                      ]}
+                    />
                   </div>
 
                   <div>

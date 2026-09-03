@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { extractAndProcessBrochure } from '@/lib/services/brochure-extractor';
+import { persistBrochureExtraction } from '@/lib/services/brochure-persistence';
 import { prisma } from '@/lib/db/prisma';
 import { requireSession } from '@/lib/services/api-auth';
 
@@ -60,10 +61,15 @@ export async function POST(req: NextRequest) {
       microMarket: project.microMarket,
     });
 
+    // The extractor is pure — persist structured media + BHK-matched unit pre-fill here.
+    const { project: persistedProject, unitsUpdated } = await persistBrochureExtraction(project.id, result);
+
     return NextResponse.json({
       success: true,
       result,
-      message: `Extracted ${result.elevations.length} Elevation renders and ${result.floorPlans.length} Floor Plans from brochure for ${project.projectName}!`,
+      persistedProject,
+      unitsUpdated,
+      message: `Extracted ${result.elevations.length} Elevation renders and ${result.floorPlans.length} Floor Plans from brochure for ${project.projectName}! Persisted to project and ${unitsUpdated} unit(s) pre-filled.`,
     });
   } catch (error: any) {
     console.error('[EXTRACT_BROCHURE_ERROR]', error);

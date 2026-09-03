@@ -270,15 +270,15 @@ export default function MatchmakerConsolePage() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-16 text-content font-sans">
       {/* Top Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-surface border border-border shadow-xs">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 sm:p-6 rounded-2xl bg-surface border border-border shadow-xs">
         <div>
-          <div className="flex items-center gap-2 mb-1.5">
+          <div className="flex items-center gap-2 mb-1.5 flex-wrap">
             <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-accent-soft text-accent-text border border-accent/20 uppercase tracking-wider flex items-center gap-1">
               <Sparkles className="w-3 h-3 text-accent" /> 5-FACTOR WEIGHTED SCORING
             </span>
             <HallmarkStamp type="rera" label="RERA ID + budget checks" />
           </div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-content font-display">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-content font-display">
             Property Matchmaker AI Console
           </h1>
           <p className="text-content-secondary text-xs mt-1">
@@ -288,7 +288,7 @@ export default function MatchmakerConsolePage() {
 
         {/* Basket & Dispatch Toolbar */}
         <div className="flex flex-col items-stretch gap-2.5 sm:items-end">
-          <div className="flex items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
             <div className="px-3.5 py-2 rounded-xl bg-surface-subtle border border-border text-xs flex items-center gap-2 shadow-2xs">
               <ShoppingBag className="w-4 h-4 text-accent" />
               <span className="text-content-secondary font-medium">Basket:</span>
@@ -299,14 +299,14 @@ export default function MatchmakerConsolePage() {
               onClick={handleGeneratePortal}
               disabled={selectedUnitIds.length === 0 || generatingPortal}
               aria-describedby={portalError ? 'matching-portal-error' : undefined}
-              className="px-4 py-2 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold flex items-center gap-2 shadow-xs transition-all disabled:opacity-50 cursor-pointer"
+              className="flex-1 sm:flex-initial px-4 py-2 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold flex items-center justify-center gap-2 shadow-xs transition-all disabled:opacity-50 cursor-pointer"
             >
               <Share2 className="w-4 h-4" />
               {generatingPortal ? 'Generating portal…' : 'Generate Client Portal'}
             </button>
           </div>
           {portalError && (
-            <div id="matching-portal-error" className="max-w-md">
+            <div id="matching-portal-error" className="max-w-md w-full">
               <FeedbackAlert
                 variant="error"
                 error={portalError}

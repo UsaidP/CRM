@@ -1,10 +1,9 @@
 import { uploadMediaAsset, type UploadedMediaAsset } from '@/lib/services/cloud-media-service';
-import { prisma } from '@/lib/db/prisma';
 import type { ProjectAssetRecord, ExtractedFloorPlanDetail } from '@/lib/services/brochure-parser-service';
 import { resolveAssetUrl } from '@/lib/inventory-media';
 
 export interface ExtractedBrochureAsset {
-  type: 'ELEVATION' | 'FLOOR_PLAN' | 'MASTER_PLAN' | 'BROCHURE_PDF';
+  type: 'ELEVATION' | 'FLOOR_PLAN' | 'MASTER_PLAN' | 'BROCHURE_PHOTO' | 'BROCHURE_PDF';
   title: string;
   description: string;
   bhk?: number;
@@ -21,6 +20,7 @@ export interface BrochureExtractionResult {
   brochureAsset?: UploadedMediaAsset;
   elevations: ExtractedBrochureAsset[];
   floorPlans: ExtractedBrochureAsset[];
+  brochurePhotos: ExtractedBrochureAsset[];
   masterPlan?: ExtractedBrochureAsset;
   assetRecords?: ProjectAssetRecord[];
   confidentialBrokerData?: {
@@ -91,6 +91,7 @@ export async function extractAndProcessBrochure(
 
   const elevations: ExtractedBrochureAsset[] = [];
   const floorPlans: ExtractedBrochureAsset[] = [];
+  const brochurePhotos: ExtractedBrochureAsset[] = [];
   let masterPlan: ExtractedBrochureAsset | undefined;
   const assetRecords: ProjectAssetRecord[] = [];
   let sortCounter = 1;
@@ -116,15 +117,22 @@ export async function extractAndProcessBrochure(
 
   // 3. Process and Upload Real Extracted JPEG/PNG Images
   if (realPdfAssets && realPdfAssets.length > 0) {
+    const uploadedAssetMap = new Map<string, UploadedMediaAsset>();
+
     for (const item of realPdfAssets) {
       const isFloorPlan = item.assetType.includes('floor') || item.assetType.includes('unit');
       const isElevationOrCover = item.assetType.includes('elevation') || item.assetType === 'cover';
+      const isMasterPlan = item.assetType === 'master_plan' || item.assetType === 'location_map';
       const category = isFloorPlan ? 'floor-plans' : isElevationOrCover ? 'elevations' : 'gallery';
 
-      const uploaded = await uploadMediaAsset(item.buffer, item.fileName, category, item.mimeType || 'image/jpeg');
+      let uploaded = uploadedAssetMap.get(item.fileName);
+      if (!uploaded) {
+        uploaded = await uploadMediaAsset(item.buffer, item.fileName, category, item.mimeType || 'image/jpeg');
+        uploadedAssetMap.set(item.fileName, uploaded);
+      }
 
       const assetObj: ExtractedBrochureAsset = {
-        type: item.assetType === 'master_plan' ? 'MASTER_PLAN' : isFloorPlan ? 'FLOOR_PLAN' : 'ELEVATION',
+        type: isMasterPlan ? 'MASTER_PLAN' : isFloorPlan ? 'FLOOR_PLAN' : isElevationOrCover ? 'ELEVATION' : 'BROCHURE_PHOTO',
         title: item.title,
         description: item.description,
         bhk: item.bhk,
@@ -134,12 +142,15 @@ export async function extractAndProcessBrochure(
         mediaAsset: uploaded,
       };
 
-      if (item.assetType === 'master_plan' || item.assetType === 'location_map') {
+      if (isMasterPlan) {
         masterPlan = assetObj;
+        brochurePhotos.push(assetObj);
       } else if (isFloorPlan) {
         floorPlans.push(assetObj);
-      } else {
+      } else if (isElevationOrCover) {
         elevations.push(assetObj);
+      } else {
+        brochurePhotos.push(assetObj);
       }
 
       assetRecords.push({
@@ -163,12 +174,13 @@ export async function extractAndProcessBrochure(
 
   // 4. Fallback for image-based single uploads (PNG/JPG)
   if (assetRecords.length === 0 && (mimeType.startsWith('image/'))) {
-    elevations.push({
+    const singleElevation: ExtractedBrochureAsset = {
       type: 'ELEVATION',
       title: `${projectName} Main Image`,
       description: `Original uploaded asset for ${projectName}`,
       mediaAsset: brochureAsset,
-    });
+    };
+    elevations.push(singleElevation);
 
     assetRecords.push({
       asset_id: `asset_${cleanProjSlug}_1`,
@@ -186,44 +198,9 @@ export async function extractAndProcessBrochure(
     });
   }
 
-  // 5. If projectId provided, attach the extracted original cover elevation, gallery, and floor plans to DB
-  if (projectInfo.projectId) {
-    try {
-      const coverUrl = resolveAssetUrl(elevations[0]?.mediaAsset) || resolveAssetUrl(brochureAsset);
-      const mpUrl = resolveAssetUrl(masterPlan?.mediaAsset) || null;
-
-      await prisma.developerProject.update({
-        where: { id: projectInfo.projectId },
-        data: {
-          brochureUrl: resolveAssetUrl(brochureAsset),
-          coverImageUrl: coverUrl || undefined,
-          masterPlanUrl: mpUrl || undefined,
-          mediaGalleryJson: JSON.stringify(assetRecords),
-          developerSalesPocName: confidentialBrokerData?.developerSalesPocName || undefined,
-          developerSalesPocPhone: confidentialBrokerData?.developerSalesPocPhone || undefined,
-        },
-      });
-
-      // Also attach floor plans to matching units
-      const units = await prisma.propertyUnit.findMany({
-        where: { projectId: projectInfo.projectId },
-      });
-
-      for (const unit of units) {
-        const matchingPlan = floorPlans.find((fp) => fp.bhk === unit.bhk) || floorPlans[0];
-        if (matchingPlan) {
-          await prisma.propertyUnit.update({
-            where: { id: unit.id },
-            data: {
-              floorPlanUrl: resolveAssetUrl(matchingPlan.mediaAsset),
-            },
-          });
-        }
-      }
-    } catch (dbErr: any) {
-      console.warn(`[BROCHURE] Failed to auto-attach assets to database: ${dbErr.message}`);
-    }
-  }
+  // 5. Persistence is handled by the caller via persistBrochureExtraction()
+  // (src/lib/services/brochure-persistence.ts). This extractor is pure:
+  // it extracts and returns data, it never writes to the database.
 
   return {
     projectName,
@@ -232,6 +209,7 @@ export async function extractAndProcessBrochure(
     brochureAsset,
     elevations,
     floorPlans,
+    brochurePhotos,
     masterPlan,
     assetRecords,
     confidentialBrokerData: confidentialBrokerData ? {

@@ -293,7 +293,8 @@ describe('UI regression contracts', () => {
     expect(inventory).toContain('openEditUnit');
     expect(inventory).toContain('Save project changes');
     expect(inventory).toContain('Save unit changes');
-    expect(uploader).toContain('250 MB');
+    expect(uploader).toContain('50 MB');
+    expect(uploader).toContain('300 MB');
     expect(projectRoute).toContain('export async function PUT');
     expect(unitRoute).toContain('export async function PUT');
     expect(mediaRoute).toContain('MAX_IMAGE_BYTES');

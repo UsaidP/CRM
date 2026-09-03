@@ -51,6 +51,7 @@ import {
   FolderOpen
 } from 'lucide-react';
 import { HallmarkStamp } from '@/components/ui/HallmarkStamp';
+import { CustomSelect } from '@/components/ui/CustomSelect';
 
 interface SavedQuote {
   id: string;
@@ -419,7 +420,7 @@ export default function CostCalculatorPage() {
       )}
 
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-4 border-b border-border">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 pb-4 border-b border-border">
         <div>
           <div className="flex items-center gap-2 mb-1 flex-wrap">
             <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-accent-soft text-accent-text border border-accent/20 uppercase tracking-wider flex items-center gap-1.5 shadow-2xs">
@@ -431,7 +432,7 @@ export default function CostCalculatorPage() {
             </span>
             <HallmarkStamp type="rera" label="MahaRERA Ready" />
           </div>
-          <h1 className="text-2xl lg:text-3xl font-extrabold text-content tracking-tight font-display">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-content tracking-tight font-display">
             Statutory Cost Engine &amp; Acquisition Ledger
           </h1>
           <p className="text-xs text-content-secondary mt-0.5 max-w-2xl">
@@ -440,19 +441,19 @@ export default function CostCalculatorPage() {
         </div>
 
         {/* Action Toolbar */}
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full lg:w-auto">
           <button
             onClick={handleResetAll}
             title="Reset to default settings"
-            className="flex items-center gap-1.5 px-3 py-2 bg-surface border border-border rounded-xl text-xs font-bold text-content-muted hover:text-content hover:bg-surface-subtle transition-all cursor-pointer shadow-2xs"
+            className="flex items-center justify-center gap-1.5 px-3 py-2 bg-surface border border-border rounded-xl text-xs font-bold text-content-muted hover:text-content hover:bg-surface-subtle transition-all cursor-pointer shadow-2xs"
           >
             <RotateCcw className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Reset</span>
+            <span>Reset</span>
           </button>
           
           <button
             onClick={handleSaveQuote}
-            className="flex items-center gap-1.5 px-3.5 py-2 bg-surface border border-border rounded-xl text-xs font-bold text-content hover:bg-surface-subtle transition-all shadow-2xs cursor-pointer"
+            className="flex items-center justify-center gap-1.5 px-3.5 py-2 bg-surface border border-border rounded-xl text-xs font-bold text-content hover:bg-surface-subtle transition-all shadow-2xs cursor-pointer"
           >
             <Save className="w-3.5 h-3.5 text-accent" />
             <span>Save Quote</span>
@@ -460,7 +461,7 @@ export default function CostCalculatorPage() {
 
           <button
             onClick={handleCopyText}
-            className="flex items-center gap-1.5 px-3.5 py-2 bg-surface border border-border rounded-xl text-xs font-bold text-content hover:bg-surface-subtle transition-all shadow-2xs cursor-pointer"
+            className="flex items-center justify-center gap-1.5 px-3.5 py-2 bg-surface border border-border rounded-xl text-xs font-bold text-content hover:bg-surface-subtle transition-all shadow-2xs cursor-pointer"
           >
             <Copy className="w-3.5 h-3.5 text-content-muted" />
             <span>Copy Text</span>
@@ -468,7 +469,7 @@ export default function CostCalculatorPage() {
 
           <button
             onClick={() => window.print()}
-            className="flex items-center gap-1.5 px-3.5 py-2 bg-surface border border-border rounded-xl text-xs font-bold text-content hover:bg-surface-subtle transition-colors shadow-2xs cursor-pointer"
+            className="flex items-center justify-center gap-1.5 px-3.5 py-2 bg-surface border border-border rounded-xl text-xs font-bold text-content hover:bg-surface-subtle transition-colors shadow-2xs cursor-pointer"
           >
             <Download className="w-3.5 h-3.5 text-accent" />
             <span>Export PDF</span>
@@ -476,7 +477,7 @@ export default function CostCalculatorPage() {
           
           <button
             onClick={handleShareWhatsApp}
-            className="flex items-center gap-1.5 px-4 py-2 bg-status-success-surface border border-status-success/40 rounded-xl text-xs font-bold text-status-success hover:bg-status-success hover:text-white transition-all shadow-2xs cursor-pointer"
+            className="col-span-2 sm:col-span-1 flex items-center justify-center gap-1.5 px-4 py-2 bg-status-success-surface border border-status-success/40 rounded-xl text-xs font-bold text-status-success hover:bg-status-success hover:text-white transition-all shadow-2xs cursor-pointer"
           >
             <MessageSquare className="w-3.5 h-3.5" />
             <span>WhatsApp</span>
@@ -486,18 +487,18 @@ export default function CostCalculatorPage() {
 
       {/* Preset Quick Chips Bar */}
       <div className="p-3.5 bg-surface rounded-2xl border border-border shadow-2xs space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap items-center gap-1.5 text-xs">
-            <span className="text-content-muted font-bold text-xs flex items-center gap-1 mr-1">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-1.5 text-xs overflow-x-auto touch-scroll no-scrollbar pb-1 sm:pb-0">
+            <span className="text-content-muted font-bold text-xs flex items-center gap-1 mr-1 shrink-0">
               <Zap className="w-3.5 h-3.5 text-accent" />
-              Micro-Market Presets:
+              Presets:
             </span>
             {Object.keys(NAVI_MUMBAI_MICRO_MARKETS).map((key) => (
               <button
                 type="button"
                 key={key}
                 onClick={() => applyPreset(key, selectedBhk)}
-                className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`px-3 py-1 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
                   selectedPresetMarket === key
                     ? 'bg-accent text-white shadow-xs'
                     : 'bg-surface-subtle text-content-muted border border-border hover:text-content hover:bg-surface'
@@ -509,7 +510,7 @@ export default function CostCalculatorPage() {
           </div>
 
           {/* BHK Typology Selector */}
-          <div className="flex items-center gap-1 bg-surface-subtle p-1 rounded-xl border border-border text-xs">
+          <div className="flex items-center gap-1 bg-surface-subtle p-1 rounded-xl border border-border text-xs shrink-0 self-start sm:self-auto">
             <span className="text-[11px] font-bold text-content-muted px-2 uppercase font-mono">BHK:</span>
             {[1, 2, 3, 4].map((bhk) => (
               <button
@@ -1107,17 +1108,18 @@ export default function CostCalculatorPage() {
               {maintenanceMode === 'CALCULATED' ? (
                 <div className="grid grid-cols-2 gap-2.5 pt-1">
                   <div>
-                    <label className="block text-[10px] font-bold text-content-muted mb-1 font-mono">Tenure (Months)</label>
-                    <select
-                      value={advanceMaintenanceMonths}
-                      onChange={(e) => setAdvanceMaintenanceMonths(Number(e.target.value))}
-                      className="w-full px-2.5 py-1.5 bg-surface-subtle border border-border rounded-lg text-xs font-semibold text-content"
-                    >
-                      <option value={6}>6 Months</option>
-                      <option value={12}>12 Months (1 Year)</option>
-                      <option value={24}>24 Months (2 Years)</option>
-                      <option value={36}>36 Months (3 Years)</option>
-                    </select>
+                    <CustomSelect
+                      size="xs"
+                      label="Tenure"
+                      value={String(advanceMaintenanceMonths)}
+                      onChange={(val) => setAdvanceMaintenanceMonths(Number(val))}
+                      options={[
+                        { value: '6', label: '6 Months' },
+                        { value: '12', label: '12 Months (1 Year)' },
+                        { value: '24', label: '24 Months (2 Years)' },
+                        { value: '36', label: '36 Months (3 Years)' },
+                      ]}
+                    />
                   </div>
                   <div>
                     <label className="block text-[10px] font-bold text-content-muted mb-1 font-mono">Rate (₹/sqft/mo)</label>

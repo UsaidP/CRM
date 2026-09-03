@@ -13,12 +13,12 @@ interface AccessibleDialogProps {
 }
 
 const sizeClasses: Record<string, string> = {
-  sm: 'max-w-md',
-  md: 'max-w-xl',
-  lg: 'max-w-2xl',
-  xl: 'max-w-4xl',
-  '2xl': 'max-w-6xl',
-  full: 'max-w-[95vw]',
+  sm: '!max-w-md',
+  md: '!max-w-lg',
+  lg: '!max-w-2xl',
+  xl: '!max-w-4xl',
+  '2xl': '!max-w-6xl',
+  full: '!max-w-[95vw]',
 };
 
 export function AccessibleDialog({
@@ -44,7 +44,11 @@ export function AccessibleDialog({
 
     if (open && !dialog.open) {
       returnFocusRef.current = document.activeElement as HTMLElement | null;
-      dialog.showModal();
+      try {
+        dialog.showModal();
+      } catch (err) {
+        console.warn('[AccessibleDialog] showModal caught:', err);
+      }
       requestAnimationFrame(() => {
         const firstControl = dialog.querySelector<HTMLElement>(
           '[data-dialog-autofocus], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]):not([data-dialog-close]), a[href], [tabindex]:not([tabindex="-1"])'
@@ -52,12 +56,24 @@ export function AccessibleDialog({
         firstControl?.focus();
       });
     } else if (!open && dialog.open) {
-      dialog.close();
+      try {
+        dialog.close();
+      } catch (err) {
+        console.warn('[AccessibleDialog] close caught:', err);
+      }
     }
 
     return () => {
-      if (dialog.open) dialog.close();
-      if (open) returnFocusRef.current?.focus();
+      if (dialog.open) {
+        try {
+          dialog.close();
+        } catch {}
+      }
+      if (open) {
+        try {
+          returnFocusRef.current?.focus();
+        } catch {}
+      }
     };
   }, [open]);
 
@@ -70,7 +86,9 @@ export function AccessibleDialog({
       onCloseRef.current();
     };
     const handleClose = () => {
-      returnFocusRef.current?.focus();
+      try {
+        returnFocusRef.current?.focus();
+      } catch {}
     };
 
     dialog.addEventListener('cancel', handleCancel);
@@ -90,7 +108,7 @@ export function AccessibleDialog({
       aria-labelledby={titleId}
       aria-describedby={descriptionId}
       onClick={(event) => {
-        if (event.target === dialogRef.current) onClose();
+        if (event.target === dialogRef.current) onCloseRef.current();
       }}
     >
       <div className={`app-dialog__panel w-full ${sizeClass} ${panelClassName}`}>{children}</div>

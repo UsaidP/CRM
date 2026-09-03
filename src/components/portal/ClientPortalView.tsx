@@ -246,18 +246,21 @@ export function ClientPortalView({ portal, token }: ClientPortalViewProps) {
 
   const unitsCount = portal.portalUnits?.length || 0;
 
-  // Compute price range
+  // Compute price range in raw rupees
   const priceRange = useMemo(() => {
     if (!portal.portalUnits || portal.portalUnits.length === 0) return { min: 0, max: 0 };
-    const prices = portal.portalUnits.map((u: any) => u.propertyUnit.allInTotalCost);
+    const prices = portal.portalUnits.map((u: any) => u.propertyUnit.allInTotalCost || 0);
     return {
-      min: Math.min(...prices) / 100000,
-      max: Math.max(...prices) / 100000,
+      min: Math.min(...prices),
+      max: Math.max(...prices),
     };
   }, [portal.portalUnits]);
 
   return (
-    <div className="min-h-screen bg-[#FDFBF7] text-slate-900 font-sans selection:bg-amber-100 selection:text-[#8C641E]">
+    <div
+      data-portal-theme="luxury"
+      className="portal-theme min-h-screen bg-gradient-to-b from-[#FCFAF6] via-[#FFFDF9] to-[#F7F3E9] text-slate-900 font-sans selection:bg-amber-200 selection:text-gold"
+    >
       {/* Top Advisory Bar */}
       <PortalHeader
         portal={portal}
@@ -301,17 +304,17 @@ export function ClientPortalView({ portal, token }: ClientPortalViewProps) {
 
         {/* SECTION: Curated Property Details Showcase */}
         <section className="space-y-8 sm:space-y-12">
-          <div className="border-b border-slate-200/90 pb-3.5 flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+          <div className="border-b border-amber-200/80 pb-3.5 flex flex-col sm:flex-row sm:items-end justify-between gap-2">
             <div>
-              <span className="text-xs font-bold uppercase tracking-wider text-[#8C641E] font-mono flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-[#8C641E]" />
+              <span className="text-xs font-bold uppercase tracking-wider text-gold font-mono flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-gold" />
                 Verified Inventory Showcase
               </span>
               <h2 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-slate-900 font-serif mt-0.5">
                 Detailed Property Cards ({unitsCount})
               </h2>
             </div>
-            <span className="text-xs text-slate-500 font-mono">
+            <span className="text-xs text-slate-500 font-mono font-bold">
               Live Verified Pricing • Ground Audited by ZamZam
             </span>
           </div>
@@ -335,10 +338,10 @@ export function ClientPortalView({ portal, token }: ClientPortalViewProps) {
         </section>
 
         {/* Footer Advisory & Social Proof */}
-        <footer className="mt-12 sm:mt-16 pt-8 border-t border-slate-200 space-y-6 text-center text-xs text-slate-500">
-          <div className="max-w-lg mx-auto p-5 sm:p-7 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-3.5">
+        <footer className="mt-12 sm:mt-16 pt-8 border-t border-amber-200/80 space-y-6 text-center text-xs text-slate-500">
+          <div className="max-w-lg mx-auto p-5 sm:p-7 rounded-3xl bg-white border border-amber-200/90 shadow-sm space-y-3.5">
             <BrandLogo variant="light" size="lg" withRera={false} />
-            <p className="text-xs text-[#8C641E] font-bold font-serif">
+            <p className="text-xs text-gold font-bold font-serif">
               Navi Mumbai’s Leading Verified Real Estate Advisory
             </p>
             <p className="text-xs text-slate-600 leading-relaxed max-w-sm mx-auto">
@@ -346,8 +349,8 @@ export function ClientPortalView({ portal, token }: ClientPortalViewProps) {
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2 max-w-sm mx-auto">
               <a
-                href={`tel:${advisor.phoneE164 || '+919967731071'}`}
-                className="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 text-xs font-bold transition shadow-xs"
+                href={`tel:${(advisor.phoneE164 || '+919967731071').replace(/\s+/g, '')}`}
+                className="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 text-xs font-bold transition shadow-xs font-serif"
               >
                 <PhoneCall className="w-3.5 h-3.5 text-white shrink-0" />
                 <span>Call Advisor</span>

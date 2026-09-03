@@ -14,6 +14,7 @@ import {
   X,
 } from 'lucide-react';
 import { AccessibleDialog } from '@/components/ui/AccessibleDialog';
+import { CustomSelect } from '@/components/ui/CustomSelect';
 import { formatLakhCr } from '@/lib/money';
 
 interface PortalBookingModalProps {
@@ -58,7 +59,7 @@ export function PortalBookingModal({
         {/* Modal Header */}
         <div className="flex items-center justify-between pb-3 border-b border-slate-200">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-amber-100/80 text-[#8C641E] flex items-center justify-center shadow-2xs">
+            <div className="w-9 h-9 rounded-xl bg-amber-100/80 text-gold flex items-center justify-center shadow-2xs">
               <Calendar className="w-5 h-5" />
             </div>
             <div>
@@ -114,7 +115,7 @@ export function PortalBookingModal({
                   <span>
                     {bookingUnit.bhk} BHK • {bookingUnit.project?.microMarket}
                   </span>
-                  <strong className="text-[#8C641E] font-bold">
+                  <strong className="text-gold font-bold">
                     {formatLakhCr(bookingUnit.allInTotalCost)}
                   </strong>
                 </div>
@@ -122,21 +123,19 @@ export function PortalBookingModal({
 
               {/* Slot Picker */}
               <div className="space-y-1.5">
-                <label htmlFor="visit-slot-select" className="font-bold text-slate-800 block">
-                  Select Preferred Timing Slot
-                </label>
-                <select
+                <CustomSelect
                   id="visit-slot-select"
+                  label="Select Preferred Timing Slot"
                   value={selectedSlot}
-                  onChange={(e) => setSelectedSlot(e.target.value)}
-                  className="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 shadow-2xs cursor-pointer font-medium"
-                >
-                  <option value="This Saturday (11:00 AM)">This Saturday (11:00 AM) — Morning Prime</option>
-                  <option value="This Saturday (04:00 PM)">This Saturday (04:00 PM) — Sunset Tour</option>
-                  <option value="This Sunday (11:00 AM)">This Sunday (11:00 AM) — Weekend Morning</option>
-                  <option value="This Sunday (04:00 PM)">This Sunday (04:00 PM) — Weekend Afternoon</option>
-                  <option value="Weekday Evening (06:00 PM)">Weekday Evening (06:00 PM) — After Office</option>
-                </select>
+                  onChange={(val) => setSelectedSlot(val)}
+                  options={[
+                    { value: 'This Saturday (11:00 AM)', label: 'This Saturday (11:00 AM)', description: 'Morning Prime Slot' },
+                    { value: 'This Saturday (04:00 PM)', label: 'This Saturday (04:00 PM)', description: 'Sunset View Tour' },
+                    { value: 'This Sunday (11:00 AM)', label: 'This Sunday (11:00 AM)', description: 'Weekend Morning Slot' },
+                    { value: 'This Sunday (04:00 PM)', label: 'This Sunday (04:00 PM)', description: 'Weekend Afternoon Tour' },
+                    { value: 'Weekday Evening (06:00 PM)', label: 'Weekday Evening (06:00 PM)', description: 'After Office Hours' },
+                  ]}
+                />
               </div>
 
               {/* Complimentary Station Cab Toggle */}
@@ -146,7 +145,7 @@ export function PortalBookingModal({
                   id="station-cab-checkbox"
                   checked={needsCab}
                   onChange={(e) => setNeedsCab(e.target.checked)}
-                  className="mt-0.5 w-4 h-4 accent-[#8C641E] rounded cursor-pointer"
+                  className="mt-0.5 w-4 h-4 accent-gold rounded cursor-pointer"
                 />
                 <label htmlFor="station-cab-checkbox" className="text-xs text-slate-700 cursor-pointer select-none">
                   <strong>🚗 Complimentary Station Cab Pickup:</strong> Include free AC cab pickup &amp; drop from Kharghar, Mansarovar, or Khandeshwar station for your family.
@@ -166,7 +165,7 @@ export function PortalBookingModal({
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.97 }}
                   type="submit"
-                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#B38A38] to-[#8C641E] text-white text-xs font-extrabold shadow-sm flex items-center gap-1.5 cursor-pointer hover:brightness-105 transition-all"
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-gold-light to-gold text-white text-xs font-extrabold shadow-sm flex items-center gap-1.5 cursor-pointer hover:brightness-105 transition-[background-color,border-color,box-shadow] duration-200"
                 >
                   <Calendar className="w-3.5 h-3.5" />
                   <span>Confirm Visit Reservation</span>

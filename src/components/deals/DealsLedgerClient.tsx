@@ -35,6 +35,7 @@ import { exportDealsToCsv } from '@/lib/export-utils';
 import { toast } from '@/lib/client/toast';
 import { FeedbackAlert } from '@/components/ui/FeedbackAlert';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { CustomSelect } from '@/components/ui/CustomSelect';
 
 export function DealsLedgerClient({
   initialDeals = [],
@@ -275,50 +276,50 @@ export function DealsLedgerClient({
   return (
     <div className="space-y-6 max-w-7xl mx-auto font-mono text-xs">
       {/* Top Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-[#b59658]/20">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-border">
         <div>
-          <div className="flex items-center gap-2 mb-1.5">
-            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#1b202c] text-[#ccb67b] border border-[#b59658]/40 uppercase tracking-wider flex items-center gap-1">
-              <DollarSign className="w-3 h-3 text-[#b59658]" /> DUAL-VIEW DEAL ENGINE
+          <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-accent-soft text-accent-text border border-accent/20 uppercase tracking-wider flex items-center gap-1 shadow-2xs">
+              <DollarSign className="w-3 h-3 text-accent" /> DUAL-VIEW DEAL ENGINE
             </span>
             <HallmarkStamp type="ledger" label="Calculated deal ledger" />
           </div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white font-display">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-content font-display">
             Deals &amp; Commission {viewMode === 'pipeline' ? 'Pipeline Board' : 'Accounting Ledger'}
           </h1>
-          <p className="text-slate-400 text-xs mt-0.5">
+          <p className="text-content-secondary text-xs mt-0.5">
             {viewMode === 'pipeline'
               ? 'Sequential deal stage workflow, bottleneck diagnostics, and fast transition cards.'
               : 'Dispute-proof timestamped source records, GST developer invoicing, and rep incentives.'}
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
           {/* View Toggle: Pipeline (Kanban) vs Ledger (Table) */}
-          <div className="flex items-center bg-surface-subtle border border-border rounded-xl p-1">
+          <div className="flex items-center bg-surface-subtle border border-border rounded-xl p-1 shadow-2xs">
             <button
               type="button"
               onClick={() => setViewMode('pipeline')}
-              className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-xs font-semibold transition-all ${
+              className={`px-2.5 sm:px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-xs font-semibold transition-all cursor-pointer ${
                 viewMode === 'pipeline'
                   ? 'bg-accent text-white font-bold shadow-xs'
                   : 'text-content-secondary hover:text-content'
               }`}
             >
               <Kanban className="w-3.5 h-3.5" />
-              Pipeline (Kanban)
+              <span>Pipeline</span>
             </button>
             <button
               type="button"
               onClick={() => setViewMode('ledger')}
-              className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-xs font-semibold transition-all ${
+              className={`px-2.5 sm:px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-xs font-semibold transition-all cursor-pointer ${
                 viewMode === 'ledger'
                   ? 'bg-accent text-white font-bold shadow-xs'
                   : 'text-content-secondary hover:text-content'
               }`}
             >
               <Table className="w-3.5 h-3.5" />
-              Ledger (Table)
+              <span>Ledger</span>
             </button>
           </div>
 
@@ -326,26 +327,26 @@ export function DealsLedgerClient({
             type="button"
             onClick={() => exportDealsToCsv(filteredDeals, summary, { status: selectedStatus, search: searchQuery })}
             title="Export deals ledger to CSV spreadsheet"
-            className="min-h-10 px-3.5 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-bold shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
+            className="h-9 px-3 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-bold shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
           >
             <Download className="w-3.5 h-3.5 text-accent" />
-            <span>Export CSV</span>
+            <span className="hidden sm:inline">Export CSV</span>
           </button>
 
           <button
             type="button"
             onClick={() => { setActionError(null); setShowRegisterModal(true); }}
-            className="min-h-10 px-4 py-2 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold flex items-center gap-2 shadow-xs transition-all cursor-pointer"
+            className="h-9 px-3.5 sm:px-4 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition-all cursor-pointer shrink-0 active:scale-95"
           >
             <Plus className="w-4 h-4" />
-            <span>Register Closed Deal</span>
+            <span>Register Deal</span>
           </button>
           <button
             type="button"
             onClick={fetchDealsAndData}
             disabled={loading}
             aria-label="Refresh deal records"
-            className="min-h-10 min-w-10 px-3 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-semibold shadow-xs transition-all flex items-center justify-center cursor-pointer"
+            className="h-9 w-9 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-semibold shadow-2xs transition-all flex items-center justify-center cursor-pointer shrink-0"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-accent' : 'text-content-secondary'}`} />
           </button>
@@ -764,38 +765,40 @@ export function DealsLedgerClient({
 
         <form onSubmit={handleRegisterDeal} className="space-y-4 pt-3">
           <div>
-            <label htmlFor="deal-lead" className="text-xs font-bold text-content block mb-1">Purchaser Lead:</label>
-            <select
+            <CustomSelect
               id="deal-lead"
-              name="leadId"
-              data-dialog-autofocus
+              label="Purchaser Lead:"
+              placeholder="Select Purchaser Lead..."
               value={selectedLeadId}
-              onChange={(e) => setSelectedLeadId(e.target.value)}
-              className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content focus:outline-hidden focus:border-accent focus:ring-1 focus:ring-accent font-medium"
-            >
-              {leads.map((l) => (
-                <option key={l.id} value={l.id} className="bg-surface text-content">
-                  {l.fullName} ({l.phoneE164})
-                </option>
-              ))}
-            </select>
+              onChange={(val) => setSelectedLeadId(val)}
+              searchable
+              searchPlaceholder="Search lead by name or phone..."
+              options={leads.map((l) => ({
+                value: l.id,
+                label: l.fullName,
+                description: l.phoneE164,
+                dotColor: l.pipelineStage === 'CLOSED_WON' ? 'bg-status-success' : 'bg-accent',
+                badge: l.pipelineStage,
+              }))}
+            />
           </div>
 
           <div>
-            <label htmlFor="deal-unit" className="text-xs font-bold text-content block mb-1">Purchased Property Unit:</label>
-            <select
+            <CustomSelect
               id="deal-unit"
-              name="propertyUnitId"
+              label="Purchased Property Unit:"
+              placeholder="Select Property Unit..."
               value={selectedUnitId}
-              onChange={(e) => setSelectedUnitId(e.target.value)}
-              className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content focus:outline-hidden focus:border-accent focus:ring-1 focus:ring-accent font-medium"
-            >
-              {units.map((u) => (
-                <option key={u.id} value={u.id} className="bg-surface text-content">
-                  {u.project?.projectName} - Unit {u.unitNumber} ({u.bhk} BHK • ₹{(u.agreementValue / 100000).toFixed(2)}L)
-                </option>
-              ))}
-            </select>
+              onChange={(val) => setSelectedUnitId(val)}
+              searchable
+              searchPlaceholder="Search project or unit number..."
+              options={units.map((u) => ({
+                value: u.id,
+                label: `${u.project?.projectName || 'Project'} - Unit ${u.unitNumber}`,
+                description: `${u.bhk} BHK • ₹${(u.agreementValue / 100000).toFixed(2)} Lakhs`,
+                badge: `${u.bhk} BHK`,
+              }))}
+            />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -927,23 +930,44 @@ export function DealsLedgerClient({
 
             <form onSubmit={handleUpdateStatus} className="space-y-4 pt-3">
               <div>
-                <label htmlFor="milestone-status" className="text-xs font-bold text-content block mb-1">
-                  Target Milestone Status:
-                </label>
-                <select
+                <CustomSelect
                   id="milestone-status"
-                  name="dealStatus"
-                  data-dialog-autofocus
+                  label="Target Milestone Status:"
                   value={newStatus}
-                  onChange={(e) => setNewStatus(e.target.value)}
-                  className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content focus:outline-hidden focus:border-accent focus:ring-1 focus:ring-accent font-medium"
-                >
-                  <option value="TOKEN_RECEIVED" className="bg-surface text-content">TOKEN_RECEIVED (Booking Advance)</option>
-                  <option value="AGREEMENT_REGISTERED" className="bg-surface text-content">AGREEMENT_REGISTERED (Sub-Registrar)</option>
-                  <option value="INVOICE_SENT" className="bg-surface text-content">INVOICE_SENT (GST Tax Invoice)</option>
-                  <option value="PAYMENT_RECEIVED" className="bg-surface text-content">PAYMENT_RECEIVED (RTGS Cleared)</option>
-                  <option value="CANCELLED" className="bg-surface text-content">CANCELLED</option>
-                </select>
+                  onChange={(val) => setNewStatus(val)}
+                  options={[
+                    {
+                      value: 'TOKEN_RECEIVED',
+                      label: 'Token Received',
+                      description: 'Booking token advance collected from buyer',
+                      dotColor: 'bg-accent',
+                    },
+                    {
+                      value: 'AGREEMENT_REGISTERED',
+                      label: 'Agreement Registered',
+                      description: 'Sub-Registrar legal index II completed',
+                      dotColor: 'bg-status-warning',
+                    },
+                    {
+                      value: 'INVOICE_SENT',
+                      label: 'Invoice Sent',
+                      description: 'Developer GST brokerage tax invoice dispatched',
+                      dotColor: 'bg-accent-text',
+                    },
+                    {
+                      value: 'PAYMENT_RECEIVED',
+                      label: 'Payment Received',
+                      description: 'Bank RTGS commission credited & reconciled',
+                      dotColor: 'bg-status-success',
+                    },
+                    {
+                      value: 'CANCELLED',
+                      label: 'Cancelled / Forfeited',
+                      description: 'Deal aborted or allotment cancelled',
+                      dotColor: 'bg-status-danger',
+                    },
+                  ]}
+                />
               </div>
 
               <div>

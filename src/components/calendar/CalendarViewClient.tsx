@@ -926,22 +926,22 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
           </div>
         </div>
 
-        {/* Filter Pills & Search */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-3 pt-3 border-t border-border">
-          <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+        {/* Task Type Filters Strip & Search */}
+        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 pt-3 border-t border-border">
+          <div className="flex items-center gap-1.5 overflow-x-auto touch-scroll no-scrollbar pb-1 md:pb-0">
             <button
               onClick={() => setFilterType('ALL')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer shrink-0 ${
                 filterType === 'ALL'
                   ? 'bg-accent text-white border-accent shadow-xs'
-                  : 'bg-surface-subtle text-content-secondary border-border hover:bg-surface hover:text-content'
+                  : 'bg-surface-subtle text-content-secondary border-border hover:text-content'
               }`}
             >
               All Events ({counts.total})
             </button>
             <button
               onClick={() => setFilterType('OVERDUE')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer shrink-0 ${
                 filterType === 'OVERDUE'
                   ? 'bg-status-danger-surface text-status-danger border-status-danger ring-1 ring-status-danger/30'
                   : 'bg-surface-subtle text-content-secondary border-border hover:text-status-danger hover:border-status-danger/40'
@@ -951,7 +951,7 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
             </button>
             <button
               onClick={() => setFilterType('TODAY')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer shrink-0 ${
                 filterType === 'TODAY'
                   ? 'bg-accent-soft text-accent-text border-accent ring-1 ring-accent/30'
                   : 'bg-surface-subtle text-content-secondary border-border hover:text-accent hover:border-accent/40'
@@ -961,7 +961,7 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
             </button>
             <button
               onClick={() => setFilterType('CALL')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer shrink-0 ${
                 filterType === 'CALL'
                   ? 'bg-accent-soft text-accent-text border-accent ring-1 ring-accent/30'
                   : 'bg-surface-subtle text-content-secondary border-border hover:text-accent hover:border-accent/40'
@@ -971,7 +971,7 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
             </button>
             <button
               onClick={() => setFilterType('WHATSAPP')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer shrink-0 ${
                 filterType === 'WHATSAPP'
                   ? 'bg-status-success-surface text-status-success border-status-success ring-1 ring-status-success/30'
                   : 'bg-surface-subtle text-content-secondary border-border hover:text-status-success hover:border-status-success/40'
@@ -981,7 +981,7 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
             </button>
             <button
               onClick={() => setFilterType('SITE_VISIT')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer shrink-0 ${
                 filterType === 'SITE_VISIT'
                   ? 'bg-status-info-surface text-status-info border-status-info ring-1 ring-status-info/30'
                   : 'bg-surface-subtle text-content-secondary border-border hover:text-status-info hover:border-status-info/40'
@@ -1008,25 +1008,27 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
       {/* Main View Render: MONTH | WEEK (7 Days) | DAY (1 Day) | AGENDA */}
       {viewMode === 'MONTH' && (
         <div className="rounded-2xl bg-surface border border-border overflow-hidden shadow-xs">
-          {/* Day of Week Header */}
-          <div className="grid grid-cols-7 border-b border-border bg-surface-subtle text-center text-[11px] font-bold text-content-secondary uppercase tracking-wider py-3">
-            {daysOfWeek.map((d) => (
-              <div key={d}>{d}</div>
-            ))}
-          </div>
+          <div className="overflow-x-auto touch-scroll">
+            <div className="min-w-[640px] sm:min-w-0">
+              {/* Day of Week Header */}
+              <div className="grid grid-cols-7 border-b border-border bg-surface-subtle text-center text-[11px] font-bold text-content-secondary uppercase tracking-wider py-3">
+                {daysOfWeek.map((d) => (
+                  <div key={d}>{d}</div>
+                ))}
+              </div>
 
-          {/* Month Calendar Grid */}
-          <div className="grid grid-cols-7 auto-rows-fr divide-x divide-y divide-border bg-surface">
-            {monthDays.map(({ date, isCurrentMonth, isToday }, idx) => {
-              const dateStr = date.toDateString();
-              const dayEvents = filteredEvents.filter(
-                (e) => new Date(e.start).toDateString() === dateStr
-              );
+              {/* Month Calendar Grid */}
+              <div className="grid grid-cols-7 auto-rows-fr divide-x divide-y divide-border bg-surface">
+                {monthDays.map(({ date, isCurrentMonth, isToday }, idx) => {
+                  const dateStr = date.toDateString();
+                  const dayEvents = filteredEvents.filter(
+                    (e) => new Date(e.start).toDateString() === dateStr
+                  );
 
-              return (
-                <div
-                  key={idx}
-                  onClick={() => {
+                  return (
+                    <div
+                      key={idx}
+                      onClick={() => {
                     const localISO = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
                       .toISOString()
                       .slice(0, 10);
@@ -1088,6 +1090,8 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
                 </div>
               );
             })}
+              </div>
+            </div>
           </div>
         </div>
       )}

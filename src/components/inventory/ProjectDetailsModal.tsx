@@ -718,17 +718,17 @@ export function ProjectDetailsModal({
               />
 
               {/* Official MahaRERA Certificate Download & Sync Card */}
-              <div className="p-4 rounded-2xl border border-accent/30 bg-surface-raised space-y-3">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2.5 rounded-xl bg-accent-soft text-accent border border-accent/20">
+              <div className="p-3.5 sm:p-4 rounded-2xl border border-accent/30 bg-surface-raised space-y-3 overflow-hidden">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                  <div className="flex items-start sm:items-center gap-3 min-w-0">
+                    <div className="p-2.5 rounded-xl bg-accent-soft text-accent border border-accent/20 shrink-0 mt-0.5 sm:mt-0">
                       <FileCheck className="w-5 h-5" />
                     </div>
-                    <div>
-                      <h4 className="text-sm font-bold text-content font-display">
+                    <div className="min-w-0">
+                      <h4 className="text-sm font-bold text-content font-display truncate">
                         Official MahaRERA Registration Certificate
                       </h4>
-                      <p className="text-xs text-content-muted mt-0.5">
+                      <p className="text-xs text-content-muted mt-0.5 line-clamp-2">
                         {currentProject.reraCertificateUrl
                           ? `Statutory PDF Document Linked • Valid until ${currentProject.reraValidUntil ? formatDateFull(currentProject.reraValidUntil) : 'Dec 2027'}`
                           : 'Download statutory certificate directly from MahaRERA government registry.'}
@@ -736,11 +736,11 @@ export function ProjectDetailsModal({
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
                     <button
                       type="button"
                       onClick={() => setShowFormCModal(true)}
-                      className="px-3.5 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-bold shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer"
+                      className="flex-1 sm:flex-initial justify-center px-3.5 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-bold shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer shrink-0 min-w-[120px]"
                     >
                       <Eye className="w-4 h-4 text-accent" />
                       <span>Preview Form &lsquo;C&rsquo;</span>
@@ -751,7 +751,7 @@ export function ProjectDetailsModal({
                         href={currentProject.reraCertificateUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="px-4 py-2 rounded-xl bg-accent text-white text-xs font-bold shadow-xs hover:bg-accent-hover transition-all flex items-center gap-1.5 cursor-pointer"
+                        className="flex-1 sm:flex-initial justify-center px-4 py-2 rounded-xl bg-accent text-white text-xs font-bold shadow-xs hover:bg-accent-hover transition-all flex items-center gap-1.5 cursor-pointer shrink-0 min-w-[120px]"
                       >
                         <Download className="w-4 h-4" />
                         <span>Download PDF</span>
@@ -762,7 +762,7 @@ export function ProjectDetailsModal({
                       type="button"
                       disabled={syncingCertificate}
                       onClick={handleSyncCertificate}
-                      className="px-3.5 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-accent border border-accent/30 text-xs font-bold shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                      className="flex-1 sm:flex-initial justify-center px-3.5 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-accent border border-accent/30 text-xs font-bold shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 shrink-0 min-w-[130px]"
                     >
                       {syncingCertificate ? (
                         <>

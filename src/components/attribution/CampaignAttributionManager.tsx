@@ -109,11 +109,11 @@ export function CampaignAttributionManager({ initialCampaigns = [] }: { initialC
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-16 text-content font-sans">
       {/* Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-surface border border-border shadow-xs">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 sm:p-6 rounded-2xl bg-surface border border-border shadow-xs">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-content flex items-center gap-2.5">
-            Campaign Attribution &amp; Deep Link Engine
-            <span className="text-xs uppercase font-mono font-bold px-2.5 py-0.5 rounded-full bg-accent-soft text-accent-text border border-accent/20">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-content flex items-center gap-2.5 flex-wrap">
+            <span>Campaign Attribution &amp; Deep Link Engine</span>
+            <span className="text-[10px] sm:text-xs uppercase font-mono font-bold px-2.5 py-0.5 rounded-full bg-accent-soft text-accent-text border border-accent/20">
               MahaRERA Ready
             </span>
           </h1>
@@ -122,17 +122,17 @@ export function CampaignAttributionManager({ initialCampaigns = [] }: { initialC
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 w-full md:w-auto">
           <button
             onClick={() => setShowCreateModal(true)}
-            className="px-4 py-2.5 bg-accent hover:bg-accent-hover text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center gap-2"
+            className="flex-1 md:flex-initial justify-center px-4 py-2.5 bg-accent hover:bg-accent-hover text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center gap-2 cursor-pointer active:scale-95"
           >
             <Plus className="w-4 h-4" />
             <span>Create Campaign Code</span>
           </button>
           <button
             onClick={fetchCampaigns}
-            className="p-2.5 bg-surface hover:bg-surface-subtle border border-border text-content-secondary hover:text-content rounded-xl transition-all shadow-xs"
+            className="p-2.5 bg-surface hover:bg-surface-subtle border border-border text-content-secondary hover:text-content rounded-xl transition-all shadow-xs cursor-pointer shrink-0"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-accent' : ''}`} />
           </button>

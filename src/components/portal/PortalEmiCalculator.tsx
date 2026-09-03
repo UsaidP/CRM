@@ -45,7 +45,7 @@ export function PortalEmiCalculator({
   projectName,
   advisorPhone,
 }: PortalEmiCalculatorProps) {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [selectedBank, setSelectedBank] = useState<string>('SBI');
   const [customRate, setCustomRate] = useState<number>(8.5);
   const [downPaymentPct, setDownPaymentPct] = useState<number>(20);
@@ -125,7 +125,7 @@ export function PortalEmiCalculator({
   };
 
   return (
-    <div className="rounded-3xl border border-amber-300/80 bg-white overflow-hidden shadow-sm transition-all hover:border-amber-400 font-sans">
+    <div className="rounded-3xl border border-amber-300/80 bg-white overflow-hidden shadow-sm transition-[background-color,border-color,box-shadow,transform] duration-200 hover:border-amber-400 font-sans">
       {/* Header Banner */}
       <button
         type="button"
@@ -134,7 +134,7 @@ export function PortalEmiCalculator({
         aria-expanded={isExpanded}
       >
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#DFBA73] via-[#B38A38] to-[#8C641E] text-white flex items-center justify-center shadow-xs shrink-0">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-gold-lighter via-gold-light to-gold text-white flex items-center justify-center shadow-xs shrink-0">
             <Calculator className="w-5 h-5" />
           </div>
           <div className="min-w-0">
@@ -158,12 +158,12 @@ export function PortalEmiCalculator({
             <span className="text-[10px] uppercase font-mono text-slate-400 block font-semibold">
               Estimated EMI
             </span>
-            <strong className="text-sm sm:text-base font-extrabold text-[#8C641E] font-mono">
+            <strong className="text-sm sm:text-base font-extrabold text-gold font-mono">
               ₹{monthlyEmi.toLocaleString('en-IN')}{' '}
               <span className="text-xs font-normal text-slate-500">/mo</span>
             </strong>
           </div>
-          <span className="px-3 py-1 rounded-xl bg-amber-50 border border-amber-200 text-xs font-bold text-[#8C641E] shadow-2xs font-mono flex items-center gap-1">
+          <span className="px-3 py-1 rounded-xl bg-amber-50 border border-amber-200 text-xs font-bold text-gold shadow-2xs font-mono flex items-center gap-1">
             <span>{isExpanded ? 'Hide' : 'Open'}</span>
             {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
           </span>
@@ -185,10 +185,10 @@ export function PortalEmiCalculator({
               <div className="space-y-2.5">
                 <div className="flex items-center justify-between gap-2 flex-wrap">
                   <label className="text-xs font-bold uppercase tracking-wider text-slate-700 font-mono flex items-center gap-1.5">
-                    <Landmark className="w-3.5 h-3.5 text-[#8C641E]" />
+                    <Landmark className="w-3.5 h-3.5 text-gold" />
                     1. Select Preferred Bank Benchmark Rate:
                   </label>
-                  <span className="text-xs font-mono font-bold text-[#8C641E]">
+                  <span className="text-xs font-mono font-bold text-gold">
                     Active ROI: {activeRate.toFixed(2)}% p.a.
                   </span>
                 </div>
@@ -201,14 +201,14 @@ export function PortalEmiCalculator({
                         key={bank.id}
                         type="button"
                         onClick={() => setSelectedBank(bank.id)}
-                        className={`p-3 rounded-2xl border text-left transition-all cursor-pointer relative overflow-hidden ${
+                        className={`p-3 rounded-2xl border text-left transition-[background-color,border-color,box-shadow,transform] duration-200 cursor-pointer relative overflow-hidden ${
                           isSelected
                             ? 'bg-amber-50/90 border-amber-400 shadow-xs ring-2 ring-amber-300 text-slate-900'
                             : 'bg-white border-slate-200 hover:border-amber-300 hover:bg-amber-50/40 text-slate-700'
                         }`}
                       >
                         {isSelected && (
-                          <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#8C641E]" />
+                          <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-gold" />
                         )}
                         <span className="text-xs font-bold text-slate-900 block truncate font-serif">
                           {bank.name}
@@ -216,7 +216,7 @@ export function PortalEmiCalculator({
                         <div className="flex items-baseline justify-between mt-1 gap-1">
                           <strong
                             className={`text-sm font-extrabold font-mono ${
-                              isSelected ? 'text-[#8C641E]' : 'text-slate-700'
+                              isSelected ? 'text-gold' : 'text-slate-700'
                             }`}
                           >
                             {bank.id === 'CUSTOM' ? `${customRate.toFixed(2)}%` : `${bank.rate.toFixed(2)}%`}
@@ -237,7 +237,7 @@ export function PortalEmiCalculator({
                   <div className="p-3.5 rounded-2xl bg-amber-50/60 border border-amber-300 space-y-2 mt-2">
                     <div className="flex justify-between text-xs">
                       <span className="text-slate-700 font-medium">Fine-tune Interest Rate:</span>
-                      <strong className="text-[#8C641E] font-mono font-bold">
+                      <strong className="text-gold font-mono font-bold">
                         {customRate.toFixed(2)}% p.a.
                       </strong>
                     </div>
@@ -248,7 +248,7 @@ export function PortalEmiCalculator({
                       step={0.05}
                       value={customRate}
                       onChange={(e) => setCustomRate(parseFloat(e.target.value))}
-                      className="w-full accent-[#8C641E] bg-slate-200 h-2 rounded-lg cursor-pointer"
+                      className="w-full accent-gold bg-slate-200 h-2 rounded-lg cursor-pointer"
                     />
                     <div className="flex justify-between text-[10px] text-slate-500 font-mono">
                       <span>7.00% (Subsidized)</span>
@@ -267,14 +267,14 @@ export function PortalEmiCalculator({
                   <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-3">
                     <div className="flex items-center justify-between text-xs">
                       <span className="text-slate-800 font-bold flex items-center gap-1.5">
-                        <Wallet className="w-3.5 h-3.5 text-[#8C641E]" />
+                        <Wallet className="w-3.5 h-3.5 text-gold" />
                         2. Down Payment Contribution:
                       </span>
                       <div className="text-right">
                         <span className="text-xs font-mono font-extrabold text-slate-900">
                           ₹{formatLakhs(downPaymentAmount)} Lakhs
                         </span>
-                        <span className="text-xs text-[#8C641E] font-mono ml-1.5 font-bold">
+                        <span className="text-xs text-gold font-mono ml-1.5 font-bold">
                           ({downPaymentPct}%)
                         </span>
                       </div>
@@ -287,7 +287,7 @@ export function PortalEmiCalculator({
                       step={5}
                       value={downPaymentPct}
                       onChange={(e) => setDownPaymentPct(Number(e.target.value))}
-                      className="w-full accent-[#8C641E] bg-slate-200 h-2.5 rounded-lg cursor-pointer"
+                      className="w-full accent-gold bg-slate-200 h-2.5 rounded-lg cursor-pointer"
                     />
 
                     {/* Quick Presets */}
@@ -297,10 +297,10 @@ export function PortalEmiCalculator({
                           key={pct}
                           type="button"
                           onClick={() => setDownPaymentPct(pct)}
-                          className={`px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition-all cursor-pointer ${
+                          className={`px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition-[background-color,border-color,box-shadow,transform] duration-200 cursor-pointer ${
                             downPaymentPct === pct
-                              ? 'bg-[#8C641E] text-white shadow-2xs'
-                              : 'bg-slate-100 hover:bg-amber-50 hover:text-[#8C641E] text-slate-700'
+                              ? 'bg-gold text-white shadow-2xs'
+                              : 'bg-slate-100 hover:bg-amber-50 hover:text-gold text-slate-700'
                           }`}
                         >
                           {pct}% {pct === 10 ? '(Min)' : pct === 20 ? '(Std)' : ''}
@@ -313,7 +313,7 @@ export function PortalEmiCalculator({
                   <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-3">
                     <div className="flex items-center justify-between text-xs">
                       <span className="text-slate-800 font-bold flex items-center gap-1.5">
-                        <Clock className="w-3.5 h-3.5 text-[#8C641E]" />
+                        <Clock className="w-3.5 h-3.5 text-gold" />
                         3. Loan Repayment Tenure:
                       </span>
                       <div className="text-right">
@@ -333,7 +333,7 @@ export function PortalEmiCalculator({
                       step={1}
                       value={tenureYears}
                       onChange={(e) => setTenureYears(Number(e.target.value))}
-                      className="w-full accent-[#8C641E] bg-slate-200 h-2.5 rounded-lg cursor-pointer"
+                      className="w-full accent-gold bg-slate-200 h-2.5 rounded-lg cursor-pointer"
                     />
 
                     {/* Quick Presets */}
@@ -343,10 +343,10 @@ export function PortalEmiCalculator({
                           key={yr}
                           type="button"
                           onClick={() => setTenureYears(yr)}
-                          className={`px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition-all cursor-pointer ${
+                          className={`px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition-[background-color,border-color,box-shadow,transform] duration-200 cursor-pointer ${
                             tenureYears === yr
-                              ? 'bg-[#8C641E] text-white shadow-2xs'
-                              : 'bg-slate-100 hover:bg-amber-50 hover:text-[#8C641E] text-slate-700'
+                              ? 'bg-gold text-white shadow-2xs'
+                              : 'bg-slate-100 hover:bg-amber-50 hover:text-gold text-slate-700'
                           }`}
                         >
                           {yr} Yrs {yr === 20 ? '(Typical)' : ''}
@@ -362,8 +362,8 @@ export function PortalEmiCalculator({
                         <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 inline-block" />
                         Principal: {principalPct}% (₹{formatLakhs(loanAmount)} L)
                       </span>
-                      <span className="text-[#8C641E] flex items-center gap-1.5">
-                        <span className="w-2.5 h-2.5 rounded-full bg-[#8C641E] inline-block" />
+                      <span className="text-gold flex items-center gap-1.5">
+                        <span className="w-2.5 h-2.5 rounded-full bg-gold inline-block" />
                         Interest: {interestPct}% (₹{formatLakhs(totalInterest)} L)
                       </span>
                     </div>
@@ -371,12 +371,12 @@ export function PortalEmiCalculator({
                     <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden flex shadow-inner border border-slate-200">
                       <div
                         style={{ width: `${principalPct}%` }}
-                        className="bg-emerald-600 h-full transition-all duration-500"
+                        className="bg-emerald-600 h-full transition-[width] duration-500 duration-500"
                         title={`Principal: ${principalPct}%`}
                       />
                       <div
                         style={{ width: `${interestPct}%` }}
-                        className="bg-gradient-to-r from-amber-400 to-[#8C641E] h-full transition-all duration-500"
+                        className="bg-gradient-to-r from-amber-400 to-gold h-full transition-[width] duration-500 duration-500"
                         title={`Total Interest: ${interestPct}%`}
                       />
                     </div>
@@ -387,11 +387,11 @@ export function PortalEmiCalculator({
                 <div className="lg:col-span-5 space-y-3.5 sm:space-y-4">
                   <div className="p-5 rounded-3xl bg-gradient-to-br from-amber-50 via-amber-100/40 to-white text-slate-900 shadow-md border border-amber-300 space-y-4 relative overflow-hidden">
                     <div className="flex items-center justify-between pb-3 border-b border-amber-200/80">
-                      <span className="text-[10px] uppercase font-mono tracking-widest text-[#8C641E] font-bold flex items-center gap-1">
+                      <span className="text-[10px] uppercase font-mono tracking-widest text-gold font-bold flex items-center gap-1">
                         <Sparkles className="w-3.5 h-3.5 text-[#9A7228]" />
                         Monthly Outflow
                       </span>
-                      <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-md bg-white border border-amber-200 text-[#8C641E] font-bold">
+                      <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-md bg-white border border-amber-200 text-gold font-bold">
                         {activeRate.toFixed(2)}% p.a.
                       </span>
                     </div>
@@ -399,7 +399,7 @@ export function PortalEmiCalculator({
                     {/* Hero EMI Number */}
                     <div className="space-y-0.5">
                       <span className="text-xs text-slate-600 font-medium">Estimated Monthly EMI</span>
-                      <div className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#8C641E] font-mono tracking-tight">
+                      <div className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gold font-mono tracking-tight">
                         ₹{monthlyEmi.toLocaleString('en-IN')}
                         <span className="text-xs font-normal text-slate-500 ml-1">/ month</span>
                       </div>
@@ -419,7 +419,7 @@ export function PortalEmiCalculator({
                         <span className="text-[10px] uppercase text-slate-400 block font-semibold truncate">
                           Down Payment
                         </span>
-                        <strong className="text-[#8C641E] font-bold block mt-0.5 text-xs sm:text-sm truncate">
+                        <strong className="text-gold font-bold block mt-0.5 text-xs sm:text-sm truncate">
                           ₹{formatLakhs(downPaymentAmount)} L
                         </strong>
                       </div>
@@ -447,7 +447,7 @@ export function PortalEmiCalculator({
                       whileTap={{ scale: 0.98 }}
                       type="button"
                       onClick={handleShareLoanEstimate}
-                      className="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-[#B38A38] to-[#8C641E] hover:brightness-105 text-white text-xs font-extrabold flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer"
+                      className="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-gold-light to-gold hover:brightness-105 text-white text-xs font-extrabold flex items-center justify-center gap-2 shadow-md transition-[background-color,border-color,box-shadow] duration-200 cursor-pointer"
                     >
                       <Share2 className="w-4 h-4" />
                       <span className="truncate">Share Loan Estimate on WhatsApp</span>
@@ -458,7 +458,7 @@ export function PortalEmiCalculator({
                   <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-2 text-xs">
                     <div className="flex items-center justify-between pb-2 border-b border-slate-100">
                       <span className="text-slate-700 font-bold flex items-center gap-1.5">
-                        <PiggyBank className="w-4 h-4 text-[#8C641E]" />
+                        <PiggyBank className="w-4 h-4 text-gold" />
                         Eligibility &amp; Tax Shield:
                       </span>
                       <span className="font-mono text-emerald-800 font-bold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 text-xs">

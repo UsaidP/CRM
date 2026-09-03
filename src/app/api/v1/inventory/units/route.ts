@@ -4,7 +4,7 @@ import { prisma } from '@/lib/db/prisma';
 import { createUnitSchema } from '@/lib/validators/inventory-schemas';
 import { calculateAllInCost } from '@/lib/domain/cost-calculator';
 import { assessUnitFreshness, validateReraNumber } from '@/lib/domain/verification-engine';
-import { parseInventoryContent } from '@/lib/inventory-media';
+import { parseInventoryContent, resolveAssetUrl } from '@/lib/inventory-media';
 import { parseSafeDate } from '@/lib/date-utils';
 
 export const dynamic = 'force-dynamic';
@@ -133,6 +133,29 @@ export async function POST(req: Request) {
       societyDevCharges: validated.societyDevelopmentCharges,
     });
 
+    // Determine pre-filled media from project if not provided explicitly
+    let elevationImages = validated.elevationImages || [];
+    let floorPlanImages = validated.floorPlanImages || [];
+    let floorPlanUrl = validated.floorPlanUrl || null;
+
+    if (elevationImages.length === 0 && project.elevationImagesJson) {
+      try {
+        elevationImages = JSON.parse(project.elevationImagesJson);
+      } catch {}
+    }
+
+    if (floorPlanImages.length === 0 && project.floorPlanImagesJson) {
+      try {
+        const allProjFloorPlans: any[] = JSON.parse(project.floorPlanImagesJson);
+        const matchingBhkPlans = allProjFloorPlans.filter((fp: any) => Number(fp.bhk) === Number(validated.bhk));
+        floorPlanImages = matchingBhkPlans.length > 0 ? matchingBhkPlans : allProjFloorPlans;
+      } catch {}
+    }
+
+    if (!floorPlanUrl && floorPlanImages.length > 0) {
+      floorPlanUrl = resolveAssetUrl(floorPlanImages[0]) || null;
+    }
+
     const unit = await prisma.propertyUnit.create({
       data: {
         projectId: validated.projectId,
@@ -148,8 +171,11 @@ export async function POST(req: Request) {
         possessionDate: parseSafeDate(validated.possessionDate),
         description: validated.description,
         featureHighlightsJson: JSON.stringify(validated.featureHighlights || []),
-        floorPlanUrl: validated.floorPlanUrl || null,
+        floorPlanUrl,
         mediaGalleryJson: JSON.stringify(validated.mediaGallery || []),
+        elevationImagesJson: JSON.stringify(elevationImages),
+        floorPlanImagesJson: JSON.stringify(floorPlanImages),
+        videosJson: JSON.stringify(validated.videos || []),
         
         agreementValue: costResult.agreementValue,
         stampDutyRate: costResult.stampDutyRate,
@@ -179,7 +205,6 @@ export async function POST(req: Request) {
       data: {
         ...unit,
         ...parseInventoryContent(unit),
-        photoGallery: parseInventoryContent(unit).mediaGallery.map((asset) => asset.url),
       },
     }, { status: 201 });
   } catch (error: any) {

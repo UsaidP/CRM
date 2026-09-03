@@ -1,0 +1,49 @@
+import { describe, it, expect } from 'bun:test';
+import { parseBrochureText } from '@/lib/services/brochure-parser-service';
+
+describe('zero-fabrication: regex fallback parser', () => {
+  const bareText = 'Sunrise Heights by ABC Developers. Sector 15, Taloja. Visit our sales office.';
+
+  it('returns basePricePerSqft 0 when no price is present in the text', () => {
+    const data = parseBrochureText(bareText, 'sunrise-heights.pdf');
+    expect(data.basePricePerSqft).toBe(0);
+  });
+
+  it('returns empty classifiedMedia (no fabricated elevations/master plan)', () => {
+    const data = parseBrochureText(bareText, 'sunrise-heights.pdf');
+    expect(data.classifiedMedia.elevationsCount).toBe(0);
+    expect(data.classifiedMedia.floorPlansCount).toBe(0);
+    expect(data.classifiedMedia.hasMasterPlan).toBe(false);
+    expect(data.classifiedMedia.elevations).toEqual([]);
+    expect(data.classifiedMedia.floorPlans).toEqual([]);
+  });
+
+  it('returns no fabricated amenities, transit, plot details, structure type, or possession date', () => {
+    const data = parseBrochureText(bareText, 'sunrise-heights.pdf');
+    expect(data.amenities).toEqual([]);
+    expect(data.transitConnectivity).toEqual([]);
+    expect(data.plotDetails).toBeUndefined();
+    expect(data.structureType).toBeUndefined();
+    expect(Object.keys(data.specifications || {}).length).toBe(0);
+    expect(data.keyHighlights.some((h: string) => h.includes('Metro Station'))).toBe(false);
+    expect(data.keyHighlights.some((h: string) => h.includes('CIDCO'))).toBe(false);
+    expect(data.expectedPossessionDate).toBeUndefined();
+  });
+
+  it('keeps genuinely extracted facts', () => {
+    const text = 'Emerald Towers by XYZ Group. MahaRERA: P51700077818. 2 BHK 720 sq.ft. Swimming Pool and Gymnasium available. Possession December 2027.';
+    const data = parseBrochureText(text, 'emerald-towers.pdf');
+    expect(data.projectName.length).toBeGreaterThan(0);
+    expect(data.reraNumber).toBe('P51700077818');
+    expect(data.amenities.some((a: string) => a.toLowerCase().includes('swimming pool'))).toBe(true);
+    expect(data.amenities.some((a: string) => a.toLowerCase().includes('gym'))).toBe(true);
+    expect(data.basePricePerSqft).toBe(0); // still zero: price never stated
+  });
+
+  it('does not fabricate carpet area when only BHK is mentioned', () => {
+    const data = parseBrochureText('Green Park by Builders. 1 BHK and 2 BHK available.', 'green-park.pdf');
+    for (const unit of data.units) {
+      expect(unit.carpetAreaSqft).toBe(0);
+    }
+  });
+});

@@ -237,26 +237,20 @@ export async function extractBrochureWithAI(
   const rawLocality = typeof locObj === 'string' ? locObj : (locObj.locality || locObj.city || locObj.siteOffice || '');
   const microMarket = parsed.microMarket || rawLocality || (locObj.sector ? `${locObj.sector}, Navi Mumbai` : 'Navi Mumbai');
   const subLocality = parsed.subLocality || (typeof locObj === 'object' && locObj.siteOffice ? locObj.siteOffice : (locObj.address || (locObj.sector ? `${locObj.sector} ${locObj.locality || ''}`.trim() : 'Navi Mumbai')));
-  const elevation = parsed.elevation || projObj.building_configuration || (parsed.floors ? String(parsed.floors) : `G+${totalFloors} Storey Tower`);
+  const elevation = parsed.elevation || projObj.building_configuration || (parsed.floors ? String(parsed.floors) : undefined);
 
   // Process units with Navi Mumbai statutory cost calculations
-  const rawUnits = Array.isArray(parsed.units) && parsed.units.length > 0
-    ? parsed.units
-    : [
-        { bhk: 1, bhk_label: '1 BHK Spacious with Balcony', carpet_area_sqft: 445, agreement_value: 4500000, bathrooms: 2, balconies: 1, orientation: 'EAST' },
-        { bhk: 2, bhk_label: '2 BHK Grand with Sundeck', carpet_area_sqft: 650, agreement_value: 6800000, bathrooms: 2, balconies: 2, orientation: 'WEST' },
-      ];
+  const rawUnits = Array.isArray(parsed.units) ? parsed.units : [];
 
   const processedUnits: ExtractedBrochureUnit[] = rawUnits.map((u: any, idx: number) => {
-    const carpetAreaSqft = Number(u.carpet_area_sqft || u.carpetAreaSqft) || (u.bhk === 1 ? 440 : u.bhk === 2 ? 650 : 880);
-    const bhk = Number(u.bhk) || 2;
+    const carpetAreaSqft = Number(u.carpet_area_sqft || u.carpetAreaSqft) || 0;
+    const bhk = Number(u.bhk) || 0;
     const floorNumber = Number(u.floor_number || u.floorNumber) || Math.min(idx + 1, totalFloors);
     
     // Estimate agreement value if not specified in marketing brochure
     let agreementValue = Number(u.agreement_value || u.agreementValue) || 0;
-    if (agreementValue <= 0) {
-      const estimatedRate = parsed.basePricePerSqft ? Number(parsed.basePricePerSqft) : (bhk === 1 ? 9500 : 10500);
-      agreementValue = Math.round(carpetAreaSqft * estimatedRate);
+    if (agreementValue <= 0 && parsed.basePricePerSqft) {
+      agreementValue = Math.round(carpetAreaSqft * Number(parsed.basePricePerSqft));
     }
 
     // Calculate all-in statutory cost breakdown (Stamp Duty 6%, Registration ₹30k, GST 5%, Parking, Dev Charges)
@@ -269,15 +263,15 @@ export async function extractBrochureWithAI(
       societyDevCharges: 150000,
     });
 
-    const facingVal = u.orientation || u.facing || (idx % 2 === 0 ? 'EAST' : 'WEST');
+    const facingVal = u.orientation || u.facing || undefined;
 
     return {
-      unitNumber: u.unit_number || u.unitNumber || `Flat ${floorNumber}0${(idx % 4) + 1}`,
+      unitNumber: u.unit_number || u.unitNumber || '',
       bhk,
-      bhkLabel: u.bhk_label || u.bhkLabel || `${bhk} BHK`,
+      bhkLabel: u.bhk_label || u.bhkLabel || (bhk ? `${bhk} BHK` : ''),
       carpetAreaSqft,
-      bathrooms: Number(u.bathrooms) || (bhk >= 2 ? 2 : 1),
-      balconies: Number(u.balconies) || 1,
+      bathrooms: Number(u.bathrooms) || 0,
+      balconies: Number(u.balconies) || 0,
       floorNumber,
       totalFloors,
       facing: facingVal as any,
@@ -291,15 +285,10 @@ export async function extractBrochureWithAI(
       societyDevelopmentCharges: costBreakdown.societyDevCharges,
       allInTotalCost: costBreakdown.totalAllInCost,
       possessionStatus,
-      description: u.description || `${bhk} BHK layout with ${carpetAreaSqft} sq.ft usable carpet area and balcony.`,
+      description: u.description || undefined,
       featureHighlights: Array.isArray(u.featureHighlights || u.feature_highlights) && (u.featureHighlights || u.feature_highlights).length > 0
         ? (u.featureHighlights || u.feature_highlights)
-        : [
-            `${carpetAreaSqft} Sq.ft Usable Carpet Area`,
-            `${u.bathrooms || (bhk >= 2 ? 2 : 1)} Bathrooms with Branded Fittings`,
-            facingVal ? `${facingVal} Facing Entrance` : 'Vastu Compliant Layout',
-            possessionStatus === 'READY_TO_MOVE' ? 'Ready to Move' : 'Under Construction (MahaRERA Sanctioned)',
-          ],
+        : [],
     };
   });
 
@@ -315,16 +304,16 @@ export async function extractBrochureWithAI(
     for (const img of list) {
       const asset_type = (img.asset_type || defaultType) as any;
       const subtype = img.subtype || defaultSub;
-      const page_number = Number(img.page_number) || (displayPos === 'elevation' ? 3 : displayPos === 'location_map' ? 8 : 7);
+      const page_number = Number(img.page_number) || 0;
       const title = img.title || `${projectName} ${subtype.replace(/_/g, ' ')}`;
       const filename = img.filename || `${cleanProjSlug}_${subtype}.jpg`;
-      
+
       assetRecords.push({
         asset_id: `asset_${cleanProjSlug}_${sortCounter}`,
         asset_type,
         subtype,
         title,
-        file_url: img.file_url || `/uploads/${displayPos}/${filename}`,
+        file_url: img.file_url || '',
         page_number,
         original: true,
         display_position: displayPos,
@@ -340,6 +329,7 @@ export async function extractBrochureWithAI(
   };
 
   ingestCategory(rawImages.elevation, 'elevation', 'front_elevation', 'elevation');
+  ingestCategory(rawImages.floor_plans, 'floor_plan', 'floor_plan', 'floor_plan');
   ingestCategory(rawImages.ground_floor_plan, 'ground_floor_plan', 'ground_floor_parking_plan', 'ground_floor_plan');
   ingestCategory(rawImages.first_floor_plan, 'first_floor_plan', 'first_floor_layout', 'first_floor_plan');
   ingestCategory(rawImages.typical_floor_plan, 'typical_floor_plan', 'typical_floor_plan', 'typical_floor_plan');
@@ -349,34 +339,25 @@ export async function extractBrochureWithAI(
   ingestCategory(rawImages.amenities, 'amenity', 'amenity_view', 'amenities');
 
   // Floor plans list
-  const floorPlansList: ExtractedFloorPlanDetail[] = Array.isArray(parsed.floor_plans) && parsed.floor_plans.length > 0
-    ? parsed.floor_plans.map((fp: any) => ({
-        floor: fp.floor || 'Typical Floor',
-        plan_type: fp.plan_type || 'typical_floor_plan',
-        page_number: Number(fp.page_number) || 7,
+  const floorPlansList: ExtractedFloorPlanDetail[] = Array.isArray(parsed.floorPlans || parsed.floor_plans)
+    ? (parsed.floorPlans || parsed.floor_plans).map((fp: any) => ({
+        floor: fp.floor || '',
+        plan_type: fp.plan_type || fp.planType || 'floor_plan',
+        page_number: Number(fp.page_number || fp.pageNumber) || 0,
         image_asset: fp.image_asset,
-        orientation: fp.orientation || 'north',
+        orientation: fp.orientation || undefined,
         original_image: true,
         units: fp.units || [],
       }))
-    : [
-        { floor: 'Ground Floor', plan_type: 'ground_floor_plan', page_number: 5, original_image: true, orientation: 'north' },
-        { floor: '1st Floor', plan_type: 'first_floor_plan', page_number: 6, original_image: true, orientation: 'north' },
-        { floor: `Typical (2nd to ${totalFloors}th Floor)`, plan_type: 'typical_floor_plan', page_number: 7, original_image: true, orientation: 'north' },
-      ];
+    : [];
 
-  const transitConnectivity = Array.isArray(locObj.connectivity || parsed.transitConnectivity) 
+  const transitConnectivity = Array.isArray(locObj.connectivity || parsed.transitConnectivity)
     ? (locObj.connectivity || parsed.transitConnectivity).map((c: any) => ({
-        destination: c.destination || 'Metro Station',
-        timeOrDistance: c.distance_or_time || c.timeOrDistance || '5 mins walk',
-        type: c.type || 'METRO',
+        destination: c.destination,
+        timeOrDistance: c.distance_or_time || c.timeOrDistance,
+        type: c.type,
       }))
-    : [
-        { destination: "Metro Station", timeOrDistance: "3 mins walk", type: "METRO" },
-        { destination: "Central Park & Golf Course", timeOrDistance: "7 mins drive", type: "LANDMARK" },
-        { destination: "Railway Station", timeOrDistance: "10 mins drive", type: "RAILWAY" },
-        { destination: "International Airport (NMIA)", timeOrDistance: "15 mins drive", type: "AIRPORT" },
-      ];
+    : [];
 
   const extractedData: ExtractedBrochureData = {
     projectName,
@@ -389,40 +370,23 @@ export async function extractBrochureWithAI(
     totalFloors,
     podiumLevels: Number(parsed.podiumLevels || 0),
     hasOccupancyCertificate,
-    expectedPossessionDate: parsed.expectedPossessionDate || 'December 2026',
+    expectedPossessionDate: parsed.expectedPossessionDate || undefined,
     possessionStatus,
-    basePricePerSqft: Number(parsed.basePricePerSqft) || 6500,
-    plotDetails: projObj.plot_number || parsed.plotDetails || 'Clear Title CIDCO Transfer Plot',
-    structureType: parsed.structureType || 'Earthquake Resistant RCC Framed Structure',
-    floorPlateSummary: parsed.floorPlateSummary || `Typical floor plate with ${processedUnits.length} flats per floor, high-speed elevator lobby, and dual staircases.`,
-    shortDescription: parsed.shortDescription || `${projectName} located at ${microMarket} offering luxury 1 & 2 BHK configurations.`,
-    description: parsed.description || `${projectName} by ${developerName} is a prestigious ${elevation} development located at ${microMarket}, featuring architectural elevations, sanctioned floor plans, and modern lifestyle amenities.`,
-    amenities: Array.isArray(parsed.amenities) && parsed.amenities.length > 0 ? parsed.amenities : [
-      'Grand Lifestyle Clubhouse',
-      'Modern Gymnasium',
-      'Children Play Park & Sandpit',
-      'Branded High-Speed Passenger Elevators',
-      'Landscaped Podium Gardens',
-      '24x7 CCTV Security & Intercom',
-      'Power Backup for Common Areas',
-      'Rainwater Harvesting & Eco Water System',
-    ],
-    specifications: parsed.specifications || {
-      flooring: "2'x2' Vitrified flooring tiles in all rooms",
-      kitchen: "Granite kitchen platform with stainless steel sink & glazed dado tiles",
-      doors: "Decorative lamination finish main door with marble frame",
-      windows: "Powder Coated Aluminum sliding windows",
-      bathrooms: "Concealed plumbing with branded sanitary fittings",
-      electrical: "Concealed copper wiring with modular switches & TV points",
-      waterproofing: "Special terrace waterproofing with china chips"
-    },
+    basePricePerSqft: Number(parsed.basePricePerSqft) || 0,
+    plotDetails: projObj.plot_number || parsed.plotDetails || undefined,
+    structureType: parsed.structureType || undefined,
+    floorPlateSummary: parsed.floorPlateSummary || undefined,
+    shortDescription: parsed.shortDescription || undefined,
+    description: parsed.description || undefined,
+    amenities: Array.isArray(parsed.amenities) && parsed.amenities.length > 0 ? parsed.amenities : [],
+    specifications: parsed.specifications || {},
     transitConnectivity,
-    keyHighlights: Array.isArray(parsed.keyHighlights) && parsed.keyHighlights.length > 0 ? parsed.keyHighlights : [
-      `MahaRERA Registered: ${reraNumber}`,
-      `Elevation: ${elevation}`,
-      '3 mins walk to Metro Station',
-      'Clear Title CIDCO Transfer Plot',
-    ],
+    keyHighlights: Array.isArray(parsed.keyHighlights) && parsed.keyHighlights.length > 0
+      ? parsed.keyHighlights
+      : [
+          ...(reraNumber ? [`MahaRERA Registered: ${reraNumber}`] : []),
+          ...(elevation ? [`Elevation: ${elevation}`] : []),
+        ],
     developerSalesPocName: parsed.confidentialBrokerData?.developerSalesPocName || contactObj.sales_poc_name || contactObj.developerSalesPocName || parsed.developerSalesPocName || undefined,
     developerSalesPocPhone: parsed.confidentialBrokerData?.developerSalesPocPhone || (Array.isArray(contactObj.phone) ? contactObj.phone[0] : (typeof contactObj.phone === 'string' ? contactObj.phone : parsed.developerSalesPocPhone)) || undefined,
     developerEmail: parsed.confidentialBrokerData?.developerEmail || (Array.isArray(contactObj.email) ? contactObj.email[0] : (typeof contactObj.email === 'string' ? contactObj.email : parsed.developerEmail)) || undefined,
@@ -445,9 +409,9 @@ export async function extractBrochureWithAI(
       notes: 'Builder direct booking contact and site address are secured for internal CRM broker use only.',
     },
     classifiedMedia: {
-      elevationsCount: assetRecords.filter(a => a.display_position === 'elevation').length || 3,
-      floorPlansCount: assetRecords.filter(a => a.display_position.includes('floor_plan')).length || processedUnits.length,
-      hasMasterPlan: true,
+      elevationsCount: assetRecords.filter(a => a.display_position === 'elevation').length,
+      floorPlansCount: assetRecords.filter(a => a.display_position.includes('floor_plan')).length,
+      hasMasterPlan: assetRecords.some(a => a.display_position === 'master_plan'),
       elevations: assetRecords.filter(a => a.display_position === 'elevation').map(a => ({
         title: a.title,
         viewAngle: a.subtype,
@@ -455,12 +419,12 @@ export async function extractBrochureWithAI(
         description: a.description,
         page_number: a.page_number,
       })),
-      floorPlans: processedUnits.map(u => ({
-        bhk: u.bhk,
-        carpetAreaSqft: u.carpetAreaSqft,
-        title: `${u.bhk} BHK Architectural Layout`,
-        description: `${u.carpetAreaSqft} sq.ft RERA Carpet with Balcony`,
-        page_number: 7,
+      floorPlans: assetRecords.filter(a => a.display_position.includes('floor_plan')).map(a => ({
+        bhk: a.bhk ?? 0,
+        carpetAreaSqft: a.carpetAreaSqft ?? 0,
+        title: a.title,
+        description: a.description,
+        page_number: a.page_number,
       })),
       groundFloorPlans: assetRecords.filter(a => a.display_position === 'ground_floor_plan').map(a => ({ title: a.title, url: a.file_url, page_number: a.page_number })),
       firstFloorPlans: assetRecords.filter(a => a.display_position === 'first_floor_plan').map(a => ({ title: a.title, url: a.file_url, page_number: a.page_number })),
@@ -471,7 +435,7 @@ export async function extractBrochureWithAI(
     floorPlansList,
     pages: parsed.pages || [],
     extractionMetadata: parsed.extraction_metadata || {
-      total_pages: 8,
+      total_pages: 0,
       images_extracted: assetRecords.length,
       text_extracted: true,
       original_images_preserved: true,

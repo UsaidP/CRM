@@ -476,36 +476,33 @@ export function LeadsMatrixClient({ initialLeads = [] }: { initialLeads?: any[] 
           </div>
         </div>
       )}
-      {/* Top Banner & Hallmark Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 p-6 rounded-2xl bg-surface border border-border shadow-xs">
-        <div className="space-y-1.5">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-[10px] uppercase font-mono font-bold px-2.5 py-0.5 rounded-full bg-accent-soft text-accent-text border border-accent/20 flex items-center gap-1">
-              <Sparkles className="w-3 h-3 text-accent" /> Live Queue
+
+      {/* Header Bar */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3.5 sm:gap-4 pb-2 border-b border-border">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-accent-soft text-accent-text border border-accent/20 uppercase tracking-wider">
+              High-Velocity Telecaller Console
             </span>
-            <HallmarkStamp type="audit" label="Speed-to-lead &lt; 5m" />
-            <span className="text-[11px] font-mono text-content-muted hidden sm:inline-block">•</span>
-            <span className="text-[11px] font-medium text-content-muted hidden sm:inline-block">
-              {totalFirmLeads} Leads Total • {uncontactedCount} Uncontacted
-            </span>
+            <HallmarkStamp type="rera" label="RERA Compliant Log" />
           </div>
-          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-content font-display">
-            Leads &amp; Calling Desk
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-content font-display">
+            Inbound Leads &amp; Calling Desk
           </h1>
-          <p className="text-xs text-content-secondary font-medium max-w-2xl">
-            Unified firm-wide lead management, speed-to-lead queue dispatch, and automated follow-up reminder tracking.
+          <p className="text-xs text-content-secondary">
+            Multi-channel attribution, sub-15m speed-to-lead queue, and pipeline stages.
           </p>
         </div>
 
         {/* Action Buttons & View Mode Controls */}
-        <div className="flex flex-wrap items-center gap-2 shrink-0">
+        <div className="flex flex-wrap items-center gap-2">
           {/* View Mode Switcher */}
           <div className="flex items-center p-1 rounded-xl bg-surface-subtle border border-border h-9 shadow-2xs">
             <button
               type="button"
               onClick={() => setViewMode('kanban')}
               aria-pressed={viewMode === 'kanban'}
-              className={`h-7 px-2.5 rounded-lg flex items-center gap-1.5 text-xs transition-all cursor-pointer ${
+              className={`h-7 px-2 sm:px-2.5 rounded-lg flex items-center gap-1.5 text-xs transition-all cursor-pointer ${
                 viewMode === 'kanban' ? 'bg-accent text-white font-bold shadow-xs' : 'text-content-secondary hover:text-content font-medium'
               }`}
               title="Interactive Pipeline Kanban Board"
@@ -517,7 +514,7 @@ export function LeadsMatrixClient({ initialLeads = [] }: { initialLeads?: any[] 
               type="button"
               onClick={() => setViewMode('table')}
               aria-pressed={viewMode === 'table'}
-              className={`h-7 px-2.5 rounded-lg flex items-center gap-1.5 text-xs transition-all cursor-pointer ${
+              className={`h-7 px-2 sm:px-2.5 rounded-lg flex items-center gap-1.5 text-xs transition-all cursor-pointer ${
                 viewMode === 'table' ? 'bg-accent text-white font-bold shadow-xs' : 'text-content-secondary hover:text-content font-medium'
               }`}
               title="Dense Records Table"
@@ -529,7 +526,7 @@ export function LeadsMatrixClient({ initialLeads = [] }: { initialLeads?: any[] 
               type="button"
               onClick={() => setViewMode('console')}
               aria-pressed={viewMode === 'console'}
-              className={`h-7 px-2.5 rounded-lg flex items-center gap-1.5 text-xs transition-all cursor-pointer ${
+              className={`h-7 px-2 sm:px-2.5 rounded-lg flex items-center gap-1.5 text-xs transition-all cursor-pointer ${
                 viewMode === 'console' ? 'bg-accent text-white font-bold shadow-xs' : 'text-content-secondary hover:text-content font-medium'
               }`}
               title="Telecaller 40px Speed Calling Console"
@@ -554,11 +551,11 @@ export function LeadsMatrixClient({ initialLeads = [] }: { initialLeads?: any[] 
               type="button"
               onClick={handleSyncFallbacks}
               disabled={syncingFallbacks}
-              className="h-9 px-3 bg-surface hover:bg-surface-subtle border border-border hover:border-accent/40 text-content font-semibold text-xs rounded-xl shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              className="h-9 px-2.5 sm:px-3 bg-surface hover:bg-surface-subtle border border-border hover:border-accent/40 text-content font-semibold text-xs rounded-xl shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
               title="Auto-scan orphan leads and generate stage-aware fallback reminders"
             >
               <Sparkles className={`w-3.5 h-3.5 text-accent ${syncingFallbacks ? 'animate-spin' : ''}`} />
-              <span className="hidden sm:inline">{syncingFallbacks ? 'Syncing…' : 'Sync Reminders'}</span>
+              <span className="hidden sm:inline">{syncingFallbacks ? 'Syncing…' : 'Sync'}</span>
             </button>
 
             <button
@@ -586,7 +583,7 @@ export function LeadsMatrixClient({ initialLeads = [] }: { initialLeads?: any[] 
           {/* Primary Action Button */}
           <button
             onClick={() => setShowCallLogModal(true)}
-            className="h-9 px-4 bg-accent hover:bg-accent-hover text-white font-bold text-xs rounded-xl shadow-xs hover:shadow-sm transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
+            className="h-9 px-3.5 sm:px-4 bg-accent hover:bg-accent-hover text-white font-bold text-xs rounded-xl shadow-xs hover:shadow-sm transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
           >
             <PhoneCall className="w-4 h-4" />
             <span>+ Log Call</span>
@@ -612,90 +609,90 @@ export function LeadsMatrixClient({ initialLeads = [] }: { initialLeads?: any[] 
       )}
 
       {/* Unified Firm Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4">
         {/* Card 1: Total Leads */}
-        <div className="p-5 rounded-2xl bg-surface border border-border flex items-center justify-between shadow-2xs hover:border-border-strong hover:shadow-xs transition-all">
-          <div>
-            <p className="text-[11px] uppercase font-mono font-bold tracking-wider text-content-muted">Total Firm Leads</p>
-            <h3 className="text-2xl font-mono font-extrabold text-content mt-1">{totalFirmLeads}</h3>
-            <p className="text-[11px] text-content-secondary mt-0.5">Unified prospect pool</p>
+        <div className="p-3.5 sm:p-5 rounded-2xl bg-surface border border-border flex items-center justify-between shadow-2xs hover:border-border-strong hover:shadow-xs transition-all">
+          <div className="min-w-0 pr-1">
+            <p className="text-[10px] sm:text-[11px] uppercase font-mono font-bold tracking-wider text-content-muted truncate">Total Firm Leads</p>
+            <h3 className="text-xl sm:text-2xl font-mono font-extrabold text-content mt-1 truncate">{totalFirmLeads}</h3>
+            <p className="text-[10px] sm:text-[11px] text-content-secondary mt-0.5 truncate">Unified prospect pool</p>
           </div>
-          <div className="p-3 rounded-xl bg-surface-subtle text-accent border border-border shadow-2xs">
-            <Users className="w-5 h-5" />
+          <div className="p-2 sm:p-3 rounded-xl bg-surface-subtle text-accent border border-border shadow-2xs shrink-0">
+            <Users className="w-4 sm:w-5 h-4 sm:h-5" />
           </div>
         </div>
 
         {/* Card 2: Overdue Follow-ups */}
-        <div className={`p-5 rounded-2xl bg-surface border flex items-center justify-between shadow-2xs transition-all ${
+        <div className={`p-3.5 sm:p-5 rounded-2xl bg-surface border flex items-center justify-between shadow-2xs transition-all ${
           overdueRemindersCount > 0
             ? 'border-status-danger/40 hover:border-status-danger'
             : 'border-border hover:border-border-strong'
         }`}>
-          <div>
-            <p className={`text-[11px] uppercase font-mono font-bold tracking-wider ${
+          <div className="min-w-0 pr-1">
+            <p className={`text-[10px] sm:text-[11px] uppercase font-mono font-bold tracking-wider truncate ${
               overdueRemindersCount > 0 ? 'text-status-danger' : 'text-content-muted'
             }`}>Overdue Follow-ups</p>
-            <h3 className={`text-2xl font-mono font-extrabold mt-1 ${
+            <h3 className={`text-xl sm:text-2xl font-mono font-extrabold mt-1 truncate ${
               overdueRemindersCount > 0 ? 'text-status-danger' : 'text-content'
             }`}>{overdueRemindersCount}</h3>
-            <p className="text-[11px] text-content-secondary mt-0.5">
-              {overdueRemindersCount > 0 ? 'Pending urgent callbacks' : 'All follow-ups current'}
+            <p className="text-[10px] sm:text-[11px] text-content-secondary mt-0.5 truncate">
+              {overdueRemindersCount > 0 ? 'Pending callbacks' : 'All current'}
             </p>
           </div>
-          <div className={`p-3 rounded-xl border shadow-2xs ${
+          <div className={`p-2 sm:p-3 rounded-xl border shadow-2xs shrink-0 ${
             overdueRemindersCount > 0
               ? 'bg-status-danger-surface text-status-danger border-status-danger/30'
               : 'bg-status-success-surface text-status-success border-status-success/30'
           }`}>
-            {overdueRemindersCount > 0 ? <AlertCircle className="w-5 h-5" /> : <CheckCircle2 className="w-5 h-5" />}
+            {overdueRemindersCount > 0 ? <AlertCircle className="w-4 sm:w-5 h-4 sm:h-5" /> : <CheckCircle2 className="w-4 sm:w-5 h-4 sm:h-5" />}
           </div>
         </div>
 
         {/* Card 3: Uncontacted Leads */}
-        <div className={`p-5 rounded-2xl bg-surface border flex items-center justify-between shadow-2xs transition-all ${
+        <div className={`p-3.5 sm:p-5 rounded-2xl bg-surface border flex items-center justify-between shadow-2xs transition-all ${
           uncontactedCount > 0
             ? 'border-status-warning/40 hover:border-status-warning'
             : 'border-border hover:border-border-strong'
         }`}>
-          <div>
-            <p className={`text-[11px] uppercase font-mono font-bold tracking-wider ${
+          <div className="min-w-0 pr-1">
+            <p className={`text-[10px] sm:text-[11px] uppercase font-mono font-bold tracking-wider truncate ${
               uncontactedCount > 0 ? 'text-status-warning' : 'text-content-muted'
             }`}>Uncontacted Leads</p>
-            <h3 className={`text-2xl font-mono font-extrabold mt-1 ${
+            <h3 className={`text-xl sm:text-2xl font-mono font-extrabold mt-1 truncate ${
               uncontactedCount > 0 ? 'text-status-warning' : 'text-content'
             }`}>{uncontactedCount}</h3>
-            <p className="text-[11px] text-content-secondary mt-0.5">
+            <p className="text-[10px] sm:text-[11px] text-content-secondary mt-0.5 truncate">
               {uncontactedCount > 0 ? 'Sub-15m SLA pending' : 'Zero queue backlog'}
             </p>
           </div>
-          <div className={`p-3 rounded-xl border shadow-2xs ${
+          <div className={`p-2 sm:p-3 rounded-xl border shadow-2xs shrink-0 ${
             uncontactedCount > 0
               ? 'bg-status-warning-surface text-status-warning border-status-warning/30'
               : 'bg-surface-subtle text-content-muted border-border'
           }`}>
-            <Zap className="w-5 h-5" />
+            <Zap className="w-4 sm:w-5 h-4 sm:h-5" />
           </div>
         </div>
 
         {/* Card 4: Live Portal Views */}
-        <div className="p-5 rounded-2xl bg-surface border border-border flex items-center justify-between shadow-2xs hover:border-border-strong hover:shadow-xs transition-all">
-          <div>
-            <p className="text-[11px] uppercase font-mono font-bold tracking-wider text-content-muted">Live Portal Activity</p>
-            <h3 className="text-2xl font-mono font-extrabold text-content mt-1">{livePortalCount}</h3>
-            <p className="text-[11px] text-content-secondary mt-0.5">Active presentation views</p>
+        <div className="p-3.5 sm:p-5 rounded-2xl bg-surface border border-border flex items-center justify-between shadow-2xs hover:border-border-strong hover:shadow-xs transition-all">
+          <div className="min-w-0 pr-1">
+            <p className="text-[10px] sm:text-[11px] uppercase font-mono font-bold tracking-wider text-content-muted truncate">Live Portal Activity</p>
+            <h3 className="text-xl sm:text-2xl font-mono font-extrabold text-content mt-1 truncate">{livePortalCount}</h3>
+            <p className="text-[10px] sm:text-[11px] text-content-secondary mt-0.5 truncate">Active deck views</p>
           </div>
-          <div className="p-3 rounded-xl bg-status-success-surface text-status-success border border-status-success/30 shadow-2xs">
-            <Flame className="w-5 h-5" />
+          <div className="p-2 sm:p-3 rounded-xl bg-status-success-surface text-status-success border border-status-success/30 shadow-2xs shrink-0">
+            <Flame className="w-4 sm:w-5 h-4 sm:h-5" />
           </div>
         </div>
       </div>
 
       {/* 🎯 TARGET CONNECT NEXT COMMAND BANNER */}
       {topConnectNext && (
-        <div className="p-6 rounded-2xl bg-surface border-2 border-accent/40 shadow-md relative overflow-hidden ring-1 ring-accent/20">
+        <div className="p-4 sm:p-6 rounded-2xl bg-surface border-2 border-accent/40 shadow-md relative overflow-hidden ring-1 ring-accent/20">
           <div className="absolute top-0 right-0 transform translate-x-8 -translate-y-8 w-48 h-48 bg-accent/10 rounded-full blur-3xl pointer-events-none" />
 
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 relative z-10">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 sm:gap-5 relative z-10">
             <div className="space-y-2.5">
               <div className="flex flex-wrap items-center gap-2.5">
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-accent text-white shadow-xs">
@@ -754,7 +751,7 @@ export function LeadsMatrixClient({ initialLeads = [] }: { initialLeads?: any[] 
             </div>
 
             {/* Quick Action Trigger Buttons */}
-            <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 w-full lg:w-auto shrink-0">
               {topConnectNext.phoneE164 && (
                 <>
                   <a
@@ -765,7 +762,7 @@ export function LeadsMatrixClient({ initialLeads = [] }: { initialLeads?: any[] 
                     )}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="px-4 py-2.5 bg-status-success hover:opacity-90 text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center gap-2 cursor-pointer"
+                    className="flex-1 sm:flex-none justify-center px-3.5 sm:px-4 py-2.5 bg-status-success hover:opacity-90 text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center gap-2 cursor-pointer"
                   >
                     <MessageSquare className="w-4 h-4" />
                     <span>WhatsApp Now</span>
@@ -773,7 +770,7 @@ export function LeadsMatrixClient({ initialLeads = [] }: { initialLeads?: any[] 
 
                   <a
                     href={`tel:${topConnectNext.phoneE164}`}
-                    className="px-4 py-2.5 bg-accent hover:bg-accent-hover text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center gap-2 cursor-pointer"
+                    className="flex-1 sm:flex-none justify-center px-3.5 sm:px-4 py-2.5 bg-accent hover:bg-accent-hover text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center gap-2 cursor-pointer"
                   >
                     <Phone className="w-4 h-4" />
                     <span>Call Now</span>
@@ -783,7 +780,7 @@ export function LeadsMatrixClient({ initialLeads = [] }: { initialLeads?: any[] 
 
               <button
                 onClick={() => setQuickReminderLead(topConnectNext.fullLead)}
-                className="px-3.5 py-2.5 bg-surface hover:bg-surface-subtle border border-border text-content text-xs font-bold rounded-xl transition-all flex items-center gap-2 shadow-2xs cursor-pointer"
+                className="flex-1 sm:flex-none justify-center px-3.5 py-2.5 bg-surface hover:bg-surface-subtle border border-border text-content text-xs font-bold rounded-xl transition-all flex items-center gap-2 shadow-2xs cursor-pointer"
               >
                 <Clock className="w-4 h-4 text-accent" />
                 <span>Set Reminder</span>
@@ -801,13 +798,11 @@ export function LeadsMatrixClient({ initialLeads = [] }: { initialLeads?: any[] 
         </div>
       )}
 
-
-
       {/* Filter Toolbar & Sort Options */}
-      <div className="p-4 rounded-2xl bg-surface border border-border shadow-2xs space-y-3.5">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+      <div className="p-3 sm:p-4 rounded-2xl bg-surface border border-border shadow-2xs space-y-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-3">
           {/* Search Box */}
-          <div className="md:col-span-2 relative flex items-center">
+          <div className="sm:col-span-2 lg:col-span-2 relative flex items-center">
             <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-content-muted pointer-events-none" />
             <input
               type="text"
@@ -884,26 +879,23 @@ export function LeadsMatrixClient({ initialLeads = [] }: { initialLeads?: any[] 
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <select
-                  disabled={bulkUpdating}
-                  onChange={(e) => {
-                    if (e.target.value) {
-                      handleBulkStageChange(e.target.value);
-                      e.target.value = '';
-                    }
-                  }}
-                  defaultValue=""
-                  className="px-3 py-1.5 rounded-xl bg-white text-slate-900 font-bold text-xs cursor-pointer shadow-xs focus:outline-none"
-                >
-                  <option value="" disabled>
-                    {bulkUpdating ? 'Updating Status...' : '⚡ Bulk Change Status to...'}
-                  </option>
-                  {STAGE_OPTIONS.filter((s) => s.value !== 'ALL').map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
+                <div className="min-w-[200px]">
+                  <CustomSelect
+                    size="xs"
+                    disabled={bulkUpdating}
+                    placeholder={bulkUpdating ? 'Updating Status…' : '⚡ Bulk Change Stage to…'}
+                    value=""
+                    onChange={(val) => {
+                      if (val) handleBulkStageChange(val);
+                    }}
+                    triggerClassName="bg-white text-slate-900 border-white text-xs font-bold py-1 px-2.5 rounded-xl shadow-xs"
+                    options={STAGE_OPTIONS.filter((s) => s.value !== 'ALL').map((opt) => ({
+                      value: opt.value,
+                      label: opt.label,
+                      dotColor: opt.dotColor,
+                    }))}
+                  />
+                </div>
                 <button
                   onClick={() => setSelectedLeadIds([])}
                   className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition-colors cursor-pointer"
@@ -914,8 +906,8 @@ export function LeadsMatrixClient({ initialLeads = [] }: { initialLeads?: any[] 
             </div>
           )}
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
+          <div className="overflow-x-auto touch-scroll">
+            <table className="w-full text-left text-xs border-collapse min-w-[760px]">
               <thead>
                 <tr className="border-b border-border bg-surface-subtle text-content-secondary font-bold uppercase tracking-wider text-[11px]">
                   <th className="py-4 px-4 w-10 text-center" onClick={(e) => e.stopPropagation()}>

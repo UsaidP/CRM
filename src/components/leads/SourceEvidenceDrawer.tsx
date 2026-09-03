@@ -284,26 +284,26 @@ export function SourceEvidenceDrawer({
         aria-hidden="true"
       />
 
-      <div className="fixed inset-y-0 right-0 z-[70] w-full max-w-2xl bg-surface border-l border-border shadow-2xl overflow-y-auto animate-in slide-in-from-right duration-200 text-content flex flex-col font-sans">
+      <div className="fixed inset-y-0 right-0 z-[70] w-full max-w-full sm:max-w-xl md:max-w-2xl bg-surface border-l border-border shadow-2xl overflow-y-auto touch-scroll h-dvh max-h-dvh pb-safe animate-in slide-in-from-right duration-200 text-content flex flex-col font-sans">
         {/* Sticky Header */}
-        <div className="sticky top-0 z-10 px-6 py-5 bg-surface/95 backdrop-blur border-b border-border flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-accent-soft border border-accent/20 rounded-xl text-accent">
+        <div className="sticky top-0 z-10 px-4 sm:px-6 py-3.5 sm:py-5 bg-surface/95 backdrop-blur border-b border-border flex items-center justify-between">
+          <div className="flex items-center gap-3 min-w-0 pr-2">
+            <div className="p-2 sm:p-2.5 bg-accent-soft border border-accent/20 rounded-xl text-accent shrink-0">
               {getSourceIcon(lead.leadSource)}
             </div>
-            <div>
-              <h2 className="text-base font-bold text-content flex items-center gap-2">
-                {lead.fullName || 'Unnamed Prospect'}
+            <div className="min-w-0">
+              <h2 className="text-sm sm:text-base font-bold text-content flex items-center gap-2 truncate">
+                <span className="truncate">{lead.fullName || 'Unnamed Prospect'}</span>
                 {getConfidenceBadge(lead.sourceConfidence)}
               </h2>
-              <p className="text-xs text-content-muted">
+              <p className="text-[11px] sm:text-xs text-content-muted truncate">
                 Person ID: <span className="font-mono text-content-secondary">{lead.contactId || lead.id.substring(0, 8)}</span> • Phone: <span className="font-mono text-accent-text font-semibold">{lead.phoneE164 || 'None'}</span>
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-content-muted hover:text-content hover:bg-surface-subtle transition-colors"
+            className="p-1.5 rounded-lg text-content-muted hover:text-content hover:bg-surface-subtle transition-colors shrink-0"
             aria-label="Close details"
           >
             <X className="w-5 h-5" />
@@ -311,7 +311,7 @@ export function SourceEvidenceDrawer({
         </div>
 
         {/* Content Area */}
-        <div className="p-6 space-y-6 flex-1">
+        <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 flex-1">
           
           {/* Feedback Message */}
           {feedbackMsg && (

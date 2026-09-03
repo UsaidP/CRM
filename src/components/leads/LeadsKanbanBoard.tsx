@@ -132,6 +132,7 @@ export function LeadsKanbanBoard({
   const [updatingStageLeadId, setUpdatingStageLeadId] = useState<string | null>(null);
   const [draggedLeadId, setDraggedLeadId] = useState<string | null>(null);
   const [dragOverStageId, setDragOverStageId] = useState<string | null>(null);
+  const [selectedMobileStage, setSelectedMobileStage] = useState<string>('ALL');
 
   const handleMoveStage = async (leadId: string, newStage: string, e?: React.MouseEvent | React.ChangeEvent | React.DragEvent) => {
     if (e && 'stopPropagation' in e) {
@@ -193,25 +194,68 @@ export function LeadsKanbanBoard({
     }
   };
 
-  return (
-    <div className="overflow-x-auto pb-6">
-      <div className="flex gap-4 min-w-max">
-        {KANBAN_STAGES.map((stage) => {
-          const stageLeads = leads.filter((l) => (l.currentStage || 'new_uncontacted') === stage.id);
-          const isTargetedByDrag = dragOverStageId === stage.id;
+  const displayedStages = selectedMobileStage === 'ALL'
+    ? KANBAN_STAGES
+    : KANBAN_STAGES.filter((s) => s.id === selectedMobileStage);
 
+  return (
+    <div className="space-y-3 pb-6">
+      {/* 📱 Mobile Stage Focus Switcher Bar (< 1024px) */}
+      <div className="lg:hidden flex items-center gap-1.5 p-1.5 bg-surface rounded-2xl border border-border overflow-x-auto touch-scroll no-scrollbar shadow-2xs">
+        <button
+          type="button"
+          onClick={() => setSelectedMobileStage('ALL')}
+          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
+            selectedMobileStage === 'ALL'
+              ? 'bg-accent text-white shadow-xs'
+              : 'text-content-muted hover:text-content hover:bg-surface-subtle'
+          }`}
+        >
+          All Stages ({leads.length})
+        </button>
+        {KANBAN_STAGES.map((stage) => {
+          const count = leads.filter((l) => (l.currentStage || 'new_uncontacted') === stage.id).length;
+          const isSelected = selectedMobileStage === stage.id;
           return (
-            <div
+            <button
               key={stage.id}
-              onDragOver={(e) => handleDragOver(stage.id, e)}
-              onDragLeave={(e) => handleDragLeave(stage.id, e)}
-              onDrop={(e) => handleDrop(stage.id, e)}
-              className={`w-80 flex flex-col rounded-2xl bg-surface border shadow-2xs overflow-hidden transition-all duration-200 ${
-                isTargetedByDrag
-                  ? 'border-accent ring-2 ring-accent/30 bg-accent-soft/10 shadow-md scale-[1.01]'
-                  : 'border-border'
+              type="button"
+              onClick={() => setSelectedMobileStage(stage.id)}
+              className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer ${
+                isSelected
+                  ? 'bg-accent text-white shadow-xs'
+                  : 'text-content-muted hover:text-content hover:bg-surface-subtle'
               }`}
             >
+              <span className={`w-2 h-2 rounded-full ${stage.dotColor} shrink-0`} />
+              <span>{stage.shortLabel}</span>
+              <span className="font-mono text-[10px] opacity-80">({count})</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Main Kanban Columns Container */}
+      <div className={`${selectedMobileStage === 'ALL' ? 'overflow-x-auto touch-scroll' : ''}`}>
+        <div className={`flex gap-4 ${selectedMobileStage === 'ALL' ? 'min-w-max lg:min-w-0' : 'flex-col lg:flex-row min-w-0'}`}>
+          {displayedStages.map((stage) => {
+            const stageLeads = leads.filter((l) => (l.currentStage || 'new_uncontacted') === stage.id);
+            const isTargetedByDrag = dragOverStageId === stage.id;
+
+            return (
+              <div
+                key={stage.id}
+                onDragOver={(e) => handleDragOver(stage.id, e)}
+                onDragLeave={(e) => handleDragLeave(stage.id, e)}
+                onDrop={(e) => handleDrop(stage.id, e)}
+                className={`${
+                  selectedMobileStage === 'ALL' ? 'w-72 sm:w-80' : 'w-full lg:w-80'
+                } flex flex-col rounded-2xl bg-surface border shadow-2xs overflow-hidden transition-all duration-200 shrink-0 ${
+                  isTargetedByDrag
+                    ? 'border-accent ring-2 ring-accent/30 bg-accent-soft/10 shadow-md scale-[1.01]'
+                    : 'border-border'
+                }`}
+              >
               {/* Stage Column Header */}
               <div className="p-3.5 border-b border-border bg-surface-subtle/50 flex items-center justify-between gap-2">
                 <div className="space-y-0.5 min-w-0">
@@ -483,6 +527,7 @@ export function LeadsKanbanBoard({
             </div>
           );
         })}
+        </div>
       </div>
     </div>
   );

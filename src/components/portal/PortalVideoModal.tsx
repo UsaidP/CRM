@@ -51,7 +51,7 @@ export function PortalVideoModal({
               <h3 id="video-modal-title" className="text-sm sm:text-base font-bold text-slate-900 font-serif truncate">
                 {activeVideoModal.title}
               </h3>
-              <p id="video-modal-description" className="text-xs text-[#8C641E] font-medium truncate">
+              <p id="video-modal-description" className="text-xs text-gold font-medium truncate">
                 Presented by {activeVideoModal.hostName} ({activeVideoModal.hostRole})
               </p>
             </div>
@@ -85,7 +85,7 @@ export function PortalVideoModal({
               href="https://www.youtube.com/@zamzamproperties6354"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-50 border border-red-200 text-red-700 hover:bg-red-100 text-xs font-semibold transition-all shadow-2xs"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-50 border border-red-200 text-red-700 hover:bg-red-100 text-xs font-semibold transition-[background-color,border-color,box-shadow,transform] duration-200 shadow-2xs"
             >
               <YoutubeIcon className="w-3.5 h-3.5 text-red-600" />
               <span>YouTube Channel</span>
@@ -94,7 +94,7 @@ export function PortalVideoModal({
               href="https://www.instagram.com/zamzamproperties5531/"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-pink-50 border border-pink-200 text-pink-700 hover:bg-pink-100 text-xs font-semibold transition-all shadow-2xs"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-pink-50 border border-pink-200 text-pink-700 hover:bg-pink-100 text-xs font-semibold transition-[background-color,border-color,box-shadow,transform] duration-200 shadow-2xs"
             >
               <InstagramIcon className="w-3.5 h-3.5 text-pink-600" />
               <span>Instagram Reels</span>
@@ -106,7 +106,7 @@ export function PortalVideoModal({
             whileTap={{ scale: 0.98 }}
             type="button"
             onClick={() => onScheduleVisit(activeVideoModal.unit)}
-            className="px-4.5 py-2.5 rounded-xl bg-gradient-to-r from-[#B38A38] to-[#8C641E] text-white font-bold text-xs shadow-sm flex items-center gap-1.5 cursor-pointer hover:brightness-105 transition-all"
+            className="px-4.5 py-2.5 rounded-xl bg-gradient-to-r from-gold-light to-gold text-white font-bold text-xs shadow-sm flex items-center gap-1.5 cursor-pointer hover:brightness-105 transition-[background-color,border-color,box-shadow,transform] duration-200"
           >
             <Calendar className="w-3.5 h-3.5" />
             <span>Schedule Physical Site Visit</span>

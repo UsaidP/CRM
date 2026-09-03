@@ -8,7 +8,16 @@ module.exports = {
   darkMode: 'class',
   theme: {
     extend: {
+      screens: {
+        xs: "400px",
+      },
       colors: {
+        // Portal gold accent tokens (verified-advisory brand gold)
+        gold: {
+          DEFAULT: "#8C641E",
+          light: "#B38A38",
+          lighter: "#DFBA73",
+        },
         // Dynamic Canvas & Background
         canvas: "var(--color-canvas)",
         background: "var(--color-canvas)",
@@ -144,6 +153,7 @@ module.exports = {
         "timer-lg": ["JetBrains Mono", "Geist Mono", "monospace"],
         display: ["Plus Jakarta Sans", "sans-serif"],
         sans: ["Plus Jakarta Sans", "Inter", "sans-serif"],
+        serif: ["var(--font-serif)", "Playfair Display", "Cormorant Garamond", "Georgia", "serif"],
         mono: ["JetBrains Mono", "Geist Mono", "monospace"],
       },
       fontSize: {
@@ -156,6 +166,10 @@ module.exports = {
         "label-bold": ["12px", { lineHeight: "16px", letterSpacing: "0.05em", fontWeight: "600" }],
       },
       spacing: {
+        "4.5": "1.125rem",
+        "5.5": "1.375rem",
+        13: "3.25rem",
+        18: "4.5rem",
         "row-height": "40px",
         gutter: "16px",
         "margin-page": "24px",

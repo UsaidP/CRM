@@ -89,6 +89,9 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     if ('amenities' in validated) data.amenitiesJson = JSON.stringify(validated.amenities || []);
     if ('keyHighlights' in validated) data.keyHighlightsJson = JSON.stringify(validated.keyHighlights || []);
     if ('mediaGallery' in validated) data.mediaGalleryJson = JSON.stringify(validated.mediaGallery || []);
+    if ('elevationImages' in validated) data.elevationImagesJson = JSON.stringify(validated.elevationImages || []);
+    if ('floorPlanImages' in validated) data.floorPlanImagesJson = JSON.stringify(validated.floorPlanImages || []);
+    if ('brochurePhotos' in validated) data.brochurePhotosJson = JSON.stringify(validated.brochurePhotos || []);
 
     const project = await prisma.developerProject.update({ where: { id }, data });
     return NextResponse.json({

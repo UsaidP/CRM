@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/db/prisma';
+import { withDbRetry } from '@/lib/db/db-retry';
 import { assessUnitFreshness } from '@/lib/domain/verification-engine';
 import { evaluateEngagementTier } from '@/lib/domain/portal-generator';
 import { rankFirmLeadsForNextConnect } from '@/lib/domain/prioritization-engine';
@@ -39,58 +40,60 @@ export default async function DashboardPage() {
       rawPortals,
       rawVisits,
       rawReminders
-    ] = await Promise.all([
-      prisma.developerProject.count(),
-      prisma.propertyUnit.count(),
-      prisma.lead.count(),
-      prisma.inboundCampaign.count(),
-      prisma.clientPortal.count(),
-      prisma.dealTransaction.count(),
-      prisma.dealTransaction.findMany({
-        include: {
-          lead: true,
-          propertyUnit: { include: { project: true } },
-          closingBroker: true,
-        },
-        orderBy: { bookingDate: 'desc' },
-      }),
-      prisma.propertyUnit.findMany({
-        include: { project: true, verifiedBy: true },
-        orderBy: { updatedAt: 'desc' },
-      }),
-      prisma.lead.findMany({
-        include: {
-          campaign: true,
-          assignedBroker: true,
-          requirements: true,
-          portals: { include: { telemetryLogs: true } },
-          reminders: {
-            where: { status: { in: ['PENDING', 'SNOOZED'] } },
-            orderBy: { dueAt: 'asc' },
+    ] = await withDbRetry(async () => {
+      return Promise.all([
+        prisma.developerProject.count(),
+        prisma.propertyUnit.count(),
+        prisma.lead.count(),
+        prisma.inboundCampaign.count(),
+        prisma.clientPortal.count(),
+        prisma.dealTransaction.count(),
+        prisma.dealTransaction.findMany({
+          include: {
+            lead: true,
+            propertyUnit: { include: { project: true } },
+            closingBroker: true,
           },
-          communications: {
-            orderBy: { createdAt: 'desc' },
-            take: 3,
+          orderBy: { bookingDate: 'desc' },
+        }),
+        prisma.propertyUnit.findMany({
+          include: { project: true, verifiedBy: true },
+          orderBy: { updatedAt: 'desc' },
+        }),
+        prisma.lead.findMany({
+          include: {
+            campaign: true,
+            assignedBroker: true,
+            requirements: true,
+            portals: { include: { telemetryLogs: true } },
+            reminders: {
+              where: { status: { in: ['PENDING', 'SNOOZED'] } },
+              orderBy: { dueAt: 'asc' },
+            },
+            communications: {
+              orderBy: { createdAt: 'desc' },
+              take: 3,
+            },
           },
-        },
-        orderBy: { createdAt: 'desc' },
-      }),
-      prisma.clientPortal.findMany({
-        include: { lead: true, telemetryLogs: true, portalUnits: { include: { propertyUnit: { include: { project: true } } } } },
-        orderBy: { updatedAt: 'desc' },
-      }),
-      prisma.siteVisit.findMany({
-        include: { lead: true, assignedBroker: true },
-        orderBy: { scheduledDate: 'asc' },
-      }),
-      prisma.leadReminder.findMany({
-        where: { status: { in: ['PENDING', 'SNOOZED'] } },
-        include: {
-          lead: true,
-        },
-        orderBy: { dueAt: 'asc' },
-      }),
-    ]);
+          orderBy: { createdAt: 'desc' },
+        }),
+        prisma.clientPortal.findMany({
+          include: { lead: true, telemetryLogs: true, portalUnits: { include: { propertyUnit: { include: { project: true } } } } },
+          orderBy: { updatedAt: 'desc' },
+        }),
+        prisma.siteVisit.findMany({
+          include: { lead: true, assignedBroker: true },
+          orderBy: { scheduledDate: 'asc' },
+        }),
+        prisma.leadReminder.findMany({
+          where: { status: { in: ['PENDING', 'SNOOZED'] } },
+          include: {
+            lead: true,
+          },
+          orderBy: { dueAt: 'asc' },
+        }),
+      ]);
+    });
 
     projectCount = pCount;
     unitCount = uCount;

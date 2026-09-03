@@ -5,8 +5,9 @@ import { prisma } from '@/lib/db/prisma';
 import { parseBrochureAsync, parseBrochureText } from '@/lib/services/brochure-parser-service';
 import { downloadAndSaveMahaReraCertificate } from '@/lib/services/maharera-service';
 import { extractAndProcessBrochure } from '@/lib/services/brochure-extractor';
+import { persistBrochureExtraction } from '@/lib/services/brochure-persistence';
 import { uploadMediaAsset } from '@/lib/services/cloud-media-service';
-import { resolveAssetUrl, parseGalleryUrls } from '@/lib/inventory-media';
+import { resolveAssetUrl } from '@/lib/inventory-media';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -190,43 +191,28 @@ export async function POST(req: Request) {
         }
       );
 
-      // Server-side atomic sync if projectId was provided
+      // Server-side atomic sync if projectId was provided.
+      // persistBrochureExtraction() is the single authoritative media writer:
+      // structured fields, metadata-preserving gallery merge, and BHK-matched
+      // unit pre-fill. Scalar spec sync happens separately below.
       let updatedProject: any = null;
       if (projectId) {
         try {
-          const existingProject = await prisma.developerProject.findUnique({
+          const { project: persistedProject } = await persistBrochureExtraction(projectId, mediaResult);
+
+          updatedProject = await prisma.developerProject.update({
             where: { id: projectId },
+            data: {
+              totalTowers: extracted.totalTowers ? parseInt(String(extracted.totalTowers), 10) : undefined,
+              totalFloors: extracted.totalFloors ? parseInt(String(extracted.totalFloors), 10) : undefined,
+              basePricePerSqft: extracted.basePricePerSqft ? parseFloat(String(extracted.basePricePerSqft)) : undefined,
+              amenitiesJson: extracted.amenities?.length ? JSON.stringify(extracted.amenities) : undefined,
+              keyHighlightsJson: extracted.keyHighlights?.length ? JSON.stringify(extracted.keyHighlights) : undefined,
+              developerSalesPocName: extracted.confidentialBrokerData?.developerSalesPocName || undefined,
+              developerSalesPocPhone: extracted.confidentialBrokerData?.developerSalesPocPhone || undefined,
+            },
           });
-
-          if (existingProject) {
-            const existingUrls = parseGalleryUrls(existingProject.mediaGalleryJson);
-            const extractedUrls = [
-              ...(mediaResult.elevations || []).map(resolveAssetUrl),
-              resolveAssetUrl(mediaResult.masterPlan),
-              ...(mediaResult.floorPlans || []).map(resolveAssetUrl),
-            ].filter(Boolean);
-
-            const mergedGallery = Array.from(new Set([...existingUrls, ...extractedUrls]));
-            const newCover = existingProject.coverImageUrl || resolveAssetUrl(mediaResult.elevations?.[0]) || extracted.coverImageUrl;
-            const newMasterPlan = existingProject.masterPlanUrl || resolveAssetUrl(mediaResult.masterPlan) || extracted.masterPlanUrl;
-
-            updatedProject = await prisma.developerProject.update({
-              where: { id: projectId },
-              data: {
-                mediaGalleryJson: JSON.stringify(mergedGallery),
-                coverImageUrl: newCover || undefined,
-                masterPlanUrl: newMasterPlan || undefined,
-                brochureUrl: brochureUrl || existingProject.brochureUrl,
-                totalTowers: extracted.totalTowers ? parseInt(String(extracted.totalTowers), 10) : existingProject.totalTowers,
-                totalFloors: extracted.totalFloors ? parseInt(String(extracted.totalFloors), 10) : existingProject.totalFloors,
-                basePricePerSqft: extracted.basePricePerSqft ? parseFloat(String(extracted.basePricePerSqft)) : existingProject.basePricePerSqft,
-                amenitiesJson: extracted.amenities?.length ? JSON.stringify(extracted.amenities) : existingProject.amenitiesJson,
-                keyHighlightsJson: extracted.keyHighlights?.length ? JSON.stringify(extracted.keyHighlights) : existingProject.keyHighlightsJson,
-                developerSalesPocName: extracted.confidentialBrokerData?.developerSalesPocName || existingProject.developerSalesPocName,
-                developerSalesPocPhone: extracted.confidentialBrokerData?.developerSalesPocPhone || existingProject.developerSalesPocPhone,
-              },
-            });
-          }
+          void persistedProject;
         } catch (syncErr: any) {
           console.warn('[BROCHURE] Server-side atomic project sync warning:', syncErr.message);
         }
@@ -241,6 +227,7 @@ export async function POST(req: Request) {
           reraVerification,
           elevations: mediaResult.elevations,
           floorPlans: mediaResult.floorPlans,
+          brochurePhotos: mediaResult.brochurePhotos,
           masterPlan: mediaResult.masterPlan,
           assetRecords: mediaResult.assetRecords || extracted.assetRecords || [],
           confidentialBrokerData: extracted.confidentialBrokerData,
@@ -274,6 +261,16 @@ export async function POST(req: Request) {
           confidentialBrokerData: extracted.confidentialBrokerData,
         }
       );
+
+      // Persist structured media + unit pre-fill when a project context exists
+      // (the extractor is pure; persistence lives in the shared helper).
+      if (projectId) {
+        try {
+          await persistBrochureExtraction(projectId, mediaResult);
+        } catch (persistErr: any) {
+          console.warn('[BROCHURE] Pasted-text media persistence warning:', persistErr.message);
+        }
+      }
 
       return NextResponse.json({
         success: true,

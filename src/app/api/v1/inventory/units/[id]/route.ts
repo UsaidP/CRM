@@ -104,6 +104,9 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     if ('floorPlanUrl' in validated) data.floorPlanUrl = validated.floorPlanUrl || null;
     if ('mediaGallery' in validated) data.mediaGalleryJson = JSON.stringify(validated.mediaGallery || []);
     if ('photoGallery' in validated) data.photoGalleryJson = JSON.stringify(validated.photoGallery || []);
+    if ('elevationImages' in validated) data.elevationImagesJson = JSON.stringify(validated.elevationImages || []);
+    if ('floorPlanImages' in validated) data.floorPlanImagesJson = JSON.stringify(validated.floorPlanImages || []);
+    if ('videos' in validated) data.videosJson = JSON.stringify(validated.videos || []);
     if ('videoReelUrl' in validated) data.videoReelUrl = validated.videoReelUrl || null;
     data.agreementValue = costResult.agreementValue;
     data.stampDutyRate = costResult.stampDutyRate;
@@ -116,10 +119,44 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     data.lastVerifiedAt = new Date();
 
     const unit = await prisma.propertyUnit.update({ where: { id }, data, include: { project: true } });
+
+    // Optional audit log for status/price or media modifications if user ID available
+    const statusChanged = validated.verificationStatus && validated.verificationStatus !== existing.verificationStatus;
+    const priceChanged = validated.agreementValue && validated.agreementValue !== existing.agreementValue;
+    const mediaChanged =
+      'elevationImages' in validated ||
+      'floorPlanImages' in validated ||
+      'mediaGallery' in validated ||
+      'videos' in validated ||
+      'photoGallery' in validated ||
+      'floorPlanUrl' in validated ||
+      'videoReelUrl' in validated;
+    if (auth.session?.userId && (statusChanged || priceChanged || mediaChanged)) {
+      try {
+        await prisma.inventoryAuditLog.create({
+          data: {
+            propertyUnitId: id,
+            auditorUserId: auth.session.userId,
+            previousStatus: existing.verificationStatus,
+            newStatus: validated.verificationStatus || existing.verificationStatus,
+            priceChangedFrom: existing.agreementValue,
+            priceChangedTo: validated.agreementValue || existing.agreementValue,
+            auditNotes: validated.verificationNotes || [
+              statusChanged && `Status: ${existing.verificationStatus} → ${validated.verificationStatus}`,
+              priceChanged && `Price: ₹${existing.agreementValue} → ₹${validated.agreementValue}`,
+              mediaChanged && 'Media assets updated',
+            ].filter(Boolean).join('; ') || 'Unit updated.',
+          },
+        });
+      } catch (auditErr: any) {
+        console.warn(`[UNIT-AUDIT] Failed to record audit log: ${auditErr.message}`);
+      }
+    }
+
     return NextResponse.json({
       success: true,
       message: 'Property unit updated successfully',
-      data: { ...unit, ...parseInventoryContent(unit), photoGallery: parseInventoryContent(unit).mediaGallery.map((asset) => asset.url) },
+      data: { ...unit, ...parseInventoryContent(unit) },
     });
   } catch (error: any) {
     return NextResponse.json(

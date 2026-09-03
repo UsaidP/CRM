@@ -15,6 +15,7 @@ import {
   Compass,
   Sparkles,
   CheckCircle2,
+  ShieldCheck,
 } from 'lucide-react';
 import { YoutubeIcon } from '@/components/icons/SocialIcons';
 import { InventoryMediaAsset } from '@/lib/inventory-media';
@@ -107,17 +108,17 @@ export function PropertyMediaHub({
   const currentPhoto = photos[activePhotoIdx] || photos[0];
 
   return (
-    <div className="bg-slate-50/80 p-3 sm:p-5 lg:p-6 space-y-3.5 sm:space-y-4 border-b border-slate-200">
-      {/* Category Tab Switcher with spring animation */}
+    <div className="bg-slate-50/90 p-3 sm:p-5 lg:p-6 space-y-3.5 sm:space-y-4 border-b border-amber-200/60">
+      {/* Category Tab Switcher */}
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200/80 pb-3">
         <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
           {/* Photo Tab Button */}
           <button
             type="button"
             onClick={() => setActiveTab('photos')}
-            className={`relative inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            className={`relative inline-flex items-center gap-1.5 px-3.5 sm:px-4.5 py-2 rounded-xl text-xs font-bold transition-[background-color,border-color,box-shadow,transform] duration-200 cursor-pointer ${
               activeTab === 'photos'
-                ? 'bg-gradient-to-r from-[#B38A38] to-[#8C641E] text-white shadow-xs'
+                ? 'bg-gradient-to-r from-gold-light to-gold text-white shadow-xs font-serif'
                 : 'bg-white text-slate-700 hover:text-slate-900 border border-slate-200/90 hover:bg-slate-50'
             }`}
           >
@@ -133,9 +134,9 @@ export function PropertyMediaHub({
                 setActiveTab('video');
                 sendTelemetry('VIDEO_PLAY', unit.id);
               }}
-              className={`relative inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`relative inline-flex items-center gap-1.5 px-3.5 sm:px-4.5 py-2 rounded-xl text-xs font-bold transition-[background-color,border-color,box-shadow,transform] duration-200 cursor-pointer ${
                 activeTab === 'video'
-                  ? 'bg-gradient-to-r from-[#B38A38] to-[#8C641E] text-white shadow-xs'
+                  ? 'bg-gradient-to-r from-gold-light to-gold text-white shadow-xs font-serif'
                   : 'bg-white text-slate-700 hover:text-slate-900 border border-slate-200/90 hover:bg-slate-50'
               }`}
             >
@@ -149,20 +150,20 @@ export function PropertyMediaHub({
             <button
               type="button"
               onClick={() => setActiveTab('floorplan')}
-              className={`relative inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`relative inline-flex items-center gap-1.5 px-3.5 sm:px-4.5 py-2 rounded-xl text-xs font-bold transition-[background-color,border-color,box-shadow,transform] duration-200 cursor-pointer ${
                 activeTab === 'floorplan'
-                  ? 'bg-gradient-to-r from-[#B38A38] to-[#8C641E] text-white shadow-xs'
+                  ? 'bg-gradient-to-r from-gold-light to-gold text-white shadow-xs font-serif'
                   : 'bg-white text-slate-700 hover:text-slate-900 border border-slate-200/90 hover:bg-slate-50'
               }`}
             >
-              <Ruler className="w-3.5 h-3.5 text-[#8C641E]" />
-              <span>Sanctioned Floor Plan</span>
+              <Ruler className="w-3.5 h-3.5 text-gold" />
+              <span>Sanctioned Blueprint</span>
             </button>
           )}
         </div>
 
         {/* Verified Ground Footing Pill */}
-        <div className="hidden sm:flex items-center gap-1.5 text-xs text-[#8C641E] font-medium bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
+        <div className="hidden sm:flex items-center gap-1.5 text-xs text-gold font-bold bg-amber-50/90 px-3 py-1 rounded-full border border-amber-200 shadow-2xs font-serif">
           <YoutubeIcon className="w-3.5 h-3.5 text-red-600 shrink-0" />
           <span>Ground Audited by ZamZam</span>
         </div>
@@ -189,17 +190,18 @@ export function PropertyMediaHub({
                 </AnimatePresence>
 
                 {/* Top Badges */}
-                <div className="absolute left-3 top-3 flex flex-wrap gap-2 z-10">
-                  <span className="px-3 py-1 rounded-xl bg-white/95 border border-amber-300 text-[#8C641E] font-bold text-xs backdrop-blur-md shadow-sm font-serif">
+                <div className="absolute left-3.5 top-3.5 flex flex-wrap gap-2 z-10">
+                  <span className="px-3.5 py-1 rounded-xl bg-white/95 border border-amber-300 text-gold font-bold text-xs backdrop-blur-md shadow-sm font-serif">
                     {unit.bhk} BHK • {unit.carpetAreaSqft} sq.ft
                   </span>
-                  <span className="hidden xs:inline-block px-3 py-1 rounded-xl bg-emerald-950/80 border border-emerald-500/50 text-emerald-300 font-semibold text-xs backdrop-blur-md shadow-sm">
-                    🟢 Ready OC (0% GST)
+                  <span className="hidden xs:inline-flex items-center gap-1.5 px-3.5 py-1 rounded-xl bg-emerald-950/85 border border-emerald-500/50 text-emerald-300 font-bold text-xs backdrop-blur-md shadow-sm">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Ready OC (0% GST)</span>
                   </span>
                 </div>
 
                 {/* Bottom Caption Overlay with Fullscreen Button */}
-                <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 bg-gradient-to-t from-slate-950/90 via-slate-950/60 to-transparent px-4 pb-3.5 pt-16">
+                <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 bg-gradient-to-t from-slate-950/95 via-slate-950/60 to-transparent px-4 pb-3.5 pt-16">
                   <div className="min-w-0">
                     <p className="truncate text-xs sm:text-base font-bold text-white font-serif">
                       {currentPhoto?.title || `${project.projectName} • Unit ${unit.unitNumber || 'Selected'}`}
@@ -214,7 +216,7 @@ export function PropertyMediaHub({
                     whileTap={{ scale: 0.95 }}
                     type="button"
                     onClick={() => onOpenLightbox(photos, activePhotoIdx)}
-                    className="inline-flex items-center gap-1.5 rounded-xl border border-white/40 bg-black/60 px-3 py-1.5 text-xs font-bold text-white backdrop-blur-md hover:bg-black/80 transition-all shrink-0 shadow-sm cursor-pointer"
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-white/40 bg-black/60 px-3.5 py-1.5 text-xs font-bold text-white backdrop-blur-md hover:bg-black/80 transition-[background-color,border-color,box-shadow,transform] duration-200 shrink-0 shadow-sm cursor-pointer"
                   >
                     <Maximize2 className="w-3.5 h-3.5" />
                     <span className="hidden xs:inline">Zoom HD</span>
@@ -228,7 +230,7 @@ export function PropertyMediaHub({
                       type="button"
                       aria-label="Previous photo"
                       onClick={handlePrevPhoto}
-                      className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-11 sm:h-11 grid place-items-center rounded-full bg-white/90 hover:bg-white text-slate-900 shadow-lg transition-all active:scale-90 border border-slate-200 cursor-pointer"
+                      className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-11 sm:h-11 grid place-items-center rounded-full bg-white/90 hover:bg-white text-slate-900 shadow-lg transition-[background-color,border-color,box-shadow,transform] duration-200 active:scale-90 border border-slate-200 cursor-pointer"
                     >
                       <ChevronLeft className="w-5 h-5" />
                     </button>
@@ -236,11 +238,11 @@ export function PropertyMediaHub({
                       type="button"
                       aria-label="Next photo"
                       onClick={handleNextPhoto}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-11 sm:h-11 grid place-items-center rounded-full bg-white/90 hover:bg-white text-slate-900 shadow-lg transition-all active:scale-90 border border-slate-200 cursor-pointer"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-11 sm:h-11 grid place-items-center rounded-full bg-white/90 hover:bg-white text-slate-900 shadow-lg transition-[background-color,border-color,box-shadow,transform] duration-200 active:scale-90 border border-slate-200 cursor-pointer"
                     >
                       <ChevronRight className="w-5 h-5" />
                     </button>
-                    <div className="absolute top-3 right-3 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-xs text-white font-mono border border-white/20 shadow-sm">
+                    <div className="absolute top-3.5 right-3.5 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-xs text-white font-mono border border-white/20 shadow-sm font-bold">
                       {activePhotoIdx + 1} / {photos.length}
                     </div>
                   </>
@@ -248,8 +250,8 @@ export function PropertyMediaHub({
               </>
             ) : (
               <div className="flex h-full flex-col items-center justify-center gap-2 p-8 text-center text-slate-400">
-                <Building2 className="h-10 w-10 text-[#8C641E]" />
-                <p className="text-sm">Verified photos curated by advisor</p>
+                <Building2 className="h-10 w-10 text-gold" />
+                <p className="text-sm font-serif">Verified photos curated by advisor</p>
               </div>
             )}
           </div>
@@ -265,9 +267,9 @@ export function PropertyMediaHub({
                     setActivePhotoIdx(pIdx);
                     sendTelemetry('PHOTO_SWIPE', unit.id);
                   }}
-                  className={`relative aspect-[4/3] rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${
+                  className={`relative aspect-[4/3] rounded-xl overflow-hidden border-2 transition-[background-color,border-color,box-shadow,transform] duration-200 cursor-pointer ${
                     activePhotoIdx === pIdx
-                      ? 'border-[#8C641E] ring-2 ring-amber-300 scale-[1.03] shadow-xs'
+                      ? 'border-gold ring-2 ring-amber-300 scale-[1.03] shadow-xs'
                       : 'border-slate-200 opacity-60 hover:opacity-100'
                   }`}
                 >
@@ -300,7 +302,7 @@ export function PropertyMediaHub({
                 whileTap={{ scale: 0.95 }}
                 type="button"
                 onClick={() => onOpenVideoPlayer(primaryVideo)}
-                className="w-14 h-14 sm:w-18 sm:h-18 md:w-20 md:h-20 rounded-full bg-gradient-to-tr from-[#DFBA73] via-[#B38A38] to-[#8C641E] flex items-center justify-center text-white shadow-2xl transition-all border-2 border-white cursor-pointer"
+                className="w-14 h-14 sm:w-18 sm:h-18 md:w-20 md:h-20 rounded-full bg-gradient-to-tr from-gold-lighter via-gold-light to-gold flex items-center justify-center text-white shadow-2xl transition-[background-color,border-color,box-shadow,transform] duration-200 border-2 border-white cursor-pointer"
                 aria-label="Play Host Video Walkthrough"
               >
                 <Play className="w-6 h-6 sm:w-8 sm:h-8 fill-white text-white ml-1" />
@@ -315,11 +317,11 @@ export function PropertyMediaHub({
                 </p>
               </div>
 
-              <div className="mt-3 inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white/95 border border-slate-200 text-xs text-slate-800 shadow-sm">
-                <UserCheck className="w-3.5 h-3.5 text-[#8C641E]" />
+              <div className="mt-3 inline-flex items-center gap-1.5 px-4 py-1 rounded-full bg-white/95 border border-slate-200 text-xs text-slate-800 shadow-sm font-serif">
+                <UserCheck className="w-3.5 h-3.5 text-gold" />
                 <span>
                   Presented by:{' '}
-                  <strong className="text-[#8C641E]">
+                  <strong className="text-gold">
                     {primaryVideo.hostName || advisor.fullName || 'Suhel Patel'}
                   </strong>
                 </span>
@@ -336,14 +338,14 @@ export function PropertyMediaHub({
             <div className="relative rounded-2xl overflow-hidden border border-slate-200 bg-white p-3 sm:p-6 shadow-xs">
               <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3 mb-4">
                 <div className="flex items-center gap-2">
-                  <span className="px-2.5 py-1 rounded-md bg-amber-50 border border-amber-200 text-[#8C641E] font-mono text-xs font-bold">
+                  <span className="px-2.5 py-1 rounded-md bg-amber-50 border border-amber-200 text-gold font-mono text-xs font-bold">
                     SANCTIONED PLAN
                   </span>
                   <span className="text-xs sm:text-sm text-slate-900 font-serif font-bold">
                     {unit.bhk} BHK Layout ({unit.carpetAreaSqft} sq.ft)
                   </span>
                 </div>
-                <div className="text-xs text-[#8C641E] font-mono font-semibold">
+                <div className="text-xs text-gold font-mono font-semibold">
                   Vastu Facing: <strong className="text-slate-900">{unit.facing?.replace('_', ' ')}</strong>
                 </div>
               </div>
@@ -359,9 +361,9 @@ export function PropertyMediaHub({
                   <button
                     type="button"
                     onClick={() => onOpenLightbox([primaryFloorPlan], 0)}
-                    className="px-3 py-1.5 rounded-xl bg-white/95 border border-slate-200 text-xs font-semibold text-slate-800 shadow-sm hover:bg-slate-50 flex items-center gap-1.5 cursor-pointer backdrop-blur"
+                    className="px-3.5 py-1.5 rounded-xl bg-white/95 border border-slate-200 text-xs font-bold text-slate-800 shadow-sm hover:bg-slate-50 flex items-center gap-1.5 cursor-pointer backdrop-blur"
                   >
-                    <Maximize2 className="w-3.5 h-3.5 text-[#8C641E]" />
+                    <Maximize2 className="w-3.5 h-3.5 text-gold" />
                     <span>Expand Blueprint</span>
                   </button>
                 </div>
@@ -394,7 +396,7 @@ export function PropertyMediaHub({
             </div>
             <div className="p-3 sm:p-3.5 rounded-2xl bg-white border border-slate-200 shadow-2xs">
               <span className="text-[10px] uppercase font-bold text-slate-400 font-mono block">French Balcony</span>
-              <strong className="text-xs sm:text-sm font-bold text-[#8C641E] block mt-0.5 font-serif">
+              <strong className="text-xs sm:text-sm font-bold text-gold block mt-0.5 font-serif">
                 5&apos;0&quot; × 11&apos;0&quot;
               </strong>
               <span className="text-[10px] text-slate-500">Open scenic view</span>

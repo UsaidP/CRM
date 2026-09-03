@@ -271,18 +271,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen flex flex-col bg-canvas text-content antialiased">
       {/* Mobile Top Header */}
-      <header className="lg:hidden flex items-center justify-between px-4 h-[60px] bg-surface border-b border-border z-50 sticky top-0">
+      <header className="lg:hidden flex items-center justify-between px-3 sm:px-4 h-[56px] sm:h-[60px] bg-surface border-b border-border z-50 sticky top-0">
         <Link href="/" className="flex items-center gap-2">
           <BrandLogo mode="horizontal" size="xs" withRera={false} />
         </Link>
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1 sm:gap-1.5">
           <button
             type="button"
             onClick={() => {
               setBackupModalMode('BACKUP');
               setIsBackupModalOpen(true);
             }}
-            className="p-2 rounded-xl text-content-muted hover:text-accent hover:bg-surface-subtle transition-colors cursor-pointer"
+            className="p-1.5 sm:p-2 rounded-xl text-content-muted hover:text-accent hover:bg-surface-subtle transition-colors cursor-pointer"
             aria-label="Google Drive Backup"
             title="Backup to Google Drive"
           >
@@ -291,7 +291,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <button
             type="button"
             onClick={() => setIsSearchOpen(true)}
-            className="p-2 rounded-xl text-content-muted hover:text-content hover:bg-surface-subtle transition-colors cursor-pointer"
+            className="p-1.5 sm:p-2 rounded-xl text-content-muted hover:text-content hover:bg-surface-subtle transition-colors cursor-pointer"
             aria-label="Search"
           >
             <Search className="w-4 h-4" />
@@ -299,7 +299,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <ThemeToggle variant="compact" />
           <button
             type="button"
-            className="p-2 rounded-xl text-content-muted hover:text-content hover:bg-surface-subtle transition-colors cursor-pointer"
+            className="p-1.5 sm:p-2 rounded-xl text-content-muted hover:text-content hover:bg-surface-subtle transition-colors cursor-pointer"
             aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
             onClick={() => setIsMenuOpen((prev) => !prev)}
           >
@@ -320,7 +320,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         {/* Stitch 280px Left Navigation Sidebar */}
         <aside
           id="app-navigation"
-          className={`fixed lg:sticky top-0 left-0 h-screen max-h-screen w-[280px] bg-surface-subtle border-r border-border z-40 flex flex-col transition-transform duration-200 ease-out shrink-0 overflow-hidden ${
+          className={`fixed lg:sticky top-0 left-0 h-dvh max-h-dvh w-[280px] max-w-[85vw] bg-surface-subtle border-r border-border z-40 flex flex-col transition-transform duration-200 ease-out shrink-0 overflow-hidden ${
             isMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
           }`}
         >
@@ -343,7 +343,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
 
           {/* Grouped Navigation Links - Only this area scrolls */}
-          <nav className="flex-1 min-h-0 px-3 py-3 space-y-4 overflow-y-auto" aria-label="Primary navigation">
+          <nav className="flex-1 min-h-0 px-3 py-3 space-y-4 overflow-y-auto touch-scroll" aria-label="Primary navigation">
             {visibleNavSections.map((section) => (
               <div key={section.title} className="space-y-1">
                 <div className="px-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-content-muted font-mono">
@@ -387,7 +387,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </nav>
 
           {/* Sidebar Footer: Agent Profile & Shift Status - Fixed at Bottom */}
-          <div className="shrink-0 p-3 border-t border-border bg-surface/80 backdrop-blur-xs space-y-2.5">
+          <div className="shrink-0 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] border-t border-border bg-surface/80 backdrop-blur-xs space-y-2.5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 min-w-0">
                 <div className="w-7 h-7 rounded-full bg-accent text-white flex items-center justify-center text-xs font-bold shadow-2xs shrink-0">
@@ -458,21 +458,21 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         {/* Main Content Pane with Sticky Stitch Topbar */}
         <div className="flex-1 flex flex-col min-w-0">
           {/* Sticky Stitch Top Navigation Bar */}
-          <header className="hidden lg:flex items-center justify-between px-6 h-[64px] bg-surface border-b border-border sticky top-0 z-30 shadow-2xs">
+          <header className="hidden lg:flex items-center justify-between px-4 xl:px-6 h-[64px] bg-surface border-b border-border sticky top-0 z-30 shadow-2xs">
             {/* Left: Breadcrumbs & SLA Status Badge */}
-            <div className="flex items-center gap-4">
-              <div>
-                <div className="flex items-center gap-2 text-xs text-content-muted">
-                  <Link href="/" className="hover:text-content transition-colors font-medium">
+            <div className="flex items-center gap-3 xl:gap-4 min-w-0">
+              <div className="truncate">
+                <div className="flex items-center gap-2 text-xs text-content-muted truncate">
+                  <Link href="/" className="hover:text-content transition-colors font-medium shrink-0">
                     ZamZam Console
                   </Link>
                   <span>/</span>
-                  <span className="font-bold text-content">{activeItem.label}</span>
+                  <span className="font-bold text-content truncate">{activeItem.label}</span>
                 </div>
               </div>
 
               {/* Speed-to-Lead SLA Target Alert Badge */}
-              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent-soft/90 border border-accent/35 text-accent-text text-xs font-bold shadow-2xs">
+              <div className="hidden xl:flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent-soft/90 border border-accent/35 text-accent-text text-xs font-bold shadow-2xs shrink-0">
                 <span className="w-2 h-2 rounded-full bg-accent animate-ping" />
                 <Flame className="w-3.5 h-3.5 text-accent" />
                 <span className="font-mono font-bold">Speed-to-Lead: &lt; 5m Target</span>
@@ -480,24 +480,24 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </div>
 
             {/* Center: Global Search Bar */}
-            <div className="flex-1 max-w-md mx-6">
+            <div className="flex-1 max-w-sm xl:max-w-md mx-3 xl:mx-6">
               <button
                 type="button"
                 onClick={() => setIsSearchOpen(true)}
                 className="w-full flex items-center justify-between px-3.5 py-1.5 bg-surface-subtle border border-border rounded-xl text-xs text-content-muted hover:border-accent transition-colors group text-left cursor-pointer"
               >
-                <div className="flex items-center gap-2">
-                  <Search className="w-3.5 h-3.5 text-content-muted group-hover:text-accent transition-colors" />
-                  <span>Search leads, phone, RERA ID, units...</span>
+                <div className="flex items-center gap-2 truncate">
+                  <Search className="w-3.5 h-3.5 text-content-muted group-hover:text-accent transition-colors shrink-0" />
+                  <span className="truncate">Search leads, phone, RERA ID, units...</span>
                 </div>
-                <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-mono font-bold bg-surface border border-border rounded-md text-content-muted">
+                <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-mono font-bold bg-surface border border-border rounded-md text-content-muted shrink-0">
                   ⌘K
                 </kbd>
               </button>
             </div>
 
             {/* Right: Active Call Timer, GDrive Backup, Quick Links & Status */}
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2 xl:gap-2.5 shrink-0">
               {/* Google Drive Cloud Backup Button (Visible to all team members) */}
               <button
                 type="button"
@@ -505,17 +505,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   setBackupModalMode('BACKUP');
                   setIsBackupModalOpen(true);
                 }}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-surface hover:bg-surface-subtle border border-border text-content rounded-xl text-xs font-bold transition-all shadow-2xs hover:border-accent/40 cursor-pointer group"
+                className="flex items-center gap-1.5 px-2.5 xl:px-3 py-1.5 bg-surface hover:bg-surface-subtle border border-border text-content rounded-xl text-xs font-bold transition-all shadow-2xs hover:border-accent/40 cursor-pointer group"
                 title="Google Drive Cloud Backup & Export"
               >
                 <Cloud className="w-3.5 h-3.5 text-accent group-hover:scale-110 transition-transform" />
-                <span className="font-semibold">Backup (GDrive)</span>
+                <span className="font-semibold hidden xl:inline">Backup (GDrive)</span>
+                <span className="font-semibold xl:hidden">Backup</span>
               </button>
 
               {/* Active Call Widget */}
-              <div className="flex items-center gap-2 px-3 py-1 bg-status-success-surface border border-status-success/30 rounded-xl">
+              <div className="hidden sm:flex items-center gap-1.5 xl:gap-2 px-2.5 xl:px-3 py-1 bg-status-success-surface border border-status-success/30 rounded-xl">
                 <PhoneCall className="w-3.5 h-3.5 text-status-success animate-pulse" />
-                <span className="text-xs font-bold text-status-success">Active Call:</span>
+                <span className="text-xs font-bold text-status-success hidden xl:inline">Active Call:</span>
                 <span className="font-mono font-bold text-xs text-content">{callTimer}</span>
               </div>
 
@@ -530,7 +531,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </header>
 
           {/* Main Page Area */}
-          <main id="main-content" className="flex-1 p-4 md:p-6 max-w-[1600px] w-full mx-auto">
+          <main id="main-content" className="flex-1 p-3 sm:p-4 md:p-6 lg:p-8 max-w-[1600px] 2xl:max-w-[1720px] w-full mx-auto">
             {children}
           </main>
         </div>
@@ -681,7 +682,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
         return (
           <div 
-            className="fixed inset-0 z-50 flex items-start justify-center pt-16 md:pt-20 px-4 bg-black/60 backdrop-blur-xs"
+            className="fixed inset-0 z-50 flex items-start justify-center pt-3 sm:pt-16 md:pt-20 px-2 sm:px-4 bg-black/60 backdrop-blur-xs"
             onClick={(e) => {
               if (e.target === e.currentTarget) {
                 setIsSearchOpen(false);
@@ -689,9 +690,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               }
             }}
           >
-            <div className="w-full max-w-2xl bg-surface rounded-2xl shadow-2xl border border-border overflow-hidden animate-in fade-in zoom-in-95 duration-150 flex flex-col max-h-[80vh]">
+            <div className="w-full max-w-2xl bg-surface rounded-2xl shadow-2xl border border-border overflow-hidden animate-in fade-in zoom-in-95 duration-150 flex flex-col max-h-[88dvh] sm:max-h-[80vh]">
               {/* Search Input Bar */}
-              <div className="px-4 py-3.5 border-b border-border flex items-center gap-3 bg-surface">
+              <div className="px-3 sm:px-4 py-3 sm:py-3.5 border-b border-border flex items-center gap-2.5 sm:gap-3 bg-surface">
                 {isSearching ? (
                   <Loader2 className="w-4 h-4 text-accent animate-spin shrink-0" />
                 ) : (
@@ -705,14 +706,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Search leads, phone (+91), Kharghar sectors, RERA number, deals..."
-                  className="omnisearch-input w-full bg-transparent border-0 ring-0 focus:ring-0 focus:outline-none text-sm text-content placeholder:text-content-muted font-medium !p-0 !shadow-none"
+                  placeholder="Search leads, phone (+91), RERA, units, deals..."
+                  className="omnisearch-input w-full bg-transparent border-0 ring-0 focus:ring-0 focus:outline-none text-xs sm:text-sm text-content placeholder:text-content-muted font-medium !p-0 !shadow-none"
                 />
                 {searchQuery && (
                   <button
                     type="button"
                     onClick={() => setSearchQuery('')}
-                    className="px-2 py-0.5 text-xs text-content-muted hover:text-content bg-surface-subtle hover:bg-surface border border-border rounded-md cursor-pointer transition-colors"
+                    className="px-2 py-0.5 text-xs text-content-muted hover:text-content bg-surface-subtle hover:bg-surface border border-border rounded-md cursor-pointer transition-colors shrink-0"
                   >
                     Clear
                   </button>
@@ -723,14 +724,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     setIsSearchOpen(false);
                     setSearchQuery('');
                   }}
-                  className="p-1 text-content-muted hover:text-content hover:bg-surface-subtle rounded-lg cursor-pointer transition-colors"
+                  className="p-1 text-content-muted hover:text-content hover:bg-surface-subtle rounded-lg cursor-pointer transition-colors shrink-0"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
               {/* Results or Quick Destinations */}
-              <div className="p-3 text-xs text-content-muted overflow-y-auto space-y-3 divide-y divide-border/40 max-h-[60vh]">
+              <div className="p-2 sm:p-3 text-xs text-content-muted overflow-y-auto space-y-3 divide-y divide-border/40 max-h-[68dvh] sm:max-h-[60vh] touch-scroll">
                 {/* Case 1: Empty Query -> Show Quick Destinations & Speed Tools */}
                 {!searchQuery.trim() && (
                   <div className="space-y-1">

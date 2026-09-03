@@ -72,7 +72,7 @@ export function PortalDossierModal({
               <h3 id="dossier-modal-title" className="text-sm font-bold text-slate-900 font-serif">
                 Official Property Dossier &amp; Factsheet
               </h3>
-              <p id="dossier-modal-description" className="text-[11px] text-[#8C641E] font-medium font-mono">
+              <p id="dossier-modal-description" className="text-[11px] text-gold font-medium font-mono">
                 ZamZam Verified • Sanctioned MahaRERA Records
               </p>
             </div>
@@ -82,10 +82,10 @@ export function PortalDossierModal({
             <button
               type="button"
               onClick={() => window.print()}
-              className="px-3.5 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 text-xs font-bold shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer"
+              className="px-3.5 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 text-xs font-bold shadow-2xs transition-[background-color,border-color,box-shadow,transform] duration-200 flex items-center gap-1.5 cursor-pointer"
               title="Print or Save as PDF"
             >
-              <Download className="w-3.5 h-3.5 text-[#8C641E]" />
+              <Download className="w-3.5 h-3.5 text-gold" />
               <span className="hidden xs:inline">Print / Save PDF</span>
             </button>
 
@@ -105,15 +105,15 @@ export function PortalDossierModal({
           {/* Project Headline & MahaRERA Verification */}
           <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-5 border-b border-slate-200">
             <div>
-              <span className="inline-flex items-center gap-1 px-3 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-[#8C641E] text-xs font-bold font-serif mb-1.5">
-                <Sparkles className="w-3 h-3 text-[#8C641E]" />
+              <span className="inline-flex items-center gap-1 px-3 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-gold text-xs font-bold font-serif mb-1.5">
+                <Sparkles className="w-3 h-3 text-gold" />
                 {dossierUnit.bhk} BHK Luxury Residence
               </span>
               <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-serif">
                 {project.projectName}
               </h2>
               <p className="text-xs sm:text-sm text-slate-600 flex items-center gap-1.5 mt-1">
-                <MapPin className="w-4 h-4 text-[#8C641E] shrink-0" />
+                <MapPin className="w-4 h-4 text-gold shrink-0" />
                 <span>
                   {project.microMarket} • {project.distanceToMetroKm ? `${project.distanceToMetroKm} km to Metro` : 'Near Metro Station'}
                 </span>
@@ -144,7 +144,7 @@ export function PortalDossierModal({
             {/* Elevation View */}
             <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-[#8C641E] font-serif flex items-center gap-1.5">
+                <span className="text-xs font-bold uppercase tracking-wider text-gold font-serif flex items-center gap-1.5">
                   <Building2 className="w-3.5 h-3.5" /> Building Elevation &amp; Façade
                 </span>
                 <span className="text-[10px] px-2 py-0.5 rounded bg-white border border-slate-200 text-slate-600 font-mono">
@@ -166,10 +166,10 @@ export function PortalDossierModal({
             {/* Floor Plan Blueprint */}
             <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-[#8C641E] font-serif flex items-center gap-1.5">
+                <span className="text-xs font-bold uppercase tracking-wider text-gold font-serif flex items-center gap-1.5">
                   <Ruler className="w-3.5 h-3.5" /> Unit Floor Plan Layout
                 </span>
-                <span className="text-[10px] px-2 py-0.5 rounded bg-white border border-slate-200 text-[#8C641E] font-mono font-bold">
+                <span className="text-[10px] px-2 py-0.5 rounded bg-white border border-slate-200 text-gold font-mono font-bold">
                   {dossierUnit.carpetAreaSqft} Sq.Ft RERA Carpet
                 </span>
               </div>
@@ -189,11 +189,11 @@ export function PortalDossierModal({
           {/* Transparent Statutory Financial Breakdown */}
           <div className="p-5 rounded-2xl bg-gradient-to-br from-amber-50/70 to-white border border-amber-200 space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-[#8C641E] font-serif flex items-center gap-1.5">
-                <Calculator className="w-4 h-4 text-[#8C641E]" />
+              <h4 className="text-xs font-bold uppercase tracking-wider text-gold font-serif flex items-center gap-1.5">
+                <Calculator className="w-4 h-4 text-gold" />
                 Transparent On-Road Financial Breakdown
               </h4>
-              <strong className="text-base sm:text-lg font-extrabold text-[#8C641E] font-mono">
+              <strong className="text-base sm:text-lg font-extrabold text-gold font-mono">
                 Total All-In: {formatLakhCr(totalAllIn)} ({formatIndianRupees(totalAllIn)})
               </strong>
             </div>
@@ -265,7 +265,7 @@ export function PortalDossierModal({
             return (
               <div className="p-5 rounded-2xl bg-slate-900 text-white flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
                 <div className="flex items-center gap-3.5">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-[#DFBA73] to-[#8C641E] p-0.5 shrink-0">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-gold-lighter to-gold p-0.5 shrink-0">
                     <div className="w-full h-full rounded-full bg-slate-900 flex items-center justify-center font-bold text-xs text-amber-300 font-serif">
                       {initials}
                     </div>

@@ -38,6 +38,7 @@ import {
   type FileParseResult 
 } from '@/lib/domain/lead-file-parser';
 import { type ColumnMapping, STAGE_DISPLAY_NAMES } from '@/lib/domain/lead-auto-adjuster';
+import { CustomSelect } from '@/components/ui/CustomSelect';
 
 interface LeadCsvImportModalProps {
   onClose: () => void;
@@ -244,13 +245,13 @@ export function LeadCsvImportModal({
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/70 backdrop-blur-xs animate-in fade-in duration-200"
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
       <div 
-        className={`relative w-full max-w-5xl max-h-[92vh] bg-surface rounded-3xl border ${isDraggingOver ? 'border-accent shadow-accent/20' : 'border-border'} shadow-2xl flex flex-col overflow-hidden text-content font-sans transition-all`}
+        className={`relative w-full max-w-5xl max-h-[92dvh] bg-surface rounded-2xl sm:rounded-3xl border ${isDraggingOver ? 'border-accent shadow-accent/20' : 'border-border'} shadow-2xl flex flex-col overflow-hidden text-content font-sans transition-all`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="lead-import-modal-title"
@@ -265,28 +266,28 @@ export function LeadCsvImportModal({
         )}
 
         {/* Header */}
-        <div className="p-5 md:p-6 border-b border-border bg-surface-subtle flex items-start justify-between">
-          <div className="flex items-start gap-4">
-            <div className="p-3 bg-accent-soft border border-accent/20 rounded-2xl text-accent shadow-2xs">
-              <FileSpreadsheet className="w-6 h-6" />
+        <div className="p-3.5 sm:p-5 md:p-6 border-b border-border bg-surface-subtle flex items-start justify-between gap-3">
+          <div className="flex items-start gap-3 sm:gap-4 min-w-0">
+            <div className="p-2 sm:p-3 bg-accent-soft border border-accent/20 rounded-xl sm:rounded-2xl text-accent shadow-2xs shrink-0">
+              <FileSpreadsheet className="w-5 sm:w-6 h-5 sm:h-6" />
             </div>
-            <div>
-              <div className="flex items-center gap-2.5 flex-wrap">
-                <h2 id="lead-import-modal-title" className="text-lg md:text-xl font-extrabold text-content font-display tracking-tight">
-                  Universal Multi-Format Lead Importer &amp; Engine
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 id="lead-import-modal-title" className="text-base sm:text-lg md:text-xl font-extrabold text-content font-display tracking-tight truncate">
+                  Universal Multi-Format Lead Importer
                 </h2>
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-accent-soft text-accent-text border border-accent/20">
+                <span className="px-2 sm:px-2.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-mono font-bold uppercase tracking-wider bg-accent-soft text-accent-text border border-accent/20">
                   Drop-In Any File
                 </span>
               </div>
-              <p className="text-xs text-content-secondary mt-1 max-w-2xl font-medium">
+              <p className="text-[11px] sm:text-xs text-content-secondary mt-1 max-w-2xl font-medium line-clamp-2 sm:line-clamp-none">
                 Drop or paste <strong>any file format</strong> (Excel, CSV, TSV, JSON, HTML tables, WhatsApp logs, or Key-Value blocks). Auto-normalizes Indian numbers (+91), Lakhs/Cr budgets, micro-markets, and pipeline stages.
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-content-muted hover:text-content hover:bg-surface border border-transparent hover:border-border transition-all cursor-pointer"
+            className="p-1.5 sm:p-2 rounded-xl text-content-muted hover:text-content hover:bg-surface border border-transparent hover:border-border transition-all cursor-pointer shrink-0"
             aria-label="Close dialog"
           >
             <X className="w-5 h-5" />
@@ -294,7 +295,7 @@ export function LeadCsvImportModal({
         </div>
 
         {/* Configuration Bar & Controls */}
-        <div className="px-6 py-3 bg-surface border-b border-border flex items-center justify-between flex-wrap gap-3 text-xs">
+        <div className="px-3.5 sm:px-6 py-2.5 sm:py-3 bg-surface border-b border-border flex items-center justify-between flex-wrap gap-2 sm:gap-3 text-xs">
           <div className="flex items-center gap-2 flex-wrap">
             <button
               onClick={() => setActiveTab('preview')}
@@ -327,35 +328,32 @@ export function LeadCsvImportModal({
 
           <div className="flex items-center gap-3 flex-wrap">
             {/* Target Stage Override Selector */}
-            <div className="flex items-center gap-1.5 bg-surface-subtle border border-border rounded-xl px-2.5 py-1">
-              <SlidersHorizontal className="w-3.5 h-3.5 text-accent shrink-0" />
-              <span className="text-[11px] font-bold text-content-muted">Target Stage:</span>
-              <select
+            <div className="w-full sm:w-auto min-w-[220px]">
+              <CustomSelect
+                size="xs"
+                icon={<SlidersHorizontal className="w-3.5 h-3.5 text-accent shrink-0" />}
                 value={defaultStage}
-                onChange={(e) => setDefaultStage(e.target.value)}
-                className="text-xs font-bold text-content bg-transparent border-0 focus:outline-none cursor-pointer pr-1"
-              >
-                {STAGE_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value} className="bg-surface text-content">
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => setDefaultStage(val)}
+                options={STAGE_OPTIONS.map((opt) => ({
+                  value: opt.value,
+                  label: opt.label,
+                }))}
+              />
             </div>
 
             {/* Sheet Selector if Excel has multiple sheets */}
             {parseResult?.sheetNames && parseResult.sheetNames.length > 1 && (
-              <div className="flex items-center gap-1.5">
-                <span className="text-[11px] font-bold text-content-muted">Sheet:</span>
-                <select
-                  value={selectedSheetIndex}
-                  onChange={(e) => setSelectedSheetIndex(parseInt(e.target.value, 10))}
-                  className="px-2.5 py-1 text-xs font-bold text-content select-theme rounded-lg"
-                >
-                  {parseResult.sheetNames.map((sheet, idx) => (
-                    <option key={sheet} value={idx}>{sheet}</option>
-                  ))}
-                </select>
+              <div className="w-full sm:w-auto min-w-[160px]">
+                <CustomSelect
+                  size="xs"
+                  label="Sheet"
+                  value={String(selectedSheetIndex)}
+                  onChange={(val) => setSelectedSheetIndex(parseInt(val, 10))}
+                  options={parseResult.sheetNames.map((sheet, idx) => ({
+                    value: String(idx),
+                    label: sheet,
+                  }))}
+                />
               </div>
             )}
 
@@ -635,24 +633,25 @@ Remarks: 1st time homebuyer looking for G+14 tower`;
                   { key: 'possession', label: 'Possession Timeline' },
                 ].map((field) => (
                   <div key={field.key} className="space-y-1">
-                    <label className="text-[11px] font-bold text-content-secondary block">
-                      {field.label}
-                    </label>
-                    <select
+                    <CustomSelect
+                      size="xs"
+                      label={field.label}
+                      placeholder="-- Skip / Auto-Infer --"
                       value={customMapping[field.key as keyof ColumnMapping] || parseResult.mapping[field.key as keyof ColumnMapping] || ''}
-                      onChange={(e) => {
+                      onChange={(val) => {
                         setCustomMapping((prev) => ({
                           ...prev,
-                          [field.key]: e.target.value,
+                          [field.key]: val,
                         }));
                       }}
-                      className="w-full px-3 py-2 text-xs font-semibold text-content select-theme rounded-xl border border-border bg-surface-subtle"
-                    >
-                      <option value="">-- Skip / Auto-Infer --</option>
-                      {parseResult.headers.map((h) => (
-                        <option key={h} value={h}>{h}</option>
-                      ))}
-                    </select>
+                      options={[
+                        { value: '', label: '-- Skip / Auto-Infer --' },
+                        ...parseResult.headers.map((h) => ({
+                          value: h,
+                          label: h,
+                        })),
+                      ]}
+                    />
                   </div>
                 ))}
               </div>

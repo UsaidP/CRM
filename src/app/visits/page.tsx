@@ -182,15 +182,15 @@ export default function SiteVisitsPage() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-16 text-content font-sans">
       {/* Top Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-surface border border-border shadow-xs">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 sm:p-6 rounded-2xl bg-surface border border-border shadow-xs">
         <div>
-          <div className="flex items-center gap-2 mb-1.5">
+          <div className="flex items-center gap-2 mb-1.5 flex-wrap">
             <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-accent-soft text-accent-text border border-accent/20 uppercase tracking-wider flex items-center gap-1">
               <Calendar className="w-3.5 h-3.5 text-accent" /> ESCORTED LOGISTICS DISPATCHER
             </span>
             <HallmarkStamp type="rera" label="Multi-Project Tour Protocol" />
           </div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-content font-display">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-content font-display">
             Site Visit Tours &amp; Agenda
           </h1>
           <p className="text-content-secondary text-xs mt-1">
@@ -198,21 +198,21 @@ export default function SiteVisitsPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 w-full md:w-auto">
           <button
             type="button"
             onClick={() => { setActionError(null); setShowScheduleModal(true); }}
-            className="px-4 py-2 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold flex items-center gap-2 shadow-xs transition-all cursor-pointer"
+            className="flex-1 md:flex-initial justify-center px-4 py-2 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold flex items-center gap-2 shadow-xs transition-all cursor-pointer active:scale-95"
           >
             <Plus className="w-4 h-4" />
-            Schedule Site Tour
+            <span>Schedule Tour</span>
           </button>
           <button
             type="button"
             onClick={fetchVisitsAndData}
             disabled={loading}
             aria-label="Refresh site visits"
-            className="p-2.5 rounded-xl bg-surface hover:bg-surface-subtle text-content-secondary hover:text-content border border-border text-xs font-semibold shadow-2xs transition-all cursor-pointer"
+            className="p-2.5 rounded-xl bg-surface hover:bg-surface-subtle text-content-secondary hover:text-content border border-border text-xs font-semibold shadow-2xs transition-all cursor-pointer shrink-0"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-accent' : ''}`} />
           </button>
@@ -230,8 +230,8 @@ export default function SiteVisitsPage() {
       )}
 
       {/* Filter and Status Bar */}
-      <div className="p-4 rounded-2xl bg-surface border border-border shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs font-sans">
-        <fieldset className="flex min-w-0 max-w-full items-center gap-2 overflow-x-auto w-full sm:w-auto">
+      <div className="p-3.5 sm:p-4 rounded-2xl bg-surface border border-border shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs font-sans">
+        <fieldset className="flex min-w-0 max-w-full items-center gap-1.5 sm:gap-2 overflow-x-auto touch-scroll no-scrollbar w-full sm:w-auto">
           <legend className="sr-only">Filter site visits by status</legend>
           {[
             { id: 'ALL', label: 'All Tours' },
@@ -245,7 +245,7 @@ export default function SiteVisitsPage() {
               key={st.id}
               onClick={() => setSelectedStatus(st.id)}
               aria-pressed={selectedStatus === st.id}
-              className={`px-3 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+              className={`px-3 py-1.5 sm:py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer shrink-0 ${
                 selectedStatus === st.id
                   ? 'bg-accent text-white font-bold shadow-xs'
                   : 'bg-surface text-content-secondary border border-border hover:bg-surface-subtle hover:text-content'

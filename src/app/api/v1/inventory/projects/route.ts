@@ -3,7 +3,7 @@ import { requireSession } from '@/lib/services/api-auth';
 import { prisma } from '@/lib/db/prisma';
 import { createProjectSchema } from '@/lib/validators/inventory-schemas';
 import { validateReraNumber } from '@/lib/domain/verification-engine';
-import { parseInventoryContent } from '@/lib/inventory-media';
+import { parseInventoryContent, resolveAssetUrl } from '@/lib/inventory-media';
 import { parseSafeDate } from '@/lib/date-utils';
 
 export const dynamic = 'force-dynamic';
@@ -145,6 +145,9 @@ export async function POST(req: Request) {
             coverImageUrl: validated.coverImageUrl || existingProject.coverImageUrl,
             masterPlanUrl: validated.masterPlanUrl || existingProject.masterPlanUrl,
             mediaGalleryJson: validated.mediaGallery && validated.mediaGallery.length > 0 ? JSON.stringify(validated.mediaGallery) : existingProject.mediaGalleryJson,
+            elevationImagesJson: validated.elevationImages && validated.elevationImages.length > 0 ? JSON.stringify(validated.elevationImages) : existingProject.elevationImagesJson,
+            floorPlanImagesJson: validated.floorPlanImages && validated.floorPlanImages.length > 0 ? JSON.stringify(validated.floorPlanImages) : existingProject.floorPlanImagesJson,
+            brochurePhotosJson: validated.brochurePhotos && validated.brochurePhotos.length > 0 ? JSON.stringify(validated.brochurePhotos) : existingProject.brochurePhotosJson,
             amenitiesJson: JSON.stringify(mergedAmenities),
             developerSalesPocName: validated.developerSalesPocName || existingProject.developerSalesPocName,
             developerSalesPocPhone: validated.developerSalesPocPhone || existingProject.developerSalesPocPhone,
@@ -173,6 +176,9 @@ export async function POST(req: Request) {
             locationDescription: validated.locationDescription,
             keyHighlightsJson: JSON.stringify(validated.keyHighlights || []),
             mediaGalleryJson: JSON.stringify(validated.mediaGallery || []),
+            elevationImagesJson: JSON.stringify(validated.elevationImages || []),
+            floorPlanImagesJson: JSON.stringify(validated.floorPlanImages || []),
+            brochurePhotosJson: JSON.stringify(validated.brochurePhotos || []),
             coverImageUrl: validated.coverImageUrl || null,
             latitude: validated.latitude,
             longitude: validated.longitude,
@@ -203,6 +209,8 @@ export async function POST(req: Request) {
       // Sync Units without creating duplicate unit rows
       const syncedUnits: any[] = [];
       const existingUnits = existingProject?.units || [];
+      const projElevationImages = validated.elevationImages || [];
+      const projFloorPlanImages = validated.floorPlanImages || [];
 
       for (const u of initialUnits) {
         const agreementValue = Number(u.agreementValue) || Math.round(Number(u.carpetAreaSqft || 500) * validated.basePricePerSqft);
@@ -219,6 +227,11 @@ export async function POST(req: Request) {
 
         const bhkNum = Math.max(1, Math.min(6, parseInt(u.bhk || 2, 10)));
         const carpetNum = Math.max(100, parseInt(u.carpetAreaSqft || 650, 10));
+
+        // Matching floor plans for unit BHK
+        const matchingFloorPlans = projFloorPlanImages.filter((fp: any) => Number(fp.bhk) === bhkNum);
+        const unitFloorPlanImages = matchingFloorPlans.length > 0 ? matchingFloorPlans : projFloorPlanImages;
+        const defaultFloorPlanUrl = u.floorPlanUrl || resolveAssetUrl(unitFloorPlanImages[0]) || null;
 
         // Check if matching unit already exists
         let matchedUnit: any = null;
@@ -241,14 +254,14 @@ export async function POST(req: Request) {
               registrationFee,
               gstRate,
               allInTotalCost,
-              floorPlanUrl: u.floorPlanUrl || matchedUnit.floorPlanUrl,
+              floorPlanUrl: defaultFloorPlanUrl || matchedUnit.floorPlanUrl,
               totalFloors: validated.totalFloors || matchedUnit.totalFloors,
               lastVerifiedAt: new Date(),
             },
           });
           syncedUnits.push(updatedUnit);
         } else {
-          // Create new unit
+          // Create new unit with pre-filled media
           const newUnit: any = await tx.propertyUnit.create({
             data: {
               projectId: projectRecord.id,
@@ -269,7 +282,9 @@ export async function POST(req: Request) {
               parkingCharges,
               societyDevelopmentCharges,
               allInTotalCost,
-              floorPlanUrl: u.floorPlanUrl || null,
+              floorPlanUrl: defaultFloorPlanUrl,
+              elevationImagesJson: JSON.stringify(projElevationImages),
+              floorPlanImagesJson: JSON.stringify(unitFloorPlanImages),
               verificationStatus: 'ACTIVE_MARKETABLE',
               verificationNotes: u.verificationNotes || `Extracted from official brochure for ${validated.projectName}. Verified MahaRERA ${normalizedRera}.`,
               description: u.description || `${bhkNum} BHK residential flat in ${validated.projectName}, ${validated.microMarket}.`,

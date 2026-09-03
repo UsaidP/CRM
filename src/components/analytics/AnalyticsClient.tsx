@@ -104,13 +104,13 @@ export function AnalyticsClient({
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-border">
         <div>
-          <div className="flex items-center gap-2 mb-1.5">
-            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-accent-soft text-accent-text border border-accent/20 uppercase tracking-wider flex items-center gap-1">
+          <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-accent-soft text-accent-text border border-accent/20 uppercase tracking-wider flex items-center gap-1">
               <BarChart3 className="w-3.5 h-3.5 text-accent" /> BUSINESS INTELLIGENCE &amp; ROI
             </span>
             <HallmarkStamp type="ledger" label="From recorded deals" />
           </div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-content font-display">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-content font-display">
             Content ROI &amp; Revenue Analytics
           </h1>
           <p className="text-content-secondary text-xs mt-0.5">
@@ -118,11 +118,11 @@ export function AnalyticsClient({
           </p>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap w-full md:w-auto">
           <button
             type="button"
             onClick={() => exportAnalyticsToCsv(contentRoi, leaderboard)}
-            className="min-h-10 px-3.5 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-bold shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
+            className="flex-1 md:flex-initial h-9 px-3.5 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-bold shadow-2xs transition-all flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
             title="Export full campaign ROI & broker incentive report to CSV"
           >
             <Download className="w-3.5 h-3.5 text-accent" />
@@ -132,7 +132,7 @@ export function AnalyticsClient({
           <button
             type="button"
             onClick={() => window.print()}
-            className="min-h-10 px-3.5 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-bold shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
+            className="h-9 px-3.5 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-bold shadow-2xs transition-all flex items-center justify-center gap-1.5 cursor-pointer shrink-0 hidden sm:inline-flex"
             title="Print Executive BI Report"
           >
             <Printer className="w-3.5 h-3.5 text-accent" />
@@ -144,7 +144,7 @@ export function AnalyticsClient({
             onClick={fetchAllAnalytics}
             disabled={loading}
             aria-label="Refresh analytics"
-            className="min-h-10 min-w-10 px-3 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-semibold shadow-xs transition-all flex items-center justify-center cursor-pointer"
+            className="h-9 w-9 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-semibold shadow-2xs transition-all flex items-center justify-center cursor-pointer shrink-0"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-accent' : 'text-content-secondary'}`} />
           </button>
@@ -162,13 +162,13 @@ export function AnalyticsClient({
       )}
 
       {/* Top Level BI Metrics Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <div className="p-4 rounded-xl bg-surface border border-border shadow-xs hover:border-border-strong transition-all">
           <div className="text-[10px] text-content-muted font-bold uppercase tracking-wider flex justify-between items-center">
             <span>Organic Content GMV</span>
             <DollarSign className="w-4 h-4 text-accent" />
           </div>
-          <div className="text-2xl font-bold text-content mt-1.5">
+          <div className="text-xl sm:text-2xl font-bold text-content mt-1.5">
             {formatINR(contentSummary?.totalAttributedGmv)}
           </div>
           <div className="text-[11px] text-content-muted mt-1 flex items-center gap-1">
@@ -181,7 +181,7 @@ export function AnalyticsClient({
             <span>Customer Acquisition Cost (CAC)</span>
             <Target className="w-4 h-4 text-status-success" />
           </div>
-          <div className="text-2xl font-bold text-status-success mt-1.5">
+          <div className="text-xl sm:text-2xl font-bold text-status-success mt-1.5">
             —
           </div>
           <div className="text-[11px] text-content-muted mt-1">
@@ -194,7 +194,7 @@ export function AnalyticsClient({
             <span>YouTube Pipeline Split</span>
             <YoutubeIcon className="w-4 h-4 text-red-500" />
           </div>
-          <div className="text-2xl font-bold text-content mt-1.5">
+          <div className="text-xl sm:text-2xl font-bold text-content mt-1.5">
             {formatINR(contentSummary?.youtubePipeline)}
           </div>
           <div className="text-[11px] text-content-muted mt-1">
@@ -207,7 +207,7 @@ export function AnalyticsClient({
             <span>Instagram / Reel Split</span>
             <InstagramIcon className="w-4 h-4 text-pink-500" />
           </div>
-          <div className="text-2xl font-bold text-content mt-1.5">
+          <div className="text-xl sm:text-2xl font-bold text-content mt-1.5">
             {formatINR(contentSummary?.instagramPipeline)}
           </div>
           <div className="text-[11px] text-content-muted mt-1">
@@ -228,8 +228,8 @@ export function AnalyticsClient({
             <span className="text-[11px] font-mono text-content-muted">{contentRoi.length} Inbound Assets</span>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+          <div className="overflow-x-auto touch-scroll">
+            <table className="w-full text-left text-xs min-w-[480px]">
               <thead className="bg-surface-subtle text-content-secondary uppercase text-[10px] font-bold border-b border-border">
                 <tr>
                   <th className="p-3.5 pl-4">Campaign / Asset</th>
@@ -289,8 +289,8 @@ export function AnalyticsClient({
             <span className="text-[11px] font-mono text-content-muted">{leaderboard.length} Advisors</span>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+          <div className="overflow-x-auto touch-scroll">
+            <table className="w-full text-left text-xs min-w-[380px]">
               <thead className="bg-surface-subtle text-content-secondary uppercase text-[10px] font-bold border-b border-border">
                 <tr>
                   <th className="p-3.5 pl-4">Rank / Advisor</th>

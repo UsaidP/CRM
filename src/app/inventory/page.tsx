@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/db/prisma';
+import { withDbRetry } from '@/lib/db/db-retry';
 import { InventoryClient } from '@/components/inventory/InventoryClient';
 import { assessUnitFreshness } from '@/lib/domain/verification-engine';
 
@@ -10,18 +11,20 @@ export default async function InventoryPage() {
   let initialProjects: any[] = [];
 
   try {
-    const [rawUnits, projects] = await Promise.all([
-      prisma.propertyUnit.findMany({
-        include: {
-          project: true,
-          verifiedBy: true,
-        },
-        orderBy: { createdAt: 'desc' },
-      }),
-      prisma.developerProject.findMany({
-        orderBy: { projectName: 'asc' },
-      }),
-    ]);
+    const [rawUnits, projects] = await withDbRetry(async () => {
+      return Promise.all([
+        prisma.propertyUnit.findMany({
+          include: {
+            project: true,
+            verifiedBy: true,
+          },
+          orderBy: { createdAt: 'desc' },
+        }),
+        prisma.developerProject.findMany({
+          orderBy: { projectName: 'asc' },
+        }),
+      ]);
+    });
 
     initialUnits = JSON.parse(
       JSON.stringify(

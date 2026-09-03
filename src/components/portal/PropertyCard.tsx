@@ -21,6 +21,11 @@ import {
   Navigation,
   ChevronDown,
   ChevronUp,
+  Home,
+  Maximize2,
+  Bath,
+  Layers,
+  Train,
 } from 'lucide-react';
 import { PropertyMediaHub } from './PropertyMediaHub';
 import { PropertyPricingBreakdown } from './PropertyPricingBreakdown';
@@ -66,17 +71,17 @@ export function PropertyCard({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-50px' }}
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-      className="rounded-3xl border border-slate-200/90 bg-white shadow-md overflow-hidden transition-all hover:border-amber-300/90 hover:shadow-lg space-y-0 text-slate-900"
+      className="rounded-3xl border border-amber-200/90 bg-white shadow-[0_10px_35px_-10px_rgba(140,100,30,0.08)] transition-[border-color,box-shadow] duration-300 hover:border-amber-400 hover:shadow-[0_18px_50px_-12px_rgba(140,100,30,0.16)] space-y-0 text-slate-900"
     >
       {/* Top Option Ribbon */}
-      <div className="bg-gradient-to-r from-amber-50/90 via-white to-amber-50/90 border-b border-amber-200/80 px-4 py-3.5 sm:px-6 sm:py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="bg-gradient-to-r from-amber-50/90 via-[#FCFAF5] to-amber-50/90 border-b border-amber-200/80 rounded-t-3xl px-4 py-3.5 sm:px-6 sm:py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-          <span className="rounded-full bg-white border border-amber-300 px-3.5 py-1 text-xs font-extrabold text-[#8C641E] font-serif shadow-2xs">
+          <span className="rounded-full bg-white border border-amber-300 px-3.5 py-1 text-xs font-extrabold text-gold font-serif shadow-2xs">
             Option {String(index + 1).padStart(2, '0')} of {String(totalCount).padStart(2, '0')}
           </span>
           {item.brokerHighlight && (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100/70 border border-amber-300 text-[#8C641E] text-xs font-semibold">
-              <Sparkles className="w-3.5 h-3.5 text-[#8C641E]" />
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100/80 border border-amber-300 text-gold text-xs font-bold font-serif">
+              <Sparkles className="w-3.5 h-3.5 text-gold" />
               {item.brokerHighlight}
             </span>
           )}
@@ -88,16 +93,16 @@ export function PropertyCard({
             href="https://maharera.maharashtra.gov.in/projects-search-result"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 font-mono px-3 py-1 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 transition-colors shadow-2xs max-w-full truncate"
+            className="inline-flex items-center gap-1.5 font-mono px-3.5 py-1 rounded-xl bg-emerald-50/90 text-emerald-800 border border-emerald-300 hover:bg-emerald-100 transition-colors shadow-2xs max-w-full truncate font-bold"
             title="Verify this project directly on the official Government of Maharashtra MahaRERA portal"
           >
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
             <span className="truncate">
-              MahaRERA: <strong className="text-emerald-950 font-bold">{project.reraNumber}</strong>
+              MahaRERA: <strong className="text-emerald-950 font-extrabold">{project.reraNumber}</strong>
             </span>
             <ExternalLink className="w-3 h-3 text-emerald-600 opacity-70 shrink-0" />
           </a>
-          <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-100/60 px-2.5 py-1 rounded-xl border border-emerald-200/70 shrink-0">
+          <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-800 bg-emerald-100/80 px-2.5 py-1 rounded-xl border border-emerald-300/80 shrink-0">
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
             Verified
           </span>
@@ -117,13 +122,13 @@ export function PropertyCard({
       {/* Property Details, Pricing Breakdown & Advisor Insights */}
       <div className="p-4 sm:p-6 lg:p-8 space-y-6">
         {/* Project Title & Micro-Market */}
-        <div className="space-y-1 sm:space-y-1.5">
+        <div className="space-y-1.5">
           <div className="flex items-center gap-2 flex-wrap text-xs">
-            <span className="font-bold uppercase tracking-wider text-[#8C641E] font-serif">
+            <span className="font-extrabold uppercase tracking-wider text-gold font-serif">
               {unit.bhk} BHK • Unit {unit.unitNumber || 'Selected'}
             </span>
             <span className="text-slate-300">•</span>
-            <span className="text-emerald-700 font-semibold flex items-center gap-1">
+            <span className="text-emerald-700 font-bold flex items-center gap-1 font-serif">
               <CheckCircle2 className="w-3.5 h-3.5" />
               Ready Possession with Full OC
             </span>
@@ -132,7 +137,7 @@ export function PropertyCard({
             {project.projectName}
           </h3>
           <p className="text-xs sm:text-sm text-slate-600 flex items-center gap-1.5">
-            <MapPin className="w-4 h-4 text-[#8C641E] shrink-0" />
+            <MapPin className="w-4 h-4 text-gold shrink-0" />
             <span>
               {project.microMarket} • {project.distanceToMetroKm ? `${project.distanceToMetroKm} km to Metro` : 'Near Metro Station'}
             </span>
@@ -146,30 +151,30 @@ export function PropertyCard({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6 pt-2">
           {/* Left: Advisor Checklist Highlights */}
           <div className="space-y-3.5">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-[#8C641E] font-serif flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-[#8C641E]" />
+            <h4 className="text-xs font-bold uppercase tracking-wider text-gold font-serif flex items-center gap-1.5">
+              <CheckCircle2 className="w-4 h-4 text-gold" />
               Advisor Checklist &amp; Key Highlights
             </h4>
             <ul className="space-y-2.5 text-xs text-slate-700">
-              <li className="flex items-start gap-2.5 p-2 rounded-xl bg-slate-50 border border-slate-100">
+              <li className="flex items-start gap-2.5 p-2.5 rounded-xl bg-slate-50/80 border border-slate-200/80">
                 <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                 <span>
                   <strong>Full Occupancy Certificate (OC):</strong> 100% legal title clearance with 0% GST liability.
                 </span>
               </li>
-              <li className="flex items-start gap-2.5 p-2 rounded-xl bg-slate-50 border border-slate-100">
+              <li className="flex items-start gap-2.5 p-2.5 rounded-xl bg-slate-50/80 border border-slate-200/80">
                 <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                 <span>
                   <strong>Prime Connectivity:</strong> Only {project.distanceToMetroKm || 1.6} km from Metro Station &amp; central 24m arterial road.
                 </span>
               </li>
-              <li className="flex items-start gap-2.5 p-2 rounded-xl bg-slate-50 border border-slate-100">
+              <li className="flex items-start gap-2.5 p-2.5 rounded-xl bg-slate-50/80 border border-slate-200/80">
                 <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                 <span>
                   <strong>Vastu Compliant:</strong> {unit.facing?.replace('_', ' ')} entrance orientation with natural cross-ventilation.
                 </span>
               </li>
-              <li className="flex items-start gap-2.5 p-2 rounded-xl bg-slate-50 border border-slate-100">
+              <li className="flex items-start gap-2.5 p-2.5 rounded-xl bg-slate-50/80 border border-slate-200/80">
                 <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                 <span>
                   <strong>Floor Level:</strong> High floor ({unit.floorNumber} of {unit.totalFloors}) with panoramic green views.
@@ -178,7 +183,7 @@ export function PropertyCard({
             </ul>
 
             {unit.description && (
-              <div className="p-3.5 rounded-2xl bg-amber-50/50 border border-amber-200/80 text-xs text-slate-700 leading-relaxed">
+              <div className="p-4 rounded-2xl bg-amber-50/60 border border-amber-200/90 text-xs text-slate-700 leading-relaxed shadow-2xs">
                 <strong className="text-slate-900 block mb-1 font-serif">
                   Advisor&apos;s Specific Observation:
                 </strong>
@@ -188,72 +193,99 @@ export function PropertyCard({
           </div>
 
           {/* Right: Key Specs 6-Grid */}
-          <div className="space-y-3 self-start">
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-              <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 shadow-2xs">
-                <span className="text-[10px] uppercase text-slate-400 font-mono block font-semibold truncate">
+          <div className="space-y-3">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-gold font-serif flex items-center gap-1.5">
+              <FileText className="w-4 h-4 text-gold" />
+              Key Specifications
+            </h4>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3">
+              <div className="p-3 sm:p-3.5 rounded-2xl bg-white border border-amber-200/90 hover:border-amber-400 shadow-2xs transition-colors space-y-1">
+                <span className="text-[10px] uppercase text-slate-400 font-mono flex items-center gap-1 font-bold truncate">
+                  <Home className="w-3 h-3 text-gold shrink-0" />
                   Configuration
                 </span>
-                <strong className="text-xs sm:text-sm font-bold text-slate-900 block mt-0.5 truncate font-serif">
+                <strong className="text-xs sm:text-sm font-bold text-slate-900 block truncate font-serif">
                   {unit.bhk} BHK Luxury
                 </strong>
               </div>
-              <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 shadow-2xs">
-                <span className="text-[10px] uppercase text-slate-400 font-mono block font-semibold truncate">
+
+              <div className="p-3 sm:p-3.5 rounded-2xl bg-white border border-amber-200/90 hover:border-amber-400 shadow-2xs transition-colors space-y-1">
+                <span className="text-[10px] uppercase text-slate-400 font-mono flex items-center gap-1 font-bold truncate">
+                  <Maximize2 className="w-3 h-3 text-gold shrink-0" />
                   Carpet Area
                 </span>
-                <strong className="text-xs sm:text-sm font-bold text-[#8C641E] block mt-0.5 truncate font-serif">
+                <strong className="text-xs sm:text-sm font-bold text-gold block truncate font-serif">
                   {unit.carpetAreaSqft} sq.ft
                 </strong>
               </div>
-              <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 shadow-2xs">
-                <span className="text-[10px] uppercase text-slate-400 font-mono block font-semibold truncate">
+
+              <div className="p-3 sm:p-3.5 rounded-2xl bg-white border border-amber-200/90 hover:border-amber-400 shadow-2xs transition-colors space-y-1">
+                <span className="text-[10px] uppercase text-slate-400 font-mono flex items-center gap-1 font-bold truncate">
+                  <Bath className="w-3 h-3 text-gold shrink-0" />
                   Baths / Deck
                 </span>
-                <strong className="text-xs sm:text-sm font-bold text-slate-900 block mt-0.5 truncate">
+                <strong className="text-xs sm:text-sm font-bold text-slate-900 block truncate font-serif">
                   {unit.bathrooms} Baths • {unit.balconies} Deck
                 </strong>
               </div>
-              <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 shadow-2xs">
-                <span className="text-[10px] uppercase text-slate-400 font-mono block font-semibold truncate">
+
+              <div className="p-3 sm:p-3.5 rounded-2xl bg-white border border-amber-200/90 hover:border-amber-400 shadow-2xs transition-colors space-y-1">
+                <span className="text-[10px] uppercase text-slate-400 font-mono flex items-center gap-1 font-bold truncate">
+                  <Layers className="w-3 h-3 text-gold shrink-0" />
                   Floor Level
                 </span>
-                <strong className="text-xs sm:text-sm font-bold text-slate-900 block mt-0.5 truncate">
+                <strong className="text-xs sm:text-sm font-bold text-slate-900 block truncate font-serif">
                   Floor {unit.floorNumber} / {unit.totalFloors}
                 </strong>
               </div>
-              <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 shadow-2xs">
-                <span className="text-[10px] uppercase text-slate-400 font-mono block font-semibold truncate">
+
+              <div className="p-3 sm:p-3.5 rounded-2xl bg-white border border-amber-200/90 hover:border-amber-400 shadow-2xs transition-colors space-y-1">
+                <span className="text-[10px] uppercase text-slate-400 font-mono flex items-center gap-1 font-bold truncate">
+                  <Compass className="w-3 h-3 text-gold shrink-0" />
                   Facing
                 </span>
-                <strong className="text-xs sm:text-sm font-bold text-[#8C641E] block mt-0.5 truncate">
+                <strong className="text-xs sm:text-sm font-bold text-gold block truncate font-serif">
                   {unit.facing?.replace('_', ' ')}
                 </strong>
               </div>
-              <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 shadow-2xs">
-                <span className="text-[10px] uppercase text-slate-400 font-mono block font-semibold truncate">
-                  Metro Distance
+
+              <div className="p-3 sm:p-3.5 rounded-2xl bg-white border border-amber-200/90 hover:border-amber-400 shadow-2xs transition-colors space-y-1">
+                <span className="text-[10px] uppercase text-slate-400 font-mono flex items-center gap-1 font-bold truncate">
+                  <Train className="w-3 h-3 text-gold shrink-0" />
+                  To Metro
                 </span>
-                <strong className="text-xs sm:text-sm font-bold text-slate-900 block mt-0.5 truncate">
+                <strong className="text-xs sm:text-sm font-bold text-slate-900 block truncate font-serif">
                   {project.distanceToMetroKm || 1.6} km
                 </strong>
               </div>
             </div>
 
-            {/* Extra Exploratory Toggles: Room Explorer & Commute Radar */}
-            <div className="flex items-center gap-2 pt-1">
+          </div>
+        </div>
+
+        {/* Collapsible Exploratory Views — this wrapper is the sticky containing block,
+            so the toggle row stays pinned while the user scrolls the open panel */}
+        <div className="space-y-3 pt-1">
+          <div
+            className="sticky top-[54px] sm:top-[66px] z-20 bg-white/95 backdrop-blur-sm rounded-2xl p-1.5 -m-1.5 shadow-[0_6px_20px_-8px_rgba(26,23,19,0.12)]"
+            role="group"
+            aria-label="Explore more details"
+          >
+            <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={() =>
                   setActiveExtraView(activeExtraView === 'ROOMS' ? 'NONE' : 'ROOMS')
                 }
-                className={`flex-1 py-2 px-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs ${
+                aria-expanded={activeExtraView === 'ROOMS'}
+                aria-controls={`rooms-panel-${unit.id}`}
+                className={`flex-1 py-2.5 px-3.5 rounded-xl border text-xs font-bold transition-[background-color,border-color,box-shadow] duration-200 flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs font-serif ${
                   activeExtraView === 'ROOMS'
-                    ? 'bg-amber-100 border-amber-300 text-[#8C641E]'
+                    ? 'bg-amber-100 border-amber-300 text-gold'
                     : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700'
                 }`}
               >
-                <Layout className="w-3.5 h-3.5 text-[#8C641E]" />
+                <Layout className="w-3.5 h-3.5 text-gold" />
                 <span>Room Dimensions</span>
                 {activeExtraView === 'ROOMS' ? (
                   <ChevronUp className="w-3.5 h-3.5 ml-auto" />
@@ -267,13 +299,15 @@ export function PropertyCard({
                 onClick={() =>
                   setActiveExtraView(activeExtraView === 'COMMUTE' ? 'NONE' : 'COMMUTE')
                 }
-                className={`flex-1 py-2 px-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs ${
+                aria-expanded={activeExtraView === 'COMMUTE'}
+                aria-controls={`commute-panel-${unit.id}`}
+                className={`flex-1 py-2.5 px-3.5 rounded-xl border text-xs font-bold transition-[background-color,border-color,box-shadow] duration-200 flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs font-serif ${
                   activeExtraView === 'COMMUTE'
-                    ? 'bg-amber-100 border-amber-300 text-[#8C641E]'
+                    ? 'bg-amber-100 border-amber-300 text-gold'
                     : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700'
                 }`}
               >
-                <Navigation className="w-3.5 h-3.5 text-[#8C641E]" />
+                <Navigation className="w-3.5 h-3.5 text-gold" />
                 <span>Commute Radar</span>
                 {activeExtraView === 'COMMUTE' ? (
                   <ChevronUp className="w-3.5 h-3.5 ml-auto" />
@@ -283,37 +317,38 @@ export function PropertyCard({
               </button>
             </div>
           </div>
+
+          <AnimatePresence>
+            {activeExtraView === 'ROOMS' && (
+              <motion.div
+                id={`rooms-panel-${unit.id}`}
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+                className="overflow-hidden"
+              >
+                <PropertyFloorplanHotspots unit={unit} />
+              </motion.div>
+            )}
+
+            {activeExtraView === 'COMMUTE' && (
+              <motion.div
+                id={`commute-panel-${unit.id}`}
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+                className="overflow-hidden"
+              >
+                <PropertyCommuteMatrix
+                  microMarket={project.microMarket}
+                  distanceToMetroKm={project.distanceToMetroKm}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-
-        {/* Collapsible Exploratory Views */}
-        <AnimatePresence>
-          {activeExtraView === 'ROOMS' && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3 }}
-              className="overflow-hidden"
-            >
-              <PropertyFloorplanHotspots unit={unit} />
-            </motion.div>
-          )}
-
-          {activeExtraView === 'COMMUTE' && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3 }}
-              className="overflow-hidden"
-            >
-              <PropertyCommuteMatrix
-                microMarket={project.microMarket}
-                distanceToMetroKm={project.distanceToMetroKm}
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
 
         {/* Interactive Home Loan & EMI Simulator */}
         <PortalEmiCalculator
@@ -332,9 +367,10 @@ export function PropertyCard({
               {unit.amenities.map((am: string, i: number) => (
                 <span
                   key={i}
-                  className="px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 text-xs font-medium shadow-2xs"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold shadow-2xs font-serif"
                 >
-                  ✨ {am}
+                  <Sparkles className="w-3 h-3 text-gold shrink-0" />
+                  <span>{am}</span>
                 </span>
               ))}
             </div>
@@ -348,10 +384,10 @@ export function PropertyCard({
             whileTap={{ scale: 0.98 }}
             type="button"
             onClick={() => onOpenDossier(unit)}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300 px-4.5 py-3 text-xs font-bold text-slate-700 transition-all shadow-xs cursor-pointer"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300 px-5 py-3 text-xs font-bold text-slate-700 transition-[background-color,border-color,box-shadow] duration-200 shadow-xs cursor-pointer font-serif"
             title="Download or Print Verified Property Factsheet (PDF)"
           >
-            <Download className="w-4 h-4 text-[#8C641E]" />
+            <Download className="w-4 h-4 text-gold" />
             <span>{project.brochureUrl ? 'Download Brochure (PDF)' : 'Export Property Dossier (PDF)'}</span>
           </motion.button>
 
@@ -362,9 +398,9 @@ export function PropertyCard({
               whileTap={{ scale: 0.98 }}
               type="button"
               onClick={() => onOpenBooking(unit)}
-              className="flex-1 sm:flex-initial rounded-2xl border border-amber-300 bg-gradient-to-r from-amber-50 to-amber-100/80 hover:from-amber-100 hover:to-amber-200/80 px-4.5 py-3 text-xs font-bold text-[#8C641E] flex items-center justify-center gap-1.5 transition-all shadow-xs cursor-pointer min-w-[150px]"
+              className="flex-1 sm:flex-initial rounded-2xl border border-amber-300 bg-gradient-to-r from-amber-50 to-amber-100/80 hover:from-amber-100 hover:to-amber-200/80 px-5 py-3 text-xs font-bold text-gold flex items-center justify-center gap-1.5 transition-[background-color,border-color,box-shadow] duration-200 shadow-xs cursor-pointer min-w-[150px] font-serif"
             >
-              <Calendar className="w-4 h-4 text-[#8C641E]" />
+              <Calendar className="w-4 h-4 text-gold" />
               <span>Book Physical Visit</span>
             </motion.button>
 
@@ -374,7 +410,7 @@ export function PropertyCard({
               whileTap={{ scale: 0.98 }}
               type="button"
               onClick={() => onWhatsAppInquiry(unit)}
-              className="w-full xs:w-auto flex-1 sm:flex-initial rounded-2xl bg-gradient-to-r from-[#B38A38] to-[#8C641E] px-5 py-3 text-xs font-extrabold text-white shadow-md hover:brightness-105 flex items-center justify-center gap-2 transition-all cursor-pointer min-w-[150px]"
+              className="w-full xs:w-auto flex-1 sm:flex-initial rounded-2xl bg-gradient-to-r from-gold-light to-gold px-5.5 py-3 text-xs font-extrabold text-white shadow-md hover:brightness-105 flex items-center justify-center gap-2 transition-[background-color,border-color,box-shadow] duration-200 cursor-pointer min-w-[150px] font-serif"
             >
               <Send className="w-4 h-4" />
               <span>Ask on WhatsApp</span>

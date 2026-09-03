@@ -52,7 +52,8 @@ export function ProjectMediaStudioModal({
   // Elevation State
   const [coverImage, setCoverImage] = useState<string>(project?.coverImageUrl || '');
   const [elevationGallery, setElevationGallery] = useState<string[]>(() => {
-    const urls = parseGalleryUrls(project?.mediaGalleryJson);
+    const elevUrls = parseGalleryUrls(project?.elevationImagesJson);
+    const urls = elevUrls.length > 0 ? elevUrls : parseGalleryUrls(project?.mediaGalleryJson);
     if (project?.coverImageUrl && !urls.includes(project.coverImageUrl)) {
       urls.unshift(project.coverImageUrl);
     }
@@ -74,7 +75,8 @@ export function ProjectMediaStudioModal({
     if (open) {
       fetchStorageStatus();
       setCoverImage(project?.coverImageUrl || '');
-      const urls = parseGalleryUrls(project?.mediaGalleryJson);
+      const elevUrls = parseGalleryUrls(project?.elevationImagesJson);
+      const urls = elevUrls.length > 0 ? elevUrls : parseGalleryUrls(project?.mediaGalleryJson);
       if (project?.coverImageUrl && !urls.includes(project.coverImageUrl)) {
         urls.unshift(project.coverImageUrl);
       }

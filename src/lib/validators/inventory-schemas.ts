@@ -37,6 +37,10 @@ export const flexibleMediaAssetSchema = z.union([
 ]);
 
 const mediaGallery = z.array(flexibleMediaAssetSchema).max(100).default([]);
+const elevationImages = z.array(flexibleMediaAssetSchema).max(50).default([]);
+const floorPlanImages = z.array(flexibleMediaAssetSchema).max(50).default([]);
+const brochurePhotos = z.array(flexibleMediaAssetSchema).max(100).default([]);
+const videos = z.array(flexibleMediaAssetSchema).max(20).default([]);
 const highlights = z.array(z.string().trim().min(2).max(240)).max(20).default([]);
 
 export const createProjectSchema = z.object({
@@ -51,6 +55,9 @@ export const createProjectSchema = z.object({
   locationDescription: z.string().trim().max(2000).optional().nullable(),
   keyHighlights: highlights,
   mediaGallery,
+  elevationImages,
+  floorPlanImages,
+  brochurePhotos,
   coverImageUrl: optionalUrl,
   latitude: z.number().optional().nullable(),
   longitude: z.number().optional().nullable(),
@@ -92,6 +99,9 @@ export const createUnitSchema = z.object({
   featureHighlights: highlights,
   floorPlanUrl: optionalUrl,
   mediaGallery,
+  elevationImages,
+  floorPlanImages,
+  videos,
   
   // Custom Overrides (optional, otherwise computed via project defaults)
   agreementValue: z.number().positive('Agreement value must be positive'),

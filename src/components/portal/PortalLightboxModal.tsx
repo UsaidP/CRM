@@ -105,7 +105,7 @@ export function PortalLightboxModal({
                     lightboxState.photos.length;
                   onNavigate(prev);
                 }}
-                className="absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-surface/90 hover:bg-surface text-content grid place-items-center border border-border shadow-xl backdrop-blur transition-all active:scale-95 cursor-pointer"
+                className="absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-surface/90 hover:bg-surface text-content grid place-items-center border border-border shadow-xl backdrop-blur transition-[background-color,border-color,box-shadow,transform] duration-200 active:scale-95 cursor-pointer"
                 aria-label="Previous image"
               >
                 <ChevronLeft className="w-6 h-6" />
@@ -117,7 +117,7 @@ export function PortalLightboxModal({
                   const next = (lightboxState.currentIndex + 1) % lightboxState.photos.length;
                   onNavigate(next);
                 }}
-                className="absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-surface/90 hover:bg-surface text-content grid place-items-center border border-border shadow-xl backdrop-blur transition-all active:scale-95 cursor-pointer"
+                className="absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-surface/90 hover:bg-surface text-content grid place-items-center border border-border shadow-xl backdrop-blur transition-[background-color,border-color,box-shadow,transform] duration-200 active:scale-95 cursor-pointer"
                 aria-label="Next image"
               >
                 <ChevronRight className="w-6 h-6" />
@@ -141,7 +141,7 @@ export function PortalLightboxModal({
                   key={ph.id || idx}
                   type="button"
                   onClick={() => onNavigate(idx)}
-                  className={`w-14 h-11 rounded-lg overflow-hidden shrink-0 border-2 transition-all cursor-pointer ${
+                  className={`w-14 h-11 rounded-lg overflow-hidden shrink-0 border-2 transition-[background-color,border-color,box-shadow,transform] duration-200 cursor-pointer ${
                     lightboxState.currentIndex === idx
                       ? 'border-accent ring-2 ring-accent/40 scale-105'
                       : 'border-border opacity-60 hover:opacity-100'

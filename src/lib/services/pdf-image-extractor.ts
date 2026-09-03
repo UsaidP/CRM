@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
+import crypto from 'crypto';
 import { execFileSync } from 'child_process';
 import type { ProjectAssetRecord } from '@/lib/services/brochure-parser-service';
 
@@ -43,6 +44,13 @@ function findExecutable(name: string): string | null {
 }
 
 /**
+ * Helper to compute SHA256 hash of a buffer
+ */
+function computeHash(buf: Buffer): string {
+  return crypto.createHash('sha256').update(buf).digest('hex');
+}
+
+/**
  * Extracts genuine high-resolution JPEG images and rendered pages from any PDF brochure dynamically.
  * Zero-fabrication policy: Never invents carpet areas, bhk numbers, or customer-specific mappings.
  */
@@ -59,6 +67,7 @@ export async function extractRealImagesFromPdf(
 ): Promise<ExtractedRealAsset[]> {
   const cleanSlug = projectName.toLowerCase().replace(/[^a-z0-9]/g, '_');
   const tempDir = path.join(os.tmpdir(), `crm_pdf_extract_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`);
+  const seenHashes = new Set<string>();
 
   try {
     fs.mkdirSync(tempDir, { recursive: true });
@@ -88,11 +97,16 @@ export async function extractRealImagesFromPdf(
         for (const f of generatedFiles) {
           const p = path.join(tempDir, f);
           const pageNum = parseInt(f.replace(/[^0-9]/g, ''), 10) || 1;
-          renderedPages.push({
-            pageNum,
-            buffer: fs.readFileSync(p),
-            filePath: p,
-          });
+          const pageBuf = fs.readFileSync(p);
+          const h = computeHash(pageBuf);
+          if (!seenHashes.has(h)) {
+            seenHashes.add(h);
+            renderedPages.push({
+              pageNum,
+              buffer: pageBuf,
+              filePath: p,
+            });
+          }
         }
       } catch (ppmErr: any) {
         console.warn('[PDF-EXTRACT] pdftoppm rendering warning:', ppmErr.message);
@@ -120,11 +134,16 @@ export async function extractRealImagesFromPdf(
           const stat = fs.statSync(p);
           // Filter out tiny UI icons / decorative artifacts < 20KB
           if (stat.size > 20000) {
-            rawImages.push({
-              buffer: fs.readFileSync(p),
-              fileName: f,
-              size: stat.size,
-            });
+            const imgBuf = fs.readFileSync(p);
+            const h = computeHash(imgBuf);
+            if (!seenHashes.has(h)) {
+              seenHashes.add(h);
+              rawImages.push({
+                buffer: imgBuf,
+                fileName: f,
+                size: stat.size,
+              });
+            }
           }
         }
       } catch (imgErr: any) {
@@ -217,19 +236,22 @@ export async function extractRealImagesFromPdf(
       });
     }
 
-    // Attach raw images if no full pages were rendered
-    if (finalAssets.length === 0 && rawImages.length > 0) {
+    // Attach high-res raw embedded images if extracted
+    if (rawImages.length > 0) {
       rawImages.forEach((img, idx) => {
-        finalAssets.push({
-          pageNumber: idx + 1,
-          assetType: idx === 0 ? 'cover' : 'elevation',
-          subtype: 'embedded_image',
-          title: `${projectName} Image ${idx + 1}`,
-          description: `High-resolution asset extracted from ${originalFilename}.`,
-          buffer: img.buffer,
-          fileName: `${cleanSlug}_extracted_${idx + 1}.jpg`,
-          mimeType: 'image/jpeg',
-        });
+        // If we didn't have any rendered pages, or if it's additional embedded image
+        if (finalAssets.length === 0 || img.size > 80000) {
+          finalAssets.push({
+            pageNumber: finalAssets.length + 1,
+            assetType: finalAssets.length === 0 && idx === 0 ? 'cover' : 'elevation',
+            subtype: 'embedded_image',
+            title: `${projectName} Photo ${idx + 1}`,
+            description: `High-resolution original asset extracted from ${originalFilename}.`,
+            buffer: img.buffer,
+            fileName: `${cleanSlug}_extracted_${idx + 1}.jpg`,
+            mimeType: 'image/jpeg',
+          });
+        }
       });
     }
 

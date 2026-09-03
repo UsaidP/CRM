@@ -154,6 +154,9 @@ model DeveloperProject {
   locationDescription         String?
   keyHighlightsJson            String             @default("[]")
   mediaGalleryJson             String             @default("[]")
+  elevationImagesJson          String             @default("[]")
+  floorPlanImagesJson          String             @default("[]")
+  brochurePhotosJson           String             @default("[]")
   coverImageUrl                String?
   latitude                    Float?
   longitude                   Float?
@@ -208,6 +211,11 @@ model PropertyUnit {
   featureHighlightsJson       String              @default("[]")
   floorPlanUrl                String?
   mediaGalleryJson            String              @default("[]")
+  elevationImagesJson         String              @default("[]")
+  floorPlanImagesJson         String              @default("[]")
+  photoGalleryJson            String              @default("[]")
+  videosJson                  String              @default("[]")
+  videoReelUrl                String?
 
   // Financial Breakdown (INR)
   agreementValue              Float
@@ -225,8 +233,6 @@ model PropertyUnit {
   verifiedBy                  User?               @relation("UnitVerifier", fields: [verifiedByUserId], references: [id])
   lastVerifiedAt              DateTime            @default(now())
   verificationNotes           String?
-  photoGalleryJson            String              @default("[]")
-  videoReelUrl                String?
   isHotDeal                   Boolean             @default(false)
   isExclusive                 Boolean             @default(false)
 

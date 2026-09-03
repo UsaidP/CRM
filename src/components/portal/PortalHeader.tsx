@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShieldCheck,
@@ -37,12 +37,25 @@ export function PortalHeader({
   unitsCount,
   sendTelemetry,
 }: PortalHeaderProps) {
+  const [scrollProgress, setScrollProgress] = useState(0);
+
+  useEffect(() => {
+    const onScroll = () => {
+      const doc = document.documentElement;
+      const max = doc.scrollHeight - doc.clientHeight;
+      setScrollProgress(max > 0 ? Math.min(1, doc.scrollTop / max) : 0);
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   return (
     <motion.header
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-      className="sticky top-0 z-40 bg-white/90 backdrop-blur-xl border-b border-amber-200/70 shadow-[0_4px_20px_-4px_rgba(140,100,30,0.06)]"
+      className="sticky top-0 z-40 bg-white/90 backdrop-blur-2xl border-b border-amber-200/75 shadow-[0_4px_25px_-4px_rgba(180,130,50,0.08)]"
     >
       <div className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 py-2.5 sm:py-3.5 flex items-center justify-between gap-2 sm:gap-4">
         {/* Left: Brand Identity & Advisory Badge */}
@@ -58,8 +71,8 @@ export function PortalHeader({
                 : 'MahaRERA A52000028714'
             }
           />
-          <div className="hidden lg:flex items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-50 to-amber-100/60 px-3 py-1 text-[11px] font-semibold text-[#8C641E] border border-amber-300/80 shadow-2xs shrink-0">
-            <ShieldCheck className="w-3.5 h-3.5 text-[#8C641E]" />
+          <div className="hidden lg:flex items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-50/90 via-amber-100/60 to-amber-50/90 px-3 py-1 text-[11px] font-bold text-gold border border-amber-300/90 shadow-2xs shrink-0 tracking-wide font-serif">
+            <ShieldCheck className="w-3.5 h-3.5 text-gold" />
             <span>Verified Advisory Portfolio</span>
           </div>
         </div>
@@ -68,25 +81,28 @@ export function PortalHeader({
         <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
           {/* Compare Button (if multiple units) */}
           {unitsCount > 1 && onOpenComparison && (
-            <button
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.96 }}
               type="button"
               onClick={onOpenComparison}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-amber-300/90 bg-amber-50/80 hover:bg-amber-100/80 px-2.5 sm:px-3 py-1.5 text-xs font-bold text-[#8C641E] transition-all shadow-2xs hover:shadow-xs active:scale-95 cursor-pointer"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-amber-300/90 bg-gradient-to-r from-amber-50 to-amber-100/70 hover:from-amber-100 hover:to-amber-200/80 px-2.5 sm:px-3.5 py-1.5 text-xs font-bold text-gold transition-[background-color,border-color,box-shadow] duration-200 shadow-2xs hover:shadow-xs active:scale-[0.98] cursor-pointer font-serif"
+              aria-label={`Compare all ${unitsCount} properties side-by-side`}
               title="Compare all properties side-by-side"
             >
-              <Layers className="w-3.5 h-3.5 text-[#8C641E]" />
+              <Layers className="w-3.5 h-3.5 text-gold" />
               <span className="hidden sm:inline">Compare ({unitsCount})</span>
-            </button>
+            </motion.button>
           )}
 
-          {/* Social Proof Pills */}
+          {/* Social Walkthrough Video Links */}
           <div className="hidden md:flex items-center gap-1.5 border-r border-slate-200/80 pr-2.5 mr-0.5">
             <a
               href="https://www.youtube.com/@zamzamproperties6354"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-red-50/80 hover:bg-red-100/80 border border-red-200/80 text-red-700 text-xs font-semibold transition-all hover:scale-[1.02] shadow-2xs"
-              title="Watch video tours on YouTube"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-red-50/90 hover:bg-red-100 border border-red-200 text-red-700 text-xs font-bold transition-[background-color,border-color,box-shadow,transform] duration-200 hover:scale-[1.02] shadow-2xs"
+              title="Watch high-definition property tours on YouTube"
             >
               <YoutubeIcon className="w-3.5 h-3.5 text-red-600 shrink-0" />
               <span className="hidden xl:inline">YouTube</span>
@@ -95,8 +111,8 @@ export function PortalHeader({
               href="https://www.instagram.com/zamzamproperties5531/"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-pink-50/80 hover:bg-pink-100/80 border border-pink-200/80 text-pink-700 text-xs font-semibold transition-all hover:scale-[1.02] shadow-2xs"
-              title="View reels on Instagram"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-pink-50/90 hover:bg-pink-100 border border-pink-200 text-pink-700 text-xs font-bold transition-[background-color,border-color,box-shadow,transform] duration-200 hover:scale-[1.02] shadow-2xs"
+              title="Watch reels and live site walkthroughs on Instagram"
             >
               <InstagramIcon className="w-3.5 h-3.5 text-pink-600 shrink-0" />
               <span className="hidden xl:inline">Instagram</span>
@@ -105,11 +121,12 @@ export function PortalHeader({
 
           {/* Share Button */}
           <motion.button
+            whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.95 }}
             type="button"
             onClick={onShare}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white hover:bg-amber-50/40 hover:border-amber-300 px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-slate-700 transition-all shadow-2xs hover:shadow-xs cursor-pointer"
-            title="Share this curated portfolio"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white hover:bg-amber-50/50 hover:border-amber-300 px-2.5 sm:px-3.5 py-1.5 text-xs font-bold text-slate-700 transition-[background-color,border-color,box-shadow] duration-200 shadow-2xs hover:shadow-xs cursor-pointer"
+            title="Share this curated portfolio link"
           >
             <AnimatePresence mode="wait">
               {copiedLink ? (
@@ -118,7 +135,7 @@ export function PortalHeader({
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   exit={{ scale: 0.8, opacity: 0 }}
-                  className="inline-flex items-center gap-1 text-emerald-700 font-bold"
+                  className="inline-flex items-center gap-1 text-emerald-700 font-extrabold"
                 >
                   <Check className="w-3.5 h-3.5 text-emerald-600" />
                   <span className="text-[11px] sm:text-xs">Copied!</span>
@@ -144,14 +161,20 @@ export function PortalHeader({
             whileTap={{ scale: 0.96 }}
             href={`tel:${advisor.phoneE164 || '+919967731071'}`}
             onClick={() => sendTelemetry('CALL_CLICK')}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white px-3 sm:px-4 py-1.5 text-xs font-bold transition-all shadow-xs shadow-emerald-700/20"
-            title={`Call Advisor: ${advisor.fullName || 'Suhel Patel'}`}
+            className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-700 hover:to-teal-800 text-white px-3.5 sm:px-4 py-1.5 text-xs font-extrabold transition-[background-color,border-color,box-shadow] duration-200 shadow-xs shadow-emerald-700/25"
+            title={`Call Advisor: ${advisor.fullName || 'Property Advisor'}`}
           >
             <PhoneCall className="w-3.5 h-3.5 text-white shrink-0" />
-            <span className="text-[11px] sm:text-xs">Call Advisor</span>
+            <span className="text-[11px] sm:text-xs font-serif">Call Advisor</span>
           </motion.a>
         </div>
       </div>
+      {/* Scroll Progress Hairline */}
+      <div
+        aria-hidden="true"
+        className="absolute bottom-0 left-0 h-[2px] bg-gradient-to-r from-gold-lighter via-gold-light to-gold transition-[width] duration-150 ease-out"
+        style={{ width: `${scrollProgress * 100}%` }}
+      />
     </motion.header>
   );
 }

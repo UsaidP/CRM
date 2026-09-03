@@ -271,14 +271,50 @@ export function parseBrochureText(rawText: string, filename: string = 'brochure.
   let projectName = '';
   let developerName = '';
 
-  const byMatch = normalizedText.match(/(.+?)\s+by\s+([A-Za-z0-9\s&.,'-]+?)(?:\s+(?:presents|presents\s+a|luxury|residential|plot|sector|maharera|reg))/i);
-  if (byMatch) {
-    projectName = byMatch[1].replace(/^(?:welcome\s+to|introducing|upcoming|prestigious)\s+/i, '').trim();
-    developerName = byMatch[2].trim();
-  } else {
-    const titleMatch = normalizedText.match(/^(?:a\s+project\s+by\s+)?([A-Z0-9\s&'-]{3,40})/);
-    projectName = titleMatch ? titleMatch[1].trim() : filename.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
+  // Pattern A: "DEVELOPER PRESENTS PROJECT"
+  const presentsMatch = normalizedText.match(/^([A-Za-z0-9\s&.,'-]+?)\s+PRESENTS\s+([A-Za-z0-9\s&.,'-]+?)(?:\s+(?:an\s+|a\s+|ultra|luxury|residential|commercial|plot|sector|maharera|reg|location|$))/i);
+  if (presentsMatch) {
+    developerName = presentsMatch[1].replace(/^(?:welcome\s+to|introducing|upcoming|prestigious)\s+/i, '').trim();
+    projectName = presentsMatch[2].trim();
+  }
+
+  // Pattern B: "A Project By: Developer"
+  const projByMatch = normalizedText.match(/(?:a\s+project\s+by|project\s+by|developer|promoter)[:\s]+([^;\n\r|]+?)(?:\s+(?:office|site|email|architect|contact|rcc|tel|ph|$))/i);
+  if (projByMatch && (!developerName || developerName === 'Premier Group')) {
+    developerName = projByMatch[1].trim();
+  }
+
+  // Pattern C: "Project by Developer"
+  if (!projectName || !developerName) {
+    const byMatch = normalizedText.match(/(.+?)\s+by\s+([A-Za-z0-9\s&.,'-]+?)(?:\s+(?:presents|presents\s+a|luxury|residential|plot|sector|maharera|reg))/i);
+    if (byMatch) {
+      if (!projectName) projectName = byMatch[1].replace(/^(?:welcome\s+to|introducing|upcoming|prestigious)\s+/i, '').trim();
+      if (!developerName) developerName = byMatch[2].trim();
+    }
+  }
+
+  // Pattern D: Heading line before Plot / Sector / MahaRERA
+  if (!projectName) {
+    const headingMatch = normalizedText.match(/^([A-Z0-9\s&'-]{3,40}?)(?:\s+(?:Plot|Sector|MahaRERA|ABOUT|Near|G\+))/i);
+    if (headingMatch) {
+      projectName = headingMatch[1].trim();
+    } else {
+      const titleMatch = normalizedText.match(/^(?:a\s+project\s+by\s+)?([A-Z0-9\s&'-]{3,40})/);
+      projectName = titleMatch ? titleMatch[1].trim() : filename.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
+    }
+  }
+
+  if (!developerName) {
     developerName = 'Premier Group';
+  }
+
+  // Clean title-case for project and developer if ALL CAPS
+  const toTitleCase = (s: string) => s.split(' ').map(w => w.length > 2 ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase() : w).join(' ');
+  if (projectName === projectName.toUpperCase() && projectName.length > 3) {
+    projectName = toTitleCase(projectName);
+  }
+  if (developerName === developerName.toUpperCase() && developerName.length > 3) {
+    developerName = toTitleCase(developerName);
   }
 
   // 2. MAHARERA NUMBER
@@ -371,10 +407,13 @@ export function parseBrochureText(rawText: string, filename: string = 'brochure.
 
   // 8. BASE PRICING PER SQFT
   let basePricePerSqft = 0;
-  if (microMarket.includes('Kharghar')) basePricePerSqft = 10500;
-  else if (microMarket.includes('Taloja')) basePricePerSqft = 6500;
-  else if (microMarket.includes('Ulwe')) basePricePerSqft = 8200;
-  else if (microMarket.includes('Panvel')) basePricePerSqft = 7500;
+  const rateMatch = normalizedText.match(/(?:base\s*rate|base\s*price|rate|price)[:\s]*(?:rs\.?|₹)?\s*([\d,]+)\s*(?:\/|\s*per)?\s*sq\.?\s*ft/i);
+  if (rateMatch) {
+    basePricePerSqft = parseInt(rateMatch[1].replace(/,/g, ''), 10);
+  } else {
+    // Zero-fabrication default: only set if discovered
+    basePricePerSqft = 0;
+  }
 
   // 9. FLOOR PLANS & UNIT MATRIX GENERATION
   const units: ExtractedBrochureUnit[] = [];
@@ -453,7 +492,7 @@ export function parseBrochureText(rawText: string, filename: string = 'brochure.
   }
 
   const shortDescription = `${elevation} situated at ${microMarket} (${subLocality}). Featuring premium ${Array.from(detectedBhks).map(b => `${b} BHK`).join(' & ')} flats with balconies and ground floor commercial shops.`;
-  const description = `${projectName} by ${developerName} is a prestigious ${elevation} located at ${subLocality}, ${microMarket}. Approved under MahaRERA Reg No: ${reraNumber}. Excellent connectivity: 3 mins walk to Metro Station, 7 mins drive to Central Park & Golf Course, and 15 mins to Navi Mumbai International Airport.`;
+  const description = `${projectName} by ${developerName}${subLocality ? ` located at ${subLocality}, ${microMarket}` : ` located in ${microMarket}`}${reraNumber ? `. Approved under MahaRERA Reg No: ${reraNumber}.` : '.'}`;
 
   return {
     projectName,
@@ -469,33 +508,19 @@ export function parseBrochureText(rawText: string, filename: string = 'brochure.
     expectedPossessionDate,
     possessionStatus,
     basePricePerSqft,
-    plotDetails: 'Clear Title CIDCO Transfer Plot',
-    structureType: 'Earthquake Resistant RCC Framed Structure',
-    floorPlateSummary: '1st Floor features 7 Flats with Balconies; 2nd to 7th Floor features 8 Flats each with central high-speed elevator lobby.',
+    plotDetails: undefined,
+    structureType: undefined,
+    floorPlateSummary: undefined,
     shortDescription,
     description,
     amenities: Array.from(new Set(extractedAmenities)),
-    specifications: {
-      flooring: "2'x2' Vitrified flooring tiles in all rooms",
-      kitchen: "Granite kitchen platform with stainless steel sink & ceramic tiles dado",
-      doors: "Decorative lamination finish main door & internal wooden doors with marble frames",
-      windows: "Powder Coated Aluminum sliding windows",
-      bathrooms: "Concealed plumbing with branded sanitary fittings",
-      electrical: "Concealed copper wiring with modular switches & TV points",
-      waterproofing: "Special terrace water proofing treatment with china chips"
-    },
-    transitConnectivity: [
-      { destination: "Metro Station", timeOrDistance: "3 mins walk", type: "METRO" },
-      { destination: "Central Park & Golf Course", timeOrDistance: "7 mins drive", type: "LANDMARK" },
-      { destination: "Railway Station", timeOrDistance: "10 mins drive", type: "RAILWAY" },
-      { destination: "Navi Mumbai International Airport", timeOrDistance: "15 mins drive", type: "AIRPORT" },
-    ],
+    specifications: {},
+    transitConnectivity: [],
     keyHighlights: [
-      `MahaRERA Registered Project: ${reraNumber}`,
-      `Elevation: ${elevation}`,
-      `Location: ${subLocality}`,
-      `Typologies: ${Array.from(detectedBhks).map(b => `${b} BHK`).join(' & ')} with Balcony`,
-      `Connectivity: 3 mins walk to Metro Station, 15 mins to International Airport`,
+      ...(reraNumber ? [`MahaRERA Registered Project: ${reraNumber}`] : []),
+      ...(elevation ? [`Elevation: ${elevation}`] : []),
+      ...(subLocality ? [`Location: ${subLocality}`] : []),
+      ...(detectedBhks.size > 0 ? [`Typologies: ${Array.from(detectedBhks).map(b => `${b} BHK`).join(' & ')}`] : []),
     ],
     developerSalesPocName,
     developerSalesPocPhone,
@@ -516,20 +541,11 @@ export function parseBrochureText(rawText: string, filename: string = 'brochure.
       notes: 'Direct builder booking contacts and site office address are secured for internal CRM broker use only.',
     },
     classifiedMedia: {
-      elevationsCount: 3,
-      floorPlansCount: units.length,
-      hasMasterPlan: true,
-      elevations: [
-        { title: `${projectName} Main Front Elevation`, viewAngle: 'FRONT_FACADE', description: 'Grand architectural high-rise facade' },
-        { title: `${projectName} Luxury Podium & Amenities`, viewAngle: 'PODIUM_VIEW', description: 'Resort deck & landscaping' },
-        { title: `${projectName} Night Illumination`, viewAngle: 'NIGHT_AERIAL', description: 'Nighttime architectural lighting' },
-      ],
-      floorPlans: units.map(u => ({
-        bhk: u.bhk,
-        carpetAreaSqft: u.carpetAreaSqft,
-        title: `${u.bhk} BHK Architectural Layout`,
-        description: `${u.carpetAreaSqft} sq.ft RERA Carpet with Balcony`,
-      })),
+      elevationsCount: 0,
+      floorPlansCount: 0,
+      hasMasterPlan: false,
+      elevations: [],
+      floorPlans: [],
     },
     units,
     rawTextPreview: normalizedText.slice(0, 500) + '...',

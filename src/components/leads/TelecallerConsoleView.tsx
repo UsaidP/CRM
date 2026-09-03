@@ -297,32 +297,32 @@ export function TelecallerConsoleView({
   return (
     <div className="space-y-4">
       {/* Console Header Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-2xl bg-surface border border-border shadow-xs">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-accent text-white shadow-xs">
-            <Zap className="w-5 h-5 fill-white" />
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4 p-3.5 sm:p-4 rounded-2xl bg-surface border border-border shadow-xs">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="p-2 sm:p-2.5 rounded-xl bg-accent text-white shadow-xs shrink-0">
+            <Zap className="w-4 sm:w-5 h-4 sm:h-5 fill-white" />
           </div>
-          <div>
-            <h2 className="text-lg font-bold text-content font-display flex items-center gap-2">
-              <span>Telecaller High-Velocity Calling Console</span>
-              <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-status-success-surface text-status-success border border-status-success/30">
+          <div className="min-w-0">
+            <h2 className="text-base sm:text-lg font-bold text-content font-display flex items-center gap-2 truncate">
+              <span className="truncate">Telecaller High-Velocity Calling Console</span>
+              <span className="hidden sm:inline text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-status-success-surface text-status-success border border-status-success/30 shrink-0">
                 ⚡ 40px Speed Mode
               </span>
             </h2>
-            <p className="text-xs text-content-secondary">
+            <p className="text-xs text-content-secondary truncate">
               Zero-latency lead disposition • ZamZam 4-Pillar Buyer Qualification • Speed-to-Lead SLA tracking
             </p>
           </div>
         </div>
 
         {/* Quick Filter Tabs & Duty End Action */}
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
           {(['UNCONTACTED', 'HOT', 'OVERDUE', 'ALL'] as const).map((filterKey) => (
             <button
               key={filterKey}
               type="button"
               onClick={() => setActiveQueueFilter(filterKey)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 activeQueueFilter === filterKey
                   ? 'bg-accent text-white shadow-xs'
                   : 'bg-surface-subtle text-content-secondary hover:text-content border border-border'
@@ -342,7 +342,7 @@ export function TelecallerConsoleView({
               setBackupMode('DUTY_END');
               setIsBackupModalOpen(true);
             }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-extrabold bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white shadow-xs transition-all active:scale-98 cursor-pointer ml-1"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-extrabold bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white shadow-xs transition-all active:scale-98 cursor-pointer"
             title="End calling shift & create Google Drive backup"
           >
             <Flame className="w-3.5 h-3.5 text-amber-200" />
@@ -361,11 +361,11 @@ export function TelecallerConsoleView({
       )}
 
       {/* Main Dual-Pane Workstation */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 items-start">
         {/* =========================================================================
             LEFT PANE: 40px SPREADSHEET-SPEED CALL QUEUE (5 cols on lg)
             ========================================================================= */}
-        <div className="lg:col-span-5 flex flex-col rounded-2xl bg-surface border border-border shadow-xs overflow-hidden h-[760px]">
+        <div className="lg:col-span-5 flex flex-col rounded-2xl bg-surface border border-border shadow-xs overflow-hidden h-[380px] sm:h-[460px] lg:h-[760px]">
           {/* Search Header */}
           <div className="p-3 border-b border-border bg-surface-subtle flex items-center gap-2">
             <div className="relative flex-1 flex items-center">
