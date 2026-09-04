@@ -2688,20 +2688,20 @@ export function InventoryClient({
           open={!!formCModalProject}
           onClose={() => setFormCModalProject(null)}
           projectData={{
-            reraNumber: formCModalProject.reraNumber || 'P52000079818',
-            projectName: formCModalProject.projectName || 'CITY AVENUE',
-            developerName: formCModalProject.developerName || 'City Space',
-            promoterName: formCModalProject.promoterName || formCModalProject.developerName || 'City Space',
-            address: formCModalProject.address || 'PLOT NO 12D, SECTOR-24 at Taloja Panchnad , Panvel, Raigarh, 410208',
-            plotDetails: formCModalProject.plotDetails || formCModalProject.address || 'PLOT NO 12D, SECTOR-24 at Taloja Panchnad , Panvel, Raigarh, 410208',
-            registeredOffice: formCModalProject.registeredOffice || 'Tehsil: Panvel, District: Raigarh, Pin: 410210',
-            registrationDate: formCModalProject.registrationDate ? String(formCModalProject.registrationDate) : '27/03/2025',
-            validUntil: formCModalProject.validUntil ? String(formCModalProject.validUntil) : (formCModalProject.reraValidUntil ? String(formCModalProject.reraValidUntil) : '31/12/2028'),
-            signatoryName: formCModalProject.signatoryName || 'Prakash Kaluram Sabale',
-            signatoryDate: formCModalProject.signatoryDate || '3/27/2025 3:57:36 PM',
+            reraNumber: formCModalProject.reraNumber || '',
+            projectName: formCModalProject.projectName || 'Registered Project',
+            developerName: formCModalProject.developerName || 'Authorized Developer',
+            promoterName: formCModalProject.promoterName || formCModalProject.developerName || 'Authorized Developer Entity',
+            address: formCModalProject.address || formCModalProject.plotDetails || 'Project Location, Maharashtra',
+            plotDetails: formCModalProject.plotDetails || formCModalProject.address || 'Project Location, Maharashtra',
+            registeredOffice: formCModalProject.registeredOffice || `${formCModalProject.developerName || 'Developer'} Corporate Office`,
+            registrationDate: formCModalProject.registrationDate ? String(formCModalProject.registrationDate) : '2024-01-01',
+            validUntil: formCModalProject.validUntil ? String(formCModalProject.validUntil) : (formCModalProject.reraValidUntil ? String(formCModalProject.reraValidUntil) : '2027-12-31'),
+            signatoryName: formCModalProject.signatoryName || 'Competent Authority, MahaRERA',
+            signatoryDate: formCModalProject.signatoryDate || '',
             certificateUrl: formCModalProject.reraCertificateUrl || (formCModalProject.reraNumber === 'P52000079818' ? '/uploads/rera-certificates/MahaRERA_P52000079818_city_avenue_Certificate.pdf' : undefined),
             originalImageUrl: formCModalProject.originalDocumentUrl || (formCModalProject.reraNumber === 'P52000079818' ? '/images/original-certificates/P52000079818.png' : undefined),
-            isOriginalScannedDocument: true,
+            isOriginalScannedDocument: Boolean(formCModalProject.originalDocumentUrl || formCModalProject.reraNumber === 'P52000079818'),
           }}
         />
       )}

@@ -73,6 +73,7 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
   const [showFormCModal, setShowFormCModal] = useState(false);
   const [previewLightboxUrl, setPreviewLightboxUrl] = useState<string | null>(null);
   const [previewLightboxTitle, setPreviewLightboxTitle] = useState<string>('');
+  const [unitTypologyFilter, setUnitTypologyFilter] = useState<string>('ALL');
 
   const abortControllerRef = useRef<AbortController | null>(null);
   const progressTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -110,6 +111,7 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
     setModelUsed('Gemini Vision AI');
     setExtractionNote(null);
     setActiveReviewTab('overview');
+    setUnitTypologyFilter('ALL');
     setFetchingCertificate(false);
     setCertificateSuccessMsg(null);
     setPreviewLightboxUrl(null);
@@ -144,14 +146,25 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
       const carpet = Number(patch.carpetAreaSqft) || 0;
       const basePrice = Number(projectData.basePricePerSqft) || 6200;
       updated.agreementValue = Math.round(carpet * basePrice);
-      const stampDuty = updated.agreementValue * 0.06;
-      const gst = projectData.hasOccupancyCertificate ? 0 : updated.agreementValue * 0.05;
-      updated.allInTotalCost = Math.round(updated.agreementValue + stampDuty + 30000 + gst + 200000 + 150000);
+      const stampDuty = Math.round(updated.agreementValue * 0.06);
+      const gstRate = projectData.hasOccupancyCertificate ? 0 : (updated.agreementValue <= 4500000 ? 0.01 : 0.05);
+      const gst = Math.round(updated.agreementValue * gstRate);
+      updated.stampDutyAmount = stampDuty;
+      updated.gstRate = gstRate * 100;
+      updated.gstAmount = gst;
+      updated.saleableAreaSqft = Math.round(carpet * 1.40);
+      updated.builtUpAreaSqft = Math.round(carpet * 1.15);
+      updated.loadingPercentage = 40;
+      updated.allInTotalCost = Math.round(updated.agreementValue + stampDuty + 30000 + gst + 250000 + 150000);
     } else if ('agreementValue' in patch) {
       const agVal = Number(patch.agreementValue) || 0;
-      const stampDuty = agVal * 0.06;
-      const gst = projectData.hasOccupancyCertificate ? 0 : agVal * 0.05;
-      updated.allInTotalCost = Math.round(agVal + stampDuty + 30000 + gst + 200000 + 150000);
+      const stampDuty = Math.round(agVal * 0.06);
+      const gstRate = projectData.hasOccupancyCertificate ? 0 : (agVal <= 4500000 ? 0.01 : 0.05);
+      const gst = Math.round(agVal * gstRate);
+      updated.stampDutyAmount = stampDuty;
+      updated.gstRate = gstRate * 100;
+      updated.gstAmount = gst;
+      updated.allInTotalCost = Math.round(agVal + stampDuty + 30000 + gst + 250000 + 150000);
     }
 
     nextUnits[idx] = updated;
@@ -165,20 +178,38 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
     const defaultCarpet = 650;
     const basePrice = Number(projectData.basePricePerSqft) || 6200;
     const agValue = defaultCarpet * basePrice;
-    const stampDuty = agValue * 0.06;
-    const gst = projectData.hasOccupancyCertificate ? 0 : agValue * 0.05;
-    const allIn = agValue + stampDuty + 30000 + gst + 200000 + 150000;
+    const stampDuty = Math.round(agValue * 0.06);
+    const gstRate = projectData.hasOccupancyCertificate ? 0 : (agValue <= 4500000 ? 0.01 : 0.05);
+    const gst = Math.round(agValue * gstRate);
+    const allIn = Math.round(agValue + stampDuty + 30000 + gst + 250000 + 150000);
 
     const newUnit = {
-      unitNumber: `Flat-0${count}`,
+      unitNumber: `2BHK-Config (${defaultCarpet} sqft)`,
       bhk: 2,
+      bhkLabel: `2 BHK • ${defaultCarpet} sq.ft Configuration`,
       carpetAreaSqft: defaultCarpet,
+      saleableAreaSqft: Math.round(defaultCarpet * 1.40),
+      builtUpAreaSqft: Math.round(defaultCarpet * 1.15),
+      loadingPercentage: 40,
+      seriesOrFlatNumbers: 'Typical Floor Series',
+      totalUnitsCount: 1,
       facing: 'EAST',
       floorNumber: 2,
       totalFloors: projectData.totalFloors || 7,
       agreementValue: agValue,
+      stampDutyRate: 6.0,
+      stampDutyAmount: stampDuty,
+      registrationFee: 30000,
+      gstRate: gstRate * 100,
+      gstAmount: gst,
+      parkingCharges: 250000,
+      societyDevelopmentCharges: 150000,
       allInTotalCost: allIn,
       floorPlanUrl: projectData.floorPlans?.[0] ? resolveAssetUrl(projectData.floorPlans[0]) : null,
+      featureHighlights: [
+        `${defaultCarpet} sq.ft Usable RERA Carpet`,
+        `${Math.round(defaultCarpet * 1.40)} sq.ft Saleable Area (40% Loading)`,
+      ],
     };
 
     setProjectData({ ...projectData, units: [...currentUnits, newUnit] });
@@ -902,7 +933,9 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
                             <p className="text-[11px] text-content-muted line-clamp-2">
                               {projectData.reraCertificateUrl
                                 ? `Verified • Downloaded & Linked for ${projectData.reraVerification?.projectName || projectData.projectName}`
-                                : 'Synchronize official registration certificate directly from Maharashtra RERA registry.'}
+                                : projectData.reraNumber
+                                ? `MahaRERA: ${projectData.reraNumber} • Ready to preview Form 'C' or fetch certificate.`
+                                : 'No MahaRERA number detected. Enter registration number above to preview or fetch Form ‘C’.'}
                             </p>
                           </div>
                         </div>
@@ -910,8 +943,10 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
                         <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
                           <button
                             type="button"
+                            disabled={!projectData.reraNumber}
                             onClick={() => setShowFormCModal(true)}
-                            className="flex-1 sm:flex-initial justify-center px-3 py-1.5 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-bold shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer shrink-0 min-w-[120px]"
+                            title={!projectData.reraNumber ? 'Enter a MahaRERA registration number above to preview certificate' : 'Preview Form C'}
+                            className="flex-1 sm:flex-initial justify-center px-3 py-1.5 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-bold shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shrink-0 min-w-[120px]"
                           >
                             <Eye className="w-3.5 h-3.5 text-accent" />
                             <span>Preview Form &lsquo;C&rsquo;</span>
@@ -1177,17 +1212,84 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
               </div>
             )}
 
-            {/* TAB 2: CONFIGURATIONS & UNITS */}
-            {activeReviewTab === 'units' && (
-              <div className="space-y-4">
-                <div className="p-4 bg-surface rounded-2xl border border-border space-y-3.5">
+            {/* TAB 2: CONFIGURATIONS & DISTINCT UNITS */}
+            {activeReviewTab === 'units' && (() => {
+              const allUnits = projectData.units || [];
+              const bhkCounts: Record<number, number> = {};
+              const bhkCarpetMap: Record<number, number[]> = {};
+
+              allUnits.forEach((u: any) => {
+                const b = Number(u.bhk) || 1;
+                bhkCounts[b] = (bhkCounts[b] || 0) + 1;
+                if (!bhkCarpetMap[b]) bhkCarpetMap[b] = [];
+                if (u.carpetAreaSqft && !bhkCarpetMap[b].includes(u.carpetAreaSqft)) {
+                  bhkCarpetMap[b].push(u.carpetAreaSqft);
+                }
+              });
+
+              const filteredUnitsWithIndex = allUnits
+                .map((u: any, originalIndex: number) => ({ ...u, originalIndex }))
+                .filter((u: any) => unitTypologyFilter === 'ALL' || String(u.bhk) === unitTypologyFilter);
+
+              return (
+                <div className="space-y-4">
+                  {/* Distinct Typology Pills & Taloja Loading Alert */}
+                  <div className="flex flex-wrap items-center justify-between gap-2.5 p-3 bg-surface-subtle/80 rounded-xl border border-border text-xs">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-[11px] font-bold text-content-secondary uppercase mr-1">Filter Typology:</span>
+                      <button
+                        type="button"
+                        onClick={() => setUnitTypologyFilter('ALL')}
+                        className={`px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all cursor-pointer ${
+                          unitTypologyFilter === 'ALL'
+                            ? 'bg-accent text-white shadow-2xs'
+                            : 'bg-surface text-content hover:bg-surface-raised border border-border'
+                        }`}
+                      >
+                        All ({allUnits.length})
+                      </button>
+                      {[1, 2, 3, 4].map((bhk) => {
+                        const count = bhkCounts[bhk] || 0;
+                        if (count === 0 && unitTypologyFilter !== String(bhk)) return null;
+                        const areas = (bhkCarpetMap[bhk] || []).sort((a: number, b: number) => a - b);
+                        return (
+                          <button
+                            key={bhk}
+                            type="button"
+                            onClick={() => setUnitTypologyFilter(String(bhk))}
+                            className={`px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all cursor-pointer flex items-center gap-1.5 ${
+                              unitTypologyFilter === String(bhk)
+                                ? 'bg-accent text-white shadow-2xs'
+                                : 'bg-surface text-content hover:bg-surface-raised border border-border'
+                            }`}
+                          >
+                            <span>{bhk} BHK ({count})</span>
+                            {areas.length > 0 && (
+                              <span className="text-[10px] opacity-80 font-mono font-normal">
+                                [{areas.join(', ')} sqft]
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* 40% Builder Loading Badge */}
+                    <div className="flex items-center gap-2">
+                      <span className="px-2.5 py-1 rounded-lg bg-accent/10 border border-accent/20 text-accent-text text-[11px] font-bold font-mono">
+                        40% Builder Loading (Taloja Std &gt;38%)
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-surface rounded-2xl border border-border space-y-3.5">
                     <div className="flex items-center justify-between">
                       <div>
                         <h3 className="font-bold text-xs uppercase font-mono text-accent-text flex items-center gap-1.5">
-                          <Home className="w-4 h-4 text-accent" /> Floor Plans &amp; Unit Matrix ({projectData.units?.length || 0})
+                          <Home className="w-4 h-4 text-accent" /> Distinct Configurations &amp; Unit Matrix ({filteredUnitsWithIndex.length})
                         </h3>
                         <p className="text-[11px] text-content-muted mt-0.5">
-                          Configure units, assign genuine extracted brochure floor plans, and adjust pricing.
+                          Distinct carpet area configurations with 40% builder saleable loading, statutory GST (1% ≤ ₹45L, 5% &gt; ₹45L), and matched floor plans.
                         </p>
                       </div>
                       <button
@@ -1204,31 +1306,45 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
                       <table className="w-full text-left text-xs">
                         <thead className="bg-surface-subtle text-content-secondary uppercase text-[10px] font-bold border-b border-border">
                           <tr>
-                            <th className="p-2.5 pl-3">Flat / Unit #</th>
+                            <th className="p-2.5 pl-3">Config / Flat Series</th>
                             <th className="p-2.5">Typology</th>
-                            <th className="p-2.5">RERA Carpet</th>
+                            <th className="p-2.5">Usable RERA Carpet</th>
+                            <th className="p-2.5">Saleable Area (40% Load)</th>
+                            <th className="p-2.5">GST Slab</th>
                             <th className="p-2.5">Facing</th>
-                            <th className="p-2.5">Floor #</th>
                             <th className="p-2.5">Agreement Value</th>
-                            <th className="p-2.5">Assigned Floor Plan</th>
+                            <th className="p-2.5">All-In Cost</th>
+                            <th className="p-2.5">Floor Plan</th>
                             <th className="p-2.5 pr-3 text-center">Actions</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-border text-content">
-                          {(projectData.units || []).map((u: any, idx: number) => {
+                          {filteredUnitsWithIndex.map((u: any) => {
+                            const idx = u.originalIndex;
                             const currentPlanUrl = u.floorPlanUrl || resolveAssetUrl(projectData.floorPlans?.find((fp: any) => fp.bhk === u.bhk) || projectData.floorPlans?.[0]);
                             const availablePlans = projectData.floorPlans || [];
+                            const carpet = Number(u.carpetAreaSqft) || 0;
+                            const saleable = u.saleableAreaSqft || Math.round(carpet * 1.40);
+                            const agVal = Number(u.agreementValue) || 0;
+                            const isAffordable = agVal > 0 && agVal <= 4500000;
 
                             return (
                               <tr key={idx} className="hover:bg-surface-subtle/50 font-mono text-xs">
                                 <td className="p-2 pl-3">
-                                  <input
-                                    type="text"
-                                    value={u.unitNumber || ''}
-                                    onChange={(e) => handleUpdateUnit(idx, { unitNumber: e.target.value })}
-                                    className="w-24 bg-surface-inset border border-border rounded-lg p-1.5 text-xs text-accent-text font-bold focus:outline-none focus:border-accent"
-                                    placeholder="Flat 101"
-                                  />
+                                  <div className="space-y-0.5">
+                                    <input
+                                      type="text"
+                                      value={u.unitNumber || ''}
+                                      onChange={(e) => handleUpdateUnit(idx, { unitNumber: e.target.value })}
+                                      className="w-28 bg-surface-inset border border-border rounded-lg p-1.5 text-xs text-accent-text font-bold focus:outline-none focus:border-accent"
+                                      placeholder="1BHK-A (400 sqft)"
+                                    />
+                                    {u.seriesOrFlatNumbers && (
+                                      <div className="text-[10px] text-content-muted truncate max-w-[120px]" title={u.seriesOrFlatNumbers}>
+                                        {u.seriesOrFlatNumbers}
+                                      </div>
+                                    )}
+                                  </div>
                                 </td>
                                 <td className="p-2 min-w-[95px]">
                                   <CustomSelect
@@ -1249,14 +1365,35 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
                                   <div className="flex items-center gap-1">
                                     <input
                                       type="number"
-                                      value={u.carpetAreaSqft || ''}
+                                      value={carpet || ''}
                                       onChange={(e) => handleUpdateUnit(idx, { carpetAreaSqft: Number(e.target.value) })}
                                       className="w-20 bg-surface-inset border border-border rounded-lg p-1.5 text-xs text-content font-mono font-bold focus:outline-none focus:border-accent"
                                     />
                                     <span className="text-[10px] text-content-muted">sqft</span>
                                   </div>
                                 </td>
-                                <td className="p-2 font-sans min-w-[130px]">
+                                <td className="p-2 font-mono">
+                                  <div className="flex flex-col">
+                                    <span className="font-bold text-accent-text">{saleable} sqft</span>
+                                    <span className="text-[9px] text-content-muted">40% loading</span>
+                                  </div>
+                                </td>
+                                <td className="p-2">
+                                  {projectData.hasOccupancyCertificate ? (
+                                    <span className="px-2 py-0.5 rounded bg-surface-raised border border-border text-content-muted text-[10px] font-bold">
+                                      0% (OC Ready)
+                                    </span>
+                                  ) : isAffordable ? (
+                                    <span className="px-2 py-0.5 rounded bg-status-success-surface border border-status-success/30 text-status-success text-[10px] font-bold">
+                                      1% (≤ ₹45L)
+                                    </span>
+                                  ) : (
+                                    <span className="px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-[10px] font-bold">
+                                      5% (&gt; ₹45L)
+                                    </span>
+                                  )}
+                                </td>
+                                <td className="p-2 font-sans min-w-[120px]">
                                   <CustomSelect
                                     size="xs"
                                     value={u.facing || 'EAST'}
@@ -1276,20 +1413,17 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
                                 <td className="p-2">
                                   <input
                                     type="number"
-                                    value={u.floorNumber || 2}
-                                    onChange={(e) => handleUpdateUnit(idx, { floorNumber: Number(e.target.value) })}
-                                    className="w-14 bg-surface-inset border border-border rounded-lg p-1.5 text-xs text-content font-mono focus:outline-none focus:border-accent"
-                                  />
-                                </td>
-                                <td className="p-2">
-                                  <input
-                                    type="number"
-                                    value={u.agreementValue || ''}
+                                    value={agVal || ''}
                                     onChange={(e) => handleUpdateUnit(idx, { agreementValue: Number(e.target.value) })}
-                                    className="w-28 bg-surface-inset border border-border rounded-lg p-1.5 text-xs text-content font-mono font-bold text-right focus:outline-none focus:border-accent"
+                                    className="w-24 bg-surface-inset border border-border rounded-lg p-1.5 text-xs text-content font-mono font-bold text-right focus:outline-none focus:border-accent"
                                   />
                                 </td>
-                                <td className="p-2 font-sans min-w-[180px]">
+                                <td className="p-2 font-mono text-right pr-2">
+                                  <span className="font-bold text-accent">
+                                    ₹{((Number(u.allInTotalCost) || 0) / 100000).toFixed(2)} L
+                                  </span>
+                                </td>
+                                <td className="p-2 font-sans min-w-[160px]">
                                   <CustomSelect
                                     size="xs"
                                     placeholder="Auto-matched Layout"
@@ -1311,7 +1445,7 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
                                         type="button"
                                         onClick={() => {
                                           setPreviewLightboxUrl(currentPlanUrl);
-                                          setPreviewLightboxTitle(`Floor Plan • ${u.bhk} BHK (${u.unitNumber || `Flat ${idx + 1}`})`);
+                                          setPreviewLightboxTitle(`Floor Plan • ${u.bhk} BHK (${u.unitNumber || `Config ${idx + 1}`})`);
                                         }}
                                         className="p-1.5 rounded-lg bg-surface hover:bg-surface-subtle text-accent border border-border shadow-2xs transition-all cursor-pointer"
                                         title="Preview floor plan image"
@@ -1323,7 +1457,7 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
                                       type="button"
                                       onClick={() => handleDeleteUnitRow(idx)}
                                       className="p-1.5 rounded-lg bg-surface hover:bg-status-danger-surface text-content-muted hover:text-status-danger border border-border transition-all cursor-pointer"
-                                      title="Delete unit"
+                                      title="Delete unit configuration"
                                     >
                                       <Trash2 className="w-3.5 h-3.5" />
                                     </button>
@@ -1335,29 +1469,30 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
                         </tbody>
                       </table>
                     </div>
-                </div>
-
-                {/* Commercial Shops Matrix if available */}
-                {Array.isArray(projectData.commercialShops) && projectData.commercialShops.length > 0 && (
-                  <div className="p-4 bg-surface rounded-2xl border border-border space-y-3">
-                    <h3 className="font-bold text-xs uppercase font-mono text-accent-text flex items-center gap-1.5">
-                      <Building2 className="w-4 h-4 text-accent" /> Ground Floor Commercial High-Street Retail
-                    </h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                      {projectData.commercialShops.map((shop: any, i: number) => (
-                        <div key={i} className="p-3 bg-surface-subtle rounded-xl border border-border text-xs">
-                          <p className="font-bold text-content">{shop.shopNumber || `Shop ${i + 1}`}</p>
-                          <p className="text-[11px] text-content-secondary mt-0.5">
-                            Carpet: {shop.carpetAreaSqft} sq.ft {shop.agreementValue ? `• Value: ${formatINR(shop.agreementValue)}` : ''}
-                          </p>
-                          {shop.description && <p className="text-[11px] text-content-muted mt-1">{shop.description}</p>}
-                        </div>
-                      ))}
-                    </div>
                   </div>
-                )}
-              </div>
-            )}
+
+                  {/* Commercial Shops Matrix if available */}
+                  {Array.isArray(projectData.commercialShops) && projectData.commercialShops.length > 0 && (
+                    <div className="p-4 bg-surface rounded-2xl border border-border space-y-3">
+                      <h3 className="font-bold text-xs uppercase font-mono text-accent-text flex items-center gap-1.5">
+                        <Building2 className="w-4 h-4 text-accent" /> Ground Floor Commercial High-Street Retail
+                      </h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        {projectData.commercialShops.map((shop: any, i: number) => (
+                          <div key={i} className="p-3 bg-surface-subtle rounded-xl border border-border text-xs">
+                            <p className="font-bold text-content">{shop.shopNumber || `Shop ${i + 1}`}</p>
+                            <p className="text-[11px] text-content-secondary mt-0.5">
+                              Carpet: {shop.carpetAreaSqft} sq.ft {shop.agreementValue ? `• Value: ${formatINR(shop.agreementValue)}` : ''}
+                            </p>
+                            {shop.description && <p className="text-[11px] text-content-muted mt-1">{shop.description}</p>}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
 
             {/* TAB 3: AMENITIES & SPECS */}
             {activeReviewTab === 'amenities' && (
@@ -1560,25 +1695,25 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
       </div>
 
       {/* Form C Interactive Preview Modal */}
-      {projectData && (
+      {projectData && showFormCModal && (
         <MahaReraCertificateModal
           open={showFormCModal}
           onClose={() => setShowFormCModal(false)}
           projectData={{
-            reraNumber: projectData.reraNumber || 'P52000079818',
-            projectName: projectData.projectName || 'CITY AVENUE',
-            developerName: projectData.developerName || 'City Space',
-            promoterName: projectData.reraVerification?.promoterName || projectData.developerName || 'City Space',
-            address: projectData.reraVerification?.address || 'PLOT NO 12D, SECTOR-24 at Taloja Panchnad , Panvel, Raigarh, 410208',
-            plotDetails: projectData.reraVerification?.plotDetails || 'PLOT NO 12D, SECTOR-24 at Taloja Panchnad , Panvel, Raigarh, 410208',
-            registeredOffice: projectData.reraVerification?.registeredOffice || 'Tehsil: Panvel, District: Raigarh, Pin: 410210',
-            registrationDate: projectData.reraVerification?.registrationDate || '27/03/2025',
-            validUntil: projectData.reraVerification?.validUntil || '31/12/2028',
-            signatoryName: projectData.reraVerification?.signatoryName || 'Prakash Kaluram Sabale',
-            signatoryDate: projectData.reraVerification?.signatoryDate || '3/27/2025 3:57:36 PM',
+            reraNumber: projectData.reraNumber || '',
+            projectName: projectData.projectName || 'Registered Project',
+            developerName: projectData.developerName || 'Authorized Developer',
+            promoterName: projectData.reraVerification?.promoterName || projectData.developerName || 'Authorized Developer Entity',
+            address: projectData.plotDetails || projectData.microMarket || projectData.reraVerification?.address || 'Project Location, Maharashtra',
+            plotDetails: projectData.plotDetails || projectData.microMarket || projectData.reraVerification?.plotDetails || 'Project Location, Maharashtra',
+            registeredOffice: projectData.reraVerification?.registeredOffice || `${projectData.developerName || 'Developer'} Corporate Office`,
+            registrationDate: projectData.reraVerification?.registrationDate || '2024-01-01',
+            validUntil: projectData.reraVerification?.validUntil || '2027-12-31',
+            signatoryName: projectData.reraVerification?.signatoryName || 'Competent Authority, MahaRERA',
+            signatoryDate: projectData.reraVerification?.signatoryDate || '',
             certificateUrl: projectData.reraCertificateUrl || undefined,
             originalImageUrl: projectData.reraVerification?.originalDocumentUrl || (projectData.reraNumber === 'P52000079818' ? '/images/original-certificates/P52000079818.png' : undefined),
-            isOriginalScannedDocument: projectData.reraVerification?.isOriginalScannedDocument ?? true,
+            isOriginalScannedDocument: Boolean(projectData.reraVerification?.isOriginalScannedDocument || (projectData.reraNumber === 'P52000079818')),
           }}
         />
       )}

@@ -146,6 +146,11 @@ export interface ExtractedBrochureUnit {
   bhk: number;
   bhkLabel: string;
   carpetAreaSqft: number;
+  saleableAreaSqft?: number;
+  builtUpAreaSqft?: number;
+  loadingPercentage?: number;
+  seriesOrFlatNumbers?: string;
+  totalUnitsCount?: number;
   bathrooms: number;
   balconies: number;
   floorNumber: number;
@@ -415,7 +420,7 @@ export function parseBrochureText(rawText: string, filename: string = 'brochure.
     basePricePerSqft = 0;
   }
 
-  // 9. FLOOR PLANS & UNIT MATRIX GENERATION
+  // 9. FLOOR PLANS & DISTINCT CARPET AREA MATRIX GENERATION
   const units: ExtractedBrochureUnit[] = [];
   const detectedBhks = new Set<number>();
 
@@ -423,72 +428,114 @@ export function parseBrochureText(rawText: string, filename: string = 'brochure.
   if (/2\s*(?:BHK|Bed)/i.test(normalizedText)) detectedBhks.add(2);
   if (/3\s*(?:BHK|Bed)/i.test(normalizedText)) detectedBhks.add(3);
 
-  const carpetAreaMap: Record<number, number> = {};
+  // Extract all distinct carpet areas per BHK (e.g. 1 BHK 400, 420, 433 sqft)
+  const extractAreasForBhk = (bhkNum: number): number[] => {
+    const areas = new Set<number>();
+    
+    // Pattern 1: Multi-area listing e.g. "1 BHK: 400, 420, 433 sqft" or "1 BHK (400, 420 & 433 sqft)"
+    const listRegex = new RegExp(`${bhkNum}\\s*(?:BHK|Bed)[^\\w\\d]{1,10}(?:carpet|area|size|sizes)?[:\\s]*([\\d,\\s/&]+)\\s*(?:sq\\.?\\s*ft|sqft)`, 'i');
+    const listMatch = normalizedText.match(listRegex);
+    if (listMatch && listMatch[1]) {
+      const nums = listMatch[1].match(/\b\d{3,4}\b/g);
+      if (nums) {
+        nums.forEach((n) => {
+          const val = parseInt(n, 10);
+          if (val >= 200 && val <= 4000) areas.add(val);
+        });
+      }
+    }
 
-  const bhk1Match = normalizedText.match(/1\s*(?:BHK|Bed)[^\d]{1,40}(\d{3,4})\s*(?:sq\.?\s*ft|sqft)/i);
-  if (bhk1Match && bhk1Match[1]) carpetAreaMap[1] = parseInt(bhk1Match[1], 10);
+    // Pattern 2: Global occurrences of "X BHK ... Y sqft"
+    const globalRegex = new RegExp(`${bhkNum}\\s*(?:BHK|Bed)[^\\d]{1,40}(\\d{3,4})\\s*(?:sq\\.?\\s*ft|sqft)`, 'gi');
+    let gMatch;
+    while ((gMatch = globalRegex.exec(normalizedText)) !== null) {
+      const val = parseInt(gMatch[1], 10);
+      if (val >= 200 && val <= 4000) areas.add(val);
+    }
 
-  const bhk2Match = normalizedText.match(/2\s*(?:BHK|Bed)[^\d]{1,40}(\d{3,4})\s*(?:sq\.?\s*ft|sqft)/i);
-  if (bhk2Match && bhk2Match[1]) carpetAreaMap[2] = parseInt(bhk2Match[1], 10);
+    return Array.from(areas).sort((a, b) => a - b);
+  };
 
-  const bhk3Match = normalizedText.match(/3\s*(?:BHK|Bed)[^\d]{1,40}(\d{3,4})\s*(?:sq\.?\s*ft|sqft)/i);
-  if (bhk3Match && bhk3Match[1]) carpetAreaMap[3] = parseInt(bhk3Match[1], 10);
+  const carpetAreaMap: Record<number, number[]> = {
+    1: extractAreasForBhk(1),
+    2: extractAreasForBhk(2),
+    3: extractAreasForBhk(3),
+  };
 
   let unitIndex = 1;
   for (const bhk of Array.from(detectedBhks).sort()) {
-    const carpetArea = carpetAreaMap[bhk] || 0;
-    const floorNumber = Math.min(totalFloors, Math.max(1, bhk === 1 ? 1 : 2));
-    const agreementValue = carpetArea > 0 && basePricePerSqft > 0 ? Math.round(carpetArea * basePricePerSqft) : 0;
+    const areasForThisBhk = carpetAreaMap[bhk]?.length > 0 ? carpetAreaMap[bhk] : [0];
 
-    const statutory = agreementValue > 0 ? calculateAllInCost({
-      agreementValue,
-      isFemaleBuyer: false,
-      hasOccupancyCertificate,
-      floorNumber,
-      carpetAreaSqft: carpetArea,
-      parkingCharges: 0,
-      societyDevCharges: 0,
-    }) : {
-      stampDutyRate: 0.07,
-      stampDutyAmount: 0,
-      registrationFee: 30000,
-      gstRate: hasOccupancyCertificate ? 0 : 0.05,
-      gstAmount: 0,
-      parkingCharges: 0,
-      societyDevCharges: 0,
-      totalAllInCost: 0,
-    };
+    for (let areaIdx = 0; areaIdx < areasForThisBhk.length; areaIdx++) {
+      const carpetArea = areasForThisBhk[areaIdx];
+      const floorNumber = Math.min(totalFloors, Math.max(1, bhk === 1 ? 1 : 2));
+      const agreementValue = carpetArea > 0 && basePricePerSqft > 0 ? Math.round(carpetArea * basePricePerSqft) : 0;
 
-    const highlights: string[] = [];
-    if (carpetArea > 0) highlights.push(`${carpetArea} sq.ft RERA Carpet Area`);
-    if (reraNumber) highlights.push(`MahaRERA ID: ${reraNumber}`);
-    highlights.push(`Floor ${floorNumber} of ${totalFloors}`);
+      // Calculate statutory costs with 1% GST <= 45L, 5% > 45L, and 40% builder loading
+      const statutory = agreementValue > 0 ? calculateAllInCost({
+        agreementValue,
+        isFemaleBuyer: false,
+        hasOccupancyCertificate,
+        floorNumber,
+        carpetAreaSqft: carpetArea,
+        parkingCharges: 0,
+        societyDevCharges: 0,
+        builderLoadingPercentage: 40,
+      }) : {
+        stampDutyRate: 0.06,
+        stampDutyAmount: 0,
+        registrationFee: 30000,
+        gstRate: hasOccupancyCertificate ? 0 : (agreementValue <= 4500000 ? 0.01 : 0.05),
+        gstAmount: 0,
+        parkingCharges: 0,
+        societyDevCharges: 0,
+        totalAllInCost: 0,
+        saleableAreaSqft: Math.round(carpetArea * 1.40),
+        builtUpAreaSqft: Math.round(carpetArea * 1.15),
+        loadingPercentage: 40,
+      };
 
-    units.push({
-      unitNumber: `Unit ${floorNumber}0${unitIndex}`,
-      bhk,
-      bhkLabel: `${bhk} BHK Residential Unit`,
-      carpetAreaSqft: carpetArea,
-      bathrooms: bhk >= 2 ? 2 : 1,
-      balconies: bhk >= 2 ? 2 : 1,
-      floorNumber,
-      totalFloors,
-      facing: unitIndex % 2 === 0 ? 'EAST' : 'WEST',
-      agreementValue,
-      stampDutyRate: statutory.stampDutyRate,
-      stampDutyAmount: statutory.stampDutyAmount,
-      registrationFee: statutory.registrationFee,
-      gstRate: statutory.gstRate,
-      gstAmount: statutory.gstAmount,
-      parkingCharges: statutory.parkingCharges,
-      societyDevelopmentCharges: statutory.societyDevCharges,
-      allInTotalCost: statutory.totalAllInCost,
-      possessionStatus,
-      description: `${bhk} BHK residential apartment in ${projectName}.`,
-      featureHighlights: highlights,
-    });
+      const highlights: string[] = [];
+      if (carpetArea > 0) highlights.push(`${carpetArea} sq.ft RERA Carpet Area`);
+      if (statutory.saleableAreaSqft > 0) highlights.push(`${statutory.saleableAreaSqft} sq.ft Saleable Area (40% Loading)`);
+      if (reraNumber) highlights.push(`MahaRERA ID: ${reraNumber}`);
+      highlights.push(`Available across typical floors (Total ${totalFloors} Storeys)`);
 
-    unitIndex++;
+      const configLetter = String.fromCharCode(65 + areaIdx); // Config A, Config B, Config C
+      const configLabel = areasForThisBhk.length > 1
+        ? `${bhk} BHK • ${carpetArea} sq.ft (Config ${configLetter})`
+        : `${bhk} BHK Residential Unit`;
+
+      units.push({
+        unitNumber: areasForThisBhk.length > 1 ? `${bhk}BHK-${configLetter} (${carpetArea} sqft)` : `Unit ${floorNumber}0${unitIndex}`,
+        bhk,
+        bhkLabel: configLabel,
+        carpetAreaSqft: carpetArea,
+        saleableAreaSqft: statutory.saleableAreaSqft,
+        builtUpAreaSqft: statutory.builtUpAreaSqft,
+        loadingPercentage: 40,
+        seriesOrFlatNumbers: `Config ${configLetter} Series`,
+        bathrooms: bhk >= 2 ? 2 : 1,
+        balconies: bhk >= 2 ? 2 : 1,
+        floorNumber,
+        totalFloors,
+        facing: unitIndex % 2 === 0 ? 'EAST' : 'WEST',
+        agreementValue,
+        stampDutyRate: statutory.stampDutyRate,
+        stampDutyAmount: statutory.stampDutyAmount,
+        registrationFee: statutory.registrationFee,
+        gstRate: statutory.gstRate,
+        gstAmount: statutory.gstAmount,
+        parkingCharges: statutory.parkingCharges,
+        societyDevelopmentCharges: statutory.societyDevCharges,
+        allInTotalCost: statutory.totalAllInCost,
+        possessionStatus,
+        description: `${bhk} BHK residential apartment (${carpetArea} sq.ft usable carpet, ${statutory.saleableAreaSqft} sq.ft saleable) in ${projectName}.`,
+        featureHighlights: highlights,
+      });
+
+      unitIndex++;
+    }
   }
 
   const shortDescription = `${elevation} situated at ${microMarket} (${subLocality}). Featuring premium ${Array.from(detectedBhks).map(b => `${b} BHK`).join(' & ')} flats with balconies and ground floor commercial shops.`;

@@ -789,7 +789,9 @@ export function ProjectDetailsModal({
                       <p className="text-xs text-content-muted mt-0.5 line-clamp-2">
                         {currentProject.reraCertificateUrl
                           ? `Statutory PDF Document Linked • Valid until ${currentProject.reraValidUntil ? formatDateFull(currentProject.reraValidUntil) : 'Dec 2027'}`
-                          : 'Download statutory certificate directly from MahaRERA government registry.'}
+                          : currentProject.reraNumber
+                          ? `MahaRERA: ${currentProject.reraNumber} • Ready to preview Form 'C' or fetch certificate.`
+                          : 'No MahaRERA number registered. Provide registration number to preview or synchronize certificate.'}
                       </p>
                     </div>
                   </div>
@@ -797,8 +799,10 @@ export function ProjectDetailsModal({
                   <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
                     <button
                       type="button"
+                      disabled={!currentProject.reraNumber}
                       onClick={() => setShowFormCModal(true)}
-                      className="flex-1 sm:flex-initial justify-center px-3.5 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-bold shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer shrink-0 min-w-[120px]"
+                      title={!currentProject.reraNumber ? 'Enter a MahaRERA registration number to preview certificate' : 'Preview Form C'}
+                      className="flex-1 sm:flex-initial justify-center px-3.5 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-bold shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shrink-0 min-w-[120px]"
                     >
                       <Eye className="w-4 h-4 text-accent" />
                       <span>Preview Form &lsquo;C&rsquo;</span>
@@ -1276,7 +1280,8 @@ export function ProjectDetailsModal({
                   {projectUnits.map((unit) => {
                     const carpetSqft = unit.carpetAreaSqft || 650;
                     const builtUpSqft = Math.round(carpetSqft * 1.15);
-                    const superBuiltUpSqft = Math.round(carpetSqft * 1.335);
+                    const superBuiltUpSqft = Math.round(carpetSqft * 1.40);
+                    const isAffordable = unit.agreementValue > 0 && unit.agreementValue <= 4500000;
 
                     return (
                       <div 
@@ -1284,19 +1289,28 @@ export function ProjectDetailsModal({
                         className="p-4 rounded-xl border border-border bg-surface-raised hover:border-accent transition-colors flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
                       >
                         <div className="space-y-2">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <span className="text-base font-bold text-content font-mono">{unit.unitNumber}</span>
                             <span className="badge-cobalt">
                               {unit.bhk} BHK
                             </span>
                             <span className="text-xs text-content-muted font-mono">Floor {unit.floorNumber} of {unit.totalFloors}</span>
                             <span className="text-xs text-content-muted">• Facing: <strong className="text-content">{unit.facing}</strong></span>
+                            {isAffordable ? (
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-status-success-surface border border-status-success/30 text-status-success">
+                                1% GST (≤ ₹45L Affordable)
+                              </span>
+                            ) : (
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400">
+                                5% GST (&gt; ₹45L Standard)
+                              </span>
+                            )}
                           </div>
 
-                          {/* Area Breakdown Matrix */}
+                          {/* Area Breakdown Matrix with 40% Builder Loading */}
                           <div className="grid grid-cols-3 gap-3 bg-surface-inset p-2.5 rounded-lg border border-border text-xs font-mono">
                             <div>
-                              <div className="text-[10px] text-content-muted uppercase">RERA Carpet</div>
+                              <div className="text-[10px] text-content-muted uppercase">Usable RERA Carpet</div>
                               <div className="font-bold text-content">{carpetSqft} sq.ft.</div>
                             </div>
                             <div>
@@ -1304,8 +1318,8 @@ export function ProjectDetailsModal({
                               <div className="font-bold text-content">{builtUpSqft} sq.ft.</div>
                             </div>
                             <div>
-                              <div className="text-[10px] text-content-muted uppercase">Super Built-Up (Saleable)</div>
-                              <div className="font-bold text-accent-text">{superBuiltUpSqft} sq.ft. (33.5% load)</div>
+                              <div className="text-[10px] text-content-muted uppercase">Saleable / Super Built-Up</div>
+                              <div className="font-bold text-accent-text">{superBuiltUpSqft} sq.ft. (40% load)</div>
                             </div>
                           </div>
                         </div>
@@ -1501,25 +1515,25 @@ export function ProjectDetailsModal({
       )}
 
       {/* Form C Interactive Preview Modal */}
-      {currentProject && (
+      {currentProject && showFormCModal && (
         <MahaReraCertificateModal
           open={showFormCModal}
           onClose={() => setShowFormCModal(false)}
           projectData={{
-            reraNumber: currentProject.reraNumber || 'P52000079818',
-            projectName: currentProject.projectName || 'CITY AVENUE',
-            developerName: currentProject.developerName || 'City Space',
-            promoterName: currentProject.promoterName || currentProject.developerName || 'City Space',
-            address: currentProject.address || 'PLOT NO 12D, SECTOR-24 at Taloja Panchnad , Panvel, Raigarh, 410208',
-            plotDetails: currentProject.plotDetails || currentProject.address || 'PLOT NO 12D, SECTOR-24 at Taloja Panchnad , Panvel, Raigarh, 410208',
-            registeredOffice: currentProject.registeredOffice || 'Tehsil: Panvel, District: Raigarh, Pin: 410210',
-            registrationDate: currentProject.registrationDate ? String(currentProject.registrationDate) : '27/03/2025',
-            validUntil: currentProject.validUntil ? String(currentProject.validUntil) : (currentProject.reraValidUntil ? formatDateFull(currentProject.reraValidUntil) : '31/12/2028'),
-            signatoryName: currentProject.signatoryName || 'Prakash Kaluram Sabale',
-            signatoryDate: currentProject.signatoryDate || '3/27/2025 3:57:36 PM',
+            reraNumber: currentProject.reraNumber || '',
+            projectName: currentProject.projectName || 'Registered Project',
+            developerName: currentProject.developerName || 'Authorized Developer',
+            promoterName: currentProject.promoterName || currentProject.developerName || 'Authorized Developer Entity',
+            address: currentProject.address || currentProject.plotDetails || 'Project Location, Maharashtra',
+            plotDetails: currentProject.plotDetails || currentProject.address || 'Project Location, Maharashtra',
+            registeredOffice: currentProject.registeredOffice || `${currentProject.developerName || 'Developer'} Corporate Office`,
+            registrationDate: currentProject.registrationDate ? String(currentProject.registrationDate) : '2024-01-01',
+            validUntil: currentProject.validUntil ? String(currentProject.validUntil) : (currentProject.reraValidUntil ? formatDateFull(currentProject.reraValidUntil) : '2027-12-31'),
+            signatoryName: currentProject.signatoryName || 'Competent Authority, MahaRERA',
+            signatoryDate: currentProject.signatoryDate || '',
             certificateUrl: currentProject.reraCertificateUrl || (currentProject.reraNumber === 'P52000079818' ? '/uploads/rera-certificates/MahaRERA_P52000079818_city_avenue_Certificate.pdf' : undefined),
             originalImageUrl: currentProject.originalDocumentUrl || (currentProject.reraNumber === 'P52000079818' ? '/images/original-certificates/P52000079818.png' : undefined),
-            isOriginalScannedDocument: true,
+            isOriginalScannedDocument: Boolean(currentProject.originalDocumentUrl || currentProject.reraNumber === 'P52000079818'),
           }}
         />
       )}

@@ -203,13 +203,17 @@ export async function POST(req: Request) {
       const primaryElevationUrl = resolveAssetUrl(mediaResult.elevations[0]) || null;
       const primaryMasterPlanUrl = resolveAssetUrl(mediaResult.masterPlan) || null;
 
-      // 4. Enrich extracted units by pre-binding BHK-matched brochure floor plans
+      // 4. Enrich extracted distinct units by pre-binding BHK & carpet-matched brochure floor plans
       const enrichedUnits = (extracted.units || []).map((u: any, idx: number) => {
-        const matchingPlan = (mediaResult.floorPlans || []).find((fp: any) => Number(fp.bhk) === Number(u.bhk));
+        const bhkPlans = (mediaResult.floorPlans || []).filter((fp: any) => Number(fp.bhk) === Number(u.bhk));
+        let matchingPlan = bhkPlans.find((fp: any) => fp.carpetAreaSqft && Math.abs(Number(fp.carpetAreaSqft) - Number(u.carpetAreaSqft)) <= 25);
+        if (!matchingPlan && bhkPlans.length > 0) {
+          matchingPlan = bhkPlans[0];
+        }
         const unitFloorPlanUrl = u.floorPlanUrl || resolveAssetUrl(matchingPlan) || null;
         return {
           ...u,
-          unitNumber: u.unitNumber || `Flat-0${idx + 1}`,
+          unitNumber: u.unitNumber || `${u.bhk} BHK (${u.carpetAreaSqft || 500} sqft)`,
           floorPlanUrl: unitFloorPlanUrl,
         };
       });

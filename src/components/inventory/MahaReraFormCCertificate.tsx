@@ -33,19 +33,19 @@ export function MahaReraFormCCertificate({
   onDownloadPdf,
   showActions = true,
 }: MahaReraFormCCertificateProps) {
-  const cleanRera = (data.reraNumber || 'P52000079818').toUpperCase().trim();
-  const projectName = (data.projectName || 'CITY AVENUE').toUpperCase();
-  const promoterName = data.promoterName || data.developerName || 'City Space';
-  const plotInfo = data.plotDetails || data.address || 'PLOT NO 12D, SECTOR-24 at Taloja Panchnad , Panvel, Raigarh, 410208';
-  const registeredOffice = data.registeredOffice || 'Tehsil: Panvel, District: Raigarh, Pin: 410210';
-  const validFrom = data.validFrom || data.registrationDate || '27/03/2025';
-  const validUntil = data.validUntil || '31/12/2028';
-  const signatory = data.signatoryName || 'Prakash Kaluram Sabale';
-  const signatoryDate = data.signatoryDate || '3/27/2025 3:57:36 PM';
-  const portalUrl = `https://maharera.maharashtra.gov.in/projects-search-result?rera=${cleanRera}`;
+  const cleanRera = (data.reraNumber || '').toUpperCase().trim();
+  const projectName = (data.projectName || 'Registered Project').toUpperCase();
+  const promoterName = data.promoterName || data.developerName || 'Authorized Developer Entity';
+  const plotInfo = data.plotDetails || data.address || (cleanRera ? `Approved Statutory Layout (${cleanRera}), Maharashtra` : 'Approved Statutory Layout, Maharashtra');
+  const registeredOffice = data.registeredOffice || (data.developerName ? `${data.developerName} Registered Office, Maharashtra` : 'Registered Corporate Office, Maharashtra');
+  const validFrom = data.validFrom || data.registrationDate || '2024-01-01';
+  const validUntil = data.validUntil || '2027-12-31';
+  const signatory = data.signatoryName || 'Competent Authority, MahaRERA';
+  const signatoryDate = data.signatoryDate || '';
+  const portalUrl = cleanRera ? `https://maharera.maharashtra.gov.in/projects-search-result?rera=${cleanRera}` : 'https://maharera.maharashtra.gov.in';
 
-  // Original official document image path
-  const originalImage = data.originalImageUrl || (cleanRera === 'P52000079818' ? '/images/original-certificates/P52000079818.png' : null);
+  // Original official document image path - ONLY when a genuine original scanned document exists for this RERA number
+  const originalImage = (data.isOriginalScannedDocument && (data.originalImageUrl || (cleanRera === 'P52000079818' ? '/images/original-certificates/P52000079818.png' : null))) || null;
   const [viewMode, setViewMode] = useState<'original' | 'replica'>(originalImage ? 'original' : 'replica');
   const [zoomLevel, setZoomLevel] = useState<number>(100);
 
@@ -63,7 +63,7 @@ export function MahaReraFormCCertificate({
               <ShieldCheck className="w-4 h-4" />
               <span>Official MahaRERA Form &lsquo;C&rsquo; Certificate</span>
             </span>
-            <span className="text-xs font-mono text-content-muted">MahaRERA: {cleanRera}</span>
+            <span className="text-xs font-mono text-content-muted">MahaRERA: {cleanRera || 'Pending Registration'}</span>
           </div>
 
           {/* Mode Switcher */}

@@ -68,9 +68,12 @@ CRITICAL EXTRACTION GUIDELINES:
 3. PROJECT & DEVELOPER: Extract the exact Project Name (e.g., "Saras Icon") and Developer/Builder Promoter Name (e.g., "Saras Infra").
 4. LOCATION & LOCALITY: Extract the exact site address, plot number, sector number, and micro-market / locality (e.g., Seawoods, Kharghar, Taloja, Ulwe, Panvel, Vashi, etc.).
 5. STRUCTURE & FLOORS: Extract the total number of storeys / floors (e.g. 15 storeys -> 15), elevation structure (e.g. "G+15 Storey Tower"), and tower count.
-6. CONFIGURATIONS & UNITS:
-   - Extract all unit typologies (1 BHK, 2 BHK, 3 BHK).
-   - If unit floor plans or typical floor plates are shown, extract specific unit flat numbers (e.g., 101, 102, 1201, 1202...), usable RERA carpet areas in sq.ft, balconies, and bathrooms.
+6. CONFIGURATIONS & DISTINCT CARPET UNITS:
+   - Extract all unit typologies (1 BHK, 2 BHK, 3 BHK, etc.).
+   - STRICT DEDUPLICATION BY USABLE CARPET AREA: Do NOT extract repetitive individual flat numbers or every flat on every floor (do not emit 100 flat entries). Instead, COMBINE and EXTRACT ONLY THE DISTINCT USABLE RERA CARPET AREAS for each BHK typology.
+   - For example, if a building has 100 flats where 1 BHK flats measure 400, 420, and 433 sq.ft, output ONLY 3 unit records for 1 BHK (one for 400 sq.ft, one for 420 sq.ft, one for 433 sq.ft).
+   - Do the same distinct carpet area extraction for 2 BHK and 3 BHK.
+   - For each distinct configuration, extract usable RERA carpet in sq.ft, representative flat series (e.g. "Series 01, 04 / Flats 101, 104..."), approximate flat count in "totalUnitsCount", bathrooms, and balconies.
 7. AMENITIES & SPECIFICATIONS:
    - Extract all listed lifestyle amenities (e.g., Fitness Center, Swimming Pool, Rooftop Garden, Kids Play Area, CCTV, Covered Parking, High Speed Elevators).
    - Extract technical specifications (flooring, sanitary ware, concealed plumbing, copper wiring, aluminum windows, granite platform).
@@ -105,6 +108,8 @@ Output purely valid JSON conforming to this schema:
     "bhk": number,
     "bhkLabel": string,
     "carpetAreaSqft": number,
+    "seriesOrFlatNumbers": string,
+    "totalUnitsCount": number,
     "bathrooms": number,
     "balconies": number,
     "floorNumber": number,
@@ -128,6 +133,167 @@ Output purely valid JSON conforming to this schema:
   }
 }
 `;
+
+/**
+ * Deterministic Aggregator & Deduplicator for Real Estate Units.
+ * Collapses repetitive individual flats into distinct carpet area configurations
+ * per BHK typology (e.g. 1 BHK 400, 420, 433 sqft), applies 40% builder loading
+ * (Taloja standard >= 38%), and computes statutory GST (1% <= 45L, 5% > 45L).
+ */
+export function aggregateUnitsByDistinctCarpetArea(
+  rawUnits: any[],
+  totalFloors: number = 7,
+  basePricePerSqft: number = 0,
+  hasOccupancyCertificate: boolean = false,
+  projectName: string = 'Project'
+): ExtractedBrochureUnit[] {
+  if (!Array.isArray(rawUnits) || rawUnits.length === 0) {
+    return [];
+  }
+
+  // Map to store grouped configurations: Key = `${bhk}_${normalizedCarpet}`
+  const groupedMap = new Map<string, {
+    bhk: number;
+    carpetAreaSqft: number;
+    bathrooms: number;
+    balconies: number;
+    flatNumbers: string[];
+    count: number;
+    facing: string;
+    originalLabels: string[];
+    descriptions: string[];
+  }>();
+
+  for (const u of rawUnits) {
+    const rawCarpet = Number(u.carpet_area_sqft || u.carpetAreaSqft) || 0;
+    if (rawCarpet <= 0) continue;
+
+    const bhk = Number(u.bhk) || (u.bhkLabel?.match(/(\d+)\s*BHK/i)?.[1] ? parseInt(u.bhkLabel.match(/(\d+)\s*BHK/i)[1], 10) : 1);
+    
+    // Normalize carpet area: round to nearest integer
+    const normalizedCarpet = Math.round(rawCarpet);
+
+    // Grouping key: BHK + carpet area
+    const key = `${bhk}_${normalizedCarpet}`;
+
+    const flatNo = (u.unit_number || u.unitNumber || u.flatNumber || u.flat_number || '').trim();
+    const facing = (u.orientation || u.facing || 'EAST').trim();
+
+    const existing = groupedMap.get(key);
+    if (!existing) {
+      groupedMap.set(key, {
+        bhk,
+        carpetAreaSqft: normalizedCarpet,
+        bathrooms: Number(u.bathrooms) || (bhk >= 2 ? 2 : 1),
+        balconies: Number(u.balconies) || (bhk >= 2 ? 2 : 1),
+        flatNumbers: flatNo ? [flatNo] : [],
+        count: Number(u.totalUnitsCount) || 1,
+        facing,
+        originalLabels: [u.bhkLabel || u.bhk_label].filter(Boolean),
+        descriptions: [u.description].filter(Boolean),
+      });
+    } else {
+      existing.count += Number(u.totalUnitsCount) || 1;
+      if (flatNo && !existing.flatNumbers.includes(flatNo)) {
+        existing.flatNumbers.push(flatNo);
+      }
+      if (u.bhkLabel && !existing.originalLabels.includes(u.bhkLabel)) {
+        existing.originalLabels.push(u.bhkLabel);
+      }
+      if (u.description && !existing.descriptions.includes(u.description)) {
+        existing.descriptions.push(u.description);
+      }
+    }
+  }
+
+  // Convert grouped configurations into distinct ExtractedBrochureUnit objects
+  const distinctConfigs = Array.from(groupedMap.values()).sort((a, b) => {
+    if (a.bhk !== b.bhk) return a.bhk - b.bhk;
+    return a.carpetAreaSqft - b.carpetAreaSqft;
+  });
+
+  // Count configurations per BHK for Config A, Config B naming
+  const bhkConfigCounters: Record<number, number> = {};
+
+  return distinctConfigs.map((cfg) => {
+    const bhk = cfg.bhk;
+    bhkConfigCounters[bhk] = (bhkConfigCounters[bhk] || 0) + 1;
+    const configLetter = String.fromCharCode(64 + bhkConfigCounters[bhk]); // A, B, C...
+
+    const carpetAreaSqft = cfg.carpetAreaSqft;
+    const floorNumber = Math.min(totalFloors, Math.max(1, bhk === 1 ? 1 : 2));
+
+    // Agreement Value
+    let agreementValue = 0;
+    if (basePricePerSqft > 0) {
+      agreementValue = Math.round(carpetAreaSqft * basePricePerSqft);
+    }
+
+    // Cost calculation with 1% GST <= 45L, 5% > 45L, and 40% builder loading (Taloja standard >= 38%)
+    const costBreakdown = calculateAllInCost({
+      agreementValue,
+      floorNumber,
+      carpetAreaSqft,
+      hasOccupancyCertificate,
+      parkingCharges: 250000,
+      societyDevCharges: 150000,
+      builderLoadingPercentage: 40,
+    });
+
+    // Clean representative flat / series label
+    let seriesOrFlatNumbers = '';
+    if (cfg.flatNumbers.length > 0) {
+      if (cfg.flatNumbers.length <= 4) {
+        seriesOrFlatNumbers = cfg.flatNumbers.join(', ');
+      } else {
+        seriesOrFlatNumbers = `${cfg.flatNumbers.slice(0, 3).join(', ')} +${cfg.flatNumbers.length - 3} more (${cfg.count} flats)`;
+      }
+    } else {
+      seriesOrFlatNumbers = `Config ${configLetter} Series`;
+    }
+
+    const bhkLabel = `${bhk} BHK • ${carpetAreaSqft} sq.ft (Config ${configLetter})`;
+    const unitNumber = `${bhk}BHK-${configLetter} (${carpetAreaSqft} sqft)`;
+
+    const highlights: string[] = [
+      `${carpetAreaSqft} sq.ft Usable RERA Carpet Area`,
+      `${costBreakdown.saleableAreaSqft} sq.ft Saleable Area (40% Loading)`,
+      `Available across typical floors (Total ${totalFloors} Storeys)`,
+    ];
+    if (seriesOrFlatNumbers) {
+      highlights.push(`Represented Flats: ${seriesOrFlatNumbers}`);
+    }
+
+    return {
+      unitNumber,
+      bhk,
+      bhkLabel,
+      carpetAreaSqft,
+      saleableAreaSqft: costBreakdown.saleableAreaSqft,
+      builtUpAreaSqft: costBreakdown.builtUpAreaSqft,
+      loadingPercentage: 40,
+      seriesOrFlatNumbers,
+      totalUnitsCount: cfg.count,
+      bathrooms: cfg.bathrooms,
+      balconies: cfg.balconies,
+      floorNumber,
+      totalFloors,
+      facing: (cfg.facing as any) || 'EAST',
+      agreementValue,
+      stampDutyRate: costBreakdown.stampDutyRate,
+      stampDutyAmount: costBreakdown.stampDutyAmount,
+      registrationFee: costBreakdown.registrationFee,
+      gstRate: costBreakdown.gstRate,
+      gstAmount: costBreakdown.gstAmount,
+      parkingCharges: costBreakdown.parkingCharges,
+      societyDevelopmentCharges: costBreakdown.societyDevCharges,
+      allInTotalCost: costBreakdown.totalAllInCost,
+      possessionStatus: hasOccupancyCertificate ? 'READY_TO_MOVE' : 'UNDER_CONSTRUCTION',
+      description: `${bhk} BHK residential apartment (${carpetAreaSqft} sq.ft usable carpet, ${costBreakdown.saleableAreaSqft} sq.ft saleable at 40% loading) in ${projectName}.`,
+      featureHighlights: highlights,
+    };
+  });
+}
 
 /**
  * 1. Extract Real Estate Brochure / Floor Plan Data using Gemini with intelligent model cascade
@@ -239,58 +405,17 @@ export async function extractBrochureWithAI(
   const subLocality = parsed.subLocality || (typeof locObj === 'object' && locObj.siteOffice ? locObj.siteOffice : (locObj.address || (locObj.sector ? `${locObj.sector} ${locObj.locality || ''}`.trim() : 'Navi Mumbai')));
   const elevation = parsed.elevation || projObj.building_configuration || (parsed.floors ? String(parsed.floors) : undefined);
 
-  // Process units with Navi Mumbai statutory cost calculations
+  // Process units with distinct carpet area aggregation, 40% builder loading, and statutory GST (1% <= 45L, 5% > 45L)
   const rawUnits = Array.isArray(parsed.units) ? parsed.units : [];
+  const basePrice = Number(parsed.basePricePerSqft) || 0;
 
-  const processedUnits: ExtractedBrochureUnit[] = rawUnits.map((u: any, idx: number) => {
-    const carpetAreaSqft = Number(u.carpet_area_sqft || u.carpetAreaSqft) || 0;
-    const bhk = Number(u.bhk) || 0;
-    const floorNumber = Number(u.floor_number || u.floorNumber) || Math.min(idx + 1, totalFloors);
-    
-    // Estimate agreement value if not specified in marketing brochure
-    let agreementValue = Number(u.agreement_value || u.agreementValue) || 0;
-    if (agreementValue <= 0 && parsed.basePricePerSqft) {
-      agreementValue = Math.round(carpetAreaSqft * Number(parsed.basePricePerSqft));
-    }
-
-    // Calculate all-in statutory cost breakdown (Stamp Duty 6%, Registration ₹30k, GST 5%, Parking, Dev Charges)
-    const costBreakdown = calculateAllInCost({
-      agreementValue,
-      floorNumber,
-      carpetAreaSqft,
-      hasOccupancyCertificate,
-      parkingCharges: 250000,
-      societyDevCharges: 150000,
-    });
-
-    const facingVal = u.orientation || u.facing || undefined;
-
-    return {
-      unitNumber: u.unit_number || u.unitNumber || '',
-      bhk,
-      bhkLabel: u.bhk_label || u.bhkLabel || (bhk ? `${bhk} BHK` : ''),
-      carpetAreaSqft,
-      bathrooms: Number(u.bathrooms) || 0,
-      balconies: Number(u.balconies) || 0,
-      floorNumber,
-      totalFloors,
-      facing: facingVal as any,
-      agreementValue,
-      stampDutyRate: costBreakdown.stampDutyRate,
-      stampDutyAmount: costBreakdown.stampDutyAmount,
-      registrationFee: costBreakdown.registrationFee,
-      gstRate: costBreakdown.gstRate,
-      gstAmount: costBreakdown.gstAmount,
-      parkingCharges: costBreakdown.parkingCharges,
-      societyDevelopmentCharges: costBreakdown.societyDevCharges,
-      allInTotalCost: costBreakdown.totalAllInCost,
-      possessionStatus,
-      description: u.description || undefined,
-      featureHighlights: Array.isArray(u.featureHighlights || u.feature_highlights) && (u.featureHighlights || u.feature_highlights).length > 0
-        ? (u.featureHighlights || u.feature_highlights)
-        : [],
-    };
-  });
+  const processedUnits: ExtractedBrochureUnit[] = aggregateUnitsByDistinctCarpetArea(
+    rawUnits,
+    totalFloors,
+    basePrice,
+    hasOccupancyCertificate,
+    projectName
+  );
 
   // Extract structured Visual Asset Records
   const cleanProjSlug = projectName.toLowerCase().replace(/[^a-z0-9]/g, '_');

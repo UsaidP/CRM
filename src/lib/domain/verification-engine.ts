@@ -158,7 +158,7 @@ export function validateReraNumber(reraNumber: string): ReraValidationResult {
       districtCode,
       districtName,
       officialPortalUrl: MAHARERA_PORTAL_BASE_URL,
-      directSearchUrl: MAHARERA_PORTAL_SEARCH_URL,
+      directSearchUrl: `${MAHARERA_PORTAL_SEARCH_URL}?rera=${cleaned}`,
     };
   }
 
@@ -181,7 +181,7 @@ export function validateReraNumber(reraNumber: string): ReraValidationResult {
       districtCode,
       districtName,
       officialPortalUrl: MAHARERA_PORTAL_BASE_URL,
-      directSearchUrl: MAHARERA_AGENT_SEARCH_URL,
+      directSearchUrl: `${MAHARERA_AGENT_SEARCH_URL}?rera=${cleaned}`,
     };
   }
 

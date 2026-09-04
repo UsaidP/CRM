@@ -37,7 +37,7 @@ export function MahaReraCertificateModal({
               MahaRERA Statutory Registration Certificate
             </h3>
             <p className="text-xs text-content-muted">
-              Official Form &lsquo;C&rsquo; [See rule 6(a)] • {projectData.reraNumber}
+              Official Form &lsquo;C&rsquo; [See rule 6(a)] • {projectData.reraNumber || 'Pending Registration'}
             </p>
           </div>
         </div>

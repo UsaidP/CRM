@@ -1,4 +1,3 @@
-import crypto from 'crypto';
 import { CrmRole } from '@/types/crm';
 export type { CrmRole };
 
@@ -221,9 +220,13 @@ export async function verifySessionToken(token?: string | null): Promise<Session
  */
 function timingSafeStringEqual(a: string, b: string): boolean {
   if (!a || !b) return false;
-  const hashA = crypto.createHash('sha256').update(a).digest();
-  const hashB = crypto.createHash('sha256').update(b).digest();
-  return crypto.timingSafeEqual(hashA, hashB);
+  const lenA = a.length;
+  const lenB = b.length;
+  let diff = lenA ^ lenB;
+  for (let i = 0; i < lenA; i++) {
+    diff |= a.charCodeAt(i) ^ b.charCodeAt(i % lenB);
+  }
+  return diff === 0;
 }
 
 /**

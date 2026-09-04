@@ -237,17 +237,17 @@ export function PropertyMediaHub({
                       type="button"
                       aria-label="Previous photo"
                       onClick={handlePrevPhoto}
-                      className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-11 sm:h-11 grid place-items-center rounded-full bg-white/90 hover:bg-white text-slate-900 shadow-lg transition-[background-color,border-color,box-shadow,transform] duration-200 active:scale-90 border border-slate-200 cursor-pointer"
+                      className="group/btn absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-11 sm:h-11 grid place-items-center rounded-full bg-white/90 hover:bg-white text-slate-900 shadow-lg hover:shadow-xl hover:scale-110 hover:-translate-x-0.5 hover:border-gold/60 hover:ring-2 hover:ring-gold/30 transition-[background-color,border-color,box-shadow,transform] duration-200 active:scale-90 border border-slate-200 cursor-pointer"
                     >
-                      <ChevronLeft className="w-5 h-5" />
+                      <ChevronLeft className="w-5 h-5 transition-transform duration-200 group-hover/btn:-translate-x-px" />
                     </button>
                     <button
                       type="button"
                       aria-label="Next photo"
                       onClick={handleNextPhoto}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-11 sm:h-11 grid place-items-center rounded-full bg-white/90 hover:bg-white text-slate-900 shadow-lg transition-[background-color,border-color,box-shadow,transform] duration-200 active:scale-90 border border-slate-200 cursor-pointer"
+                      className="group/btn absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-11 sm:h-11 grid place-items-center rounded-full bg-white/90 hover:bg-white text-slate-900 shadow-lg hover:shadow-xl hover:scale-110 hover:translate-x-0.5 hover:border-gold/60 hover:ring-2 hover:ring-gold/30 transition-[background-color,border-color,box-shadow,transform] duration-200 active:scale-90 border border-slate-200 cursor-pointer"
                     >
-                      <ChevronRight className="w-5 h-5" />
+                      <ChevronRight className="w-5 h-5 transition-transform duration-200 group-hover/btn:translate-x-px" />
                     </button>
                     <div className="absolute top-3.5 right-3.5 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-xs text-white font-mono border border-white/20 shadow-sm font-bold">
                       {activePhotoIdx + 1} / {photos.length}

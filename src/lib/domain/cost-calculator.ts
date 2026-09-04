@@ -39,6 +39,7 @@ export interface CostCalculationInput {
   customRegistrationFee?: number;   // direct ₹ override
   customGstRate?: number;           // e.g. 0, 1, 5, 12, 18
   customGstAmount?: number;         // direct ₹ override
+  builderLoadingPercentage?: number;// default 40% (Taloja builder loading standard >= 38%)
 
   // Ancillary & Infrastructure Charges
   legalAndDocumentationCharges?: number; // e.g. ₹15,000 - ₹35,000
@@ -73,6 +74,9 @@ export interface CostCalculationResult {
   percentageOverAgreement: number; // e.g. 17.5%
   ratePerSqftAgreement: number;    // ₹/sqft base
   ratePerSqftAllIn: number;       // ₹/sqft all-in
+  saleableAreaSqft: number;        // ₹/sqft saleable based on builder loading (default 40%)
+  builtUpAreaSqft: number;         // internal walls/balcony (~15%)
+  loadingPercentage: number;       // 40% standard
 }
 
 export function calculateAllInCost(input: CostCalculationInput): CostCalculationResult {
@@ -104,10 +108,10 @@ export function calculateAllInCost(input: CostCalculationInput): CostCalculation
     registrationFee = Math.round(Math.min(30000, rawReg));
   }
 
-  // 3. GST: 0% if OC is received (RTM), 5% for Under-Construction, or custom override
+  // 3. GST: 0% if OC is received (RTM). Under-construction: 1% if Agreement Value <= ₹45L, 5% if > ₹45L (or custom override)
   let gstRate = input.customGstRate !== undefined && input.customGstRate !== null
     ? Number(input.customGstRate)
-    : (hasOC ? 0.0 : 5.0);
+    : (hasOC ? 0.0 : (agreementValue <= 4500000 ? 1.0 : 5.0));
 
   let gstAmount: number;
   if (input.customGstAmount !== undefined && input.customGstAmount !== null) {
@@ -168,6 +172,10 @@ export function calculateAllInCost(input: CostCalculationInput): CostCalculation
   const ratePerSqftAgreement = carpetAreaSqft > 0 ? Math.round(agreementValue / carpetAreaSqft) : 0;
   const ratePerSqftAllIn = carpetAreaSqft > 0 ? Math.round(totalAllInCost / carpetAreaSqft) : 0;
 
+  const loadingPercentage = input.builderLoadingPercentage !== undefined ? Number(input.builderLoadingPercentage) : 40;
+  const saleableAreaSqft = Math.round(carpetAreaSqft * (1 + loadingPercentage / 100));
+  const builtUpAreaSqft = Math.round(carpetAreaSqft * 1.15);
+
   return {
     agreementValue,
     stampDutyRate,
@@ -189,6 +197,9 @@ export function calculateAllInCost(input: CostCalculationInput): CostCalculation
     percentageOverAgreement,
     ratePerSqftAgreement,
     ratePerSqftAllIn,
+    saleableAreaSqft,
+    builtUpAreaSqft,
+    loadingPercentage,
   };
 }
 

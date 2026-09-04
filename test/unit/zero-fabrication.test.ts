@@ -47,3 +47,38 @@ describe('zero-fabrication: regex fallback parser', () => {
     }
   });
 });
+
+describe('zero-fabrication: MahaRERA certificate & form isolation', () => {
+  it('does not inject City Space or City Avenue into generated PDF for non-City Avenue project', async () => {
+    const { buildMahaReraCertificatePdf } = await import('@/lib/services/maharera-service');
+    const pdfBuf = buildMahaReraCertificatePdf({
+      reraNumber: 'P52000033333',
+      projectName: 'Premier Horizon',
+      developerName: 'Premier Group',
+      projectType: 'RESIDENTIAL',
+      districtCode: '520',
+      districtName: 'Raigad / Navi Mumbai',
+      microMarket: 'Taloja Phase 1',
+      address: 'Sector 10, Taloja Phase 1, Panvel',
+      projectStatus: 'REGISTERED',
+      hasLitigations: false,
+    });
+
+    const text = pdfBuf.toString('utf-8');
+    expect(text.toLowerCase()).not.toContain('city space');
+    expect(text.toLowerCase()).not.toContain('city avenue');
+    expect(text.toLowerCase()).toContain('premier horizon');
+    expect(text.toLowerCase()).toContain('premier group');
+  });
+
+  it('dynamic statutory project record resolver does not default to City Space', async () => {
+    const { searchMahaReraProject } = await import('@/lib/services/maharera-service');
+    const record = await searchMahaReraProject('P52000033333', 'Premier Horizon', 'Premier Group');
+    expect(record.projectName).toBe('Premier Horizon');
+    expect(record.developerName).toBe('Premier Group');
+    expect(record.promoterName).not.toContain('City Space');
+    expect(record.isOriginalScannedDocument).toBeFalsy();
+    expect(record.originalDocumentUrl).toBeUndefined();
+  });
+});
+
