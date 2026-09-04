@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   Building2, 
   ShieldCheck, 
@@ -34,8 +34,10 @@ import { AccessibleDialog } from '@/components/ui/AccessibleDialog';
 import { ReraVerificationBadge } from '@/components/inventory/ReraVerificationBadge';
 import { MahaReraCertificateModal } from '@/components/inventory/MahaReraCertificateModal';
 import { ProjectMediaStudioModal } from '@/components/inventory/ProjectMediaStudioModal';
+import { UnitDetailsModal } from '@/components/inventory/UnitDetailsModal';
 import { resolveAssetUrl, parseGalleryUrls } from '@/lib/inventory-media';
 import { uploadToCloudinaryChunked } from '@/lib/client/cloudinary-chunked-upload';
+import { isDummyOrPlaceholderUrl } from '@/lib/domain/unit-differentiation';
 
 interface ProjectDetailsModalProps {
   project: any;
@@ -65,6 +67,7 @@ export function ProjectDetailsModal({
   const [activeTab, setActiveTab] = useState<'rera' | 'elevations' | 'floorplans' | 'areamatrix' | 'amenities'>(unit ? 'areamatrix' : 'rera');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [currentProject, setCurrentProject] = useState(project);
+  const [inspectingUnit, setInspectingUnit] = useState<any | null>(null);
   const [syncingCertificate, setSyncingCertificate] = useState(false);
   const [certificateMsg, setCertificateMsg] = useState<string | null>(null);
   const [showFormCModal, setShowFormCModal] = useState(false);
@@ -81,6 +84,11 @@ export function ProjectDetailsModal({
   const [oneShotExtractMsg, setOneShotExtractMsg] = useState<string | null>(null);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [deletingImageUrl, setDeletingImageUrl] = useState<string | null>(null);
+  const [localUnits, setLocalUnits] = useState<any[]>(units);
+
+  useEffect(() => {
+    setLocalUnits(units);
+  }, [units]);
 
   const handleSyncCertificate = async () => {
     if (!currentProject?.reraNumber) return;
@@ -204,14 +212,83 @@ export function ProjectDetailsModal({
     }
     setDeletingImageUrl(null);
     setUploadingFiles(true);
-    setUploadProgressMsg('Removing image from project gallery...');
+    setUploadProgressMsg('Removing image from project and units...');
 
     try {
+      // 1. Identify all units having this floor plan or image
+      const activeProjectUnits = (localUnits && localUnits.length > 0 ? localUnits : units).filter(
+        (u) => u.projectId === currentProject.id
+      );
+
+      const matchingUnits = activeProjectUnits.filter((u: any) => {
+        if (u.floorPlanUrl === imgUrl) return true;
+        try {
+          const plans = typeof u.floorPlanImagesJson === 'string' ? JSON.parse(u.floorPlanImagesJson) : (u.floorPlanImagesJson || []);
+          if (Array.isArray(plans) && plans.some((p: any) => (typeof p === 'string' ? p : p?.url) === imgUrl)) return true;
+        } catch {}
+        try {
+          const photos = typeof u.photoGalleryJson === 'string' ? JSON.parse(u.photoGalleryJson) : (u.photoGalleryJson || []);
+          if (Array.isArray(photos) && photos.some((p: any) => (typeof p === 'string' ? p : p?.url) === imgUrl)) return true;
+        } catch {}
+        return false;
+      });
+
+      // Update matching units on the server and in localUnits
+      for (const u of matchingUnits) {
+        const nextFloorPlanUrl = u.floorPlanUrl === imgUrl ? null : u.floorPlanUrl;
+        let nextFloorPlans: any[] = [];
+        let nextPhotos: any[] = [];
+        try {
+          const plans = typeof u.floorPlanImagesJson === 'string' ? JSON.parse(u.floorPlanImagesJson) : (u.floorPlanImagesJson || []);
+          nextFloorPlans = Array.isArray(plans) ? plans.filter((p: any) => (typeof p === 'string' ? p : p?.url) !== imgUrl) : [];
+        } catch {}
+        try {
+          const photos = typeof u.photoGalleryJson === 'string' ? JSON.parse(u.photoGalleryJson) : (u.photoGalleryJson || []);
+          nextPhotos = Array.isArray(photos) ? photos.filter((p: any) => (typeof p === 'string' ? p : p?.url) !== imgUrl) : [];
+        } catch {}
+
+        await fetch(`/api/v1/inventory/units/${u.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            floorPlanUrl: nextFloorPlanUrl,
+            floorPlanImages: nextFloorPlans,
+            photoGallery: nextPhotos,
+          }),
+        });
+      }
+
+      setLocalUnits((prev) =>
+        prev.map((u) => {
+          if (matchingUnits.some((m) => m.id === u.id)) {
+            return {
+              ...u,
+              floorPlanUrl: u.floorPlanUrl === imgUrl ? null : u.floorPlanUrl,
+            };
+          }
+          return u;
+        })
+      );
+
+      // 2. Project-level media cleanup
       const existing = parseGalleryUrls(currentProject.mediaGalleryJson || currentProject.mediaGallery);
       const nextGallery = existing.filter((item: any) => {
         const url = typeof item === 'string' ? item : (item?.url || item?.file_url || item?.secureUrl);
         return url !== imgUrl;
       });
+
+      let nextFloorPlans: any[] = [];
+      try {
+        const plans = typeof currentProject.floorPlanImagesJson === 'string' ? JSON.parse(currentProject.floorPlanImagesJson) : (currentProject.floorPlanImagesJson || []);
+        nextFloorPlans = Array.isArray(plans) ? plans.filter((item: any) => (typeof item === 'string' ? item : item?.url) !== imgUrl) : [];
+      } catch {}
+
+      let nextElevations: any[] = [];
+      try {
+        const elevs = typeof currentProject.elevationImagesJson === 'string' ? JSON.parse(currentProject.elevationImagesJson) : (currentProject.elevationImagesJson || []);
+        nextElevations = Array.isArray(elevs) ? elevs.filter((item: any) => (typeof item === 'string' ? item : item?.url) !== imgUrl) : [];
+      } catch {}
+
       const nextCover = currentProject.coverImageUrl === imgUrl ? null : currentProject.coverImageUrl;
       const nextMaster = currentProject.masterPlanUrl === imgUrl ? null : currentProject.masterPlanUrl;
 
@@ -220,26 +297,30 @@ export function ProjectDetailsModal({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           mediaGallery: nextGallery,
-          ...(currentProject.coverImageUrl === imgUrl ? { coverImageUrl: nextCover } : {}),
-          ...(currentProject.masterPlanUrl === imgUrl ? { masterPlanUrl: nextMaster } : {}),
+          floorPlanImages: nextFloorPlans,
+          elevationImages: nextElevations,
+          ...(currentProject.coverImageUrl === imgUrl ? { coverImageUrl: null } : {}),
+          ...(currentProject.masterPlanUrl === imgUrl ? { masterPlanUrl: null } : {}),
         }),
       });
 
       const data = await res.json();
       if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Failed to remove image from project gallery.');
+        throw new Error(data.error || 'Failed to remove image from project.');
       }
 
       setCurrentProject((prev: any) => ({
         ...prev,
         ...data.data,
         mediaGalleryJson: nextGallery,
+        floorPlanImagesJson: nextFloorPlans,
+        elevationImagesJson: nextElevations,
         ...(currentProject.coverImageUrl === imgUrl ? { coverImageUrl: null } : {}),
         ...(currentProject.masterPlanUrl === imgUrl ? { masterPlanUrl: null } : {}),
       }));
 
-      setUploadProgressMsg('Image removed from project gallery.');
-      setTimeout(() => setUploadProgressMsg(null), 4000);
+      setUploadProgressMsg('Image removed successfully.');
+      setTimeout(() => setUploadProgressMsg(null), 3000);
       onProjectUpdated?.(data.data);
     } catch (err: any) {
       console.error('Delete image error:', err);
@@ -375,7 +456,7 @@ export function ProjectDetailsModal({
     return `₹${Number(val).toLocaleString('en-IN')}`;
   };
 
-  const projectUnits = units.filter((u) => u.projectId === currentProject.id);
+  const projectUnits = (localUnits && localUnits.length > 0 ? localUnits : units).filter((u) => u.projectId === currentProject.id);
 
   const rawGallery = Array.isArray(currentProject.mediaGalleryJson) 
     ? currentProject.mediaGalleryJson 
@@ -488,10 +569,7 @@ export function ProjectDetailsModal({
       }
     });
 
-  const elevationImages = elevationList.length > 0 ? elevationList : [
-    { url: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1600', title: `${currentProject.projectName} Tower Elevation`, category: 'elevation', badge: 'FRONT ELEVATION', pageNumber: 3 },
-    { url: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1600', title: `${currentProject.projectName} Facade Render`, category: 'elevation', badge: 'PODIUM FACADE', pageNumber: 3 }
-  ];
+  const elevationImages = elevationList.filter((e) => !isDummyOrPlaceholderUrl(e.url));
 
   // Build Floor Plans & Blueprints List
   const floorPlanList: Array<{ url: string; title: string; category: string; badge?: string; bhk?: number; carpet?: number; pageNumber?: number }> = [];
@@ -534,10 +612,7 @@ export function ProjectDetailsModal({
       }
     });
 
-  const floorPlanImages = floorPlanList.length > 0 ? floorPlanList : [
-    { url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1600', title: `${currentProject.projectName} Master Layout Plan`, category: 'floorplan', badge: 'MASTER LAYOUT', pageNumber: 8 },
-    { url: 'https://images.unsplash.com/photo-1574362848149-11496d93a7c7?w=1600', title: `Typical 2 & 3 BHK Cluster Floor Plan`, category: 'floorplan', badge: 'CLUSTER PLAN', pageNumber: 7 }
-  ];
+  const floorPlanImages = floorPlanList.filter((f) => !isDummyOrPlaceholderUrl(f.url));
 
   return (
     <AccessibleDialog
@@ -989,8 +1064,15 @@ export function ProjectDetailsModal({
               </div>
 
               {/* Elevation Image Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {elevationImages.map((img: any, idx: number) => {
+              {elevationImages.length === 0 ? (
+                <div className="p-8 text-center border border-dashed border-border rounded-xl bg-surface-subtle/30">
+                  <Building2 className="w-8 h-8 text-content-muted mx-auto mb-2 opacity-40" />
+                  <p className="text-xs font-semibold text-content">No architectural elevation photos uploaded yet.</p>
+                  <p className="text-[11px] text-content-muted mt-0.5">Use the dropzone below to upload authentic building facade or podium renders.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {elevationImages.map((img: any, idx: number) => {
                   const isCloud = img.url?.includes('cloudinary') || img.url?.includes('/uploads/');
                   const isCover = currentProject.coverImageUrl === img.url || (idx === 0 && !currentProject.coverImageUrl);
 
@@ -1045,15 +1127,46 @@ export function ProjectDetailsModal({
                           <span className="text-xs font-semibold text-white truncate pr-2">
                             {img.title || `Tower Architectural Elevation ${idx + 1}`}
                           </span>
-                          <span className="p-1.5 rounded-md bg-black/60 text-white group-hover:bg-accent group-hover:text-white transition-colors shrink-0">
-                            <Maximize2 className="w-3.5 h-3.5" />
-                          </span>
+                          <div className="flex items-center gap-1.5 shrink-0 pointer-events-auto">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedImage(img.url);
+                              }}
+                              className="p-1.5 rounded-md bg-black/70 hover:bg-accent text-white transition-colors cursor-pointer"
+                              title="View full size"
+                            >
+                              <Maximize2 className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              disabled={uploadingFiles}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteImage(img.url);
+                              }}
+                              title={deletingImageUrl === img.url ? 'Click again to confirm removal' : 'Remove this elevation photo'}
+                              aria-label={`Remove ${img.title || 'this elevation photo'}`}
+                              className={`p-1.5 rounded-md transition-all disabled:opacity-50 cursor-pointer flex items-center gap-1 ${
+                                deletingImageUrl === img.url
+                                  ? 'bg-status-danger text-white hover:bg-status-danger/90 px-2'
+                                  : 'bg-black/70 text-white hover:bg-status-danger hover:text-white'
+                              }`}
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              {deletingImageUrl === img.url && (
+                                <span className="text-[10px] font-bold">Confirm</span>
+                              )}
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
                   );
                 })}
               </div>
+            )}
 
               {/* Multi-Photo Drag & Drop Upload Zone */}
               <div
@@ -1148,74 +1261,90 @@ export function ProjectDetailsModal({
               </div>
 
               {/* Floor Plan Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {floorPlanImages.map((img: any, idx: number) => {
-                  const isCloud = img.url?.includes('cloudinary') || img.url?.includes('/uploads/');
-                  return (
-                    <div 
-                      key={idx} 
-                      className="group relative rounded-xl overflow-hidden border border-sky-500/30 bg-slate-950 aspect-[16/11] cursor-pointer shadow-sm hover:border-sky-400 hover:shadow-md transition-all flex flex-col justify-end"
-                      onClick={() => setSelectedImage(img.url)}
-                    >
-                      <img 
-                        src={img.url} 
-                        alt={img.title || `${currentProject.projectName} Floor Plan ${idx + 1}`} 
-                        className="absolute inset-0 w-full h-full object-contain p-3 transition-transform duration-300 group-hover:scale-105"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-black/40 flex flex-col justify-between p-3.5 pointer-events-none">
-                        <div className="flex items-center justify-between w-full">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-500 text-white shadow-sm tracking-wide">
-                              {img.badge || 'BLUEPRINT'}
-                            </span>
-                            {Boolean(img.pageNumber) && (
-                              <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-black/80 text-sky-300 border border-sky-500/30">
-                                Page {img.pageNumber}
+              {floorPlanImages.length === 0 ? (
+                <div className="p-8 text-center border border-dashed border-border rounded-xl bg-surface-subtle/30">
+                  <Layers className="w-8 h-8 text-content-muted mx-auto mb-2 opacity-40" />
+                  <p className="text-xs font-semibold text-content">No floor plans or blueprints uploaded yet.</p>
+                  <p className="text-[11px] text-content-muted mt-0.5">Use the dropzone below to upload sanctioned master layouts or unit blueprints.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {floorPlanImages.map((img: any, idx: number) => {
+                    const isCloud = img.url?.includes('cloudinary') || img.url?.includes('/uploads/');
+                    return (
+                      <div 
+                        key={idx} 
+                        className="group relative rounded-xl overflow-hidden border border-sky-500/30 bg-slate-950 aspect-[16/11] cursor-pointer shadow-sm hover:border-sky-400 hover:shadow-md transition-all flex flex-col justify-end"
+                        onClick={() => setSelectedImage(img.url)}
+                      >
+                        <img 
+                          src={img.url} 
+                          alt={img.title || `${currentProject.projectName} Floor Plan ${idx + 1}`} 
+                          className="absolute inset-0 w-full h-full object-contain p-3 transition-transform duration-300 group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-black/40 flex flex-col justify-between p-3.5 pointer-events-none">
+                          <div className="flex items-center justify-between w-full">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-500 text-white shadow-sm tracking-wide">
+                                {img.badge || 'BLUEPRINT'}
+                              </span>
+                              {Boolean(img.pageNumber) && (
+                                <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-black/80 text-sky-300 border border-sky-500/30">
+                                  Page {img.pageNumber}
+                                </span>
+                              )}
+                            </div>
+                            {isCloud && (
+                              <span className="px-2 py-0.5 rounded text-[9px] font-mono font-medium bg-black/70 text-sky-300 border border-sky-500/30 flex items-center gap-1">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                                Verified
                               </span>
                             )}
                           </div>
-                          {isCloud && (
-                            <span className="px-2 py-0.5 rounded text-[9px] font-mono font-medium bg-black/70 text-sky-300 border border-sky-500/30 flex items-center gap-1">
-                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                              Verified
+                          <div className="flex items-center justify-between w-full">
+                            <span className="text-xs font-semibold text-white truncate pr-2">
+                              {img.title || `Sanctioned Floor Plan Blueprint ${idx + 1}`}
                             </span>
-                          )}
-                        </div>
-                        <div className="flex items-center justify-between w-full">
-                          <span className="text-xs font-semibold text-white truncate pr-2">
-                            {img.title || `Sanctioned Floor Plan Blueprint ${idx + 1}`}
-                          </span>
-                          <div className="flex items-center gap-1.5 shrink-0">
-                            <span
-                              className="p-1.5 rounded-md bg-black/60 text-white group-hover:bg-accent group-hover:text-white transition-colors"
-                              title="View full size"
-                            >
-                              <Maximize2 className="w-3.5 h-3.5" />
-                            </span>
-                            <button
-                              type="button"
-                              disabled={uploadingFiles}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteImage(img.url);
-                              }}
-                              title={deletingImageUrl === img.url ? 'Click again to confirm removal' : 'Remove this image from project gallery'}
-                              aria-label={`Remove ${img.title || 'this floor plan image'}`}
-                              className={`p-1.5 rounded-md transition-colors disabled:opacity-50 cursor-pointer ${
-                                deletingImageUrl === img.url
-                                  ? 'bg-status-danger text-white hover:bg-status-danger/90'
-                                  : 'bg-black/60 text-white hover:bg-status-danger hover:text-white'
-                              }`}
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
+                            <div className="flex items-center gap-1.5 shrink-0 pointer-events-auto">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedImage(img.url);
+                                }}
+                                className="p-1.5 rounded-md bg-black/70 text-white hover:bg-accent hover:text-white transition-colors cursor-pointer"
+                                title="View full size"
+                              >
+                                <Maximize2 className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                disabled={uploadingFiles}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteImage(img.url);
+                                }}
+                                title={deletingImageUrl === img.url ? 'Click again to confirm removal' : 'Remove this floor plan'}
+                                aria-label={`Remove ${img.title || 'this floor plan image'}`}
+                                className={`p-1.5 rounded-md transition-all disabled:opacity-50 cursor-pointer flex items-center gap-1 ${
+                                  deletingImageUrl === img.url
+                                    ? 'bg-status-danger text-white hover:bg-status-danger/90 px-2'
+                                    : 'bg-black/70 text-white hover:bg-status-danger hover:text-white'
+                                }`}
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                                {deletingImageUrl === img.url && (
+                                  <span className="text-[10px] font-bold">Confirm</span>
+                                )}
+                              </button>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+              )}
 
               {/* Multi-Floor Plan Drag & Drop Upload Zone */}
               <div
@@ -1332,6 +1461,15 @@ export function ProjectDetailsModal({
                             </div>
                           </div>
                           <div className="flex items-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => setInspectingUnit(unit)}
+                              className="btn-secondary px-2.5 py-1.5 text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs hover:border-accent"
+                              title={`Inspect full information and photos for Unit ${unit.unitNumber || ''}`}
+                            >
+                              <Eye className="w-3.5 h-3.5 text-accent" />
+                              <span>Inspect</span>
+                            </button>
                             {onSelectUnitForCalc && (
                               <button
                                 type="button"
@@ -1530,10 +1668,9 @@ export function ProjectDetailsModal({
             registrationDate: currentProject.registrationDate ? String(currentProject.registrationDate) : '2024-01-01',
             validUntil: currentProject.validUntil ? String(currentProject.validUntil) : (currentProject.reraValidUntil ? formatDateFull(currentProject.reraValidUntil) : '2027-12-31'),
             signatoryName: currentProject.signatoryName || 'Competent Authority, MahaRERA',
-            signatoryDate: currentProject.signatoryDate || '',
-            certificateUrl: currentProject.reraCertificateUrl || (currentProject.reraNumber === 'P52000079818' ? '/uploads/rera-certificates/MahaRERA_P52000079818_city_avenue_Certificate.pdf' : undefined),
-            originalImageUrl: currentProject.originalDocumentUrl || (currentProject.reraNumber === 'P52000079818' ? '/images/original-certificates/P52000079818.png' : undefined),
-            isOriginalScannedDocument: Boolean(currentProject.originalDocumentUrl || currentProject.reraNumber === 'P52000079818'),
+            certificateUrl: currentProject.reraCertificateUrl || undefined,
+            originalImageUrl: currentProject.originalDocumentUrl || undefined,
+            isOriginalScannedDocument: Boolean(currentProject.originalDocumentUrl || currentProject.isOriginalScannedDocument),
           }}
         />
       )}
@@ -1560,6 +1697,28 @@ export function ProjectDetailsModal({
             } catch (e) {
               console.warn('Failed to refresh project data:', e);
             }
+          }}
+        />
+      )}
+
+      {/* Unit Details & Differentiated Media Inspector Modal */}
+      {inspectingUnit && (
+        <UnitDetailsModal
+          unit={inspectingUnit}
+          project={currentProject}
+          allUnits={projectUnits}
+          onClose={() => setInspectingUnit(null)}
+          onSelectUnitForCalc={onSelectUnitForCalc}
+          onEditUnit={(u) => {
+            setInspectingUnit(null);
+            if (onEditUnit) onEditUnit(u);
+          }}
+          onDeleteUnit={(u) => {
+            setInspectingUnit(null);
+            if (onDeleteUnit) onDeleteUnit(u);
+          }}
+          onUnitUpdated={() => {
+            if (onProjectUpdated) onProjectUpdated();
           }}
         />
       )}

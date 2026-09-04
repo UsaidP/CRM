@@ -36,7 +36,13 @@ import {
   Trash2,
   FileCheck,
   Download,
-  Home
+  Home,
+  Car,
+  Compass,
+  Tag,
+  IndianRupee,
+  Calendar,
+  Zap
 } from 'lucide-react';
 import { HallmarkStamp } from '@/components/ui/HallmarkStamp';
 import { listUnits, listProjects, verifyUnit } from '@/lib/client/inventory';
@@ -44,6 +50,7 @@ import { resolveAssetUrl, parseGalleryUrls } from '@/lib/inventory-media';
 import { AccessibleDialog } from '@/components/ui/AccessibleDialog';
 import { MediaUploader, type MediaAsset } from '@/components/inventory/MediaUploader';
 import { ProjectDetailsModal } from '@/components/inventory/ProjectDetailsModal';
+import { UnitDetailsModal } from '@/components/inventory/UnitDetailsModal';
 import { CsvImportModal } from '@/components/inventory/CsvImportModal';
 import { BrochureUploadModal } from '@/components/inventory/BrochureUploadModal';
 import { CustomSelect, type CustomSelectOption } from '@/components/ui/CustomSelect';
@@ -115,6 +122,8 @@ export function InventoryClient({
   const [unitForm, setUnitForm] = useState({
     projectId: initialProjects[0]?.id || '',
     unitNumber: '',
+    towerWing: '',
+    flatNumber: '',
     bhk: 1,
     bathrooms: 1,
     balconies: 0,
@@ -127,8 +136,11 @@ export function InventoryClient({
     agreementValue: 0,
     stampDutyRate: 6.0,
     registrationFee: 30000,
-    parkingCharges: 0,
-    societyDevelopmentCharges: 0,
+    parkingType: '1 Covered Stilt Parking',
+    parkingCharges: 250000,
+    parkingSlot: '',
+    floorRiseCharges: 0,
+    societyDevelopmentCharges: 150000,
     verificationStatus: 'ACTIVE_MARKETABLE',
     verificationNotes: '',
     description: '',
@@ -279,12 +291,32 @@ export function InventoryClient({
       : unitForm.mediaGallery.filter((a) => a.kind === 'image').map((a) => a.url);
     const videoReelUrl = unitForm.videoReelUrl || videoAssets[0]?.url || '';
 
+    // Derive final unit identifier if user provided Tower/Wing and Flat
+    let finalUnitNumber = unitForm.unitNumber.trim();
+    if (!finalUnitNumber && unitForm.flatNumber.trim()) {
+      finalUnitNumber = unitForm.towerWing.trim()
+        ? `${unitForm.towerWing.trim()} - ${unitForm.flatNumber.trim()}`
+        : unitForm.flatNumber.trim();
+    }
+
+    // Auto-enrich feature highlights with parking info if not yet present
+    let updatedHighlights = [...unitForm.featureHighlights];
+    if (unitForm.parkingType && !unitForm.parkingType.toLowerCase().includes('no car')) {
+      const parkingLabel = unitForm.parkingSlot.trim() 
+        ? `${unitForm.parkingType} (${unitForm.parkingSlot.trim()})` 
+        : unitForm.parkingType;
+      if (!updatedHighlights.some((h) => h.toLowerCase().includes('parking'))) {
+        updatedHighlights.push(parkingLabel);
+      }
+    }
+
     try {
       const res = await fetch(editingUnitId ? `/api/v1/inventory/units/${editingUnitId}` : '/api/v1/inventory/units', {
         method: editingUnitId ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...unitForm,
+          unitNumber: finalUnitNumber || undefined,
           bhk: Number(unitForm.bhk),
           bathrooms: Number(unitForm.bathrooms),
           balconies: Number(unitForm.balconies),
@@ -292,10 +324,14 @@ export function InventoryClient({
           totalFloors: Number(unitForm.totalFloors),
           carpetAreaSqft: Number(unitForm.carpetAreaSqft),
           agreementValue: Number(unitForm.agreementValue),
-          parkingCharges: Number(unitForm.parkingCharges),
-          societyDevelopmentCharges: Number(unitForm.societyDevelopmentCharges),
+          parkingCharges: Number(unitForm.parkingCharges || 0),
+          floorRiseCharges: Number(unitForm.floorRiseCharges || 0),
+          societyDevelopmentCharges: Number(unitForm.societyDevelopmentCharges || 0),
+          possessionDate: unitForm.possessionDate ? unitForm.possessionDate : null,
+          isHotDeal: Boolean(unitForm.isHotDeal),
+          isExclusive: Boolean(unitForm.isExclusive),
           description: unitForm.description,
-          featureHighlights: unitForm.featureHighlights,
+          featureHighlights: updatedHighlights,
           floorPlanUrl: unitForm.floorPlanUrl,
           mediaGallery: unitForm.mediaGallery,
           photoGallery: photoUrls,
@@ -575,6 +611,8 @@ export function InventoryClient({
     setUnitForm({
       projectId: targetProjectId || initialProjects[0]?.id || '',
       unitNumber: '',
+      towerWing: '',
+      flatNumber: '',
       bhk: 1,
       bathrooms: 1,
       balconies: 0,
@@ -587,8 +625,11 @@ export function InventoryClient({
       agreementValue: 0,
       stampDutyRate: 6.0,
       registrationFee: 30000,
-      parkingCharges: 0,
-      societyDevelopmentCharges: 0,
+      parkingType: '1 Covered Stilt Parking',
+      parkingCharges: 250000,
+      parkingSlot: '',
+      floorRiseCharges: 0,
+      societyDevelopmentCharges: 150000,
       verificationStatus: 'ACTIVE_MARKETABLE',
       verificationNotes: '',
       description: '',
@@ -606,11 +647,27 @@ export function InventoryClient({
   const openEditUnit = (unit: any) => {
     setActionError(null);
     setEditingUnitId(unit.id);
+
+    let parsedWing = '';
+    let parsedFlat = unit.unitNumber || '';
+    if (unit.unitNumber && unit.unitNumber.includes(' - ')) {
+      const parts = unit.unitNumber.split(' - ');
+      parsedWing = parts[0];
+      parsedFlat = parts.slice(1).join(' - ');
+    }
+
     setUnitForm((prev) => ({
       ...prev,
       ...unit,
       projectId: unit.projectId || unit.project?.id || prev.projectId,
       unitNumber: unit.unitNumber || '',
+      towerWing: parsedWing,
+      flatNumber: parsedFlat,
+      parkingCharges: unit.parkingCharges !== undefined ? Number(unit.parkingCharges) : 250000,
+      parkingType: unit.parkingCharges === 0 ? 'No Car Parking (2-Wheeler Only)' : '1 Covered Stilt Parking',
+      parkingSlot: '',
+      floorRiseCharges: unit.floorRiseCharges !== undefined ? Number(unit.floorRiseCharges) : 0,
+      societyDevelopmentCharges: unit.societyDevelopmentCharges !== undefined ? Number(unit.societyDevelopmentCharges) : 150000,
       possessionDate: unit.possessionDate ? String(unit.possessionDate).slice(0, 10) : '',
       description: unit.description || '',
       verificationNotes: unit.verificationNotes || '',
@@ -628,6 +685,8 @@ export function InventoryClient({
         : [],
       photoUrls: Array.isArray(unit.photoGallery) ? unit.photoGallery : [],
       videoReelUrl: unit.videoReelUrl || '',
+      isHotDeal: Boolean(unit.isHotDeal),
+      isExclusive: Boolean(unit.isExclusive),
     }));
     setShowAddModal(true);
   };
@@ -638,6 +697,50 @@ export function InventoryClient({
     if (val >= 100000) return `₹${(val / 100000).toFixed(2)} Lakh`;
     return `₹${Number(val).toLocaleString('en-IN')}`;
   };
+
+  // Live Statutory Calculation for the unit form preview
+  const liveUnitCalc = useMemo(() => {
+    const av = Number(unitForm.agreementValue) || 0;
+    const isOcReady = unitForm.possessionStatus === 'READY_TO_MOVE';
+    const isAffordable = av > 0 && av <= 4500000;
+    const gstRate = isOcReady ? 0 : isAffordable ? 1 : 5;
+    const stampDuty = Math.round(av * 0.06);
+    const regFee = av > 0 ? Math.min(30000, Math.round(av * 0.01)) : 0;
+    const gstAmount = Math.round(av * (gstRate / 100));
+    const parking = Number(unitForm.parkingCharges) || 0;
+    const floorRise = Number(unitForm.floorRiseCharges) || 0;
+    const societyDev = Number(unitForm.societyDevelopmentCharges) || 0;
+    const totalAllIn = av + stampDuty + regFee + gstAmount + parking + floorRise + societyDev;
+    const carpet = Number(unitForm.carpetAreaSqft) || 0;
+    const ratePerSqft = carpet > 0 ? Math.round(av / carpet) : 0;
+    const allInRatePerSqft = carpet > 0 ? Math.round(totalAllIn / carpet) : 0;
+    const estBuiltUpSqft = Math.round(carpet * 1.15);
+    const estSuperBuiltUpSqft = Math.round(carpet * 1.40);
+
+    return {
+      agreementValue: av,
+      stampDuty,
+      regFee,
+      gstRate,
+      gstAmount,
+      parking,
+      floorRise,
+      societyDev,
+      totalAllIn,
+      ratePerSqft,
+      allInRatePerSqft,
+      estBuiltUpSqft,
+      estSuperBuiltUpSqft,
+      isOcReady,
+    };
+  }, [
+    unitForm.agreementValue,
+    unitForm.possessionStatus,
+    unitForm.parkingCharges,
+    unitForm.floorRiseCharges,
+    unitForm.societyDevelopmentCharges,
+    unitForm.carpetAreaSqft,
+  ]);
 
   // Helper for flexible micro-market matching (handles Taloja Phase 1/2 vs Phase I/II, sublocalities, sectors)
   const matchesMarketHelper = (market: string | null | undefined, subLocality?: string | null | undefined) => {
@@ -1465,6 +1568,7 @@ export function InventoryClient({
         titleId="add-project-title"
         descriptionId="add-project-description"
         size="xl"
+        closeOnClickOutside={false}
       >
         <div className="flex items-center justify-between pb-3 border-b border-border">
           <div className="flex items-center gap-2">
@@ -1785,6 +1889,7 @@ export function InventoryClient({
         titleId="add-unit-title"
         descriptionId="add-unit-description"
         size="xl"
+        closeOnClickOutside={false}
       >
         <div className="flex items-center justify-between pb-3 border-b border-border">
           <div className="flex items-center gap-2">
@@ -1879,18 +1984,63 @@ export function InventoryClient({
               />
             </div>
 
+            {/* 1. Identification: Tower/Wing, Flat Number, and Combined Identifier */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <label className="text-xs font-bold text-content block mb-1">Unit Number</label>
+                <label className="text-xs font-bold text-content block mb-1">
+                  Tower / Wing <span className="text-content-muted font-normal">(Optional)</span>
+                </label>
                 <input
-                  aria-label="Unit number"
+                  aria-label="Tower or Wing"
                   type="text"
-                  placeholder="e.g. A-1204"
-                  value={unitForm.unitNumber}
-                  onChange={(e) => setUnitForm({ ...unitForm, unitNumber: e.target.value })}
-                  className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content font-mono focus:outline-hidden focus:border-accent font-medium"
+                  placeholder="e.g. Wing A, Tower 2"
+                  value={unitForm.towerWing}
+                  onChange={(e) => {
+                    const wing = e.target.value;
+                    const combined = wing.trim() && unitForm.flatNumber.trim()
+                      ? `${wing.trim()} - ${unitForm.flatNumber.trim()}`
+                      : unitForm.flatNumber.trim() || wing.trim();
+                    setUnitForm((prev) => ({ ...prev, towerWing: wing, unitNumber: combined }));
+                  }}
+                  className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content focus:outline-hidden focus:border-accent font-medium"
                 />
               </div>
+              <div>
+                <label className="text-xs font-bold text-content block mb-1">
+                  Flat / Door No <span className="text-content-muted font-normal">(Optional)</span>
+                </label>
+                <input
+                  aria-label="Flat or Door number"
+                  type="text"
+                  placeholder="e.g. 1204"
+                  value={unitForm.flatNumber}
+                  onChange={(e) => {
+                    const flat = e.target.value;
+                    const combined = unitForm.towerWing.trim() && flat.trim()
+                      ? `${unitForm.towerWing.trim()} - ${flat.trim()}`
+                      : flat.trim() || unitForm.towerWing.trim();
+                    setUnitForm((prev) => ({ ...prev, flatNumber: flat, unitNumber: combined }));
+                  }}
+                  className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content focus:outline-hidden focus:border-accent font-medium"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-content block mb-1">
+                  Unit Identifier / Label
+                </label>
+                <input
+                  aria-label="Unit identifier"
+                  type="text"
+                  placeholder="e.g. Wing A - 1204"
+                  value={unitForm.unitNumber}
+                  onChange={(e) => setUnitForm({ ...unitForm, unitNumber: e.target.value })}
+                  className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content font-mono focus:outline-hidden focus:border-accent font-bold"
+                />
+              </div>
+            </div>
+
+            {/* 2. BHK, Carpet Area, Bathrooms & Balconies */}
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
               <div>
                 <CustomSelect
                   id="unit-bhk-select"
@@ -1927,6 +2077,8 @@ export function InventoryClient({
                     { value: '2', label: '2 BHK', badge: 'Standard' },
                     { value: '3', label: '3 BHK', badge: 'Premium' },
                     { value: '4', label: '4 BHK', badge: 'Luxury' },
+                    { value: '5', label: '5 BHK', badge: 'Penthouse' },
+                    { value: '6', label: '6 BHK', badge: 'Duplex' },
                   ]}
                 />
               </div>
@@ -1936,14 +2088,12 @@ export function InventoryClient({
                   aria-label="Carpet area in square feet"
                   type="number"
                   required
+                  min={100}
                   value={unitForm.carpetAreaSqft}
                   onChange={(e) => setUnitForm({ ...unitForm, carpetAreaSqft: Number(e.target.value) })}
                   className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content font-mono focus:outline-hidden focus:border-accent font-medium"
                 />
               </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div>
                 <label className="text-xs font-bold text-content block mb-1">Bathrooms</label>
                 <input
@@ -1968,12 +2118,43 @@ export function InventoryClient({
               </div>
             </div>
 
+            {/* Live Area Matrix Helper Bar */}
+            {Number(unitForm.carpetAreaSqft) > 0 && (
+              <div className="p-3 bg-surface-subtle/80 border border-border rounded-xl flex flex-wrap items-center gap-x-4 gap-y-2 text-xs">
+                <span className="text-[11px] font-bold text-content-muted uppercase tracking-wider flex items-center gap-1">
+                  <Layers className="w-3.5 h-3.5 text-accent" />
+                  <span>Area Matrix:</span>
+                </span>
+                <span className="text-content">
+                  RERA Usable Carpet: <strong className="font-mono font-bold text-accent">{unitForm.carpetAreaSqft} sq.ft</strong>
+                </span>
+                <span className="text-content-muted">•</span>
+                <span className="text-content">
+                  Est. Built-up (+15%): <strong className="font-mono font-semibold text-content">{liveUnitCalc.estBuiltUpSqft} sq.ft</strong>
+                </span>
+                <span className="text-content-muted">•</span>
+                <span className="text-content">
+                  Super Built-up (+40% Loading): <strong className="font-mono font-semibold text-content">{liveUnitCalc.estSuperBuiltUpSqft} sq.ft</strong>
+                </span>
+                {liveUnitCalc.ratePerSqft > 0 && (
+                  <>
+                    <span className="text-content-muted">•</span>
+                    <span className="text-content">
+                      Base Rate: <strong className="font-mono font-bold text-status-success">₹{liveUnitCalc.ratePerSqft.toLocaleString('en-IN')}/sq.ft</strong>
+                    </span>
+                  </>
+                )}
+              </div>
+            )}
+
+            {/* 3. Floor Number, Total Floors & Facing */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
                 <label className="text-xs font-bold text-content block mb-1">Floor Number</label>
                 <input
                   aria-label="Floor number"
                   type="number"
+                  min={1}
                   value={unitForm.floorNumber}
                   onChange={(e) => setUnitForm({ ...unitForm, floorNumber: Number(e.target.value) })}
                   className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content font-mono focus:outline-hidden focus:border-accent font-medium"
@@ -1984,6 +2165,7 @@ export function InventoryClient({
                 <input
                   aria-label="Total floors"
                   type="number"
+                  min={1}
                   value={unitForm.totalFloors}
                   onChange={(e) => setUnitForm({ ...unitForm, totalFloors: Number(e.target.value) })}
                   className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content font-mono focus:outline-hidden focus:border-accent font-medium"
@@ -1992,7 +2174,7 @@ export function InventoryClient({
               <div>
                 <CustomSelect
                   id="unit-facing-select"
-                  label="Facing"
+                  label="Facing / Orientation"
                   value={unitForm.facing}
                   onChange={(val) => setUnitForm({ ...unitForm, facing: val })}
                   options={[
@@ -2009,39 +2191,457 @@ export function InventoryClient({
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* 4. DEDICATED CAR PARKING SECTION */}
+            <div className="rounded-2xl border border-border bg-surface-subtle/40 p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-accent-soft flex items-center justify-center text-accent">
+                    <Car className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-bold text-content">Car Parking Allocation &amp; Charges</h3>
+                    <p className="text-[11px] text-content-muted">Configure dedicated vehicle parking bay and applicable pricing</p>
+                  </div>
+                </div>
+                <span className="text-xs font-mono font-bold text-accent">
+                  {unitForm.parkingCharges > 0 ? formatINR(unitForm.parkingCharges) : 'Included / ₹0'}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <CustomSelect
+                    id="unit-parking-type"
+                    label="Parking Allocation Type"
+                    value={unitForm.parkingType}
+                    onChange={(val) => {
+                      setUnitForm((prev) => ({
+                        ...prev,
+                        parkingType: val,
+                        parkingCharges: val.toLowerCase().includes('no car') ? 0 : (prev.parkingCharges === 0 ? 250000 : prev.parkingCharges),
+                      }));
+                    }}
+                    options={[
+                      { value: '1 Covered Stilt Parking', label: '1 Covered Stilt Parking', badge: 'Standard' },
+                      { value: '1 Covered Podium Parking', label: '1 Covered Podium Parking', badge: 'Podium' },
+                      { value: '1 Covered Basement Parking', label: '1 Covered Basement Parking', badge: 'Basement' },
+                      { value: '1 Open Ground Parking', label: '1 Open Ground Parking', badge: 'Open' },
+                      { value: '2 Tandem Parking (Stack/Twin)', label: '2 Tandem Parking (Stack/Twin)', badge: '2 Cars' },
+                      { value: 'Puzzle / Mechanical Parking', label: 'Puzzle / Mechanical Parking', badge: 'Puzzle' },
+                      { value: 'Open / Common Society Parking', label: 'Open / Common Society Parking', badge: 'Common' },
+                      { value: 'No Car Parking (2-Wheeler Only)', label: 'No Car Parking (2-Wheeler Only)', badge: 'Bike Only' },
+                    ]}
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-content block mb-1">
+                    Parking Slot / Bay Number <span className="text-content-muted font-normal">(Optional)</span>
+                  </label>
+                  <input
+                    aria-label="Parking bay or slot number"
+                    type="text"
+                    placeholder="e.g. Slot P-104, Stilt Bay 12"
+                    value={unitForm.parkingSlot}
+                    onChange={(e) => setUnitForm({ ...unitForm, parkingSlot: e.target.value })}
+                    className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content focus:outline-hidden focus:border-accent font-medium font-mono"
+                  />
+                </div>
+              </div>
+
               <div>
-                <label className="text-xs font-bold text-content block mb-1">Agreement Base Value (₹) *</label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-bold text-content">
+                    Parking Charges (₹)
+                  </label>
+                  <span className="text-[11px] text-content-muted">
+                    Quick Presets:
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {[
+                    { label: 'Free / Included', value: 0 },
+                    { label: '₹2.5 Lakh (Default)', value: 250000 },
+                    { label: '₹3.0 Lakh', value: 300000 },
+                    { label: '₹3.5 Lakh', value: 350000 },
+                    { label: '₹4.0 Lakh', value: 400000 },
+                    { label: '₹5.0 Lakh', value: 500000 },
+                  ].map((preset) => (
+                    <button
+                      key={preset.value}
+                      type="button"
+                      onClick={() => setUnitForm((prev) => ({ ...prev, parkingCharges: preset.value }))}
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-colors cursor-pointer border ${
+                        Number(unitForm.parkingCharges) === preset.value
+                          ? 'bg-accent text-white border-accent shadow-2xs'
+                          : 'bg-surface hover:bg-surface-subtle text-content border-border'
+                      }`}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
                 <input
-                  aria-label="Agreement base value"
+                  aria-label="Car parking charges in INR"
                   type="number"
-                  required
                   step="10000"
-                  value={unitForm.agreementValue}
-                  onChange={(e) => setUnitForm({ ...unitForm, agreementValue: Number(e.target.value) })}
+                  min="0"
+                  placeholder="0 (or select preset above)"
+                  value={unitForm.parkingCharges === 0 ? '' : unitForm.parkingCharges}
+                  onChange={(e) => setUnitForm({ ...unitForm, parkingCharges: e.target.value === '' ? 0 : Number(e.target.value) })}
                   className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content font-mono font-bold focus:outline-hidden focus:border-accent focus:ring-1 focus:ring-accent"
                 />
+                <p className="mt-1 text-[11px] text-content-muted">
+                  Standard stilt/podium parking in Navi Mumbai is ₹2.5L - ₹4.0L. Select Free / Included if already factored into the base Agreement Value.
+                </p>
               </div>
+            </div>
+
+            {/* 5. COMMERCIALS, STATUTORY CHARGES & POSSESSION */}
+            <div className="rounded-2xl border border-border bg-surface-subtle/40 p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-accent-soft flex items-center justify-center text-accent">
+                  <IndianRupee className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-bold text-content">Commercials, Statutory Charges &amp; Handover</h3>
+                  <p className="text-[11px] text-content-muted">Agreement value, possession timeline, floor rise, and society development levies</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="text-xs font-bold text-content block mb-1">Agreement Base Value (₹) *</label>
+                  <input
+                    aria-label="Agreement base value"
+                    type="number"
+                    required
+                    step="10000"
+                    min="100000"
+                    placeholder="e.g. 4500000"
+                    value={unitForm.agreementValue === 0 ? '' : unitForm.agreementValue}
+                    onChange={(e) => setUnitForm({ ...unitForm, agreementValue: e.target.value === '' ? 0 : Number(e.target.value) })}
+                    className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content font-mono font-bold focus:outline-hidden focus:border-accent focus:ring-1 focus:ring-accent"
+                  />
+                  {unitForm.agreementValue > 0 && (
+                    <span className="mt-1 text-[11px] text-accent font-semibold block">
+                      {formatINR(unitForm.agreementValue)}
+                    </span>
+                  )}
+                </div>
+
+                <div>
+                  <CustomSelect
+                    id="unit-possession-status-select"
+                    label="Possession Status"
+                    value={unitForm.possessionStatus}
+                    onChange={(val) => setUnitForm({ ...unitForm, possessionStatus: val })}
+                    options={[
+                      {
+                        value: 'READY_TO_MOVE',
+                        label: 'Ready to Move',
+                        description: '0% GST with Occupancy Certificate (OC)',
+                        dotColor: 'bg-status-success',
+                      },
+                      {
+                        value: 'UNDER_CONSTRUCTION',
+                        label: 'Under Construction',
+                        description: '5% GST applicable as per statutory guidelines',
+                        dotColor: 'bg-status-warning',
+                      },
+                    ]}
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-content block mb-1">
+                    Target Possession Date <span className="text-content-muted font-normal">(Optional)</span>
+                  </label>
+                  <input
+                    aria-label="Target possession date"
+                    type="date"
+                    value={unitForm.possessionDate}
+                    onChange={(e) => setUnitForm({ ...unitForm, possessionDate: e.target.value })}
+                    className="w-full bg-surface border border-border rounded-xl p-2.5 text-xs text-content font-mono focus:outline-hidden focus:border-accent font-medium"
+                  />
+                </div>
+              </div>
+
+              {/* Floor Rise and Society Development Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs font-bold text-content">
+                      Floor Rise Charges (₹)
+                    </label>
+                    {unitForm.floorNumber > 4 && Number(unitForm.carpetAreaSqft) > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const calculatedRise = Math.round((unitForm.floorNumber - 4) * 50 * Number(unitForm.carpetAreaSqft));
+                          setUnitForm((prev) => ({ ...prev, floorRiseCharges: calculatedRise }));
+                        }}
+                        className="text-[11px] font-bold text-accent hover:underline flex items-center gap-1 cursor-pointer"
+                        title="Auto-calculate standard floor rise: (Floor - 4) * ₹50 * Carpet"
+                      >
+                        <Zap className="w-3 h-3" />
+                        <span>Auto-calculate (₹50/sqft)</span>
+                      </button>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap gap-1 mb-1.5">
+                    {[
+                      { label: '₹0 (Base)', value: 0 },
+                      { label: '₹50k', value: 50000 },
+                      { label: '₹1.0L', value: 100000 },
+                      { label: '₹1.5L', value: 150000 },
+                    ].map((preset) => (
+                      <button
+                        key={preset.value}
+                        type="button"
+                        onClick={() => setUnitForm((prev) => ({ ...prev, floorRiseCharges: preset.value }))}
+                        className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition-colors cursor-pointer border ${
+                          Number(unitForm.floorRiseCharges) === preset.value
+                            ? 'bg-accent text-white border-accent'
+                            : 'bg-surface hover:bg-surface-subtle text-content border-border'
+                        }`}
+                      >
+                        {preset.label}
+                      </button>
+                    ))}
+                  </div>
+                  <input
+                    aria-label="Floor rise charges"
+                    type="number"
+                    step="5000"
+                    min="0"
+                    placeholder="0"
+                    value={unitForm.floorRiseCharges === 0 ? '' : unitForm.floorRiseCharges}
+                    onChange={(e) => setUnitForm({ ...unitForm, floorRiseCharges: e.target.value === '' ? 0 : Number(e.target.value) })}
+                    className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content font-mono font-medium focus:outline-hidden focus:border-accent"
+                  />
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs font-bold text-content">
+                      Society Dev &amp; Infrastructure (₹)
+                    </label>
+                  </div>
+                  <div className="flex flex-wrap gap-1 mb-1.5">
+                    {[
+                      { label: '₹1.0L', value: 100000 },
+                      { label: '₹1.5L (Default)', value: 150000 },
+                      { label: '₹2.0L', value: 200000 },
+                      { label: '₹2.5L', value: 250000 },
+                    ].map((preset) => (
+                      <button
+                        key={preset.value}
+                        type="button"
+                        onClick={() => setUnitForm((prev) => ({ ...prev, societyDevelopmentCharges: preset.value }))}
+                        className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition-colors cursor-pointer border ${
+                          Number(unitForm.societyDevelopmentCharges) === preset.value
+                            ? 'bg-accent text-white border-accent'
+                            : 'bg-surface hover:bg-surface-subtle text-content border-border'
+                        }`}
+                      >
+                        {preset.label}
+                      </button>
+                    ))}
+                  </div>
+                  <input
+                    aria-label="Society development charges"
+                    type="number"
+                    step="10000"
+                    min="0"
+                    placeholder="150000"
+                    value={unitForm.societyDevelopmentCharges === 0 ? '' : unitForm.societyDevelopmentCharges}
+                    onChange={(e) => setUnitForm({ ...unitForm, societyDevelopmentCharges: e.target.value === '' ? 0 : Number(e.target.value) })}
+                    className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content font-mono font-medium focus:outline-hidden focus:border-accent"
+                  />
+                  <p className="mt-1 text-[10px] text-content-muted">
+                    Covers CIDCO water connection, electricity meter setup, society corpus fund &amp; clubhouse share.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* 6. REAL-TIME ALL-IN ACQUISITION COST BREAKDOWN CARD */}
+            {liveUnitCalc.agreementValue > 0 && (
+              <div className="rounded-2xl border border-accent/20 bg-accent/5 p-4 space-y-2.5">
+                <div className="flex items-center justify-between pb-2 border-b border-accent/15">
+                  <div className="flex items-center gap-1.5">
+                    <Calculator className="w-4 h-4 text-accent" />
+                    <h4 className="text-xs font-bold text-accent font-display">
+                      Statutory Acquisition Cost Sheet (Maharashtra Engine)
+                    </h4>
+                  </div>
+                  <span className="text-[11px] font-mono text-content-muted">
+                    Base: {formatINR(liveUnitCalc.agreementValue)}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                  <div className="p-2 rounded-xl bg-surface border border-border">
+                    <span className="text-[10px] font-bold text-content-muted block">Stamp Duty (6%)</span>
+                    <span className="font-mono font-bold text-content">{formatINR(liveUnitCalc.stampDuty)}</span>
+                  </div>
+                  <div className="p-2 rounded-xl bg-surface border border-border">
+                    <span className="text-[10px] font-bold text-content-muted block">Registration Fee (Cap ₹30k)</span>
+                    <span className="font-mono font-bold text-content">{formatINR(liveUnitCalc.regFee)}</span>
+                  </div>
+                  <div className="p-2 rounded-xl bg-surface border border-border">
+                    <span className="text-[10px] font-bold text-content-muted block">
+                      GST ({liveUnitCalc.gstRate}%) {liveUnitCalc.isOcReady ? '• OC Exempt' : ''}
+                    </span>
+                    <span className="font-mono font-bold text-content">{formatINR(liveUnitCalc.gstAmount)}</span>
+                  </div>
+                  <div className="p-2 rounded-xl bg-surface border border-border">
+                    <span className="text-[10px] font-bold text-content-muted block">Car Parking</span>
+                    <span className="font-mono font-bold text-content">{formatINR(liveUnitCalc.parking)}</span>
+                  </div>
+                  <div className="p-2 rounded-xl bg-surface border border-border">
+                    <span className="text-[10px] font-bold text-content-muted block">Society Dev / Meter</span>
+                    <span className="font-mono font-bold text-content">{formatINR(liveUnitCalc.societyDev)}</span>
+                  </div>
+                  <div className="p-2 rounded-xl bg-surface border border-border">
+                    <span className="text-[10px] font-bold text-content-muted block">Floor Rise</span>
+                    <span className="font-mono font-bold text-content">{formatINR(liveUnitCalc.floorRise)}</span>
+                  </div>
+                  <div className="p-2 rounded-xl bg-surface border border-border col-span-2 flex items-center justify-between">
+                    <div>
+                      <span className="text-[10px] font-bold text-content-muted block">All-In Per Sq.Ft Rate</span>
+                      <span className="font-mono font-bold text-content">
+                        {liveUnitCalc.allInRatePerSqft > 0 ? `₹${liveUnitCalc.allInRatePerSqft.toLocaleString('en-IN')}/sq.ft` : '—'}
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[10px] font-bold text-accent uppercase tracking-wider block">Total Turnkey Package</span>
+                      <span className="font-mono font-black text-accent text-sm sm:text-base">
+                        {formatINR(liveUnitCalc.totalAllIn)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 7. MARKETING TOGGLES & EXCLUSIVITY */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setUnitForm((prev) => ({ ...prev, isHotDeal: !prev.isHotDeal }))}
+                className={`p-3 rounded-xl border text-left flex items-start gap-2.5 transition-all cursor-pointer ${
+                  unitForm.isHotDeal
+                    ? 'border-status-warning bg-status-warning-surface shadow-2xs'
+                    : 'border-border bg-surface hover:bg-surface-subtle'
+                }`}
+              >
+                <div className={`p-1.5 rounded-lg ${unitForm.isHotDeal ? 'bg-status-warning text-white' : 'bg-surface-subtle text-content-muted'}`}>
+                  <Flame className="w-4 h-4" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-content">Hot Deal / Distress Price</span>
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${unitForm.isHotDeal ? 'bg-status-warning text-white' : 'bg-surface-subtle text-content-muted'}`}>
+                      {unitForm.isHotDeal ? 'Active' : 'Off'}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-content-muted mt-0.5">
+                    Highlights this flat with priority badge for high-urgency buyers
+                  </p>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setUnitForm((prev) => ({ ...prev, isExclusive: !prev.isExclusive }))}
+                className={`p-3 rounded-xl border text-left flex items-start gap-2.5 transition-all cursor-pointer ${
+                  unitForm.isExclusive
+                    ? 'border-accent bg-accent/10 shadow-2xs'
+                    : 'border-border bg-surface hover:bg-surface-subtle'
+                }`}
+              >
+                <div className={`p-1.5 rounded-lg ${unitForm.isExclusive ? 'bg-accent text-white' : 'bg-surface-subtle text-content-muted'}`}>
+                  <Star className="w-4 h-4" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-content">Exclusive Mandate Listing</span>
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${unitForm.isExclusive ? 'bg-accent text-white' : 'bg-surface-subtle text-content-muted'}`}>
+                      {unitForm.isExclusive ? 'Exclusive' : 'Standard'}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-content-muted mt-0.5">
+                    Designates direct sole selling broker mandate with guaranteed lock
+                  </p>
+                </div>
+              </button>
+            </div>
+
+            {/* 8. FEATURE HIGHLIGHTS & QUICK TAGS */}
+            <div className="space-y-2 rounded-2xl border border-border bg-surface-subtle/50 p-4">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-content flex items-center gap-1.5">
+                  <Tag className="w-3.5 h-3.5 text-accent" />
+                  <span>Feature Highlights &amp; Selling Points</span>
+                </label>
+                <span className="text-[11px] text-content-muted">One-click quick toggles:</span>
+              </div>
+
+              {/* Quick Tags Chips */}
+              <div className="flex flex-wrap gap-1.5">
+                {[
+                  '1 Covered Stilt Parking',
+                  'Vastu East Facing',
+                  'Unobstructed Hill View',
+                  'Master Bedroom Balcony',
+                  'Modular Kitchen Included',
+                  'Corner Unit - Cross Ventilation',
+                  'High Floor Panoramic View',
+                  'Ready OC - Zero GST',
+                  'Sole Selling Mandate',
+                  'Zero Stamp Duty Offer',
+                ].map((tag) => {
+                  const isSelected = unitForm.featureHighlights.includes(tag);
+                  return (
+                    <button
+                      key={tag}
+                      type="button"
+                      onClick={() => {
+                        setUnitForm((prev) => {
+                          const existing = prev.featureHighlights;
+                          if (existing.includes(tag)) {
+                            return { ...prev, featureHighlights: existing.filter((t) => t !== tag) };
+                          } else {
+                            return { ...prev, featureHighlights: [...existing, tag] };
+                          }
+                        });
+                      }}
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1 border ${
+                        isSelected
+                          ? 'bg-accent text-white border-accent shadow-2xs'
+                          : 'bg-surface hover:bg-surface-subtle text-content border-border'
+                      }`}
+                    >
+                      {isSelected ? <Check className="w-3 h-3 text-white" /> : <Plus className="w-3 h-3 text-content-muted" />}
+                      <span>{tag}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
               <div>
-                <CustomSelect
-                  id="unit-possession-status-select"
-                  label="Possession Status"
-                  value={unitForm.possessionStatus}
-                  onChange={(val) => setUnitForm({ ...unitForm, possessionStatus: val })}
-                  options={[
-                    {
-                      value: 'READY_TO_MOVE',
-                      label: 'Ready to Move',
-                      description: '0% GST with Occupancy Certificate (OC)',
-                      dotColor: 'bg-status-success',
-                    },
-                    {
-                      value: 'UNDER_CONSTRUCTION',
-                      label: 'Under Construction',
-                      description: '5% GST applicable as per statutory guidelines',
-                      dotColor: 'bg-status-warning',
-                    },
-                  ]}
+                <label className="text-[11px] font-bold text-content-muted block mb-1">
+                  Custom Feature Highlights <span className="font-normal">(one per line)</span>
+                </label>
+                <textarea
+                  aria-label="Unit feature highlights"
+                  rows={2}
+                  placeholder="Corner living room&#10;Morning light&#10;Two covered parking bays"
+                  value={unitForm.featureHighlights.join('\n')}
+                  onChange={(e) => setUnitForm({ ...unitForm, featureHighlights: e.target.value.split('\n') })}
+                  className="w-full bg-surface border border-border rounded-xl p-2.5 text-xs text-content placeholder-content-muted focus:outline-hidden focus:border-accent font-medium"
                 />
               </div>
             </div>
@@ -2056,19 +2656,6 @@ export function InventoryClient({
                   placeholder="Describe the light, outlook, layout, finishes, and the kind of buyer this home suits."
                   value={unitForm.description}
                   onChange={(e) => setUnitForm({ ...unitForm, description: e.target.value })}
-                  className="w-full bg-surface border border-border rounded-xl p-2.5 text-xs text-content placeholder-content-muted focus:outline-hidden focus:border-accent font-medium"
-                />
-              </div>
-              <div>
-                <label className="text-xs font-bold text-content block mb-1">
-                  Feature highlights <span className="text-content-muted font-normal">(one per line)</span>
-                </label>
-                <textarea
-                  aria-label="Unit feature highlights"
-                  rows={2}
-                  placeholder="Corner living room&#10;Morning light&#10;Two covered parking bays"
-                  value={unitForm.featureHighlights.join('\n')}
-                  onChange={(e) => setUnitForm({ ...unitForm, featureHighlights: e.target.value.split('\n').map((item) => item.trim()).filter(Boolean) })}
                   className="w-full bg-surface border border-border rounded-xl p-2.5 text-xs text-content placeholder-content-muted focus:outline-hidden focus:border-accent font-medium"
                 />
               </div>
@@ -2177,7 +2764,7 @@ export function InventoryClient({
                     onChange={(e) => setUnitForm({ ...unitForm, floorPlanUrl: e.target.value })}
                     className="flex-1 bg-surface border border-border rounded-xl p-2 text-xs text-content placeholder-content-muted focus:outline-hidden focus:border-accent font-medium"
                   />
-                  <label className="px-3 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 shrink-0">
+                  <label className="px-3 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 shrink-0 shadow-2xs">
                     <Upload className="w-3.5 h-3.5 text-accent" />
                     <span>{uploadingUnitFloorPlan ? 'Uploading…' : 'Upload Image'}</span>
                     <input
@@ -2188,6 +2775,17 @@ export function InventoryClient({
                       onChange={handleUnitFloorPlanFileUpload}
                     />
                   </label>
+                  {unitForm.floorPlanUrl && (
+                    <button
+                      type="button"
+                      onClick={() => setUnitForm((prev) => ({ ...prev, floorPlanUrl: '' }))}
+                      className="px-3 py-2 rounded-xl border border-status-danger/30 text-status-danger bg-status-danger-surface hover:bg-status-danger/10 text-xs font-bold transition-colors flex items-center gap-1.5 shrink-0 cursor-pointer shadow-2xs"
+                      title="Remove Floor Plan"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Remove</span>
+                    </button>
+                  )}
                 </div>
 
                 {unitForm.floorPlanUrl && (
@@ -2205,6 +2803,19 @@ export function InventoryClient({
                       <Eye className="w-4 h-4" />
                       <span>Click to Zoom</span>
                     </div>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setUnitForm((prev) => ({ ...prev, floorPlanUrl: '' }));
+                      }}
+                      className="absolute top-2 right-2 p-1.5 rounded-lg bg-black/80 hover:bg-status-danger text-white transition-colors cursor-pointer z-10 shadow-sm flex items-center gap-1 text-[11px] font-semibold"
+                      title="Remove floor plan"
+                      aria-label="Remove floor plan"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Remove</span>
+                    </button>
                   </div>
                 )}
               </div>
@@ -2480,21 +3091,49 @@ export function InventoryClient({
         )}
       </AccessibleDialog>
 
-      {/* Project & Unit Specifications Inspector Modal */}
-      {inspectProject && (
+      {/* Dedicated Unit Specifications & Differentiated Media Inspector Modal */}
+      {inspectUnit && (
+        <UnitDetailsModal
+          unit={inspectUnit}
+          project={inspectProject || inspectUnit.project || projects.find((p) => p.id === inspectUnit.projectId)}
+          allUnits={units}
+          onClose={() => {
+            setInspectUnit(null);
+            setInspectProject(null);
+          }}
+          onSelectUnitForCalc={(unit) => setCalcModalUnit(unit)}
+          onEditUnit={(unit) => {
+            setInspectUnit(null);
+            setInspectProject(null);
+            openEditUnit(unit);
+          }}
+          onDeleteUnit={(unit) => {
+            setInspectUnit(null);
+            setInspectProject(null);
+            setDeleteConfirmUnit({
+              id: unit.id,
+              unitNumber: unit.unitNumber || 'Unit',
+              projectName: inspectProject?.projectName || unit.project?.projectName || 'Project',
+            });
+          }}
+          onUnitUpdated={(updated) => {
+            setUnits((prev) => prev.map((u) => (u.id === updated.id ? { ...u, ...updated } : u)));
+          }}
+        />
+      )}
+
+      {/* Developer Project Specifications Inspector Modal */}
+      {inspectProject && !inspectUnit && (
         <ProjectDetailsModal
           project={inspectProject}
-          unit={inspectUnit}
           units={units}
           onClose={() => {
             setInspectProject(null);
-            setInspectUnit(null);
           }}
           onSelectUnitForCalc={(unit) => setCalcModalUnit(unit)}
           onEditProject={(proj) => openEditProject(proj)}
           onDeleteProject={(id, name) => {
             setInspectProject(null);
-            setInspectUnit(null);
             setDeleteConfirmProject({
               id,
               name,
@@ -2502,8 +3141,6 @@ export function InventoryClient({
             });
           }}
           onDeleteUnit={(unit) => {
-            setInspectProject(null);
-            setInspectUnit(null);
             setDeleteConfirmUnit({
               id: unit.id,
               unitNumber: unit.unitNumber || 'Unit',
@@ -2511,8 +3148,6 @@ export function InventoryClient({
             });
           }}
           onEditUnit={(unit) => {
-            setInspectProject(null);
-            setInspectUnit(null);
             openEditUnit(unit);
           }}
           onProjectUpdated={() => {
@@ -2698,10 +3333,9 @@ export function InventoryClient({
             registrationDate: formCModalProject.registrationDate ? String(formCModalProject.registrationDate) : '2024-01-01',
             validUntil: formCModalProject.validUntil ? String(formCModalProject.validUntil) : (formCModalProject.reraValidUntil ? String(formCModalProject.reraValidUntil) : '2027-12-31'),
             signatoryName: formCModalProject.signatoryName || 'Competent Authority, MahaRERA',
-            signatoryDate: formCModalProject.signatoryDate || '',
-            certificateUrl: formCModalProject.reraCertificateUrl || (formCModalProject.reraNumber === 'P52000079818' ? '/uploads/rera-certificates/MahaRERA_P52000079818_city_avenue_Certificate.pdf' : undefined),
-            originalImageUrl: formCModalProject.originalDocumentUrl || (formCModalProject.reraNumber === 'P52000079818' ? '/images/original-certificates/P52000079818.png' : undefined),
-            isOriginalScannedDocument: Boolean(formCModalProject.originalDocumentUrl || formCModalProject.reraNumber === 'P52000079818'),
+            certificateUrl: formCModalProject.reraCertificateUrl || undefined,
+            originalImageUrl: formCModalProject.originalDocumentUrl || undefined,
+            isOriginalScannedDocument: Boolean(formCModalProject.originalDocumentUrl || formCModalProject.isOriginalScannedDocument),
           }}
         />
       )}

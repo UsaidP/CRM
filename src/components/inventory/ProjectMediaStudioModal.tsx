@@ -27,6 +27,7 @@ import { AccessibleDialog } from '@/components/ui/AccessibleDialog';
 import { HallmarkStamp } from '@/components/ui/HallmarkStamp';
 import { FeedbackAlert } from '@/components/ui/FeedbackAlert';
 import { resolveAssetUrl, parseGalleryUrls } from '@/lib/inventory-media';
+import { resolveUnitMediaAssets } from '@/lib/domain/unit-differentiation';
 
 export interface ProjectMediaStudioModalProps {
   open: boolean;
@@ -42,14 +43,14 @@ export function ProjectMediaStudioModal({
   onUpdated,
 }: ProjectMediaStudioModalProps) {
   const [activeTab, setActiveTab] = useState<'extract' | 'elevations' | 'floorplans' | 'videos'>('extract');
-  const [storageStatus, setStorageStatus] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [extracting, setExtracting] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [extractedResult, setExtractedResult] = useState<any>(null);
+  const [storageStatus, setStorageStatus] = useState<any | null>(null);
+  const [extractedResult, setExtractedResult] = useState<any | null>(null);
 
-  // Elevation State
+  // Elevation Gallery State
   const [coverImage, setCoverImage] = useState<string>(project?.coverImageUrl || '');
   const [elevationGallery, setElevationGallery] = useState<string[]>(() => {
     const elevUrls = parseGalleryUrls(project?.elevationImagesJson);
@@ -60,13 +61,13 @@ export function ProjectMediaStudioModal({
     return urls;
   });
 
-  // Selected Unit for Floor Plan
+  // Selected Unit for Floor Plan & Photos
   const units = project?.units || [];
   const [selectedUnitId, setSelectedUnitId] = useState<string>(units[0]?.id || '');
   const selectedUnit = units.find((u: any) => u.id === selectedUnitId) || units[0];
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [uploadCategory, setUploadCategory] = useState<'elevations' | 'floor-plans' | 'brochures' | 'videos'>('elevations');
+  const [uploadCategory, setUploadCategory] = useState<'elevations' | 'floor-plans' | 'unit-photos' | 'brochures' | 'videos'>('elevations');
 
   // Preview Lightbox
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
@@ -137,7 +138,7 @@ export function ProjectMediaStudioModal({
     }
   }
 
-  async function handleFileUpload(fileInput: File | FileList | File[], category: 'elevations' | 'floor-plans' | 'brochures' | 'videos') {
+  async function handleFileUpload(fileInput: File | FileList | File[], category: 'elevations' | 'floor-plans' | 'unit-photos' | 'brochures' | 'videos') {
     if (!project?.id) return;
     const files = fileInput instanceof File ? [fileInput] : Array.from(fileInput);
     if (files.length === 0) return;
@@ -153,7 +154,7 @@ export function ProjectMediaStudioModal({
         const file = files[i];
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('category', category);
+        formData.append('category', category === 'unit-photos' ? 'interior' : category);
         formData.append('projectId', project.id);
 
         if (category === 'elevations') {
@@ -161,6 +162,8 @@ export function ProjectMediaStudioModal({
         } else if (category === 'floor-plans' && selectedUnitId) {
           formData.append('unitId', selectedUnitId);
           formData.append('isFloorPlan', 'true');
+        } else if (category === 'unit-photos' && selectedUnitId) {
+          formData.append('unitId', selectedUnitId);
         }
 
         const res = await fetch('/api/v1/media/upload', {
@@ -184,7 +187,9 @@ export function ProjectMediaStudioModal({
         setElevationGallery((prev) => [...uploadedUrls, ...prev]);
         setSuccessMessage(`Successfully uploaded ${uploadedUrls.length} photo(s) to cloud media vault!`);
       } else if (category === 'floor-plans') {
-        setSuccessMessage(`Floor plan blueprint(s) uploaded and linked to Unit ${selectedUnit?.unitNumber || selectedUnit?.bhk + ' BHK'}!`);
+        setSuccessMessage(`Floor plan blueprint(s) uploaded and linked to Flat ${selectedUnit?.unitNumber || selectedUnit?.bhk + ' BHK'}!`);
+      } else if (category === 'unit-photos') {
+        setSuccessMessage(`Uploaded ${uploadedUrls.length} interior photo(s) and linked to Flat ${selectedUnit?.unitNumber || selectedUnit?.bhk + ' BHK'}!`);
       } else if (category === 'videos') {
         setSuccessMessage(`Walkthrough video uploaded to cloud vault!`);
       }
@@ -645,6 +650,62 @@ export function ProjectMediaStudioModal({
                     </button>
                   )}
                 </div>
+
+                {/* Unit Interior Photos Showcase */}
+                {(() => {
+                  const unitMedia = resolveUnitMediaAssets(selectedUnit);
+                  return (
+                    <div className="mt-5 pt-4 border-t border-border">
+                      <div className="flex items-center justify-between mb-3">
+                        <div>
+                          <h5 className="text-xs font-bold text-content uppercase tracking-wider flex items-center gap-1.5">
+                            <ImageIcon className="w-3.5 h-3.5 text-accent" />
+                            Unit Interior Photos ({unitMedia.photos.length})
+                          </h5>
+                          <p className="text-[11px] text-content-muted mt-0.5">
+                            Photos uploaded specifically for Flat {selectedUnit.unitNumber || selectedUnit.bhk + ' BHK'}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setUploadCategory('unit-photos');
+                            fileInputRef.current?.click();
+                          }}
+                          className="px-3 py-1.5 rounded-lg bg-surface border border-border hover:border-accent text-xs font-semibold text-content flex items-center gap-1.5 cursor-pointer shadow-2xs transition-all"
+                        >
+                          <UploadCloud className="w-3.5 h-3.5 text-accent" />
+                          <span>Add Photos for this Flat</span>
+                        </button>
+                      </div>
+
+                      {unitMedia.photos.length > 0 ? (
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                          {unitMedia.photos.map((photoUrl, idx) => (
+                            <div
+                              key={idx}
+                              className="group relative rounded-lg border border-border overflow-hidden aspect-4/3 cursor-pointer bg-slate-950"
+                              onClick={() => setLightboxUrl(photoUrl)}
+                            >
+                              <img
+                                src={photoUrl}
+                                alt={`Unit ${selectedUnit.unitNumber} Photo ${idx + 1}`}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                              />
+                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <Maximize2 className="w-4 h-4 text-white" />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-content-muted italic">
+                          No interior photos uploaded for Flat {selectedUnit.unitNumber || selectedUnit.bhk + ' BHK'} yet. Click &quot;Add Photos for this Flat&quot; above to upload.
+                        </p>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
             )}
           </div>

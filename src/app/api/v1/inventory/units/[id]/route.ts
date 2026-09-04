@@ -91,6 +91,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       carpetAreaSqft,
       parkingCharges,
       societyDevCharges: societyDevelopmentCharges,
+      customFloorRiseCharges: validated.floorRiseCharges ?? existing.floorRiseCharges,
     });
 
     const data: Record<string, unknown> = {};

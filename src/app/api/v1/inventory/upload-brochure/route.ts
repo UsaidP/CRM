@@ -172,7 +172,8 @@ export async function POST(req: Request) {
           const certResult = await downloadAndSaveMahaReraCertificate(
             extracted.reraNumber,
             extracted.projectName,
-            extracted.developerName
+            extracted.developerName,
+            targetProjectName
           );
           reraCertificateUrl = certResult.certificateUrl;
           reraVerification = certResult.projectRecord;

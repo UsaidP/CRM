@@ -30,12 +30,12 @@ export async function POST(req: Request) {
       );
     }
 
-    // Execute autonomous certificate pipeline
-    const { projectRecord, certificateUrl, fileName, fileSizeBytes } =
-      await downloadAndSaveMahaReraCertificate(reraNumber, projectName, developerName);
+    // Execute autonomous authentic certificate pipeline ("original sign direct")
+    const { projectRecord, certificateUrl, fileName, fileSizeBytes, isAuthentic, syncStatus, error: certError } =
+      await downloadAndSaveMahaReraCertificate(reraNumber, projectName, developerName, projectName);
 
-    // If a specific project record ID was provided, sync certificate into DB
-    if (projectId && typeof projectId === 'string') {
+    // If a specific project record ID was provided and certificate was retrieved, sync into DB
+    if (projectId && typeof projectId === 'string' && certificateUrl) {
       try {
         await prisma.developerProject.update({
           where: { id: projectId },
@@ -54,16 +54,20 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({
-      success: true,
+      success: isAuthentic,
       data: {
         certificateUrl,
         fileName,
         fileSizeBytes,
+        isAuthentic,
+        syncStatus,
         projectRecord,
         officialPortalUrl: projectRecord.officialPortalUrl,
         directSearchUrl: projectRecord.directSearchUrl,
       },
-      message: `MahaRERA Certificate for ${projectRecord.projectName} (${projectRecord.reraNumber}) synchronized successfully.`,
+      message: isAuthentic
+        ? `Official MahaRERA Certificate for ${projectRecord.projectName} (${projectRecord.reraNumber}) downloaded authentically from portal.`
+        : certError || 'Authentic MahaRERA certificate could not be downloaded at this time.',
     });
   } catch (error: any) {
     console.error('Fetch RERA Certificate error:', error);

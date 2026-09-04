@@ -1710,10 +1710,9 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
             registrationDate: projectData.reraVerification?.registrationDate || '2024-01-01',
             validUntil: projectData.reraVerification?.validUntil || '2027-12-31',
             signatoryName: projectData.reraVerification?.signatoryName || 'Competent Authority, MahaRERA',
-            signatoryDate: projectData.reraVerification?.signatoryDate || '',
             certificateUrl: projectData.reraCertificateUrl || undefined,
-            originalImageUrl: projectData.reraVerification?.originalDocumentUrl || (projectData.reraNumber === 'P52000079818' ? '/images/original-certificates/P52000079818.png' : undefined),
-            isOriginalScannedDocument: Boolean(projectData.reraVerification?.isOriginalScannedDocument || (projectData.reraNumber === 'P52000079818')),
+            originalImageUrl: projectData.reraVerification?.originalDocumentUrl || undefined,
+            isOriginalScannedDocument: Boolean(projectData.reraVerification?.isOriginalScannedDocument),
           }}
         />
       )}

@@ -300,349 +300,351 @@ export async function searchMahaReraProject(
   return record;
 }
 
+
+
 /**
- * Generates a clean, official, vector-quality PDF Certificate for MahaRERA registration (Form 'C')
- * Includes official government header, double border, statutory clauses, QR block, and digital signature.
+ * In-memory LRU-style cache for fast repeated authentic certificate queries (<5ms)
  */
-export function buildMahaReraCertificatePdf(project: MahaReraProjectRecord): Buffer {
-  const cleanRera = project.reraNumber;
-  const projectName = (project.projectName || 'MahaRERA Registered Project').toUpperCase();
-  const promoterName = project.promoterName || project.developerName || 'Authorized Developer Entity';
-  const plotInfo = project.plotDetails || project.address || (project.districtName ? `Approved Statutory Layout, ${project.districtName}, Maharashtra` : 'Approved Statutory Layout, Maharashtra');
-  const registeredOffice = project.registeredOffice || (project.developerName ? `${project.developerName} Registered Office, Maharashtra` : 'Registered Corporate Office, Maharashtra');
-  const validFrom = project.registrationDate || '2024-01-01';
-  const validUntil = project.validUntil || '2027-12-31';
-  const signatory = project.signatoryName || 'Competent Authority, MahaRERA';
-  const signatoryDate = project.signatoryDate || new Date().toLocaleString('en-IN');
+const CERTIFICATE_CACHE = new Map<string, { buffer: Buffer; qstrId: string; timestamp: number }>();
 
-  // Minimal valid PDF binary generator matching Form C
-  const streamBody = `q
-0 0 0 RG
-2 w
-30 30 535.28 781.89 re
-S
-0.5 w
-34 34 527.28 773.89 re
-S
-
-BT
-/F1 15 Tf
-0 0 0 rg
-135 770 Td
-(Maharashtra Real Estate Regulatory Authority) Tj
-ET
-
-BT
-/F1 11 Tf
-175 750 Td
-(REGISTRATION CERTIFICATE OF PROJECT) Tj
-ET
-
-BT
-/F1 10 Tf
-265 735 Td
-(FORM 'C') Tj
-ET
-
-BT
-/F2 9 Tf
-260 722 Td
-([See rule 6(a)]) Tj
-ET
-
-BT
-/F2 9.5 Tf
-50 690 Td
-(This registration is granted under section 5 of the Act to the following project under project registration number :) Tj
-ET
-
-BT
-/F1 10.5 Tf
-50 673 Td
-(${cleanRera}) Tj
-ET
-
-BT
-/F1 9 Tf
-50 655 Td
-(Project: ) Tj
-/F1 9 Tf
-92 0 Td
-(${projectName}) Tj
-/F2 9 Tf
-110 0 Td
-( , Plot Bearing / CTS / Survey / Final Plot No.: ) Tj
-/F1 9 Tf
-185 0 Td
-(${plotInfo.slice(0, 45)}) Tj
-ET
-
-BT
-/F1 9 Tf
-50 642 Td
-(${plotInfo.slice(45)}) Tj
-ET
-
-BT
-/F1 9 Tf
-50 615 Td
-(1. ${promoterName}) Tj
-/F2 9 Tf
-120 0 Td
-( having its registered office / principal place of business at ) Tj
-/F2 9 Tf
-210 0 Td
-(${registeredOffice}) Tj
-ET
-
-BT
-/F1 9 Tf
-50 590 Td
-(2. This registration is granted subject to the following conditions, namely:-) Tj
-/F2 8.5 Tf
-0 -16 Td
-(- The promoter shall enter into an agreement for sale with the allottees;) Tj
-0 -14 Td
-(- The promoter shall execute and register a conveyance deed in favour of the allottee or the association of the allottees;) Tj
-0 -14 Td
-(- The promoter shall deposit seventy percent of amounts realised in a separate schedule bank account for construction;) Tj
-0 -14 Td
-(- The Registration shall be valid for a period commencing from ${validFrom} and ending with ${validUntil};) Tj
-0 -14 Td
-(- The promoter shall comply with the provisions of the Act and the rules and regulations made there under;) Tj
-0 -14 Td
-(- That the promoter shall take all pending approvals from competent authorities.) Tj
-ET
-
-BT
-/F2 8.5 Tf
-50 460 Td
-(3. If the above mentioned conditions are not fulfilled by the promoter, the Authority may take necessary action) Tj
-0 -12 Td
-(   against the promoter including revoking the registration granted herein, as per the Act and rules made thereunder.) Tj
-ET
-
-0 0 0 RG
-1 w
-50 150 70 70 re
-S
-BT
-/F1 8 Tf
-58 185 Td
-([ QR CODE ]) Tj
-/F2 7 Tf
-54 170 Td
-(SCAN TO VERIFY) Tj
-ET
-
-BT
-/F1 9 Tf
-50 120 Td
-(Dated: ) Tj
-/F2 9 Tf
-35 0 Td
-(${validFrom}) Tj
-ET
-
-BT
-/F1 9 Tf
-50 105 Td
-(Place: ) Tj
-/F2 9 Tf
-35 0 Td
-(Mumbai) Tj
-ET
-
-0.1 0.5 0.2 RG
-0.5 w
-350 125 180 65 re
-S
-BT
-/F1 8.5 Tf
-0.1 0.5 0.2 rg
-360 175 Td
-(Signature valid) Tj
-/F2 7.5 Tf
-0 0 0 rg
-0 -12 Td
-(Digitally Signed by) Tj
-/F1 8 Tf
-0 -11 Td
-(${signatory}) Tj
-/F2 7.5 Tf
-0 -10 Td
-(\(Secretary, MahaRERA\)) Tj
-0 -9 Td
-(Date: ${signatoryDate}) Tj
-ET
-
-BT
-/F1 8.5 Tf
-0 0 0 rg
-350 95 Td
-(Signature and seal of the Authorized Officer) Tj
-/F2 8.5 Tf
-0 -12 Td
-(Maharashtra Real Estate Regulatory Authority) Tj
-ET
-
-Q`;
-
-  const pdfContent = `%PDF-1.4
-1 0 obj
-<<
-  /Title (MahaRERA Registration Certificate - ${project.projectName})
-  /Author (Maharashtra Real Estate Regulatory Authority)
-  /Subject (Official Project Registration Certificate - ${project.reraNumber})
-  /Keywords (MahaRERA, Certificate, ${project.reraNumber}, ${project.projectName})
-  /Creator (MahaRERA Automated Verification Engine)
-  /Producer (ZamZam Real Estate CRM Statutory Service)
-  /CreationDate (D:${new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14)}Z)
->>
-endobj
-2 0 obj
-<<
-  /Type /Catalog
-  /Pages 3 0 R
->>
-endobj
-3 0 obj
-<<
-  /Type /Pages
-  /Kids [4 0 R]
-  /Count 1
->>
-endobj
-4 0 obj
-<<
-  /Type /Page
-  /Parent 3 0 R
-  /MediaBox [0 0 595.28 841.89]
-  /Contents 5 0 R
-  /Resources <<
-    /Font <<
-      /F1 6 0 R
-      /F2 7 0 R
-      /F3 8 0 R
-    >>
-  >>
->>
-endobj
-6 0 obj
-<<
-  /Type /Font
-  /Subtype /Type1
-  /BaseFont /Helvetica-Bold
->>
-endobj
-7 0 obj
-<<
-  /Type /Font
-  /Subtype /Type1
-  /BaseFont /Helvetica
->>
-endobj
-8 0 obj
-<<
-  /Type /Font
-  /Subtype /Type1
-  /BaseFont /Courier-Bold
->>
-endobj
-5 0 obj
-<<
-  /Length ${streamBody.length}
->>
-stream
-${streamBody}
-endstream
-endobj
-xref
-0 9
-0000000000 65535 f 
-0000000009 00000 n 
-0000000380 00000 n 
-0000000433 00000 n 
-0000000490 00000 n 
-0000000850 00000 n 
-0000000670 00000 n 
-0000000730 00000 n 
-0000000790 00000 n 
-trailer
-<<
-  /Size 9
-  /Root 2 0 R
-  /Info 1 0 R
->>
-startxref
-3780
-%%EOF`;
-
-  return Buffer.from(pdfContent, 'utf-8');
+export interface AuthenticMahaReraExtractionResult {
+  success: boolean;
+  pdfBuffer?: Buffer;
+  qstrId?: string;
+  projectName?: string;
+  developerName?: string;
+  district?: string;
+  completionDate?: string;
+  error?: string;
 }
 
 /**
- * Autonomous Certificate Pipeline
- * Resolves project data, downloads or synthesizes official MahaRERA certificate,
- * and saves into public/uploads/rera-certificates/
+ * Live MahaRERA Web Extraction Scraper
+ * Executes the authentic "original sign direct" extraction pipeline:
+ * 1. Queries https://maharera.maharashtra.gov.in/projects-search-result
+ * 2. Obtains Drupal CSRF form_build_id and session cookie
+ * 3. Submits search for registration number
+ * 4. Extracts DocProjectCert data-qstr document ID from the official search card
+ * 5. Downloads the authentic signed PDF via /project-document?id=${id}&type=DocProjectCert
+ * 6. Validates %PDF- binary magic bytes
+ */
+export async function fetchAuthenticMahaReraCertificate(
+  reraNumber: string,
+  timeoutMs = 15000
+): Promise<AuthenticMahaReraExtractionResult> {
+  const cleanRera = (reraNumber || '').trim().toUpperCase();
+  if (!cleanRera) {
+    return { success: false, error: 'RERA Registration Number is required' };
+  }
+
+  // Check in-memory cache first for instant sub-millisecond retrieval
+  const cached = CERTIFICATE_CACHE.get(cleanRera);
+  if (cached && Date.now() - cached.timestamp < 3600000) {
+    return {
+      success: true,
+      pdfBuffer: cached.buffer,
+      qstrId: cached.qstrId,
+    };
+  }
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const headers = {
+      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+      'Accept-Language': 'en-US,en;q=0.9',
+    };
+
+    // Step 1: Obtain search page CSRF form_build_id and session cookie
+    const getRes = await fetch('https://maharera.maharashtra.gov.in/projects-search-result', {
+      headers,
+      signal: controller.signal,
+    });
+
+    if (!getRes.ok) {
+      throw new Error(`Failed to access MahaRERA portal (HTTP ${getRes.status})`);
+    }
+
+    const html = await getRes.text();
+    const buildIdMatch = html.match(/name="form_build_id"\s+value="([^"]+)"/);
+    const formBuildId = buildIdMatch ? buildIdMatch[1] : '';
+    const cookie = getRes.headers.get('set-cookie') || '';
+
+    // Step 2: Search for the specific RERA registration number
+    const params = new URLSearchParams();
+    params.append('project_type', '0'); // Registered Projects
+    params.append('project_name', cleanRera);
+    params.append('project_location', '');
+    params.append('project_completion_date', '');
+    params.append('project_state', '27'); // Maharashtra State ID
+    params.append('project_district', '');
+    params.append('form_build_id', formBuildId);
+    params.append('form_id', 'projects_search_page_form');
+    params.append('op', 'Search');
+
+    const searchRes = await fetch('https://maharera.maharashtra.gov.in/projects-search-result', {
+      method: 'POST',
+      headers: {
+        ...headers,
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Cookie': cookie,
+        'Origin': 'https://maharera.maharashtra.gov.in',
+        'Referer': 'https://maharera.maharashtra.gov.in/projects-search-result',
+      },
+      body: params.toString(),
+      signal: controller.signal,
+    });
+
+    if (!searchRes.ok) {
+      throw new Error(`MahaRERA search submission failed (HTTP ${searchRes.status})`);
+    }
+
+    const searchHtml = await searchRes.text();
+
+    // Step 3: Locate project card for this RERA number
+    const reraIdx = searchHtml.indexOf(cleanRera);
+    if (reraIdx === -1) {
+      return {
+        success: false,
+        error: `No registered project matching ${cleanRera} found on the official MahaRERA portal.`,
+      };
+    }
+
+    const cardSnippet = searchHtml.substring(reraIdx, reraIdx + 4000);
+
+    // Extract metadata from card
+    const titleMatch = cardSnippet.match(/<h4[^>]*class="title4"[^>]*><strong>([\s\S]*?)<\/strong><\/h4>/i);
+    const devMatch = cardSnippet.match(/<p[^>]*class="darkBlue bold\s*"[^>]*>([\s\S]*?)<\/p>/i);
+    const dateMatch = cardSnippet.match(/Last Modified<\/div>\s*<p>([^<]+)<\/p>/i);
+    const districtMatch = cardSnippet.match(/District<\/div>\s*<p>([^<]+)<\/p>/i);
+
+    const projectName = titleMatch ? titleMatch[1].trim() : undefined;
+    const developerName = devMatch ? devMatch[1].trim() : undefined;
+    const completionDate = dateMatch ? dateMatch[1].trim() : undefined;
+    const district = districtMatch ? districtMatch[1].trim() : undefined;
+
+    // Extract data-qstr for DocProjectCert
+    const qstrMatch = cardSnippet.match(/data-qstr-flag="DocProjectCert"\s+data-qstr="(\d+)"/i) ||
+                      cardSnippet.match(/data-qstr="(\d+)"\s+data-qstr-flag="DocProjectCert"/i);
+
+    if (!qstrMatch) {
+      return {
+        success: false,
+        projectName,
+        developerName,
+        district,
+        completionDate,
+        error: `Project ${cleanRera} is registered, but official Form C certificate document is not available for public download.`,
+      };
+    }
+
+    const qstrId = qstrMatch[1];
+
+    // Step 4: Download authentic certificate PDF via AJAX document endpoint
+    const docRes = await fetch(`https://maharera.maharashtra.gov.in/project-document?id=${qstrId}&type=DocProjectCert`, {
+      headers: {
+        ...headers,
+        'X-Requested-With': 'XMLHttpRequest',
+        'Cookie': cookie,
+        'Referer': 'https://maharera.maharashtra.gov.in/projects-search-result',
+      },
+      signal: controller.signal,
+    });
+
+    if (!docRes.ok) {
+      throw new Error(`Failed to download certificate document (HTTP ${docRes.status})`);
+    }
+
+    const docHtml = await docRes.text();
+    const base64Match = docHtml.match(/data:application\/pdf;base64,([A-Za-z0-9+/=\r\n]+)/);
+
+    if (!base64Match) {
+      return {
+        success: false,
+        projectName,
+        developerName,
+        district,
+        completionDate,
+        qstrId,
+        error: `Certificate response for ${cleanRera} did not contain valid base64 PDF stream.`,
+      };
+    }
+
+    const cleanBase64 = base64Match[1].replace(/[\r\n\s]/g, '');
+    const pdfBuffer = Buffer.from(cleanBase64, 'base64');
+
+    // Step 5: Verify PDF magic bytes
+    if (pdfBuffer.slice(0, 4).toString() !== '%PDF') {
+      return {
+        success: false,
+        error: 'Downloaded document failed PDF binary verification (%PDF header missing).',
+      };
+    }
+
+    // Cache verified PDF for subsequent instant lookups
+    CERTIFICATE_CACHE.set(cleanRera, {
+      buffer: pdfBuffer,
+      qstrId,
+      timestamp: Date.now(),
+    });
+
+    return {
+      success: true,
+      pdfBuffer,
+      qstrId,
+      projectName,
+      developerName,
+      district,
+      completionDate,
+    };
+  } catch (err: any) {
+    return {
+      success: false,
+      error: err.name === 'AbortError'
+        ? 'MahaRERA government portal timed out while retrieving official certificate.'
+        : `MahaRERA certificate extraction error: ${err.message}`,
+    };
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+/**
+ * @deprecated Synthetic PDF certificate generation is disabled to uphold statutory integrity.
+ * Real estate CRMs are strictly prohibited from generating fake regulatory certificates.
+ * Use fetchAuthenticMahaReraCertificate to obtain genuine government-signed certificates.
+ */
+export function buildMahaReraCertificatePdf(project: MahaReraProjectRecord): Buffer {
+  return Buffer.from(
+    `%PDF-1.4\n% MahaRERA Certificate for ${project.reraNumber} (${project.projectName}) - Developer: ${project.developerName || ''}\n% Statutory Notice: Authentic certificate must be downloaded directly from maharera.maharashtra.gov.in\n%%EOF`,
+    'utf-8'
+  );
+}
+
+/**
+ * Autonomous Authentic Certificate Ingestion Pipeline
+ * 
+ * Flow:
+ * 1. Resolves canonical project registry record.
+ * 2. Fetches authentic signed PDF directly from the MahaRERA government portal.
+ * 3. Saves the authentic certificate into the EXACT SAME PROJECT FOLDER as the brochure.
+ * 4. Strictly zero-fabrication: Never synthesizes fake Form C certificates.
  */
 export async function downloadAndSaveMahaReraCertificate(
   reraNumber: string,
   projectName?: string,
-  developerName?: string
+  developerName?: string,
+  targetProjectFolder?: string
 ): Promise<{
   projectRecord: MahaReraProjectRecord;
-  certificateUrl: string;
+  certificateUrl?: string;
   originalDocumentUrl?: string;
   isOriginalScannedDocument?: boolean;
+  isAuthentic: boolean;
   fileName: string;
   fileSizeBytes: number;
+  syncStatus: 'SYNCED_AUTHENTIC' | 'PENDING_PORTAL_SYNC' | 'FAILED';
+  error?: string;
 }> {
   const projectRecord = await searchMahaReraProject(reraNumber, projectName, developerName);
+  const cleanRera = projectRecord.reraNumber;
 
-  const sanitizedRera = projectRecord.reraNumber.replace(/[^A-Z0-9]/gi, '_');
-  const sanitizedName = projectRecord.projectName.toLowerCase().replace(/[^a-z0-9]/g, '_').slice(0, 30);
+  // Folder name matching the brochure's cloud folder (projects/<sanitizedProjectName>/brochures)
+  const targetFolder = targetProjectFolder || projectName || projectRecord.projectName;
+
+  const sanitizedRera = cleanRera.replace(/[^A-Z0-9]/gi, '_');
+  const sanitizedName = (projectName || projectRecord.projectName || 'project')
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '_')
+    .slice(0, 30);
   const fileName = `MahaRERA_${sanitizedRera}_${sanitizedName}_Certificate.pdf`;
 
-  const originalImgPath = path.join(process.cwd(), 'public', 'images', 'original-certificates', `${projectRecord.reraNumber}.png`);
+  // Step 1: Live MahaRERA Web Extraction Scraper ("original sign direct")
+  const extraction = await fetchAuthenticMahaReraCertificate(cleanRera);
 
-  let certificateBuffer: Buffer;
+  let certificateBuffer: Buffer | null = null;
 
-  if (existsSync(originalImgPath) && process.platform === 'darwin' && !process.env.VERCEL) {
-    // Generate authentic PDF from official scanned image using sips on local macOS
-    try {
-      const tmpDir = path.join('/tmp', 'rera-certificates');
-      if (!existsSync(tmpDir)) {
-        await mkdir(tmpDir, { recursive: true });
-      }
-      const tmpOut = path.join(tmpDir, fileName);
-      execSync(`/usr/bin/sips -s format pdf "${originalImgPath}" --out "${tmpOut}"`, { stdio: 'pipe' });
-      certificateBuffer = await readFile(tmpOut);
-      projectRecord.originalDocumentUrl = `/images/original-certificates/${projectRecord.reraNumber}.png`;
-      projectRecord.isOriginalScannedDocument = true;
-    } catch {
-      certificateBuffer = buildMahaReraCertificatePdf(projectRecord);
+  if (extraction.success && extraction.pdfBuffer) {
+    certificateBuffer = extraction.pdfBuffer;
+    projectRecord.source = 'MAHARERA_LIVE_PORTAL';
+    projectRecord.isOriginalScannedDocument = true;
+    if (extraction.projectName && !projectName) {
+      projectRecord.projectName = extraction.projectName;
+    }
+    if (extraction.developerName && !developerName) {
+      projectRecord.developerName = extraction.developerName;
+      projectRecord.promoterName = extraction.developerName;
     }
   } else {
-    certificateBuffer = buildMahaReraCertificatePdf(projectRecord);
+    // Step 2: Fallback check for genuine pre-scanned certificate in local vault
+    const originalImgPath = path.join(process.cwd(), 'public', 'images', 'original-certificates', `${cleanRera}.png`);
+    if (existsSync(originalImgPath) && process.platform === 'darwin' && !process.env.VERCEL) {
+      try {
+        const tmpDir = path.join('/tmp', 'rera-certificates');
+        if (!existsSync(tmpDir)) {
+          await mkdir(tmpDir, { recursive: true });
+        }
+        const tmpOut = path.join(tmpDir, fileName);
+        execSync(`/usr/bin/sips -s format pdf "${originalImgPath}" --out "${tmpOut}"`, { stdio: 'pipe' });
+        certificateBuffer = await readFile(tmpOut);
+        projectRecord.originalDocumentUrl = `/images/original-certificates/${cleanRera}.png`;
+        projectRecord.isOriginalScannedDocument = true;
+      } catch {
+        certificateBuffer = null;
+      }
+    }
   }
 
+  // Step 3: Zero-Fabrication Rule
+  // If no authentic certificate could be downloaded from MahaRERA, DO NOT generate a fake PDF.
+  if (!certificateBuffer) {
+    projectRecord.certificateUrl = undefined;
+    projectRecord.isOriginalScannedDocument = false;
+
+    return {
+      projectRecord,
+      certificateUrl: undefined,
+      originalDocumentUrl: projectRecord.originalDocumentUrl,
+      isOriginalScannedDocument: false,
+      isAuthentic: false,
+      fileName: '',
+      fileSizeBytes: 0,
+      syncStatus: 'PENDING_PORTAL_SYNC',
+      error: extraction.error || 'Authentic MahaRERA certificate not available from government portal.',
+    };
+  }
+
+  // Step 4: Upload authentic certificate directly into the project's brochure folder
   let certificateUrl = '';
   try {
-    const uploaded = await uploadMediaAsset(certificateBuffer, fileName, 'rera-certificates', 'application/pdf');
+    // Save under category 'brochures' and projectName: targetFolder
+    // This ensures it resides in the exact same directory as the project's brochure!
+    const uploaded = await uploadMediaAsset(
+      certificateBuffer,
+      fileName,
+      'brochures',
+      'application/pdf',
+      targetFolder
+    );
     certificateUrl = uploaded.secureUrl || uploaded.url;
   } catch {
     certificateUrl = `data:application/pdf;base64,${certificateBuffer.toString('base64')}`;
   }
 
   projectRecord.certificateUrl = certificateUrl;
+  projectRecord.originalDocumentUrl = certificateUrl;
+  projectRecord.isOriginalScannedDocument = true;
 
   return {
     projectRecord,
     certificateUrl,
-    originalDocumentUrl: projectRecord.originalDocumentUrl,
-    isOriginalScannedDocument: projectRecord.isOriginalScannedDocument,
+    originalDocumentUrl: certificateUrl,
+    isOriginalScannedDocument: true,
+    isAuthentic: true,
     fileName,
     fileSizeBytes: certificateBuffer.length,
+    syncStatus: 'SYNCED_AUTHENTIC',
   };
 }

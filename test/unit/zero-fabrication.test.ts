@@ -80,5 +80,25 @@ describe('zero-fabrication: MahaRERA certificate & form isolation', () => {
     expect(record.isOriginalScannedDocument).toBeFalsy();
     expect(record.originalDocumentUrl).toBeUndefined();
   });
+
+  it('downloadAndSaveMahaReraCertificate marks unverified project as PENDING_PORTAL_SYNC without fake PDF', async () => {
+    const { downloadAndSaveMahaReraCertificate } = await import('@/lib/services/maharera-service');
+    // Using an unregistered dummy RERA number
+    const result = await downloadAndSaveMahaReraCertificate('P52000099999', 'Fake Project', 'Fake Dev', 'Fake_Project');
+    
+    // Must NOT fabricate a PDF
+    expect(result.isAuthentic).toBe(false);
+    expect(result.certificateUrl).toBeUndefined();
+    expect(result.syncStatus).toBe('PENDING_PORTAL_SYNC');
+    expect(result.isOriginalScannedDocument).toBe(false);
+  });
+
+  it('fetchAuthenticMahaReraCertificate validates inputs cleanly', async () => {
+    const { fetchAuthenticMahaReraCertificate } = await import('@/lib/services/maharera-service');
+    const result = await fetchAuthenticMahaReraCertificate('');
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('RERA Registration Number is required');
+  });
 });
+
 

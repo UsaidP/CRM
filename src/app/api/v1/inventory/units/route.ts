@@ -132,6 +132,7 @@ export async function POST(req: Request) {
       carpetAreaSqft: validated.carpetAreaSqft,
       parkingCharges: validated.parkingCharges,
       societyDevCharges: validated.societyDevelopmentCharges,
+      customFloorRiseCharges: validated.floorRiseCharges,
     });
 
     // Determine pre-filled media from project if not provided explicitly

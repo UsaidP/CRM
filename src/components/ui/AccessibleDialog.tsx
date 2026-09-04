@@ -10,6 +10,7 @@ interface AccessibleDialogProps {
   panelClassName?: string;
   size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full';
   children: React.ReactNode;
+  closeOnClickOutside?: boolean;
 }
 
 const sizeClasses: Record<string, string> = {
@@ -29,10 +30,12 @@ export function AccessibleDialog({
   panelClassName = '',
   size = 'md',
   children,
+  closeOnClickOutside = true,
 }: AccessibleDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const returnFocusRef = useRef<HTMLElement | null>(null);
   const onCloseRef = useRef(onClose);
+  const isBackdropMouseDownRef = useRef(false);
 
   useEffect(() => {
     onCloseRef.current = onClose;
@@ -107,8 +110,31 @@ export function AccessibleDialog({
       className="app-dialog"
       aria-labelledby={titleId}
       aria-describedby={descriptionId}
+      onMouseDown={(event) => {
+        // Only mark true if the click originated on the backdrop itself,
+        // preventing accidental closes when users select text inside form inputs and drag outward.
+        isBackdropMouseDownRef.current = event.target === dialogRef.current;
+      }}
+      onMouseUp={(event) => {
+        if (event.target !== dialogRef.current) {
+          isBackdropMouseDownRef.current = false;
+        }
+      }}
       onClick={(event) => {
-        if (event.target === dialogRef.current) onCloseRef.current();
+        // If user was selecting text, do not close modal
+        const hasTextSelection =
+          typeof window !== 'undefined' &&
+          (window.getSelection()?.toString().length || 0) > 0;
+
+        if (
+          closeOnClickOutside &&
+          event.target === dialogRef.current &&
+          isBackdropMouseDownRef.current &&
+          !hasTextSelection
+        ) {
+          onCloseRef.current();
+        }
+        isBackdropMouseDownRef.current = false;
       }}
     >
       <div className={`app-dialog__panel w-full ${sizeClass} ${panelClassName}`}>{children}</div>

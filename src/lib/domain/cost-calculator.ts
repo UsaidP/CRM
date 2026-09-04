@@ -39,6 +39,7 @@ export interface CostCalculationInput {
   customRegistrationFee?: number;   // direct ₹ override
   customGstRate?: number;           // e.g. 0, 1, 5, 12, 18
   customGstAmount?: number;         // direct ₹ override
+  customFloorRiseCharges?: number;  // direct ₹ override
   builderLoadingPercentage?: number;// default 40% (Taloja builder loading standard >= 38%)
 
   // Ancillary & Infrastructure Charges
@@ -121,12 +122,14 @@ export function calculateAllInCost(input: CostCalculationInput): CostCalculation
     gstAmount = Math.round((agreementValue * gstRate) / 100);
   }
 
-  // 4. Floor Rise Calculation: (Floor - threshold) * rate * carpetArea
+  // 4. Floor Rise Calculation: (Floor - threshold) * rate * carpetArea (or custom override)
   const includeFloorRise = input.includeFloorRise !== false;
   const threshold = input.baseFloorThreshold ?? 4;
   const floorRiseRate = input.floorRisePerSqftPerFloor ?? 50;
   const applicableFloors = includeFloorRise ? Math.max(0, floorNumber - threshold) : 0;
-  const floorRiseCharges = Math.round(applicableFloors * floorRiseRate * carpetAreaSqft);
+  const floorRiseCharges = input.customFloorRiseCharges !== undefined && input.customFloorRiseCharges !== null
+    ? Math.max(0, Math.round(Number(input.customFloorRiseCharges)))
+    : Math.round(applicableFloors * floorRiseRate * carpetAreaSqft);
 
   // 5. Parking & Society Development
   const parkingCharges = input.parkingCharges !== undefined ? Math.max(0, Number(input.parkingCharges)) : 250000;
