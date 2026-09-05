@@ -1,0 +1,545 @@
+bun test v1.3.4 (5eb2145b)
+
+test/lead-import.test.js:
+(pass) Lead Multi-Format Auto-Adjustment & Ingestion Engine Tests > parseIndianBudget handles diverse Indian currency formats accurately [1.19ms]
+(pass) Lead Multi-Format Auto-Adjustment & Ingestion Engine Tests > extractBhkPreferences extracts clean numeric arrays from freeform strings [7.03ms]
+(pass) Lead Multi-Format Auto-Adjustment & Ingestion Engine Tests > resolveMicroMarket standardizes locality variations [6.28ms]
+(pass) Lead Multi-Format Auto-Adjustment & Ingestion Engine Tests > resolveAssignedBroker routes Kharghar leads to Safwan and Taloja leads to Suhel [9.14ms]
+(pass) Lead Multi-Format Auto-Adjustment & Ingestion Engine Tests > sanitizeName cleans salutations and formats proper case [0.49ms]
+(pass) Lead Multi-Format Auto-Adjustment & Ingestion Engine Tests > classifyLeadSource classifies ad platforms and referral channels [3.43ms]
+(pass) Lead Multi-Format Auto-Adjustment & Ingestion Engine Tests > Delimited text parser handles TSV (Tab Separated) and Pipe formats [16.07ms]
+(pass) Lead Multi-Format Auto-Adjustment & Ingestion Engine Tests > JSON parser handles array of lead objects [2.53ms]
+(pass) Lead Multi-Format Auto-Adjustment & Ingestion Engine Tests > Excel XLSX parser handles binary workbook data [125.10ms]
+(pass) Lead Multi-Format Auto-Adjustment & Ingestion Engine Tests > Excel parser skips leading title/metadata rows and finds true header row [68.40ms]
+(pass) Lead Multi-Format Auto-Adjustment & Ingestion Engine Tests > Data-driven inference automatically recovers unmapped columns [186.24ms]
+(pass) Lead Multi-Format Auto-Adjustment & Ingestion Engine Tests > Deduplication: findOrCreateContact matches existing contact by phone without creating duplicate [10762.92ms]
+
+test/api-auth-coverage.test.ts:
+(pass) API auth coverage > found a plausible number of routes [0.29ms]
+(pass) API auth coverage > every route is either guarded or explicitly allow-listed [95.35ms]
+
+test/rbac-permissions.test.js:
+🧪 Running Suite: Dynamic RBAC & Granular Super Admin Authority Tests
+
+  ✅ PASS: Test 1.1: Super Admin has unconditional access across all 23 permissions
+  ✅ PASS: Test 1.2: Effective permissions for Super Admin returns all 23 capabilities
+  ✅ PASS: Test 2.1: Telecaller default role can create leads
+  ✅ PASS: Test 2.2: Telecaller default role is RESTRICTED from editing all lead data
+  ✅ PASS: Test 2.3: Telecaller default role cannot view financial deals
+  ✅ PASS: Test 3.1: Super Admin can grant "leads:edit_all" to a Telecaller with immediate effect
+  ✅ PASS: Test 3.2: Un-granted permissions remain securely restricted for the elevated Telecaller
+  ✅ PASS: Test 4.1: Multiple custom overrides combine correctly with role baseline
+  ✅ PASS: Test 5.1: Sales Executive can be granted financial inspection privileges by Super Admin
+  ✅ PASS: Test 5.2: Sales Executive can be granted spreadsheet bulk import permissions
+
+================================
+RBAC Test Results: 10 Passed, 0 Failed
+================================
+
+
+test/reminders-calendar-next-connect.test.js:
+
+======================================================
+🚀 TESTING LEAD REMINDERS, CALENDAR & NEXT CONNECT
+======================================================
+
+
+test/organic-crm.test.js:
+(pass) ZamZam Organic Lead Capture & CRM Program Tests > Phase 1 & 2: Broker Number Invariants & Resolver > Official broker constants match user directives (+917977552011 & +919967731071) [0.22ms]
+  ✅ PASS: Organization exists in database
+
+--- 1. Testing Prioritization Engine Calculation ---
+  ✅ PASS: Correctly identifies overdue reminder
+  ✅ PASS: Overdue lead has high priority score (55)
+  ✅ PASS: Primary reason cites overdue reminder
+  ✅ PASS: Correctly identifies fresh inbound speed-to-lead
+  ✅ PASS: Fresh lead has high speed-to-lead score (35)
+  ✅ PASS: Correctly detects live presentation telemetry
+  ✅ PASS: Primary reason highlights live portal activity
+  ✅ PASS: Rank #1 is overdue reminder lead (Vikram Joshi (Overdue))
+
+--- 2. Testing LeadReminder Database CRUD ---
+(pass) ZamZam Organic Lead Capture & CRM Program Tests > Phase 1 & 2: Broker Number Invariants & Resolver > Resolver accurately resolves Safwan Diwan from clean digits or E.164 [2151.81ms]
+  ✅ PASS: Successfully created reminder ID: d1a7bf68-20fe-4d84-8e21-0c4437e6f744
+  ✅ PASS: Reminder status is PENDING
+  ✅ PASS: Reminder status successfully toggled to COMPLETED
+  ✅ PASS: completedAt timestamp recorded
+(pass) ZamZam Organic Lead Capture & CRM Program Tests > Phase 1 & 2: Broker Number Invariants & Resolver > Resolver accurately resolves Suhel Patel from clean digits or E.164 [2101.66ms]
+  ✅ PASS: Reminder status updated to SNOOZED
+  ✅ PASS: Test reminder cleaned up successfully
+
+--- 3. Testing Calendar Feed Aggregation ---
+(pass) ZamZam Organic Lead Capture & CRM Program Tests > Phase 1 & 2: Broker Number Invariants & Resolver > Resolver rejects unknown numbers without falling back to round-robin or current user [1354.76ms]
+(pass) ZamZam Organic Lead Capture & CRM Program Tests > Phase 3 & 5: Deep Link Engine & Attribution Code Parsing > generateCampaignDeepLink builds valid wa.me URL with clean digits and uppercase code [1.20ms]
+(pass) ZamZam Organic Lead Capture & CRM Program Tests > Phase 3 & 5: Deep Link Engine & Attribution Code Parsing > analyzeInboundAttribution identifies EXACT code attribution from WhatsApp text [0.37ms]
+(pass) ZamZam Organic Lead Capture & CRM Program Tests > Phase 3 & 5: Deep Link Engine & Attribution Code Parsing > analyzeInboundAttribution detects YouTube exact attribution with #code [0.11ms]
+(pass) ZamZam Organic Lead Capture & CRM Program Tests > Phase 3 & 5: Deep Link Engine & Attribution Code Parsing > analyzeInboundAttribution infers INFERRED confidence for keyword mentions without codes [0.07ms]
+(pass) ZamZam Organic Lead Capture & CRM Program Tests > Phase 3 & 5: Deep Link Engine & Attribution Code Parsing > Direct call without stated source code is classified as PHONE_ORGANIC_UNKNOWN [0.10ms]
+(pass) ZamZam Organic Lead Capture & CRM Program Tests > Phase 4: Social Identity Without Fake Phone Numbers > SVG QR generator creates valid XML SVG output with high contrast [0.23ms]
+(pass) ZamZam Organic Lead Capture & CRM Program Tests > Phase 8: 24-Hour Messaging Window Compliance > Recent inbound message keeps 24h window open [0.21ms]
+(pass) ZamZam Organic Lead Capture & CRM Program Tests > Phase 8: 24-Hour Messaging Window Compliance > Expired inbound message (>24h) flags template requirement [0.05ms]
+(pass) ZamZam Organic Lead Capture & CRM Program Tests > Phase 8: 24-Hour Messaging Window Compliance > Null inbound date gracefully reports closed window [0.04ms]
+  Current active reminders: 0
+  Current active site visits: 0
+  ✅ PASS: Calendar event data streams accessible
+
+======================================================
+🎉 ALL CHECKS COMPLETED: 16 Passed, 0 Failed
+======================================================
+
+(pass) ZamZam Organic Lead Capture & CRM Program Tests > Phase 6 & 7: Contact Deduplication & Merging Audit Trail > Deduplication logic accurately records audit snapshot and re-links identities [14038.41ms]
+(pass) ZamZam Organic Lead Capture & CRM Program Tests > Communication Log Lifecycle & Future Reference Updates > Broker can log conversation notes, outcome, and update notes for future reference [3588.02ms]
+
+test/csv-import.test.js:
+(pass) 99acres & MahaRERA CSV Import & Anti-Pollution Engine Tests > parseProjectsCSV strictly filters out broker resale spam (cardType: property) [1.80ms]
+(pass) 99acres & MahaRERA CSV Import & Anti-Pollution Engine Tests > parseProjectsCSV accurately extracts and normalizes all fields [0.55ms]
+(pass) 99acres & MahaRERA CSV Import & Anti-Pollution Engine Tests > Deduplication on MahaRERA ID prevents duplicate project creation in database [9360.64ms]
+
+test/session-route.test.ts:
+(pass) GET /api/v1/auth/session must never mint sessions for unauthenticated callers > rejects an anonymous request (no cookie) with 401 and no Set-Cookie [320.14ms]
+(pass) GET /api/v1/auth/session must never mint sessions for unauthenticated callers > rejects a garbage/tampered cookie with 401 and no Set-Cookie [6.22ms]
+(pass) GET /api/v1/auth/session must never mint sessions for unauthenticated callers > rejects a valid token pointing at a deleted user with 401 and no Set-Cookie [661.82ms]
+(pass) GET /api/v1/auth/session must never mint sessions for unauthenticated callers > accepts a valid token for a live user without rewriting the cookie [1613.05ms]
+(pass) GET /api/v1/auth/session must never mint sessions for unauthenticated callers > source invariant: the session route never uses findFirst fallbacks [1.23ms]
+(pass) GET /api/v1/auth/session must never mint sessions for unauthenticated callers > source invariant: ADMIN role is not treated as super admin [0.11ms]
+
+test/crm.test.js:
+(pass) Phase 1: Inventory & Cost Engine > Under-Construction Unit statutory breakdown with 5% GST and floor rise [0.65ms]
+(pass) Phase 1: Inventory & Cost Engine > Ready-to-Move with OC must have 0% GST [0.11ms]
+(pass) Phase 1: Inventory & Cost Engine > MahaRERA format validation [0.63ms]
+(pass) Phase 1: Inventory & Cost Engine > Freshness circuit breaker (<14 days vs >14 days) [0.18ms]
+(pass) Phase 1: Inventory & Cost Engine > Rich inventory media normalizes legacy photos and structured assets [0.55ms]
+(pass) Phase 2: Lead Attribution & Normalization > E.164 phone normalization [0.07ms]
+(pass) Phase 2: Lead Attribution & Normalization > Inbound inquiry parsing [0.26ms]
+(pass) Phase 3: Requirements-to-Property Matchmaker > Matchmaker UI targets the implemented simulation route [0.06ms]
+(pass) Phase 3: Requirements-to-Property Matchmaker > Budget ceiling filtering [0.34ms]
+(pass) Phase 4: Client Portals & Telemetry > Public portal links use the implemented /p route [0.28ms]
+(pass) Phase 4: Client Portals & Telemetry > Only public portal paths bypass the internal CRM shell [0.09ms]
+(pass) Phase 4: Client Portals & Telemetry > Slugified portal token generation [0.10ms]
+(pass) Phase 4: Client Portals & Telemetry > Engagement tier detection [0.12ms]
+(pass) Phase 4: Client Portals & Telemetry > Portal share copy describes recorded evidence without certification claims [0.26ms]
+(pass) Phase 5 & 6: Site Visits & Deal Closing Ledger > WhatsApp itinerary dispatch formatting [0.13ms]
+(pass) Phase 5 & 6: Site Visits & Deal Closing Ledger > Brokerage calculations with splits [0.29ms]
+(pass) Phase 7: Analytics & Reporting > Cash flow forecast breakdown [0.22ms]
+(pass) Phase 7: Analytics & Reporting > Channel pipeline shares come from recorded campaign channels [0.13ms]
+(pass) Phase 7: Analytics & Reporting > Channel shares remain unavailable without attributed brokerage [0.28ms]
+(pass) UI regression contracts > Primary workflows and public portal expose route-specific metadata [13.67ms]
+(pass) UI regression contracts > Shell exposes active navigation and isolates public portal content [3.41ms]
+(pass) UI regression contracts > Accessible dialog contract includes labelled native dialog and focus return [1.31ms]
+(pass) UI regression contracts > Deal stage updates retain rollback and visible failure state [1.11ms]
+(pass) UI regression contracts > Shared visual system defines semantic status and reduced-motion tokens [0.14ms]
+(pass) UI regression contracts > Inventory editing and media upload contracts are exposed [7.04ms]
+
+test/toast.test.ts:
+(pass) Gooey Toast Notification System & Domain Presets > exposes core toast dispatch methods [2.13ms]
+(pass) Gooey Toast Notification System & Domain Presets > exposes real estate CRM domain presets [0.09ms]
+(pass) Gooey Toast Notification System & Domain Presets > generates lead disposition toast with undo action structure [1.50ms]
+(pass) Gooey Toast Notification System & Domain Presets > generates MahaRERA verification toast [0.18ms]
+(pass) Gooey Toast Notification System & Domain Presets > generates presentation portal copied toast [0.12ms]
+(pass) Gooey Toast Notification System & Domain Presets > generates deal closing celebration toast [0.15ms]
+(pass) Gooey Toast Notification System & Domain Presets > generates cloud backup toast [0.09ms]
+
+test/money-format.test.ts:
+(pass) Indian money formatting > groups digits the Indian way (lakh/crore grouping) [19.84ms]
+(pass) Indian money formatting > reads in Lakh and Crore [2.01ms]
+(pass) Indian money formatting > shows both for hero prices [0.19ms]
+(pass) Indian money formatting > handles junk input without crashing [0.07ms]
+(pass) Indian money formatting > treats Infinity and non-numeric junk as ₹0 [0.19ms]
+(pass) Indian money formatting > formats zero explicitly [0.33ms]
+(pass) Indian money formatting > rounds fractional paise before display [0.21ms]
+(pass) Indian money formatting > handles exact Lakh and Crore boundaries without rounding errors [0.17ms]
+(pass) Indian money formatting > shows negative amounts without crashing (refund/correction paths) [0.14ms]
+(pass) Indian money formatting > accepts numeric strings from form/CSV input [0.11ms]
+(pass) Indian money formatting > keeps sub-lakh amounts out of the Lakh/Crore compact form in formatPriceFull [0.21ms]
+
+test/tenant-context.test.ts:
+(pass) tenant context > has no tenant outside a request [0.12ms]
+(pass) tenant context > binds and restores tenant inside runWithTenant [1.06ms]
+(pass) tenant context > scopes every model that carries organizationId in the schema [2.49ms]
+(pass) tenant context > does not misclassify direct-org models as parent-scoped [0.65ms]
+(pass) tenant context > covers every schema model: direct, parent-scoped, or intentionally unscoped [0.57ms]
+(pass) tenant context > builds nested org filters from relation paths [0.15ms]
+
+test/unit/lead-auto-adjuster.test.ts:
+(pass) Lead Auto Adjuster & Stage Normalizer Unit Tests > Stage Normalization > normalizes various colloquial stage strings to canonical stage keys [0.23ms]
+(pass) Lead Auto Adjuster & Stage Normalizer Unit Tests > Stage Normalization > returns default new_uncontacted for undefined or empty stage [0.14ms]
+(pass) Lead Auto Adjuster & Stage Normalizer Unit Tests > Indian Currency & Budget Parsing > parses Lakhs and Crores into raw numerical values [0.19ms]
+(pass) Lead Auto Adjuster & Stage Normalizer Unit Tests > Indian Currency & Budget Parsing > handles numeric numbers directly without error [0.16ms]
+(pass) Lead Auto Adjuster & Stage Normalizer Unit Tests > BHK & Micro-Market Resolution > extracts BHK numbers from strings [0.19ms]
+(pass) Lead Auto Adjuster & Stage Normalizer Unit Tests > BHK & Micro-Market Resolution > resolves Navi Mumbai micro-markets with high confidence [0.25ms]
+(pass) Lead Auto Adjuster & Stage Normalizer Unit Tests > Name Sanitization & Source Classification > cleans up raw names and salutations [0.09ms]
+(pass) Lead Auto Adjuster & Stage Normalizer Unit Tests > Name Sanitization & Source Classification > classifies lead sources from marketing campaigns [0.07ms]
+(pass) Lead Auto Adjuster & Stage Normalizer Unit Tests > Full Row Auto-Adjustment Pipeline > auto-adjusts a complete messy lead row [0.26ms]
+
+test/unit/unit-differentiation.test.ts:
+(pass) Unit Differentiation & Per-Unit Media Management > groups units into differentiable configurations based on BHK and carpet area
+(pass) Unit Differentiation & Per-Unit Media Management > isolates unit-specific media without cross-unit leakage or dummy placeholders [1.61ms]
+(pass) Unit Differentiation & Per-Unit Media Management > correctly detects and flags generic Unsplash dummy/placeholder URLs [0.12ms]
+(pass) Unit Differentiation & Per-Unit Media Management > calculates exact RERA carpet, built-up, and super built-up area matrix [0.13ms]
+(pass) Unit Differentiation & Per-Unit Media Management > generates rich, differentiable titles for units [0.21ms]
+
+test/unit/prioritization-engine.test.ts:
+(pass) Prioritization & Connect Next Engine Unit Tests > assigns CRITICAL / HIGH tier to leads with overdue reminders [0.40ms]
+(pass) Prioritization & Connect Next Engine Unit Tests > awards high priority to fresh inbound leads created within last 2 hours [0.10ms]
+(pass) Prioritization & Connect Next Engine Unit Tests > ranks a list of leads deterministically in descending score order [0.08ms]
+(pass) Prioritization & Connect Next Engine Unit Tests > ignores reminders that are DONE or CANCELLED [0.08ms]
+(pass) Prioritization & Connect Next Engine Unit Tests > counts SNOOZED reminders as pending [0.09ms]
+(pass) Prioritization & Connect Next Engine Unit Tests > flags reminders due within the next hour as due-today / HIGH, not overdue [0.10ms]
+(pass) Prioritization & Connect Next Engine Unit Tests > never returns NaN for leads missing createdAt/updatedAt/communications [0.20ms]
+(pass) Prioritization & Connect Next Engine Unit Tests > clamps the total score to the 0-100 band [0.26ms]
+(pass) Prioritization & Connect Next Engine Unit Tests > ranks an empty lead list without crashing [0.08ms]
+(pass) Prioritization & Connect Next Engine Unit Tests > keeps a deterministic order for equal-score leads (stable sort) [0.52ms]
+
+test/unit/commission-calculator.test.ts:
+(pass) Commission & Brokerage Calculator — Edge Cases > computes the canonical 2.5% / 50% / 0% co-broker deal [0.17ms]
+(pass) Commission & Brokerage Calculator — Edge Cases > uses documented defaults when optional fields are omitted [0.07ms]
+(pass) Commission & Brokerage Calculator — Edge Cases > honors an explicit 0% brokerage instead of silently defaulting to 2.5% [0.08ms]
+(pass) Commission & Brokerage Calculator — Edge Cases > splits correctly with a co-broker share (20% co-broker, 60% rep) [0.06ms]
+(pass) Commission & Brokerage Calculator — Edge Cases > handles a 100% rep split (fully internal agent deal) [0.08ms]
+(pass) Commission & Brokerage Calculator — Edge Cases > handles a 0% rep split (house deal, no agent commission) [0.07ms]
+(pass) Commission & Brokerage Calculator — Edge Cases > rounds fractional paise deterministically (banker-safe Math.round) [0.09ms]
+(pass) Commission & Brokerage Calculator — Edge Cases > handles a zero-value agreement [0.02ms]
+(pass) Commission & Brokerage Calculator — Edge Cases > handles very large agreement values without overflow [0.04ms]
+(pass) Commission & Brokerage Calculator — Edge Cases > never returns NaN for any finite input [0.06ms]
+
+test/unit/date-utils.test.ts:
+(pass) Date Utils — Edge Cases > formatters > formats short / full / weekday variants [0.43ms]
+(pass) Date Utils — Edge Cases > formatters > formats midnight and noon correctly (12 AM / 12 PM, not 00) [0.09ms]
+(pass) Date Utils — Edge Cases > formatters > zero-pads single-digit minutes and hours [0.11ms]
+(pass) Date Utils — Edge Cases > formatters > accepts ISO strings and epoch numbers [0.09ms]
+(pass) Date Utils — Edge Cases > formatters > returns empty string for null, undefined, empty, and invalid inputs [0.22ms]
+(pass) Date Utils — Edge Cases > parseSafeDate > parses ISO strings, Date objects, and epoch numbers [0.39ms]
+(pass) Date Utils — Edge Cases > parseSafeDate > returns null for null-ish and placeholder strings [0.36ms]
+(pass) Date Utils — Edge Cases > parseSafeDate > returns null for an invalid Date instance instead of throwing [0.14ms]
+(pass) Date Utils — Edge Cases > parseSafeDate > returns null for non-string/number types without throwing [0.12ms]
+(pass) Date Utils — Edge Cases > parseSafeDate > parses "Month YYYY" formats (long and abbreviated) [0.09ms]
+(pass) Date Utils — Edge Cases > parseSafeDate > parses MM/YYYY and MM-YYYY formats [0.11ms]
+(pass) Date Utils — Edge Cases > parseSafeDate > parses a bare year as start-of-year (1 Jan UTC) [0.10ms]
+(pass) Date Utils — Edge Cases > parseSafeDate > parses unambiguous DD/MM/YYYY (day-first when day > 12) [0.11ms]
+(pass) Date Utils — Edge Cases > parseSafeDate > returns null for impossible day/month combos [0.06ms]
+(pass) Date Utils — Edge Cases > parseSafeDate > returns null for pure garbage without throwing [0.05ms]
+(pass) Date Utils — Edge Cases > parseSafeDate > handles whitespace-trimmed inputs [0.04ms]
+
+test/unit/phone-normalizer.test.ts:
+(pass) E.164 Indian Phone Normalizer — Edge Cases > Happy paths (regression baseline) > normalizes bare 10-digit mobiles [0.06ms]
+(pass) E.164 Indian Phone Normalizer — Edge Cases > Happy paths (regression baseline) > normalizes leading-zero, 91-prefix, +91 and 091 variants [0.10ms]
+(pass) E.164 Indian Phone Normalizer — Edge Cases > Happy paths (regression baseline) > strips punctuation: dashes, parentheses, dots, spaces [0.03ms]
+(pass) E.164 Indian Phone Normalizer — Edge Cases > Happy paths (regression baseline) > accepts numeric (non-string) input [0.06ms]
+(pass) E.164 Indian Phone Normalizer — Edge Cases > Happy paths (regression baseline) > validates all legal Indian starting digits 6-9 [0.09ms]
+(pass) E.164 Indian Phone Normalizer — Edge Cases > Invalid Indian numbers > rejects Indian-range numbers starting with digits 1-5 at 10-digit length [0.05ms]
+(pass) E.164 Indian Phone Normalizer — Edge Cases > Invalid Indian numbers > rejects empty / falsy input [0.05ms]
+(pass) E.164 Indian Phone Normalizer — Edge Cases > Invalid Indian numbers > rejects numbers shorter than 8 digits [0.15ms]
+(pass) E.164 Indian Phone Normalizer — Edge Cases > Invalid Indian numbers > rejects numbers longer than 15 digits [0.09ms]
+(pass) E.164 Indian Phone Normalizer — Edge Cases > Invalid Indian numbers > rejects the 15/16-digit boundary correctly [0.05ms]
+(pass) E.164 Indian Phone Normalizer — Edge Cases > Invalid Indian numbers > rejects purely alphabetic garbage without crashing [0.06ms]
+(pass) E.164 Indian Phone Normalizer — Edge Cases > Invalid Indian numbers > rejects non-digit garbage like emoji or scripts without crashing [0.06ms]
+(pass) E.164 Indian Phone Normalizer — Edge Cases > International / NRI numbers > accepts common NRI country codes as valid E.164 [0.07ms]
+(pass) E.164 Indian Phone Normalizer — Edge Cases > International / NRI numbers > round-trips a valid international number unchanged [0.05ms]
+
+test/unit/deduplication.test.ts:
+(pass) Media Deduplication & Asset Resolution > correctly resolves asset URLs across strings and objects [0.59ms]
+(pass) Media Deduplication & Asset Resolution > parses gallery URLs cleanly from JSON string and arrays [0.47ms]
+(pass) Media Deduplication & Asset Resolution > parses structured media fields in parseInventoryContent [0.27ms]
+(pass) Media Deduplication & Asset Resolution > survives malformed JSON in every media field without throwing [0.08ms]
+(pass) Media Deduplication & Asset Resolution > returns fallbacks (not undefined) for non-array JSON values [0.17ms]
+(pass) Media Deduplication & Asset Resolution > parses a legacy photoGallery and preserves duplicate URLs (no dedup in parser) [0.07ms]
+(pass) Media Deduplication & Asset Resolution > falls back to a legacy videoReelUrl when videosJson is empty [0.10ms]
+(pass) Media Deduplication & Asset Resolution > prefers explicit mediaGallery fields over re-parsing JSON [0.07ms]
+(pass) Media Deduplication & Asset Resolution > resolveAssetUrl edge cases: whitespace, nested file_url, unknown shapes [0.11ms]
+(pass) Media Deduplication & Asset Resolution > parseGalleryUrls handles a bare non-JSON string and a single object [0.07ms]
+
+test/unit/portal-status-sync.test.ts:
+(pass) Property & Portal Status Sync Engine > Under-Construction project correctly resolves to 5% GST and non-OC status [0.12ms]
+(pass) Property & Portal Status Sync Engine > Ready OC project correctly resolves to 0% GST and Ready OC status [0.09ms]
+(pass) Property & Portal Status Sync Engine > Unit marked READY_TO_MOVE under project with OC inherits 0% GST exemption
+(pass) Property & Portal Status Sync Engine > City Avenue project (hasOccupancyCertificate: false) does not show Ready OC [0.03ms]
+
+test/unit/validators.test.ts:
+(pass) Zod Validators Suite > Lead Schemas > validates a valid lead creation payload [3.10ms]
+(pass) Zod Validators Suite > Lead Schemas > rejects lead with invalid phone length [0.95ms]
+(pass) Zod Validators Suite > Lead Schemas > rejects invalid lead currentStage enum [0.48ms]
+(pass) Zod Validators Suite > Lead Schemas > validates buyer requirements budget and bhk [0.73ms]
+(pass) Zod Validators Suite > Lead Schemas > rejects buyer requirement with negative or zero budgetMax [0.09ms]
+(pass) Zod Validators Suite > Lead Schemas > rejects buyer requirement with an empty BHK preference list [0.24ms]
+(pass) Zod Validators Suite > Lead Schemas > rejects out-of-range BHK preferences (0, 7, fractional) [0.33ms]
+(pass) Zod Validators Suite > Lead Schemas > rejects missing budgetMax (required field) [0.14ms]
+(pass) Zod Validators Suite > Lead Schemas > applies documented defaults for optional buyer requirement fields [0.14ms]
+(pass) Zod Validators Suite > Lead Schemas > rejects lead with phone shorter than 10 chars but accepts exactly 10 [0.24ms]
+(pass) Zod Validators Suite > Lead Schemas > rejects malformed email but allows empty-string or null email [0.53ms]
+(pass) Zod Validators Suite > Lead Schemas > rejects a 1-character fullName but allows null fullName [0.11ms]
+(pass) Zod Validators Suite > Lead Schemas > rejects an unknown leadSource instead of silently defaulting [0.16ms]
+(pass) Zod Validators Suite > Lead Schemas > applies documented defaults on minimal lead payloads [0.13ms]
+(pass) Zod Validators Suite > Lead Schemas > rejects a non-UUID assignedBrokerId in stage updates [0.22ms]
+(pass) Zod Validators Suite > Deal Schemas > validates deal creation payload [0.16ms]
+(pass) Zod Validators Suite > Deal Schemas > rejects deal creation with non-UUID leadId [0.21ms]
+(pass) Zod Validators Suite > Deal Schemas > validates commission simulation schema bounds [0.16ms]
+(pass) Zod Validators Suite > Deal Schemas > rejects out-of-bounds brokeragePercent (< 0.5 or > 10) [0.32ms]
+(pass) Zod Validators Suite > Deal Schemas > rejects out-of-bounds repSplitPercent and coBrokerSharePercent [0.34ms]
+(pass) Zod Validators Suite > Deal Schemas > rejects a negative or zero agreementValue [0.21ms]
+(pass) Zod Validators Suite > Deal Schemas > applies documented deal defaults [0.18ms]
+(pass) Zod Validators Suite > Deal Schemas > rejects invalid updateDealStatus values but accepts valid ones [0.23ms]
+(pass) Zod Validators Suite > Deal Schemas > enforces bounds on simulateCommissionSchema [0.43ms]
+(pass) Zod Validators Suite > Portal & Telemetry Schemas > validates portal creation schema [0.18ms]
+(pass) Zod Validators Suite > Portal & Telemetry Schemas > validates portal telemetry schema actionType enum [0.48ms]
+(pass) Zod Validators Suite > Portal & Telemetry Schemas > rejects a portal title shorter than 3 characters [0.11ms]
+(pass) Zod Validators Suite > Portal & Telemetry Schemas > rejects an empty selectedUnitIds array and non-UUID entries [0.19ms]
+(pass) Zod Validators Suite > Portal & Telemetry Schemas > enforces expiresInDays bounds of 1..90 with default 30 [0.41ms]
+(pass) Zod Validators Suite > Portal & Telemetry Schemas > rejects negative or fractional dwellTimeSec [0.26ms]
+(pass) Zod Validators Suite > Portal & Telemetry Schemas > defaults dwellTimeSec to 0 when omitted [0.12ms]
+(pass) Zod Validators Suite > Portal & Telemetry Schemas > accepts every documented telemetry actionType [0.08ms]
+(pass) Zod Validators Suite > Inventory & Visit Schemas > validates developer project creation schema [0.35ms]
+(pass) Zod Validators Suite > Inventory & Visit Schemas > validates property unit creation schema with floor rise and statutory charges [0.21ms]
+(pass) Zod Validators Suite > Inventory & Visit Schemas > validates site visit scheduling schema [0.18ms]
+(pass) Zod Validators Suite > Inventory & Visit Schemas > rejects a RERA number shorter than 8 characters [0.38ms]
+(pass) Zod Validators Suite > Inventory & Visit Schemas > rejects a non-positive basePricePerSqft [0.28ms]
+(pass) Zod Validators Suite > Inventory & Visit Schemas > rejects out-of-range BHK (0 or 7) on unit creation [0.22ms]
+(pass) Zod Validators Suite > Inventory & Visit Schemas > rejects zero carpet area and zero agreement value [0.30ms]
+(pass) Zod Validators Suite > Inventory & Visit Schemas > applies documented statutory charge defaults on unit creation [0.19ms]
+(pass) Zod Validators Suite > Inventory & Visit Schemas > enforces mandatory audit notes (min 3 chars) on verifyUnitSchema [0.21ms]
+(pass) Zod Validators Suite > Inventory & Visit Schemas > rejects an invalid visit itinerary stop structure [0.14ms]
+
+test/unit/zero-fabrication.test.ts:
+(pass) zero-fabrication: regex fallback parser > returns basePricePerSqft 0 when no price is present in the text [4.85ms]
+(pass) zero-fabrication: regex fallback parser > returns empty classifiedMedia (no fabricated elevations/master plan) [0.48ms]
+(pass) zero-fabrication: regex fallback parser > returns no fabricated amenities, transit, plot details, structure type, or possession date [0.32ms]
+(pass) zero-fabrication: regex fallback parser > keeps genuinely extracted facts [0.73ms]
+(pass) zero-fabrication: regex fallback parser > does not fabricate carpet area when only BHK is mentioned [0.49ms]
+(pass) zero-fabrication: MahaRERA certificate & form isolation > does not inject City Space or City Avenue into generated PDF for non-City Avenue project [254.73ms]
+(pass) zero-fabrication: MahaRERA certificate & form isolation > dynamic statutory project record resolver does not default to City Space [1.07ms]
+(pass) zero-fabrication: MahaRERA certificate & form isolation > downloadAndSaveMahaReraCertificate marks unverified project as PENDING_PORTAL_SYNC without fake PDF [3860.82ms]
+(pass) zero-fabrication: MahaRERA certificate & form isolation > fetchAuthenticMahaReraCertificate validates inputs cleanly [1.03ms]
+
+test/unit/brochure-persistence.test.ts:
+(pass) brochure-persistence: BHK floor plan matching > matches only floor plans with the same BHK
+(pass) brochure-persistence: BHK floor plan matching > returns EMPTY (never broadcasts) when no BHK match exists [0.52ms]
+(pass) brochure-persistence: BHK floor plan matching > matches string/number BHK coercibly [0.09ms]
+(pass) brochure-persistence: BHK floor plan matching > handles plans without bhk metadata (no match) [0.06ms]
+(pass) brochure-persistence: URL resolution from asset shapes > resolves through nested mediaAsset wrappers [0.07ms]
+
+test/unit/media-prefill.test.ts:
+(pass) Unit Media Pre-fill and Management API > calculates statutory costs properly without fabricating rates
+(pass) Unit Media Pre-fill and Management API > correctly associates and filters floor plans by unit BHK [0.52ms]
+(pass) Unit Media Pre-fill and Management API > sanitizes project folder names and routes assets to dedicated Cloudinary folders [0.35ms]
+(pass) Unit Media Pre-fill and Management API > sets default coverImageUrl to the primary elevation render [0.08ms]
+
+test/unit/rbac-engine.test.ts:
+(pass) RBAC Engine Unit Tests > Super Admin Unconditional Access > Super Admin has unconditional access across all permissions
+(pass) RBAC Engine Unit Tests > Super Admin Unconditional Access > Super Admin effective permissions include all capabilities [0.10ms]
+(pass) RBAC Engine Unit Tests > Super Admin Unconditional Access > Super Admin always resolves to GLOBAL scope [0.21ms]
+(pass) RBAC Engine Unit Tests > Default Role Baseline Restrictions > Telecaller can create leads by default [0.07ms]
+(pass) RBAC Engine Unit Tests > Default Role Baseline Restrictions > Telecaller is restricted from editing all leads and viewing financials [0.11ms]
+(pass) RBAC Engine Unit Tests > Default Role Baseline Restrictions > Agent can create portals and schedule site visits by default [0.05ms]
+(pass) RBAC Engine Unit Tests > Default Role Baseline Restrictions > Agent default scope for viewing leads is OWN_AND_ASSIGNED [0.07ms]
+(pass) RBAC Engine Unit Tests > Default Role Baseline Restrictions > Manager scope for viewing leads is TEAM [0.11ms]
+(pass) RBAC Engine Unit Tests > Dynamic Custom Permission Overrides > Super Admin can grant custom permission override to Telecaller [0.12ms]
+(pass) RBAC Engine Unit Tests > Dynamic Custom Permission Overrides > Multiple custom overrides combine cleanly with role defaults [0.14ms]
+(pass) RBAC Engine Unit Tests > Dynamic Custom Permission Overrides > Malformed customPermissionsJson falls back gracefully without throwing [0.16ms]
+
+test/unit/user-feedback.test.ts:
+(pass) Centralized End-User Feedback & Normalization Engine > Technical Error Normalization > normalizes raw fetch network errors to empathetic user message [3.68ms]
+(pass) Centralized End-User Feedback & Normalization Engine > Technical Error Normalization > normalizes ECONNREFUSED network errors [0.15ms]
+(pass) Centralized End-User Feedback & Normalization Engine > Technical Error Normalization > normalizes AbortError / Timeout exceptions [0.12ms]
+(pass) Centralized End-User Feedback & Normalization Engine > Technical Error Normalization > normalizes 401 Unauthorized / Session Expired errors [0.12ms]
+(pass) Centralized End-User Feedback & Normalization Engine > Technical Error Normalization > normalizes 403 Forbidden / RBAC permission errors [0.15ms]
+(pass) Centralized End-User Feedback & Normalization Engine > Technical Error Normalization > normalizes 404 Not Found errors [0.27ms]
+(pass) Centralized End-User Feedback & Normalization Engine > Technical Error Normalization > normalizes SQLite UNIQUE constraint and duplicate phone/email errors [0.13ms]
+(pass) Centralized End-User Feedback & Normalization Engine > Technical Error Normalization > normalizes WhatsApp dispatch and rate limit errors [0.12ms]
+(pass) Centralized End-User Feedback & Normalization Engine > Technical Error Normalization > normalizes MahaRERA certificate format errors [0.10ms]
+(pass) Centralized End-User Feedback & Normalization Engine > Technical Error Normalization > normalizes PDF / Brochure parsing errors [0.09ms]
+(pass) Centralized End-User Feedback & Normalization Engine > Technical Error Normalization > getUserErrorMessage returns clean string for simple toasts [0.12ms]
+(pass) Centralized End-User Feedback & Normalization Engine > Technical Error Normalization > handles unknown technical stack traces with reassuring fallback [0.15ms]
+(pass) Centralized End-User Feedback & Normalization Engine > User Success Presets > provides domain-specific success feedback for leads [0.38ms]
+(pass) Centralized End-User Feedback & Normalization Engine > User Success Presets > provides domain-specific success feedback for projects and brochures [0.11ms]
+(pass) Centralized End-User Feedback & Normalization Engine > User Success Presets > provides domain-specific success feedback for deals and commission [0.20ms]
+(pass) Centralized End-User Feedback & Normalization Engine > User Success Presets > provides domain-specific success feedback for portals, itineraries, and backups [0.39ms]
+
+test/unit/lead-file-parser.test.ts:
+(pass) Universal Lead File Parser Unit Tests > Delimiter Detection > detects comma delimiter in standard CSV headers
+(pass) Universal Lead File Parser Unit Tests > Delimiter Detection > detects tab delimiter in TSV headers [1.55ms]
+(pass) Universal Lead File Parser Unit Tests > Delimiter Detection > detects pipe delimiter
+(pass) Universal Lead File Parser Unit Tests > Delimiter Detection > handles quoted commas properly without throwing off delimiter count [0.12ms]
+(pass) Universal Lead File Parser Unit Tests > Data Row Detection > identifies rows with valid phone numbers as data rows [0.11ms]
+(pass) Universal Lead File Parser Unit Tests > Data Row Detection > identifies header rows as NOT data rows [0.04ms]
+(pass) Universal Lead File Parser Unit Tests > Delimited CSV/TSV Text Parsing > parses standard CSV text with header normalization [0.63ms]
+(pass) Universal Lead File Parser Unit Tests > Delimited CSV/TSV Text Parsing > handles empty or blank CSV text gracefully [0.10ms]
+(pass) Universal Lead File Parser Unit Tests > Delimited CSV/TSV Text Parsing > flags rows lacking both a valid phone and email as INVALID, phone-only failures as WARNING [1.03ms]
+(pass) Universal Lead File Parser Unit Tests > Delimited CSV/TSV Text Parsing > handles CRLF (Windows Excel) line endings [0.32ms]
+(pass) Universal Lead File Parser Unit Tests > Delimited CSV/TSV Text Parsing > tolerates a UTF-8 BOM at the start of the file [0.43ms]
+(pass) Universal Lead File Parser Unit Tests > Delimited CSV/TSV Text Parsing > does not crash on rows with fewer columns than the header [0.34ms]
+(pass) Universal Lead File Parser Unit Tests > Unstructured Text Parsing > extracts lead details from WhatsApp message copy-paste [1.99ms]
+(pass) Universal Lead File Parser Unit Tests > JSON / Universal Ingestion > parses JSON array of leads [0.44ms]
+(pass) Universal Lead File Parser Unit Tests > JSON / Universal Ingestion > handles malformed JSON gracefully [0.42ms]
+
+test/unit/image-compressor.test.ts:
+(pass) Client-Side Image Compressor & Storage Optimizer > isCompressibleImage format detection > identifies JPG, PNG, WEBP, and AVIF as compressible
+(pass) Client-Side Image Compressor & Storage Optimizer > isCompressibleImage format detection > rejects PDF, video, and non-image files [1.13ms]
+(pass) Client-Side Image Compressor & Storage Optimizer > calculateAspectRatioFit scaling logic > keeps original dimensions if smaller than maximum bounds [0.14ms]
+(pass) Client-Side Image Compressor & Storage Optimizer > calculateAspectRatioFit scaling logic > downscales 4K landscape photo to max width while preserving aspect ratio [0.04ms]
+(pass) Client-Side Image Compressor & Storage Optimizer > calculateAspectRatioFit scaling logic > downscales tall portrait photo to max height while preserving aspect ratio [0.04ms]
+(pass) Client-Side Image Compressor & Storage Optimizer > formatBytes helper > formats bytes into KB and MB cleanly [0.16ms]
+(pass) Client-Side Image Compressor & Storage Optimizer > compressImageFile execution > returns uncompressed file gracefully if non-image or in server environment [1.76ms]
+
+test/security/rbac-escalation.test.ts:
+(pass) Security: RBAC Privilege Escalation Defense > telecaller cannot access privileged firm metrics without explicit permission [3336.48ms]
+(pass) Security: RBAC Privilege Escalation Defense > agent scope limits lead visibility to own and assigned [2038.47ms]
+
+test/security/header-audit.test.ts:
+(pass) Security: HTTP Headers & OWASP Defense Audit > next.config.js specifies all mandatory OWASP security headers [0.99ms]
+(pass) Security: HTTP Headers & OWASP Defense Audit > poweredByHeader is disabled to prevent technology fingerprinting [0.08ms]
+
+test/security/injection-prevention.test.ts:
+(pass) Security: Injection Prevention (SQLi, XSS, NoSQL) > SQL Injection Prevention on Search Endpoints > handles SQL injection payload without throwing 500: 1' OR '1'='1 [2014.21ms]
+(pass) Security: Injection Prevention (SQLi, XSS, NoSQL) > SQL Injection Prevention on Search Endpoints > handles SQL injection payload without throwing 500: '; DROP TABLE "Lead"; -- [2100.39ms]
+(pass) Security: Injection Prevention (SQLi, XSS, NoSQL) > SQL Injection Prevention on Search Endpoints > handles SQL injection payload without throwing 500: 1 UNION SELECT null, email, passwordHash FROM "User"-- [1964.19ms]
+(pass) Security: Injection Prevention (SQLi, XSS, NoSQL) > SQL Injection Prevention on Search Endpoints > handles SQL injection payload without throwing 500: ' OR 1=1 -- [1965.12ms]
+(pass) Security: Injection Prevention (SQLi, XSS, NoSQL) > SQL Injection Prevention on Search Endpoints > handles SQL injection payload without throwing 500: admin'-- [1978.91ms]
+(pass) Security: Injection Prevention (SQLi, XSS, NoSQL) > SQL Injection Prevention on Search Endpoints > handles SQL injection payload without throwing 500: " or ""=" [2165.32ms]
+(pass) Security: Injection Prevention (SQLi, XSS, NoSQL) > SQL Injection Prevention on Search Endpoints > handles SQL injection payload on inventory search [1312.40ms]
+(pass) Security: Injection Prevention (SQLi, XSS, NoSQL) > XSS & Malicious Input Sanitization > safely stores text containing script tags without executing code [10626.59ms]
+
+test/security/auth-bypass.test.ts:
+(pass) Security: Authentication & Token Bypass Resistance > rejects tampered JWT signature with 401 [2.28ms]
+(pass) Security: Authentication & Token Bypass Resistance > rejects expired session token with 401 [0.82ms]
+(pass) Security: Authentication & Token Bypass Resistance > rejects malformed / non-JWT cookie strings with 401 [0.87ms]
+
+test/api/tenant-isolation.test.ts:
+(pass) API Integration: Multi-Tenant Data Isolation > Org B user CANNOT see Org A leads in listing [2089.51ms]
+
+test/api/webhooks.test.ts:
+[WEBHOOK] META_WEBHOOK_VERIFY_TOKEN is not configured
+(pass) API Integration: Webhooks Handlers (/api/v1/webhooks/*) > WhatsApp Cloud API Webhook Handshake (GET) > rejects verification handshake with invalid verify token [0.43ms]
+[WEBHOOK] META_APP_SECRET not configured — rejecting webhook
+(pass) API Integration: Webhooks Handlers (/api/v1/webhooks/*) > WhatsApp Webhook Payload Security (POST) > rejects unsigned webhook payload when app secret is enforced [3.06ms]
+[WEBHOOK] META_APP_SECRET not configured — rejecting webhook
+(pass) API Integration: Webhooks Handlers (/api/v1/webhooks/*) > WhatsApp Webhook Payload Security (POST) > fails closed on an empty POST body without crashing [0.26ms]
+[WEBHOOK] META_APP_SECRET not configured — rejecting webhook
+(pass) API Integration: Webhooks Handlers (/api/v1/webhooks/*) > WhatsApp Webhook Payload Security (POST) > fails closed on a malformed JSON POST body [0.17ms]
+[WEBHOOK] META_WEBHOOK_VERIFY_TOKEN is not configured
+(pass) API Integration: Webhooks Handlers (/api/v1/webhooks/*) > WhatsApp Webhook Payload Security (POST) > rejects a GET handshake missing hub.mode / hub.challenge parameters [0.16ms]
+
+test/api/portals.test.ts:
+(pass) API Integration: Client Portals (/api/v1/portals/*) > GET /api/v1/portals > rejects unauthenticated request with 401
+(pass) API Integration: Client Portals (/api/v1/portals/*) > GET /api/v1/portals > returns portal list for authenticated user [2939.92ms]
+(pass) API Integration: Client Portals (/api/v1/portals/*) > GET /api/v1/portals/[token] > returns 404 for non-existent public portal token without leaking auth error [652.51ms]
+
+test/api/inventory-crud.test.ts:
+(pass) API Integration: Inventory Projects (/api/v1/inventory/projects) > GET /api/v1/inventory/projects > rejects unauthenticated request with 401 [0.57ms]
+(pass) API Integration: Inventory Projects (/api/v1/inventory/projects) > GET /api/v1/inventory/projects > returns projects list for authenticated user [1819.43ms]
+(pass) API Integration: Inventory Projects (/api/v1/inventory/projects) > POST /api/v1/inventory/projects > creates a project with valid MahaRERA registration [2207.01ms]
+(pass) API Integration: Inventory Projects (/api/v1/inventory/projects) > POST /api/v1/inventory/projects > rejects project creation with invalid MahaRERA number with 422 [644.76ms]
+
+test/api/leads-crud.test.ts:
+(pass) API Integration: Leads CRUD (/api/v1/leads) > GET /api/v1/leads > rejects unauthenticated request with 401
+(pass) API Integration: Leads CRUD (/api/v1/leads) > GET /api/v1/leads > returns paginated lead list for authenticated admin [1947.44ms]
+(pass) API Integration: Leads CRUD (/api/v1/leads) > POST /api/v1/leads > rejects unauthenticated creation with 401 [0.59ms]
+(pass) API Integration: Leads CRUD (/api/v1/leads) > POST /api/v1/leads > creates lead successfully with 201 status for authenticated agent [11822.53ms]
+(pass) API Integration: Leads CRUD (/api/v1/leads) > POST /api/v1/leads > rejects lead creation with invalid/missing phone with 400 Bad Request [656.69ms]
+(pass) API Integration: Leads CRUD (/api/v1/leads) > POST /api/v1/leads > returns 400 (not 500) for a malformed JSON body [657.04ms]
+(pass) API Integration: Leads CRUD (/api/v1/leads) > POST /api/v1/leads > returns 400 for an empty JSON object (missing required phone) [662.63ms]
+(pass) API Integration: Leads CRUD (/api/v1/leads) > POST /api/v1/leads > rejects an unknown leadSource enum value with 4xx [665.64ms]
+(pass) API Integration: Leads CRUD (/api/v1/leads) > GET /api/v1/leads — pagination & filter edge cases > clamps out-of-range page (0 / negative) to page 1 instead of erroring [3649.83ms]
+(pass) API Integration: Leads CRUD (/api/v1/leads) > GET /api/v1/leads — pagination & filter edge cases > clamps an oversized limit to the 100 maximum and handles non-numeric values [7184.30ms]
+(pass) API Integration: Leads CRUD (/api/v1/leads) > GET /api/v1/leads — pagination & filter edge cases > accepts an unknown filter value without crashing (returns a filtered/empty list) [1964.27ms]
+
+test/api/auth-flow.test.ts:
+(pass) API Integration: Auth Flow (/api/v1/auth/*) > POST /api/v1/auth/login > authenticates valid email and password, returning 200 and Set-Cookie [1476.17ms]
+(pass) API Integration: Auth Flow (/api/v1/auth/*) > POST /api/v1/auth/login > rejects invalid password with 401 [729.72ms]
+(pass) API Integration: Auth Flow (/api/v1/auth/*) > POST /api/v1/auth/login > rejects non-existent email with generic 401 (prevents user enumeration) [781.13ms]
+(pass) API Integration: Auth Flow (/api/v1/auth/*) > POST /api/v1/auth/login > rejects missing credentials with 400 Bad Request [1.23ms]
+[DEV AUTH] Password reset link for agent@zamzam-test.internal: /reset-password?token=4ee6f9e7db0c2a6ab734fec02da7496fb226b71090329c23
+(pass) API Integration: Auth Flow (/api/v1/auth/*) > POST /api/v1/auth/forgot-password > returns generic ambiguous success message and NEVER returns reset token or URL [1430.08ms]
+(pass) API Integration: Auth Flow (/api/v1/auth/*) > POST /api/v1/auth/reset-password > rejects passwords shorter than 10 characters or lacking complexity [130.09ms]
+(pass) API Integration: Auth Flow (/api/v1/auth/*) > POST /api/v1/auth/logout > clears the session cookie on logout [1.63ms]
+
+test/api/deals-crud.test.ts:
+(pass) API Integration: Deals Transactions (/api/v1/deals) > GET /api/v1/deals > rejects unauthenticated request with 401 [0.15ms]
+(pass) API Integration: Deals Transactions (/api/v1/deals) > GET /api/v1/deals > returns deals ledger with financial summary for authenticated user [1978.69ms]
+(pass) API Integration: Deals Transactions (/api/v1/deals) > POST /api/v1/deals > returns 422 for malformed payload with non-UUID identifiers [661.90ms]
+
+test/performance/concurrent-load.test.ts:
+(pass) Performance: Concurrency & Burst Load Handling > handles 10 concurrent authenticated API requests without 500 errors [4395.37ms]
+
+test/performance/api-latency.test.ts:
+
+  ⚡ [Benchmark] GET /api/v1/leads -> p50: 2018.35ms | p95: 2159.69ms
+(pass) Performance: API Latency & SLA Percentiles (p50/p95/p99) > measures GET /api/v1/leads latency under SLA threshold [10179.31ms]
+  ⚡ [Benchmark] GET /api/v1/inventory/projects -> p50: 1596.72ms | p95: 1754.82ms
+(pass) Performance: API Latency & SLA Percentiles (p50/p95/p99) > measures GET /api/v1/inventory/projects latency under SLA threshold [8197.34ms]
+
+test/overnight/overnight-qa-suite.test.ts:
+(pass) Overnight Autonomous QA Suite: Full System Health & Report Generator > runs overnight latency & endpoint sweep across core modules [6490.02ms]
+(pass) Overnight Autonomous QA Suite: Full System Health & Report Generator > generates morning PR-ready triage report and cleanup SQL script [29.00ms]
+
+test/overnight/claims-vs-reality.test.ts:
+(pass) Overnight QA: Claims vs. Reality Architectural Audit > Middleware public API allow-list matches documented auth coverage list [53.31ms]
+(pass) Overnight QA: Claims vs. Reality Architectural Audit > Prisma schema models all enforce multi-tenant organization boundaries [2.39ms]
+(pass) Overnight QA: Claims vs. Reality Architectural Audit > No hardcoded secrets or production passwords in repository source files [1.07ms]
+----------------------------------------------|---------|---------|-------------------
+File                                          | % Funcs | % Lines | Uncovered Line #s
+----------------------------------------------|---------|---------|-------------------
+All files                                     |   75.53 |   68.87 |
+ next.config.js                               |  100.00 |  100.00 | 
+ src/app/api/v1/auth/forgot-password/route.ts |   66.67 |   76.47 | 14,21-24,39,62-67
+ src/app/api/v1/auth/login/route.ts           |  100.00 |   49.08 | 22,30-35,38-48,50-52,54-64,67-70,72-79,81-91,93-101,103,127-130,134-141,194-199
+ src/app/api/v1/auth/logout/route.ts          |   66.67 |   54.29 | 26-41
+ src/app/api/v1/auth/reset-password/route.ts  |   66.67 |   41.79 | 14,21-24,42,44-51,53-58,60,62-69,71-80
+ src/app/api/v1/auth/session/route.ts         |  100.00 |   93.75 | 111-115
+ src/app/api/v1/deals/route.ts                |   50.00 |   54.65 | 24,93,110,112-123,125-128,130-136,138,140-145,147-183,185,187-193
+ src/app/api/v1/inventory/projects/route.ts   |   56.25 |   50.42 | 21,83-86,110-116,151,153-157,160-191,244-250,252-254,256-257,260-262,265-292,294-301,304-309,311-312,314,316-335,337-374,395-405
+ src/app/api/v1/leads/route.ts                |  100.00 |   89.74 | 38,41,44,117-120,168-171,179-183
+ src/app/api/v1/portals/[token]/route.ts      |   66.67 |   66.28 | 62,65-71,74-84,86,88-96
+ src/app/api/v1/portals/route.ts              |  100.00 |   97.78 | 94-95
+ src/app/api/v1/webhooks/whatsapp/route.ts    |   83.33 |   10.88 | 26,28-30,32,45-53,70,72-76,79-82,85,87-88,90-98,101-114,117-118,121-127,130-138,141-143,146-155,158-160,163-164,167,170-180,183-190,193-197,199-232,234-239,242-244,248-262,264-272,274-280,283-289,292-297,299-307,309-311,313-314,316-323,325-340,342-350,353-355,357-370
+ src/lib/client/image-compressor.ts           |   71.43 |   31.90 | 106,109-121,123,125-136,138,140-141,143-148,151-153,155-156,158-170,173-175,178-196,198,200-202,205-207,209-212,214-237
+ src/lib/client/toast.ts                      |   35.71 |   48.28 | 42,46,50-77,81,85,89-109,113,117,171-175
+ src/lib/client/user-feedback.ts              |   73.33 |   79.76 | 108-112,128-136,143-147,162-165,174-176,188-190,208-213,253-255,267-269,271-273,289-291,309-311
+ src/lib/constants/broker-constants.ts        |  100.00 |  100.00 | 
+ src/lib/date-utils.ts                        |  100.00 |   93.18 | 88-91,100
+ src/lib/db/prisma.ts                         |  100.00 |  100.00 | 
+ src/lib/db/tenant-context.ts                 |  100.00 |  100.00 | 
+ src/lib/db/tenant-guard.ts                   |   50.00 |   12.38 | 33,35-39,41,43-45,48-61,64,66,68-76,80-99,101-102,107-112,114-121,123-125,127-132,134-135,139-143,146-150
+ src/lib/domain/analytics-engine.ts           |   75.00 |   27.31 | 66-132,166-216,223-264,290-294
+ src/lib/domain/attribution-engine.ts         |   33.33 |   47.89 | 31-50,70-77,105-113
+ src/lib/domain/broker-resolver.ts            |  100.00 |   86.92 | 27-30,130,132-140
+ src/lib/domain/campaign-attribution.ts       |  100.00 |  100.00 | 
+ src/lib/domain/commission-calculator.ts      |  100.00 |  100.00 | 
+ src/lib/domain/contact-manager.ts            |  100.00 |   84.21 | 50-54,91-95,110,149-156,171-178
+ src/lib/domain/cost-calculator.ts            |   20.00 |   63.16 | 97-98,106,119-120,154,156-158,162,209-218,222-223,261-294
+ src/lib/domain/inventory-csv-parser.ts       |  100.00 |   94.95 | 28-29,52,94-95
+ src/lib/domain/lead-auto-adjuster.ts         |   87.88 |   78.29 | 52-73,99,114,117,123,126,133,266-267,275-276,288-289,311-312,320-321,410-411,434-435,464,469-470,492,552,557,588-593,648-649,651-672,689-695,714-717,759,762,765,768,771,774,845,847,891-948
+ src/lib/domain/lead-creation.ts              |   66.67 |  100.00 | 
+ src/lib/domain/lead-file-parser.ts           |   61.11 |   56.15 | 110,113,116,132-142,159-162,174,176,178,180,182,184,186,188-192,194-206,216-220,222-228,230-240,275,295-380,409,414,427-431,460-464,471-477,479-481,556-566,585-596,617,626-630,632-637,639-641,660,662,664,675-686,704,720-730,748-751,754,756-758,765-771,777-787,806,830-865
+ src/lib/domain/matching-engine.ts            |   50.00 |   16.45 | 94-105,123,126-128,130-143,146-162,167-169,171-174,178-180,182-185,189-199,203-212,216-225,228-233,236,238-243,245-254,258-269
+ src/lib/domain/phone-normalizer.ts           |  100.00 |   87.27 | 65-71
+ src/lib/domain/portal-generator.ts           |  100.00 |   88.57 | 75-82
+ src/lib/domain/prioritization-engine.ts      |   83.33 |   84.78 | 93,95-103,121,132,135,137-138,173-175,181-183,197-199,211-214
+ src/lib/domain/rbac-engine.ts                |   88.89 |   86.75 | 335-340,342-343,367,383-415
+ src/lib/domain/unit-differentiation.ts       |   64.29 |   71.15 | 112-118,128,130-132,137-144,167,169-171,177-185,187-190,197,199-201,206-207,213,244-245
+ src/lib/domain/verification-engine.ts        |   66.67 |   66.99 | 193-195,197-217,219-229,241-274
+ src/lib/domain/visit-dispatcher.ts           |  100.00 |   94.29 | 44
+ src/lib/inventory-media.ts                   |  100.00 |  100.00 | 
+ src/lib/money.ts                             |  100.00 |  100.00 | 
+ src/lib/navigation.ts                        |   60.00 |   45.45 | 8-17,22-23
+ src/lib/security/rate-limiter.ts             |   66.67 |   59.70 | 16,18-23,75-82,96-107
+ src/lib/services/api-auth.ts                 |   68.75 |   59.03 | 43-44,46-47,61,79-82,93-101,106-111,123-139,166,195-200,218,220,222-224,246-251
+ src/lib/services/auth-service.ts             |   88.89 |   69.06 | 23-31,40-68,74,79,204,239-253
+ src/lib/services/brochure-parser-service.ts  |   23.08 |   78.13 | 228-264,282-283,289,305,319,322,349,359-361,396-399,404,417,476-483,605-625
+ src/lib/services/brochure-persistence.ts     |   66.67 |    5.26 | 42-167
+ src/lib/services/cloud-media-service.ts      |   22.22 |    9.77 | 36-70,74,108-134,142-205,212-276,284-298,305-328
+ src/lib/services/gemini-service.ts           |    0.00 |    2.71 | 15-19,37-50,143-294,301-574,581-620,628-680
+ src/lib/services/lead-reminder-service.ts    |   42.86 |   16.40 | 28,30-38,40,42-50,52,54-62,64,66-74,76,78-84,86,88-96,98,100-108,112-119,155,175-176,184-242,249-310,318-360,367-388
+ src/lib/services/maharera-service.ts         |   75.00 |   66.81 | 194,196-197,199-204,206,220,233-256,289-290,343-347,367,401,409-412,441,443,446-454,456-458,460-461,463-473,475-476,479-484,487-491,493-507,570-579,584-595,617,620-621,624-633,636-638,640-649
+ src/lib/services/team-service.ts             |    0.00 |    6.50 | 18-45,49-66,74-91,98-107,111-120,124-132,140-152,156-164
+ src/lib/validators/deal-schemas.ts           |  100.00 |  100.00 | 
+ src/lib/validators/inventory-schemas.ts      |  100.00 |  100.00 | 
+ src/lib/validators/lead-schemas.ts           |  100.00 |  100.00 | 
+ src/lib/validators/portal-schemas.ts         |  100.00 |  100.00 | 
+ src/lib/validators/visit-schemas.ts          |  100.00 |  100.00 | 
+ test/helpers/test-db.ts                      |  100.00 |   93.83 | 65,81,84,90
+ test/helpers/test-setup.ts                   |   58.33 |   64.91 | 109-120,124-138,142-162,166-177
+----------------------------------------------|---------|---------|-------------------
+
+ 331 pass
+ 0 fail
+ 1102 expect() calls
+Ran 331 tests across 42 files. [179.20s]

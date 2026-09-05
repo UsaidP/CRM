@@ -94,34 +94,44 @@ export function PortalLightboxModal({
             />
           </AnimatePresence>
 
-          {/* Prev/Next Buttons */}
+          {/* Prev/Next Buttons with Spring Micro-Interactions */}
           {lightboxState.photos.length > 1 && (
             <>
-              <button
-                type="button"
-                onClick={() => {
-                  const prev =
-                    (lightboxState.currentIndex - 1 + lightboxState.photos.length) %
-                    lightboxState.photos.length;
-                  onNavigate(prev);
-                }}
-                className="absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-surface/90 hover:bg-surface text-content grid place-items-center border border-border shadow-xl backdrop-blur transition-[background-color,border-color,box-shadow,transform] duration-200 active:scale-95 cursor-pointer"
-                aria-label="Previous image"
-              >
-                <ChevronLeft className="w-6 h-6" />
-              </button>
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 z-20 pointer-events-none">
+                <motion.button
+                  whileHover={{ scale: 1.14, x: -3 }}
+                  whileTap={{ scale: 0.92 }}
+                  transition={{ type: 'spring', stiffness: 450, damping: 22 }}
+                  type="button"
+                  onClick={() => {
+                    const prev =
+                      (lightboxState.currentIndex - 1 + lightboxState.photos.length) %
+                      lightboxState.photos.length;
+                    onNavigate(prev);
+                  }}
+                  className="pointer-events-auto group w-11 h-11 rounded-full bg-surface/95 hover:bg-surface text-content grid place-items-center border border-border shadow-xl backdrop-blur transition-[background-color,border-color,box-shadow] duration-200 cursor-pointer no-lift select-none"
+                  aria-label="Previous image"
+                >
+                  <ChevronLeft className="w-6 h-6 transition-transform duration-200 group-hover:-translate-x-0.5 text-content" />
+                </motion.button>
+              </div>
 
-              <button
-                type="button"
-                onClick={() => {
-                  const next = (lightboxState.currentIndex + 1) % lightboxState.photos.length;
-                  onNavigate(next);
-                }}
-                className="absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-surface/90 hover:bg-surface text-content grid place-items-center border border-border shadow-xl backdrop-blur transition-[background-color,border-color,box-shadow,transform] duration-200 active:scale-95 cursor-pointer"
-                aria-label="Next image"
-              >
-                <ChevronRight className="w-6 h-6" />
-              </button>
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 z-20 pointer-events-none">
+                <motion.button
+                  whileHover={{ scale: 1.14, x: 3 }}
+                  whileTap={{ scale: 0.92 }}
+                  transition={{ type: 'spring', stiffness: 450, damping: 22 }}
+                  type="button"
+                  onClick={() => {
+                    const next = (lightboxState.currentIndex + 1) % lightboxState.photos.length;
+                    onNavigate(next);
+                  }}
+                  className="pointer-events-auto group w-11 h-11 rounded-full bg-surface/95 hover:bg-surface text-content grid place-items-center border border-border shadow-xl backdrop-blur transition-[background-color,border-color,box-shadow] duration-200 cursor-pointer no-lift select-none"
+                  aria-label="Next image"
+                >
+                  <ChevronRight className="w-6 h-6 transition-transform duration-200 group-hover:translate-x-0.5 text-content" />
+                </motion.button>
+              </div>
             </>
           )}
         </div>

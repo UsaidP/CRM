@@ -230,26 +230,40 @@ export function PropertyMediaHub({
                   </motion.button>
                 </div>
 
-                {/* Navigation Arrows */}
+                {/* Navigation Arrows with Spring Micro-Interactions */}
                 {photos.length > 1 && (
                   <>
-                    <button
-                      type="button"
-                      aria-label="Previous photo"
-                      onClick={handlePrevPhoto}
-                      className="group/btn absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-11 sm:h-11 grid place-items-center rounded-full bg-white/90 hover:bg-white text-slate-900 shadow-lg hover:shadow-xl hover:scale-110 hover:-translate-x-0.5 hover:border-gold/60 hover:ring-2 hover:ring-gold/30 transition-[background-color,border-color,box-shadow,transform] duration-200 active:scale-90 border border-slate-200 cursor-pointer"
-                    >
-                      <ChevronLeft className="w-5 h-5 transition-transform duration-200 group-hover/btn:-translate-x-px" />
-                    </button>
-                    <button
-                      type="button"
-                      aria-label="Next photo"
-                      onClick={handleNextPhoto}
-                      className="group/btn absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-11 sm:h-11 grid place-items-center rounded-full bg-white/90 hover:bg-white text-slate-900 shadow-lg hover:shadow-xl hover:scale-110 hover:translate-x-0.5 hover:border-gold/60 hover:ring-2 hover:ring-gold/30 transition-[background-color,border-color,box-shadow,transform] duration-200 active:scale-90 border border-slate-200 cursor-pointer"
-                    >
-                      <ChevronRight className="w-5 h-5 transition-transform duration-200 group-hover/btn:translate-x-px" />
-                    </button>
-                    <div className="absolute top-3.5 right-3.5 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-xs text-white font-mono border border-white/20 shadow-sm font-bold">
+                    {/* Left (Previous) Button */}
+                    <div className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 z-20 pointer-events-none">
+                      <motion.button
+                        whileHover={{ scale: 1.14, x: -3 }}
+                        whileTap={{ scale: 0.92 }}
+                        transition={{ type: 'spring', stiffness: 450, damping: 22 }}
+                        type="button"
+                        aria-label="Previous photo"
+                        onClick={handlePrevPhoto}
+                        className="pointer-events-auto group/btn w-9 h-9 sm:w-11 sm:h-11 grid place-items-center rounded-full bg-white/95 hover:bg-white text-slate-800 hover:text-slate-950 shadow-[0_4px_16px_rgba(0,0,0,0.18)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.24),0_0_14px_rgba(181,150,88,0.4)] border border-white/80 hover:border-gold/60 ring-0 hover:ring-2 hover:ring-gold/30 backdrop-blur-md transition-[background-color,border-color,box-shadow] duration-200 cursor-pointer select-none no-lift"
+                      >
+                        <ChevronLeft className="w-5 h-5 transition-transform duration-200 group-hover/btn:-translate-x-0.5 text-slate-700 group-hover/btn:text-slate-950" />
+                      </motion.button>
+                    </div>
+
+                    {/* Right (Next) Button */}
+                    <div className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 z-20 pointer-events-none">
+                      <motion.button
+                        whileHover={{ scale: 1.14, x: 3 }}
+                        whileTap={{ scale: 0.92 }}
+                        transition={{ type: 'spring', stiffness: 450, damping: 22 }}
+                        type="button"
+                        aria-label="Next photo"
+                        onClick={handleNextPhoto}
+                        className="pointer-events-auto group/btn w-9 h-9 sm:w-11 sm:h-11 grid place-items-center rounded-full bg-white/95 hover:bg-white text-slate-800 hover:text-slate-950 shadow-[0_4px_16px_rgba(0,0,0,0.18)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.24),0_0_14px_rgba(181,150,88,0.4)] border border-white/80 hover:border-gold/60 ring-0 hover:ring-2 hover:ring-gold/30 backdrop-blur-md transition-[background-color,border-color,box-shadow] duration-200 cursor-pointer select-none no-lift"
+                      >
+                        <ChevronRight className="w-5 h-5 transition-transform duration-200 group-hover/btn:translate-x-0.5 text-slate-700 group-hover/btn:text-slate-950" />
+                      </motion.button>
+                    </div>
+
+                    <div className="absolute top-3.5 right-3.5 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-xs text-white font-mono border border-white/20 shadow-sm font-bold select-none pointer-events-none">
                       {activePhotoIdx + 1} / {photos.length}
                     </div>
                   </>
@@ -263,25 +277,28 @@ export function PropertyMediaHub({
             )}
           </div>
 
-          {/* Filmstrip Scrubber */}
+          {/* Filmstrip Scrubber with Spring Physics */}
           {photos.length > 1 && (
             <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2 pt-1">
               {photos.map((photo, pIdx) => (
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.08, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 20 }}
                   key={photo.id || pIdx}
                   type="button"
                   onClick={() => {
                     setActivePhotoIdx(pIdx);
                     sendTelemetry('PHOTO_SWIPE', unit.id);
                   }}
-                  className={`relative aspect-[4/3] rounded-xl overflow-hidden border-2 transition-[background-color,border-color,box-shadow,transform] duration-200 cursor-pointer ${
+                  className={`relative aspect-[4/3] rounded-xl overflow-hidden border-2 transition-[border-color,box-shadow,opacity] duration-200 cursor-pointer no-lift ${
                     activePhotoIdx === pIdx
-                      ? 'border-gold ring-2 ring-amber-300 scale-[1.03] shadow-xs'
-                      : 'border-slate-200 opacity-60 hover:opacity-100'
+                      ? 'border-gold ring-2 ring-amber-300 scale-[1.03] shadow-xs opacity-100'
+                      : 'border-slate-200 opacity-60 hover:opacity-100 hover:border-gold/60'
                   }`}
                 >
                   <img src={photo.url} alt="" className="h-full w-full object-cover" />
-                </button>
+                </motion.button>
               ))}
             </div>
           )}
@@ -365,14 +382,16 @@ export function PropertyMediaHub({
                   onClick={() => onOpenLightbox([primaryFloorPlan], 0)}
                 />
                 <div className="absolute bottom-3 right-3">
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     type="button"
                     onClick={() => onOpenLightbox([primaryFloorPlan], 0)}
-                    className="px-3.5 py-1.5 rounded-xl bg-white/95 border border-slate-200 text-xs font-bold text-slate-800 shadow-sm hover:bg-slate-50 flex items-center gap-1.5 cursor-pointer backdrop-blur"
+                    className="px-3.5 py-1.5 rounded-xl bg-white/95 border border-slate-200 text-xs font-bold text-slate-800 shadow-sm hover:bg-white hover:border-gold/50 flex items-center gap-1.5 cursor-pointer backdrop-blur transition-colors no-lift"
                   >
                     <Maximize2 className="w-3.5 h-3.5 text-gold" />
                     <span>Expand Blueprint</span>
-                  </button>
+                  </motion.button>
                 </div>
               </div>
             </div>

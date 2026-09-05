@@ -1,0 +1,1996 @@
+=== AXE-CORE RAW AUDIT RUN START ===
+
+--- ROUTE: /login ---
+{
+  "route": "/login",
+  "url": "http://localhost:5173/login",
+  "violationCount": 4,
+  "violations": [
+    {
+      "id": "color-contrast",
+      "impact": "serious",
+      "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+      "help": "Elements must meet minimum color contrast ratio thresholds",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=playwright",
+      "nodes": [
+        {
+          "html": "<span>SECURE ACCESS GATEWAY</span>",
+          "target": [
+            ".text-accent.gap-2.font-mono > span"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.97 (foreground color: #3b82f6, background color: #1e293b, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<span>Sign In to Workspace</span>",
+          "target": [
+            ".py-3\\.5 > span"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        }
+      ]
+    },
+    {
+      "id": "landmark-main-is-top-level",
+      "impact": "moderate",
+      "description": "Ensure the main landmark is at top level",
+      "help": "Main landmark should not be contained in another landmark",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/landmark-main-is-top-level?application=playwright",
+      "nodes": [
+        {
+          "html": "<main class=\"flex-1 flex items-center justify-center p-4 md:p-8 z-10\">",
+          "target": [
+            ".flex-1"
+          ],
+          "failureSummary": "Fix any of the following:\n  The main landmark is contained in another landmark."
+        }
+      ]
+    },
+    {
+      "id": "landmark-no-duplicate-main",
+      "impact": "moderate",
+      "description": "Ensure the document has at most one main landmark",
+      "help": "Document should not have more than one main landmark",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/landmark-no-duplicate-main?application=playwright",
+      "nodes": [
+        {
+          "html": "<main class=\"public-portal-main min-h-screen bg-[#FDFBF7] text-slate-900 selection:bg-amber-100 selection:text-amber-900\">",
+          "target": [
+            ".public-portal-main"
+          ],
+          "failureSummary": "Fix any of the following:\n  Document has more than one main landmark"
+        }
+      ]
+    },
+    {
+      "id": "landmark-unique",
+      "impact": "moderate",
+      "description": "Ensure landmarks are unique",
+      "help": "Landmarks should have a unique role or role/label/title (i.e. accessible name) combination",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/landmark-unique?application=playwright",
+      "nodes": [
+        {
+          "html": "<main class=\"public-portal-main min-h-screen bg-[#FDFBF7] text-slate-900 selection:bg-amber-100 selection:text-amber-900\">",
+          "target": [
+            ".public-portal-main"
+          ],
+          "failureSummary": "Fix any of the following:\n  The landmark must have a unique aria-label, aria-labelledby, or title to make landmarks distinguishable"
+        }
+      ]
+    }
+  ]
+}
+
+Authenticating as Super Admin...
+Authentication successful. Current URL: http://localhost:5173/
+
+--- ROUTE: / ---
+{
+  "route": "/",
+  "url": "http://localhost:5173/",
+  "violationCount": 6,
+  "violations": [
+    {
+      "id": "button-name",
+      "impact": "critical",
+      "description": "Ensure buttons have discernible text",
+      "help": "Buttons must have discernible text",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/button-name?application=playwright",
+      "nodes": [
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc\" data-active=\"false\">",
+          "target": [
+            ".styles-module__buttonWrapper___rBcdv:nth-child(1) > .styles-module__controlButton___8Q0jc[data-active=\"false\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc \" data-active=\"false\">",
+          "target": [
+            ".styles-module__buttonWrapper___rBcdv:nth-child(2) > .styles-module__controlButton___8Q0jc[data-active=\"false\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc\" disabled=\"\">",
+          "target": [
+            ".styles-module__buttonWrapper___rBcdv:nth-child(3) > .styles-module__controlButton___8Q0jc"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc \" disabled=\"\" data-active=\"false\">",
+          "target": [
+            ".styles-module__buttonWrapper___rBcdv:nth-child(4) > .styles-module__controlButton___8Q0jc[data-active=\"false\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc \" disabled=\"\" data-no-hover=\"false\" tabindex=\"-1\">",
+          "target": [
+            "button[data-no-hover=\"false\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc\" disabled=\"\" data-danger=\"true\">",
+          "target": [
+            "button[data-danger=\"true\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc\">",
+          "target": [
+            ".styles-module__buttonWrapper___rBcdv:nth-child(7) > .styles-module__controlButton___8Q0jc"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc\">",
+          "target": [
+            ".styles-module__buttonWrapper___rBcdv:nth-child(9) > .styles-module__controlButton___8Q0jc"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        }
+      ]
+    },
+    {
+      "id": "color-contrast",
+      "impact": "serious",
+      "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+      "help": "Elements must meet minimum color contrast ratio thresholds",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=playwright",
+      "nodes": [
+        {
+          "html": "<span>New Lead / Quick Call</span>",
+          "target": [
+            ".active\\:scale-98 > span"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<div class=\"w-7 h-7 rounded-full bg-accent text-white flex items-center justify-center text-xs font-bold shadow-2xs shrink-0\">ZP</div>",
+          "target": [
+            ".w-7"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<span>Tele-Desk</span>",
+          "target": [
+            "a[href=\"/leads?view=telecaller\"] > span"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<button type=\"button\" class=\"px-2 sm:px-2.5 py-1 rounded-lg transition-all cursor-pointer bg-accent text-white shadow-2xs font-bold scale-105\">All Time</button>",
+          "target": [
+            ".scale-105"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<span>Record Deal</span>",
+          "target": [
+            ".sm\\:px-4.hover\\:shadow-sm[href$=\"deals\"] > span"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<span class=\"inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-accent text-white shadow-2xs\">",
+          "target": [
+            ".inline-flex.bg-accent.text-white"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<span>Call Lead</span>",
+          "target": [
+            ".hover\\:bg-status-success-hover > span"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 1.92 (foreground color: #ffffff, background color: #34d399, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<span>Pipeline Funnel</span>",
+          "target": [
+            ".sm\\:px-3.whitespace-nowrap.py-1\\.5:nth-child(1) > span"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        }
+      ]
+    },
+    {
+      "id": "label",
+      "impact": "critical",
+      "description": "Ensure every form element has a label",
+      "help": "Form elements must have labels",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/label?application=playwright",
+      "nodes": [
+        {
+          "html": "<input class=\"styles-module__switchInput___kYDSD\" type=\"checkbox\" checked=\"\">",
+          "target": [
+            ".styles-module__settingsRowMarginTop___uLpGb.styles-module__settingsRow___y-tDE:nth-child(2) > .styles-module__switchContainer___Ka-AB > .styles-module__switchInput___kYDSD"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element has no placeholder attribute\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<input class=\"styles-module__switchInput___kYDSD\" type=\"checkbox\">",
+          "target": [
+            ".styles-module__settingsRowMarginTop___uLpGb.styles-module__settingsRow___y-tDE:nth-child(3) > .styles-module__switchContainer___Ka-AB > .styles-module__switchInput___kYDSD"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element has no placeholder attribute\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        }
+      ]
+    },
+    {
+      "id": "link-name",
+      "impact": "serious",
+      "description": "Ensure links have discernible text",
+      "help": "Links must have discernible text",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/link-name?application=playwright",
+      "nodes": [
+        {
+          "html": "<a class=\"styles-module__settingsBrand___OoKlM\" href=\"https://agentation.com\" target=\"_blank\" rel=\"noopener noreferrer\">",
+          "target": [
+            ".styles-module__settingsBrand___OoKlM"
+          ],
+          "failureSummary": "Fix all of the following:\n  Element is in tab order and does not have accessible text\n\nFix any of the following:\n  Element does not have text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute"
+        }
+      ]
+    },
+    {
+      "id": "nested-interactive",
+      "impact": "serious",
+      "description": "Ensure interactive controls are not nested as they are not always announced by screen readers or can cause focus problems for assistive technologies",
+      "help": "Interactive controls must not be nested",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/nested-interactive?application=playwright",
+      "nodes": [
+        {
+          "html": "<div class=\"styles-module__toolbarContainer___dIhma styles-module__collapsed___Rydsn styles-module__entrance___sgHd8  \" role=\"button\" tabindex=\"0\" title=\"Start feedback mode\">",
+          "target": [
+            ".styles-module__toolbarContainer___dIhma"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has focusable descendants"
+        }
+      ]
+    },
+    {
+      "id": "region",
+      "impact": "moderate",
+      "description": "Ensure all page content is contained by landmarks",
+      "help": "All page content should be contained by landmarks",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/region?application=playwright",
+      "nodes": [
+        {
+          "html": "<canvas class=\"styles-module__drawCanvas___7cG9U \" data-feedback-toolbar=\"true\" style=\"opacity: 0; transition: opacity 0.15s;\"></canvas>",
+          "target": [
+            "canvas"
+          ],
+          "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+        }
+      ]
+    }
+  ]
+}
+
+--- ROUTE: /leads ---
+{
+  "route": "/leads",
+  "url": "http://localhost:5173/leads",
+  "violationCount": 2,
+  "violations": [
+    {
+      "id": "color-contrast",
+      "impact": "serious",
+      "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+      "help": "Elements must meet minimum color contrast ratio thresholds",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=playwright",
+      "nodes": [
+        {
+          "html": "<span>New Lead / Quick Call</span>",
+          "target": [
+            ".active\\:scale-98 > span"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<div class=\"w-7 h-7 rounded-full bg-accent text-white flex items-center justify-center text-xs font-bold shadow-2xs shrink-0\">ZP</div>",
+          "target": [
+            ".w-7.h-7.text-white"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<span>Tele-Desk</span>",
+          "target": [
+            "a[href=\"/leads?view=telecaller\"] > span"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<span>Kanban</span>",
+          "target": [
+            ".sm\\:px-2\\.5.h-7.text-white > span"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<span>+ Log Call</span>",
+          "target": [
+            ".hover\\:shadow-sm > span"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<span class=\"inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-accent text-white shadow-xs\">",
+          "target": [
+            ".inline-flex.py-1.font-extrabold"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<span>WhatsApp Now</span>",
+          "target": [
+            ".hover\\:opacity-90 > span"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 1.92 (foreground color: #ffffff, background color: #34d399, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<span>Call Now</span>",
+          "target": [
+            ".sm\\:flex-none.sm\\:px-4[href=\"tel:+919820011223\"] > span"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        }
+      ]
+    },
+    {
+      "id": "heading-order",
+      "impact": "moderate",
+      "description": "Ensure the order of headings is semantically correct",
+      "help": "Heading levels should only increase by one",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/heading-order?application=playwright",
+      "nodes": [
+        {
+          "html": "<h3 class=\"text-xl sm:text-2xl font-mono font-extrabold text-content mt-1 truncate\">1</h3>",
+          "target": [
+            ".hover\\:shadow-xs.sm\\:p-5.hover\\:border-border-strong:nth-child(1) > .pr-1.min-w-0 > .mt-1.sm\\:text-2xl.text-xl"
+          ],
+          "failureSummary": "Fix any of the following:\n  Heading order invalid"
+        }
+      ]
+    }
+  ]
+}
+
+--- ROUTE: /calendar ---
+{
+  "route": "/calendar",
+  "url": "http://localhost:5173/calendar",
+  "violationCount": 7,
+  "violations": [
+    {
+      "id": "button-name",
+      "impact": "critical",
+      "description": "Ensure buttons have discernible text",
+      "help": "Buttons must have discernible text",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/button-name?application=playwright",
+      "nodes": [
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc\" data-active=\"false\">",
+          "target": [
+            ".styles-module__buttonWrapper___rBcdv:nth-child(1) > .styles-module__controlButton___8Q0jc[data-active=\"false\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc \" data-active=\"false\">",
+          "target": [
+            ".styles-module__buttonWrapper___rBcdv:nth-child(2) > .styles-module__controlButton___8Q0jc[data-active=\"false\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc\" disabled=\"\">",
+          "target": [
+            ".styles-module__buttonWrapper___rBcdv:nth-child(3) > .styles-module__controlButton___8Q0jc"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc \" disabled=\"\" data-active=\"false\">",
+          "target": [
+            ".styles-module__buttonWrapper___rBcdv:nth-child(4) > .styles-module__controlButton___8Q0jc[data-active=\"false\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc \" disabled=\"\" data-no-hover=\"false\" tabindex=\"-1\">",
+          "target": [
+            "button[data-no-hover=\"false\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc\" disabled=\"\" data-danger=\"true\">",
+          "target": [
+            "button[data-danger=\"true\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc\">",
+          "target": [
+            ".styles-module__buttonWrapper___rBcdv:nth-child(7) > .styles-module__controlButton___8Q0jc"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc\">",
+          "target": [
+            ".styles-module__buttonWrapper___rBcdv:nth-child(9) > .styles-module__controlButton___8Q0jc"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        }
+      ]
+    },
+    {
+      "id": "color-contrast",
+      "impact": "serious",
+      "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+      "help": "Elements must meet minimum color contrast ratio thresholds",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=playwright",
+      "nodes": [
+        {
+          "html": "<span>New Lead / Quick Call</span>",
+          "target": [
+            ".active\\:scale-98 > span"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<div class=\"w-7 h-7 rounded-full bg-accent text-white flex items-center justify-center text-xs font-bold shadow-2xs shrink-0\">ZP</div>",
+          "target": [
+            ".w-7"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<span>Tele-Desk</span>",
+          "target": [
+            "a[href=\"/leads?view=telecaller\"] > span"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<span>Schedule Reminder</span>",
+          "target": [
+            ".py-2\\.5 > span"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<button class=\"px-3 py-1 text-xs font-bold text-accent hover:bg-surface rounded-lg transition-colors cursor-pointer\">Today</button>",
+          "target": [
+            ".py-1.hover\\:bg-surface.px-3"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.97 (foreground color: #3b82f6, background color: #1e293b, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<span>Month</span>",
+          "target": [
+            ".flex-wrap > .text-white.bg-accent.gap-1\\.5 > span"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<button class=\"px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer shrink-0 bg-accent text-white border-accent shadow-xs\">All Events (<!-- -->0<!-- -->)</button>",
+          "target": [
+            ".border-accent.text-white.bg-accent"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        }
+      ]
+    },
+    {
+      "id": "heading-order",
+      "impact": "moderate",
+      "description": "Ensure the order of headings is semantically correct",
+      "help": "Heading levels should only increase by one",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/heading-order?application=playwright",
+      "nodes": [
+        {
+          "html": "<h3 class=\"text-2xl font-bold text-status-danger mt-1\">0</h3>",
+          "target": [
+            ".justify-between.items-center.flex > div:nth-child(1) > .text-status-danger"
+          ],
+          "failureSummary": "Fix any of the following:\n  Heading order invalid"
+        }
+      ]
+    },
+    {
+      "id": "label",
+      "impact": "critical",
+      "description": "Ensure every form element has a label",
+      "help": "Form elements must have labels",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/label?application=playwright",
+      "nodes": [
+        {
+          "html": "<input class=\"styles-module__switchInput___kYDSD\" type=\"checkbox\" checked=\"\">",
+          "target": [
+            ".styles-module__settingsRowMarginTop___uLpGb.styles-module__settingsRow___y-tDE:nth-child(2) > .styles-module__switchContainer___Ka-AB > .styles-module__switchInput___kYDSD[type=\"checkbox\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element has no placeholder attribute\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<input class=\"styles-module__switchInput___kYDSD\" type=\"checkbox\">",
+          "target": [
+            ".styles-module__settingsRowMarginTop___uLpGb.styles-module__settingsRow___y-tDE:nth-child(3) > .styles-module__switchContainer___Ka-AB > .styles-module__switchInput___kYDSD[type=\"checkbox\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element has no placeholder attribute\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        }
+      ]
+    },
+    {
+      "id": "link-name",
+      "impact": "serious",
+      "description": "Ensure links have discernible text",
+      "help": "Links must have discernible text",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/link-name?application=playwright",
+      "nodes": [
+        {
+          "html": "<a class=\"styles-module__settingsBrand___OoKlM\" href=\"https://agentation.com\" target=\"_blank\" rel=\"noopener noreferrer\">",
+          "target": [
+            ".styles-module__settingsBrand___OoKlM"
+          ],
+          "failureSummary": "Fix all of the following:\n  Element is in tab order and does not have accessible text\n\nFix any of the following:\n  Element does not have text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute"
+        }
+      ]
+    },
+    {
+      "id": "nested-interactive",
+      "impact": "serious",
+      "description": "Ensure interactive controls are not nested as they are not always announced by screen readers or can cause focus problems for assistive technologies",
+      "help": "Interactive controls must not be nested",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/nested-interactive?application=playwright",
+      "nodes": [
+        {
+          "html": "<div class=\"styles-module__toolbarContainer___dIhma styles-module__collapsed___Rydsn styles-module__entrance___sgHd8  \" role=\"button\" tabindex=\"0\" title=\"Start feedback mode\">",
+          "target": [
+            ".styles-module__toolbarContainer___dIhma"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has focusable descendants"
+        }
+      ]
+    },
+    {
+      "id": "region",
+      "impact": "moderate",
+      "description": "Ensure all page content is contained by landmarks",
+      "help": "All page content should be contained by landmarks",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/region?application=playwright",
+      "nodes": [
+        {
+          "html": "<canvas class=\"styles-module__drawCanvas___7cG9U \" data-feedback-toolbar=\"true\" style=\"opacity: 0; transition: opacity 0.15s;\"></canvas>",
+          "target": [
+            "canvas"
+          ],
+          "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+        }
+      ]
+    }
+  ]
+}
+
+--- ROUTE: /inventory ---
+{
+  "route": "/inventory",
+  "url": "http://localhost:5173/inventory",
+  "violationCount": 1,
+  "violations": [
+    {
+      "id": "color-contrast",
+      "impact": "serious",
+      "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+      "help": "Elements must meet minimum color contrast ratio thresholds",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=playwright",
+      "nodes": [
+        {
+          "html": "<span>New Lead / Quick Call</span>",
+          "target": [
+            ".active\\:scale-98 > span"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<div class=\"w-7 h-7 rounded-full bg-accent text-white flex items-center justify-center text-xs font-bold shadow-2xs shrink-0\">ZP</div>",
+          "target": [
+            ".w-7.h-7.rounded-full"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<span>Tele-Desk</span>",
+          "target": [
+            "a[href=\"/leads?view=telecaller\"] > span"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<span>Add Unit</span>",
+          "target": [
+            ".hover\\:shadow-sm > span"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<span>Marketable Units Matrix (<!-- -->4<!-- -->)</span>",
+          "target": [
+            ".sm\\:flex-initial.sm\\:px-3\\.5.whitespace-nowrap:nth-child(1) > span"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<span class=\"text-[11px]\">Table</span>",
+          "target": [
+            "button[aria-label=\"Show inventory table\"] > .text-\\[11px\\]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
+        }
+      ]
+    }
+  ]
+}
+
+--- ROUTE: /matching ---
+{
+  "route": "/matching",
+  "url": "http://localhost:5173/matching",
+  "violationCount": 7,
+  "violations": [
+    {
+      "id": "button-name",
+      "impact": "critical",
+      "description": "Ensure buttons have discernible text",
+      "help": "Buttons must have discernible text",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/button-name?application=playwright",
+      "nodes": [
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc\" data-active=\"false\">",
+          "target": [
+            ".styles-module__buttonWrapper___rBcdv:nth-child(1) > .styles-module__controlButton___8Q0jc[data-active=\"false\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc \" data-active=\"false\">",
+          "target": [
+            ".styles-module__buttonWrapper___rBcdv:nth-child(2) > .styles-module__controlButton___8Q0jc[data-active=\"false\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc\" disabled=\"\">",
+          "target": [
+            ".styles-module__buttonWrapper___rBcdv:nth-child(3) > .styles-module__controlButton___8Q0jc"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc \" disabled=\"\" data-active=\"false\">",
+          "target": [
+            ".styles-module__buttonWrapper___rBcdv:nth-child(4) > .styles-module__controlButton___8Q0jc[data-active=\"false\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc \" disabled=\"\" data-no-hover=\"false\" tabindex=\"-1\">",
+          "target": [
+            "button[data-no-hover=\"false\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc\" disabled=\"\" data-danger=\"true\">",
+          "target": [
+            "button[data-danger=\"true\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc\">",
+          "target": [
+            ".styles-module__buttonWrapper___rBcdv:nth-child(7) > .styles-module__controlButton___8Q0jc"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc\">",
+          "target": [
+            ".styles-module__buttonWrapper___rBcdv:nth-child(9) > .styles-module__controlButton___8Q0jc"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        }
+      ]
+    },
+    {
+      "id": "color-contrast",
+      "impact": "serious",
+      "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+      "help": "Elements must meet minimum color contrast ratio thresholds",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=playwright",
+      "nodes": [
+        {
+          "html": "<span>New Lead / Quick Call</span>",
+          "target": [
+            ".active\\:scale-98 > span"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<div class=\"w-7 h-7 rounded-full bg-accent text-white flex items-center justify-center text-xs font-bold shadow-2xs shrink-0\">ZP</div>",
+          "target": [
+            ".w-7"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<span>Tele-Desk</span>",
+          "target": [
+            "a[href=\"/leads?view=telecaller\"] > span"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<button type=\"button\" aria-pressed=\"true\" class=\"py-2 rounded-xl border text-xs font-bold text-center transition-all cursor-pointer bg-accent text-white border-accent shadow-xs\">2<!-- --> BHK</button>",
+          "target": [
+            ".border-accent.text-white.bg-accent"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        }
+      ]
+    },
+    {
+      "id": "heading-order",
+      "impact": "moderate",
+      "description": "Ensure the order of headings is semantically correct",
+      "help": "Heading levels should only increase by one",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/heading-order?application=playwright",
+      "nodes": [
+        {
+          "html": "<h3 class=\"font-bold text-content text-sm font-display flex items-center gap-2\">",
+          "target": [
+            "h3"
+          ],
+          "failureSummary": "Fix any of the following:\n  Heading order invalid"
+        }
+      ]
+    },
+    {
+      "id": "label",
+      "impact": "critical",
+      "description": "Ensure every form element has a label",
+      "help": "Form elements must have labels",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/label?application=playwright",
+      "nodes": [
+        {
+          "html": "<input class=\"styles-module__switchInput___kYDSD\" type=\"checkbox\" checked=\"\">",
+          "target": [
+            ".styles-module__settingsRowMarginTop___uLpGb.styles-module__settingsRow___y-tDE:nth-child(2) > .styles-module__switchContainer___Ka-AB > .styles-module__switchInput___kYDSD[type=\"checkbox\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element has no placeholder attribute\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<input class=\"styles-module__switchInput___kYDSD\" type=\"checkbox\">",
+          "target": [
+            ".styles-module__settingsRowMarginTop___uLpGb.styles-module__settingsRow___y-tDE:nth-child(3) > .styles-module__switchContainer___Ka-AB > .styles-module__switchInput___kYDSD[type=\"checkbox\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element has no placeholder attribute\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        }
+      ]
+    },
+    {
+      "id": "link-name",
+      "impact": "serious",
+      "description": "Ensure links have discernible text",
+      "help": "Links must have discernible text",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/link-name?application=playwright",
+      "nodes": [
+        {
+          "html": "<a class=\"styles-module__settingsBrand___OoKlM\" href=\"https://agentation.com\" target=\"_blank\" rel=\"noopener noreferrer\">",
+          "target": [
+            ".styles-module__settingsBrand___OoKlM"
+          ],
+          "failureSummary": "Fix all of the following:\n  Element is in tab order and does not have accessible text\n\nFix any of the following:\n  Element does not have text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute"
+        }
+      ]
+    },
+    {
+      "id": "nested-interactive",
+      "impact": "serious",
+      "description": "Ensure interactive controls are not nested as they are not always announced by screen readers or can cause focus problems for assistive technologies",
+      "help": "Interactive controls must not be nested",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/nested-interactive?application=playwright",
+      "nodes": [
+        {
+          "html": "<div class=\"styles-module__toolbarContainer___dIhma styles-module__collapsed___Rydsn styles-module__entrance___sgHd8  \" role=\"button\" tabindex=\"0\" title=\"Start feedback mode\">",
+          "target": [
+            ".styles-module__toolbarContainer___dIhma"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has focusable descendants"
+        }
+      ]
+    },
+    {
+      "id": "region",
+      "impact": "moderate",
+      "description": "Ensure all page content is contained by landmarks",
+      "help": "All page content should be contained by landmarks",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/region?application=playwright",
+      "nodes": [
+        {
+          "html": "<canvas class=\"styles-module__drawCanvas___7cG9U \" data-feedback-toolbar=\"true\" style=\"opacity: 0; transition: opacity 0.15s;\"></canvas>",
+          "target": [
+            "canvas"
+          ],
+          "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+        }
+      ]
+    }
+  ]
+}
+
+--- ROUTE: /portals ---
+{
+  "route": "/portals",
+  "url": "http://localhost:5173/portals",
+  "violationCount": 6,
+  "violations": [
+    {
+      "id": "button-name",
+      "impact": "critical",
+      "description": "Ensure buttons have discernible text",
+      "help": "Buttons must have discernible text",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/button-name?application=playwright",
+      "nodes": [
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc\" data-active=\"false\">",
+          "target": [
+            ".styles-module__buttonWrapper___rBcdv:nth-child(1) > .styles-module__controlButton___8Q0jc[data-active=\"false\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc \" data-active=\"false\">",
+          "target": [
+            ".styles-module__buttonWrapper___rBcdv:nth-child(2) > .styles-module__controlButton___8Q0jc[data-active=\"false\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc\" disabled=\"\">",
+          "target": [
+            ".styles-module__buttonWrapper___rBcdv:nth-child(3) > .styles-module__controlButton___8Q0jc"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc \" disabled=\"\" data-active=\"false\">",
+          "target": [
+            ".styles-module__buttonWrapper___rBcdv:nth-child(4) > .styles-module__controlButton___8Q0jc[data-active=\"false\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc \" disabled=\"\" data-no-hover=\"false\" tabindex=\"-1\">",
+          "target": [
+            "button[data-no-hover=\"false\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc\" disabled=\"\" data-danger=\"true\">",
+          "target": [
+            "button[data-danger=\"true\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc\">",
+          "target": [
+            ".styles-module__buttonWrapper___rBcdv:nth-child(7) > .styles-module__controlButton___8Q0jc"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc\">",
+          "target": [
+            ".styles-module__buttonWrapper___rBcdv:nth-child(9) > .styles-module__controlButton___8Q0jc"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        }
+      ]
+    },
+    {
+      "id": "color-contrast",
+      "impact": "serious",
+      "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+      "help": "Elements must meet minimum color contrast ratio thresholds",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=playwright",
+      "nodes": [
+        {
+          "html": "<span>New Lead / Quick Call</span>",
+          "target": [
+            ".active\\:scale-98 > span"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<div class=\"w-7 h-7 rounded-full bg-accent text-white flex items-center justify-center text-xs font-bold shadow-2xs shrink-0\">ZP</div>",
+          "target": [
+            ".w-7"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<span>Tele-Desk</span>",
+          "target": [
+            "a[href=\"/leads?view=telecaller\"] > span"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<button type=\"button\" aria-pressed=\"true\" class=\"px-3 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer bg-accent text-white font-bold shadow-xs\">All Tiers</button>",
+          "target": [
+            ".whitespace-nowrap.text-white.bg-accent"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+        }
+      ]
+    },
+    {
+      "id": "label",
+      "impact": "critical",
+      "description": "Ensure every form element has a label",
+      "help": "Form elements must have labels",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/label?application=playwright",
+      "nodes": [
+        {
+          "html": "<input class=\"styles-module__switchInput___kYDSD\" type=\"checkbox\" checked=\"\">",
+          "target": [
+            ".styles-module__settingsRowMarginTop___uLpGb.styles-module__settingsRow___y-tDE:nth-child(2) > .styles-module__switchContainer___Ka-AB > .styles-module__switchInput___kYDSD[type=\"checkbox\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element has no placeholder attribute\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<input class=\"styles-module__switchInput___kYDSD\" type=\"checkbox\">",
+          "target": [
+            ".styles-module__settingsRowMarginTop___uLpGb.styles-module__settingsRow___y-tDE:nth-child(3) > .styles-module__switchContainer___Ka-AB > .styles-module__switchInput___kYDSD[type=\"checkbox\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element has no placeholder attribute\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        }
+      ]
+    },
+    {
+      "id": "link-name",
+      "impact": "serious",
+      "description": "Ensure links have discernible text",
+      "help": "Links must have discernible text",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/link-name?application=playwright",
+      "nodes": [
+        {
+          "html": "<a class=\"styles-module__settingsBrand___OoKlM\" href=\"https://agentation.com\" target=\"_blank\" rel=\"noopener noreferrer\">",
+          "target": [
+            ".styles-module__settingsBrand___OoKlM"
+          ],
+          "failureSummary": "Fix all of the following:\n  Element is in tab order and does not have accessible text\n\nFix any of the following:\n  Element does not have text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute"
+        }
+      ]
+    },
+    {
+      "id": "nested-interactive",
+      "impact": "serious",
+      "description": "Ensure interactive controls are not nested as they are not always announced by screen readers or can cause focus problems for assistive technologies",
+      "help": "Interactive controls must not be nested",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/nested-interactive?application=playwright",
+      "nodes": [
+        {
+          "html": "<div class=\"styles-module__toolbarContainer___dIhma styles-module__collapsed___Rydsn styles-module__entrance___sgHd8  \" role=\"button\" tabindex=\"0\" title=\"Start feedback mode\">",
+          "target": [
+            ".styles-module__toolbarContainer___dIhma"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has focusable descendants"
+        }
+      ]
+    },
+    {
+      "id": "region",
+      "impact": "moderate",
+      "description": "Ensure all page content is contained by landmarks",
+      "help": "All page content should be contained by landmarks",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/region?application=playwright",
+      "nodes": [
+        {
+          "html": "<canvas class=\"styles-module__drawCanvas___7cG9U \" data-feedback-toolbar=\"true\" style=\"opacity: 0; transition: opacity 0.15s;\"></canvas>",
+          "target": [
+            "canvas"
+          ],
+          "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+        }
+      ]
+    }
+  ]
+}
+
+--- ROUTE: /visits ---
+{
+  "route": "/visits",
+  "url": "http://localhost:5173/visits",
+  "violationCount": 1,
+  "violations": [
+    {
+      "id": "color-contrast",
+      "impact": "serious",
+      "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+      "help": "Elements must meet minimum color contrast ratio thresholds",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=playwright",
+      "nodes": [
+        {
+          "html": "<span>New Lead / Quick Call</span>",
+          "target": [
+            ".active\\:scale-98 > span"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<div class=\"w-7 h-7 rounded-full bg-accent text-white flex items-center justify-center text-xs font-bold shadow-2xs shrink-0\">ZP</div>",
+          "target": [
+            ".w-7"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<span>Tele-Desk</span>",
+          "target": [
+            "a[href=\"/leads?view=telecaller\"] > span"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<span>Schedule Tour</span>",
+          "target": [
+            ".md\\:flex-initial > span"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<button type=\"button\" aria-pressed=\"true\" class=\"px-3 py-1.5 sm:py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer shrink-0 bg-accent text-white font-bold shadow-xs\">All Tours</button>",
+          "target": [
+            ".sm\\:py-2.whitespace-nowrap.text-white"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+        }
+      ]
+    }
+  ]
+}
+
+--- ROUTE: /deals ---
+{
+  "route": "/deals",
+  "url": "http://localhost:5173/deals",
+  "violationCount": 1,
+  "violations": [
+    {
+      "id": "color-contrast",
+      "impact": "serious",
+      "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+      "help": "Elements must meet minimum color contrast ratio thresholds",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=playwright",
+      "nodes": [
+        {
+          "html": "<span>New Lead / Quick Call</span>",
+          "target": [
+            ".active\\:scale-98 > span"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<div class=\"w-7 h-7 rounded-full bg-accent text-white flex items-center justify-center text-xs font-bold shadow-2xs shrink-0\">ZP</div>",
+          "target": [
+            ".w-7"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<span>Tele-Desk</span>",
+          "target": [
+            "a[href=\"/leads?view=telecaller\"] > span"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<span>Pipeline</span>",
+          "target": [
+            ".sm\\:px-3.rounded-lg.bg-accent > span"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<span>Register Deal</span>",
+          "target": [
+            ".active\\:scale-95 > span"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<button type=\"button\" aria-pressed=\"true\" class=\"px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all bg-accent text-white font-bold shadow-xs\">All Stages</button>",
+          "target": [
+            ".whitespace-nowrap.bg-accent.py-1\\.5"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<div class=\"p-6 text-center text-slate-500 text-[11px]\">No deals currently in <!-- -->token &amp; booking advance<!-- -->.</div>",
+          "target": [
+            ".min-h-\\[460px\\].rounded-2xl.overflow-hidden:nth-child(1) > .space-y-3.max-h-\\[620px\\].overflow-y-auto > .p-6.text-center.text-slate-500"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.75 (foreground color: #64748b, background color: #0f172a, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<div class=\"p-6 text-center text-slate-500 text-[11px]\">No deals currently in <!-- -->agreement registered<!-- -->.</div>",
+          "target": [
+            ".min-h-\\[460px\\].rounded-2xl.overflow-hidden:nth-child(2) > .space-y-3.max-h-\\[620px\\].overflow-y-auto > .p-6.text-center.text-slate-500"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.75 (foreground color: #64748b, background color: #0f172a, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<div class=\"p-6 text-center text-slate-500 text-[11px]\">No deals currently in <!-- -->gst invoice dispatched<!-- -->.</div>",
+          "target": [
+            ".min-h-\\[460px\\].rounded-2xl.overflow-hidden:nth-child(3) > .space-y-3.max-h-\\[620px\\].overflow-y-auto > .p-6.text-center.text-slate-500"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.75 (foreground color: #64748b, background color: #0f172a, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<div class=\"p-6 text-center text-slate-500 text-[11px]\">No deals currently in <!-- -->brokerage cleared (rtgs)<!-- -->.</div>",
+          "target": [
+            ".min-h-\\[460px\\].rounded-2xl.overflow-hidden:nth-child(4) > .space-y-3.max-h-\\[620px\\].overflow-y-auto > .p-6.text-center.text-slate-500"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.75 (foreground color: #64748b, background color: #0f172a, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+        }
+      ]
+    }
+  ]
+}
+
+--- ROUTE: /calculator ---
+{
+  "route": "/calculator",
+  "url": "http://localhost:5173/calculator",
+  "violationCount": 8,
+  "violations": [
+    {
+      "id": "button-name",
+      "impact": "critical",
+      "description": "Ensure buttons have discernible text",
+      "help": "Buttons must have discernible text",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/button-name?application=playwright",
+      "nodes": [
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc\" data-active=\"false\">",
+          "target": [
+            ".styles-module__buttonWrapper___rBcdv:nth-child(1) > .styles-module__controlButton___8Q0jc[data-active=\"false\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc \" data-active=\"false\">",
+          "target": [
+            ".styles-module__buttonWrapper___rBcdv:nth-child(2) > .styles-module__controlButton___8Q0jc[data-active=\"false\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc\" disabled=\"\">",
+          "target": [
+            ".styles-module__buttonWrapper___rBcdv:nth-child(3) > .styles-module__controlButton___8Q0jc"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc \" disabled=\"\" data-active=\"false\">",
+          "target": [
+            ".styles-module__buttonWrapper___rBcdv:nth-child(4) > .styles-module__controlButton___8Q0jc[data-active=\"false\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc \" disabled=\"\" data-no-hover=\"false\" tabindex=\"-1\">",
+          "target": [
+            "button[data-no-hover=\"false\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc\" disabled=\"\" data-danger=\"true\">",
+          "target": [
+            "button[data-danger=\"true\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc\">",
+          "target": [
+            ".styles-module__buttonWrapper___rBcdv:nth-child(7) > .styles-module__controlButton___8Q0jc"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc\">",
+          "target": [
+            ".styles-module__buttonWrapper___rBcdv:nth-child(9) > .styles-module__controlButton___8Q0jc"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        }
+      ]
+    },
+    {
+      "id": "color-contrast",
+      "impact": "serious",
+      "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+      "help": "Elements must meet minimum color contrast ratio thresholds",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=playwright",
+      "nodes": [
+        {
+          "html": "<span>New Lead / Quick Call</span>",
+          "target": [
+            ".active\\:scale-98 > span"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<div class=\"w-7 h-7 rounded-full bg-accent text-white flex items-center justify-center text-xs font-bold shadow-2xs shrink-0\">ZP</div>",
+          "target": [
+            ".w-7"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<span>Tele-Desk</span>",
+          "target": [
+            "a[href=\"/leads?view=telecaller\"] > span"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<button type=\"button\" class=\"px-3 py-1 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer bg-accent text-white shadow-xs\">Kharghar Sector 35</button>",
+          "target": [
+            ".overflow-x-auto > .shadow-xs.bg-accent.text-white"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<button type=\"button\" class=\"px-2 py-0.5 rounded-md font-bold transition-all cursor-pointer bg-accent text-white shadow-2xs\">Agreement (₹)</button>",
+          "target": [
+            ".rounded-md.py-0\\.5.bg-accent"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<span class=\"font-mono text-[11px] font-bold text-accent bg-accent-soft px-2 py-0.5 rounded-lg\">+<!-- -->₹1,37,000<!-- --> (<!-- -->4<!-- --> fls @ ₹<!-- -->50<!-- -->)</span>",
+          "target": [
+            ".space-y-3.pt-2.border-t > .justify-between.items-center.flex > .bg-accent-soft.py-0\\.5.rounded-lg"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.74 (foreground color: #3b82f6, background color: #182c53, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<button type=\"button\" class=\"px-2 py-1.5 rounded-xl text-[11px] font-bold text-center border transition-all cursor-pointer bg-accent text-white border-accent shadow-2xs\">Standard (6%)</button>",
+          "target": [
+            ".space-y-2.text-xs:nth-child(2) > .sm\\:grid-cols-4.grid-cols-2.grid > .border-accent.text-center.bg-accent"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<button type=\"button\" class=\"px-2 py-1.5 rounded-xl text-[11px] font-bold text-center border transition-all cursor-pointer bg-accent text-white border-accent shadow-2xs\">Auto 1% (Cap ₹30k)</button>",
+          "target": [
+            ".space-y-2.pt-2.border-t:nth-child(3) > .grid-cols-2.grid.gap-1\\.5 > .border-accent.text-center.bg-accent"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<button type=\"button\" class=\"px-2 py-1.5 rounded-xl text-[11px] font-bold text-center border transition-all cursor-pointer bg-accent text-white border-accent shadow-2xs\">UC Standard (5%)</button>",
+          "target": [
+            ".space-y-2.pt-2.border-t:nth-child(4) > .sm\\:grid-cols-4.grid-cols-2.grid > .border-accent.text-center.bg-accent"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<button type=\"button\" class=\"px-2 py-1.5 rounded-xl text-[11px] font-bold text-center border transition-all cursor-pointer bg-accent text-white border-accent shadow-2xs\">Rate × Months × Carpet</button>",
+          "target": [
+            ".grid-cols-2.grid.gap-2 > .border-accent.text-center.bg-accent"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<span class=\"text-[11px] font-bold uppercase tracking-wider text-accent font-display flex items-center gap-1.5\">",
+          "target": [
+            ".font-display.tracking-wider.gap-1\\.5"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.97 (foreground color: #3b82f6, background color: #1e293b, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
+        }
+      ]
+    },
+    {
+      "id": "heading-order",
+      "impact": "moderate",
+      "description": "Ensure the order of headings is semantically correct",
+      "help": "Heading levels should only increase by one",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/heading-order?application=playwright",
+      "nodes": [
+        {
+          "html": "<h3 class=\"text-xs font-bold text-content font-display uppercase tracking-wider flex items-center gap-2\">",
+          "target": [
+            ".p-5.space-y-4.rounded-2xl:nth-child(1) > .pb-3.border-b.justify-between > h3"
+          ],
+          "failureSummary": "Fix any of the following:\n  Heading order invalid"
+        }
+      ]
+    },
+    {
+      "id": "label-title-only",
+      "impact": "serious",
+      "description": "Ensure that every form element has a visible label and is not solely labeled using hidden labels, or the title or aria-describedby attributes",
+      "help": "Form elements should have a visible label",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/label-title-only?application=playwright",
+      "nodes": [
+        {
+          "html": "<input type=\"number\" title=\"Floors above this will be charged floor rise\" class=\"w-full px-2.5 py-1.5 bg-surface-subtle border border-border rounded-lg text-xs font-mono font-bold text-content\" value=\"4\">",
+          "target": [
+            "input[value=\"4\"]"
+          ],
+          "failureSummary": "Fix all of the following:\n  Only title used to generate label for form element"
+        }
+      ]
+    },
+    {
+      "id": "label",
+      "impact": "critical",
+      "description": "Ensure every form element has a label",
+      "help": "Form elements must have labels",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/label?application=playwright",
+      "nodes": [
+        {
+          "html": "<input type=\"text\" class=\"w-full px-3.5 py-2 bg-surface-subtle border border-border rounded-xl text-xs font-semibold text-content focus:outline-hidden focus:border-accent\" value=\"Crown Greens\">",
+          "target": [
+            "input[value=\"Crown Greens\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element has no placeholder attribute\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<input type=\"text\" class=\"w-full px-3.5 py-2 bg-surface-subtle border border-border rounded-xl text-xs font-semibold text-content focus:outline-hidden focus:border-accent\" value=\"ZamZam Advisory Team\">",
+          "target": [
+            "input[value=\"ZamZam Advisory Team\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element has no placeholder attribute\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<input type=\"number\" class=\"w-full px-3.5 py-2 bg-surface-subtle border border-border rounded-xl text-xs font-mono font-bold text-content focus:outline-hidden focus:border-accent\" value=\"685\">",
+          "target": [
+            "input[value=\"685\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element has no placeholder attribute\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<input type=\"number\" step=\"100\" class=\"w-full px-3.5 py-2 bg-surface-subtle border border-border rounded-xl text-xs font-mono font-bold text-content focus:outline-hidden focus:border-accent\" value=\"7591\">",
+          "target": [
+            "input[step=\"100\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element has no placeholder attribute\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<input type=\"number\" step=\"50000\" class=\"w-full px-3.5 py-2.5 bg-surface-subtle border-2 border-accent/40 rounded-xl text-base font-mono font-extrabold text-content focus:outline-hidden focus:border-accent\" value=\"5200000\">",
+          "target": [
+            ".py-2\\.5"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element has no placeholder attribute\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<input type=\"number\" class=\"w-full px-2.5 py-1.5 bg-surface-subtle border border-border rounded-lg text-xs font-mono font-bold text-content\" value=\"8\">",
+          "target": [
+            "input[value=\"8\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element has no placeholder attribute\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<input type=\"number\" step=\"10\" class=\"w-full px-2.5 py-1.5 bg-surface-subtle border border-border rounded-lg text-xs font-mono font-bold text-content\" value=\"50\">",
+          "target": [
+            "input[step=\"10\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element has no placeholder attribute\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<input type=\"number\" step=\"5000\" class=\"w-full px-3 py-1.5 bg-surface-subtle border border-border rounded-xl text-xs font-mono font-bold text-content\" value=\"25000\">",
+          "target": [
+            "input[step=\"5000\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element has no placeholder attribute\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<input type=\"number\" step=\"25000\" class=\"w-full px-3 py-2 bg-surface-subtle border border-border rounded-xl text-xs font-mono font-bold text-content\" value=\"250000\">",
+          "target": [
+            "input[value=\"250000\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element has no placeholder attribute\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<input type=\"number\" step=\"25000\" class=\"w-full px-3 py-2 bg-surface-subtle border border-border rounded-xl text-xs font-mono font-bold text-content\" value=\"150000\">",
+          "target": [
+            "input[value=\"150000\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element has no placeholder attribute\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<input type=\"number\" step=\"10000\" class=\"w-full px-3 py-2 bg-surface-subtle border border-border rounded-xl text-xs font-mono font-bold text-content\" value=\"100000\">",
+          "target": [
+            "input[value=\"100000\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element has no placeholder attribute\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<input type=\"number\" step=\"10000\" class=\"w-full px-3 py-2 bg-surface-subtle border border-border rounded-xl text-xs font-mono font-bold text-content\" value=\"75000\">",
+          "target": [
+            "input[value=\"75000\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element has no placeholder attribute\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<input type=\"number\" step=\"0.5\" class=\"w-full px-2.5 py-1.5 bg-surface-subtle border border-border rounded-lg text-xs font-mono font-bold text-content\" value=\"3\">",
+          "target": [
+            "input[step=\"0.5\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element has no placeholder attribute\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<textarea rows=\"2\" class=\"w-full px-3 py-2 bg-surface-subtle border border-border rounded-xl text-xs text-content focus:outline-hidden focus:border-accent\">Includes 1 covered stilt car parking &amp; 1-year clubhouse access.</textarea>",
+          "target": [
+            "textarea[rows=\"2\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element has no placeholder attribute\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<input class=\"styles-module__switchInput___kYDSD\" type=\"checkbox\" checked=\"\">",
+          "target": [
+            ".styles-module__settingsRowMarginTop___uLpGb.styles-module__settingsRow___y-tDE:nth-child(2) > .styles-module__switchContainer___Ka-AB > .styles-module__switchInput___kYDSD[type=\"checkbox\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element has no placeholder attribute\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<input class=\"styles-module__switchInput___kYDSD\" type=\"checkbox\">",
+          "target": [
+            ".styles-module__settingsRowMarginTop___uLpGb.styles-module__settingsRow___y-tDE:nth-child(3) > .styles-module__switchContainer___Ka-AB > .styles-module__switchInput___kYDSD[type=\"checkbox\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element has no placeholder attribute\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        }
+      ]
+    },
+    {
+      "id": "link-name",
+      "impact": "serious",
+      "description": "Ensure links have discernible text",
+      "help": "Links must have discernible text",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/link-name?application=playwright",
+      "nodes": [
+        {
+          "html": "<a class=\"styles-module__settingsBrand___OoKlM\" href=\"https://agentation.com\" target=\"_blank\" rel=\"noopener noreferrer\">",
+          "target": [
+            ".styles-module__settingsBrand___OoKlM"
+          ],
+          "failureSummary": "Fix all of the following:\n  Element is in tab order and does not have accessible text\n\nFix any of the following:\n  Element does not have text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute"
+        }
+      ]
+    },
+    {
+      "id": "nested-interactive",
+      "impact": "serious",
+      "description": "Ensure interactive controls are not nested as they are not always announced by screen readers or can cause focus problems for assistive technologies",
+      "help": "Interactive controls must not be nested",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/nested-interactive?application=playwright",
+      "nodes": [
+        {
+          "html": "<div class=\"styles-module__toolbarContainer___dIhma styles-module__collapsed___Rydsn styles-module__entrance___sgHd8  \" role=\"button\" tabindex=\"0\" title=\"Start feedback mode\">",
+          "target": [
+            ".styles-module__toolbarContainer___dIhma"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has focusable descendants"
+        }
+      ]
+    },
+    {
+      "id": "region",
+      "impact": "moderate",
+      "description": "Ensure all page content is contained by landmarks",
+      "help": "All page content should be contained by landmarks",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/region?application=playwright",
+      "nodes": [
+        {
+          "html": "<canvas class=\"styles-module__drawCanvas___7cG9U \" data-feedback-toolbar=\"true\" style=\"opacity: 0; transition: opacity 0.15s;\"></canvas>",
+          "target": [
+            "canvas"
+          ],
+          "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+        }
+      ]
+    }
+  ]
+}
+
+--- ROUTE: /attribution ---
+{
+  "route": "/attribution",
+  "url": "http://localhost:5173/attribution",
+  "violationCount": 6,
+  "violations": [
+    {
+      "id": "button-name",
+      "impact": "critical",
+      "description": "Ensure buttons have discernible text",
+      "help": "Buttons must have discernible text",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/button-name?application=playwright",
+      "nodes": [
+        {
+          "html": "<button class=\"p-2.5 bg-surface hover:bg-surface-subtle border border-border text-content-secondary hover:text-content rounded-xl transition-all shadow-xs cursor-pointer shrink-0\">",
+          "target": [
+            ".p-2\\.5"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc\" data-active=\"false\">",
+          "target": [
+            ".styles-module__buttonWrapper___rBcdv:nth-child(1) > .styles-module__controlButton___8Q0jc[data-active=\"false\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc \" data-active=\"false\">",
+          "target": [
+            ".styles-module__buttonWrapper___rBcdv:nth-child(2) > .styles-module__controlButton___8Q0jc[data-active=\"false\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc\" disabled=\"\">",
+          "target": [
+            ".styles-module__buttonWrapper___rBcdv:nth-child(3) > .styles-module__controlButton___8Q0jc"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc \" disabled=\"\" data-active=\"false\">",
+          "target": [
+            ".styles-module__buttonWrapper___rBcdv:nth-child(4) > .styles-module__controlButton___8Q0jc[data-active=\"false\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc \" disabled=\"\" data-no-hover=\"false\" tabindex=\"-1\">",
+          "target": [
+            "button[data-no-hover=\"false\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc\" disabled=\"\" data-danger=\"true\">",
+          "target": [
+            "button[data-danger=\"true\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc\">",
+          "target": [
+            ".styles-module__buttonWrapper___rBcdv:nth-child(7) > .styles-module__controlButton___8Q0jc"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc\">",
+          "target": [
+            ".styles-module__buttonWrapper___rBcdv:nth-child(9) > .styles-module__controlButton___8Q0jc"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        }
+      ]
+    },
+    {
+      "id": "color-contrast",
+      "impact": "serious",
+      "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+      "help": "Elements must meet minimum color contrast ratio thresholds",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=playwright",
+      "nodes": [
+        {
+          "html": "<span>New Lead / Quick Call</span>",
+          "target": [
+            ".active\\:scale-98 > span"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<div class=\"w-7 h-7 rounded-full bg-accent text-white flex items-center justify-center text-xs font-bold shadow-2xs shrink-0\">ZP</div>",
+          "target": [
+            ".w-7"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<span>Tele-Desk</span>",
+          "target": [
+            "a[href=\"/leads?view=telecaller\"] > span"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<span>Create Campaign Code</span>",
+          "target": [
+            ".md\\:flex-initial > span"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        }
+      ]
+    },
+    {
+      "id": "label",
+      "impact": "critical",
+      "description": "Ensure every form element has a label",
+      "help": "Form elements must have labels",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/label?application=playwright",
+      "nodes": [
+        {
+          "html": "<input class=\"styles-module__switchInput___kYDSD\" type=\"checkbox\" checked=\"\">",
+          "target": [
+            ".styles-module__settingsRowMarginTop___uLpGb.styles-module__settingsRow___y-tDE:nth-child(2) > .styles-module__switchContainer___Ka-AB > .styles-module__switchInput___kYDSD"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element has no placeholder attribute\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<input class=\"styles-module__switchInput___kYDSD\" type=\"checkbox\">",
+          "target": [
+            ".styles-module__settingsRowMarginTop___uLpGb.styles-module__settingsRow___y-tDE:nth-child(3) > .styles-module__switchContainer___Ka-AB > .styles-module__switchInput___kYDSD"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element has no placeholder attribute\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        }
+      ]
+    },
+    {
+      "id": "link-name",
+      "impact": "serious",
+      "description": "Ensure links have discernible text",
+      "help": "Links must have discernible text",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/link-name?application=playwright",
+      "nodes": [
+        {
+          "html": "<a class=\"styles-module__settingsBrand___OoKlM\" href=\"https://agentation.com\" target=\"_blank\" rel=\"noopener noreferrer\">",
+          "target": [
+            ".styles-module__settingsBrand___OoKlM"
+          ],
+          "failureSummary": "Fix all of the following:\n  Element is in tab order and does not have accessible text\n\nFix any of the following:\n  Element does not have text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute"
+        }
+      ]
+    },
+    {
+      "id": "nested-interactive",
+      "impact": "serious",
+      "description": "Ensure interactive controls are not nested as they are not always announced by screen readers or can cause focus problems for assistive technologies",
+      "help": "Interactive controls must not be nested",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/nested-interactive?application=playwright",
+      "nodes": [
+        {
+          "html": "<div class=\"styles-module__toolbarContainer___dIhma styles-module__collapsed___Rydsn styles-module__entrance___sgHd8  \" role=\"button\" tabindex=\"0\" title=\"Start feedback mode\">",
+          "target": [
+            ".styles-module__toolbarContainer___dIhma"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has focusable descendants"
+        }
+      ]
+    },
+    {
+      "id": "region",
+      "impact": "moderate",
+      "description": "Ensure all page content is contained by landmarks",
+      "help": "All page content should be contained by landmarks",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/region?application=playwright",
+      "nodes": [
+        {
+          "html": "<canvas class=\"styles-module__drawCanvas___7cG9U \" data-feedback-toolbar=\"true\" style=\"opacity: 0; transition: opacity 0.15s;\"></canvas>",
+          "target": [
+            "canvas"
+          ],
+          "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+        }
+      ]
+    }
+  ]
+}
+
+--- ROUTE: /analytics ---
+{
+  "route": "/analytics",
+  "url": "http://localhost:5173/analytics",
+  "violationCount": 7,
+  "violations": [
+    {
+      "id": "button-name",
+      "impact": "critical",
+      "description": "Ensure buttons have discernible text",
+      "help": "Buttons must have discernible text",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/button-name?application=playwright",
+      "nodes": [
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc\" data-active=\"false\">",
+          "target": [
+            ".styles-module__buttonWrapper___rBcdv:nth-child(1) > .styles-module__controlButton___8Q0jc[data-active=\"false\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc \" data-active=\"false\">",
+          "target": [
+            ".styles-module__buttonWrapper___rBcdv:nth-child(2) > .styles-module__controlButton___8Q0jc[data-active=\"false\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc\" disabled=\"\">",
+          "target": [
+            ".styles-module__buttonWrapper___rBcdv:nth-child(3) > .styles-module__controlButton___8Q0jc"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc \" disabled=\"\" data-active=\"false\">",
+          "target": [
+            ".styles-module__buttonWrapper___rBcdv:nth-child(4) > .styles-module__controlButton___8Q0jc[data-active=\"false\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc \" disabled=\"\" data-no-hover=\"false\" tabindex=\"-1\">",
+          "target": [
+            "button[data-no-hover=\"false\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc\" disabled=\"\" data-danger=\"true\">",
+          "target": [
+            "button[data-danger=\"true\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc\">",
+          "target": [
+            ".styles-module__buttonWrapper___rBcdv:nth-child(7) > .styles-module__controlButton___8Q0jc"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<button class=\"styles-module__controlButton___8Q0jc\">",
+          "target": [
+            ".styles-module__buttonWrapper___rBcdv:nth-child(9) > .styles-module__controlButton___8Q0jc"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        }
+      ]
+    },
+    {
+      "id": "color-contrast",
+      "impact": "serious",
+      "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+      "help": "Elements must meet minimum color contrast ratio thresholds",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=playwright",
+      "nodes": [
+        {
+          "html": "<span>New Lead / Quick Call</span>",
+          "target": [
+            ".active\\:scale-98 > span"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<div class=\"w-7 h-7 rounded-full bg-accent text-white flex items-center justify-center text-xs font-bold shadow-2xs shrink-0\">ZP</div>",
+          "target": [
+            ".w-7"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<span>Tele-Desk</span>",
+          "target": [
+            "a[href=\"/leads?view=telecaller\"] > span"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        }
+      ]
+    },
+    {
+      "id": "heading-order",
+      "impact": "moderate",
+      "description": "Ensure the order of headings is semantically correct",
+      "help": "Heading levels should only increase by one",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/heading-order?application=playwright",
+      "nodes": [
+        {
+          "html": "<h3 class=\"font-bold text-content text-xs uppercase tracking-wider\">Top Performing Videos by Attributed Pipeline</h3>",
+          "target": [
+            ".rounded-2xl.overflow-hidden.shadow-xs:nth-child(1) > .p-4.border-b.bg-surface-subtle > .gap-2.flex.items-center > h3"
+          ],
+          "failureSummary": "Fix any of the following:\n  Heading order invalid"
+        }
+      ]
+    },
+    {
+      "id": "label",
+      "impact": "critical",
+      "description": "Ensure every form element has a label",
+      "help": "Form elements must have labels",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/label?application=playwright",
+      "nodes": [
+        {
+          "html": "<input class=\"styles-module__switchInput___kYDSD\" type=\"checkbox\" checked=\"\">",
+          "target": [
+            ".styles-module__settingsRowMarginTop___uLpGb.styles-module__settingsRow___y-tDE:nth-child(2) > .styles-module__switchContainer___Ka-AB > .styles-module__switchInput___kYDSD"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element has no placeholder attribute\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        },
+        {
+          "html": "<input class=\"styles-module__switchInput___kYDSD\" type=\"checkbox\">",
+          "target": [
+            ".styles-module__settingsRowMarginTop___uLpGb.styles-module__settingsRow___y-tDE:nth-child(3) > .styles-module__switchContainer___Ka-AB > .styles-module__switchInput___kYDSD"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element has no placeholder attribute\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+        }
+      ]
+    },
+    {
+      "id": "link-name",
+      "impact": "serious",
+      "description": "Ensure links have discernible text",
+      "help": "Links must have discernible text",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/link-name?application=playwright",
+      "nodes": [
+        {
+          "html": "<a class=\"styles-module__settingsBrand___OoKlM\" href=\"https://agentation.com\" target=\"_blank\" rel=\"noopener noreferrer\">",
+          "target": [
+            ".styles-module__settingsBrand___OoKlM"
+          ],
+          "failureSummary": "Fix all of the following:\n  Element is in tab order and does not have accessible text\n\nFix any of the following:\n  Element does not have text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute"
+        }
+      ]
+    },
+    {
+      "id": "nested-interactive",
+      "impact": "serious",
+      "description": "Ensure interactive controls are not nested as they are not always announced by screen readers or can cause focus problems for assistive technologies",
+      "help": "Interactive controls must not be nested",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/nested-interactive?application=playwright",
+      "nodes": [
+        {
+          "html": "<div class=\"styles-module__toolbarContainer___dIhma styles-module__collapsed___Rydsn styles-module__entrance___sgHd8  \" role=\"button\" tabindex=\"0\" title=\"Start feedback mode\">",
+          "target": [
+            ".styles-module__toolbarContainer___dIhma"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has focusable descendants"
+        }
+      ]
+    },
+    {
+      "id": "region",
+      "impact": "moderate",
+      "description": "Ensure all page content is contained by landmarks",
+      "help": "All page content should be contained by landmarks",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/region?application=playwright",
+      "nodes": [
+        {
+          "html": "<canvas class=\"styles-module__drawCanvas___7cG9U \" data-feedback-toolbar=\"true\" style=\"opacity: 0; transition: opacity 0.15s;\"></canvas>",
+          "target": [
+            "canvas"
+          ],
+          "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+        }
+      ]
+    }
+  ]
+}
+
+--- ROUTE: /admin/users ---
+{
+  "route": "/admin/users",
+  "url": "http://localhost:5173/admin/users",
+  "violationCount": 2,
+  "violations": [
+    {
+      "id": "color-contrast",
+      "impact": "serious",
+      "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+      "help": "Elements must meet minimum color contrast ratio thresholds",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=playwright",
+      "nodes": [
+        {
+          "html": "<span>New Lead / Quick Call</span>",
+          "target": [
+            ".px-3\\.5.active\\:scale-98.hover\\:bg-accent-hover > span"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<div class=\"w-7 h-7 rounded-full bg-accent text-white flex items-center justify-center text-xs font-bold shadow-2xs shrink-0\">ZP</div>",
+          "target": [
+            ".w-7"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<span>Tele-Desk</span>",
+          "target": [
+            "a[href=\"/leads?view=telecaller\"] > span"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<button class=\"px-4 py-2.5 rounded-xl bg-accent hover:bg-accent-hover text-white font-bold flex items-center gap-2 transition-all shadow-xs cursor-pointer\">",
+          "target": [
+            ".gap-3.shrink-0.items-center > .py-2\\.5.hover\\:bg-accent-hover.px-4"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "html": "<span>Clear Filters</span>",
+          "target": [
+            ".min-h-\\[40px\\] > span"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #ffffff, background color: #3b82f6, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        }
+      ]
+    },
+    {
+      "id": "heading-order",
+      "impact": "moderate",
+      "description": "Ensure the order of headings is semantically correct",
+      "help": "Heading levels should only increase by one",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/heading-order?application=playwright",
+      "nodes": [
+        {
+          "html": "<h3 class=\"text-base font-bold text-content font-display mb-1.5\">No Team Members Found</h3>",
+          "target": [
+            "h3"
+          ],
+          "failureSummary": "Fix any of the following:\n  Heading order invalid"
+        }
+      ]
+    }
+  ]
+}
+
+=== AXE-CORE RAW AUDIT RUN COMPLETE ===

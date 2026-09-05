@@ -838,13 +838,13 @@ a[role="button"]:not(:disabled) {
               color var(--motion-fast) var(--ease-out);
 }
 
-button:hover:not(:disabled),
-a[role="button"]:hover:not(:disabled) {
+button:hover:not(:disabled):not([class*="-translate-y-"]):not([class*="translate-y-"]):not(.no-lift),
+a[role="button"]:hover:not(:disabled):not([class*="-translate-y-"]):not([class*="translate-y-"]):not(.no-lift) {
   transform: translateY(-1px);
 }
 
-button:active:not(:disabled),
-a[role="button"]:active:not(:disabled) {
+button:active:not(:disabled):not([class*="-translate-y-"]):not([class*="translate-y-"]):not(.no-lift),
+a[role="button"]:active:not(:disabled):not([class*="-translate-y-"]):not([class*="translate-y-"]):not(.no-lift) {
   transform: translateY(0.5px);
 }
 
