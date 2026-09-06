@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { requireSession } from '@/lib/services/api-auth';
+import { requireSession, orgScope } from '@/lib/services/api-auth';
 import { prisma } from '@/lib/db/prisma';
 
 export const dynamic = 'force-dynamic';
@@ -21,7 +21,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       feedbackOutcome, // TOKEN_SUBMITTED, HIGH_INTEREST, PRICE_OBJECTION, LAYOUT_OBJECTION, NEEDS_MORE_OPTIONS
     } = body;
 
-    const visit = await prisma.siteVisit.findUnique({ where: { id } });
+    const visit = await prisma.siteVisit.findFirst({
+      where: { id, ...orgScope(auth.session) },
+    });
     if (!visit) {
       return NextResponse.json({ success: false, error: 'Visit not found' }, { status: 404 });
     }

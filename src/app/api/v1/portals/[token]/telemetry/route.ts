@@ -16,7 +16,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ token: 
       metadata = {},
     } = body;
 
-    const portal = await prisma.clientPortal.findUnique({
+    const portal = await prisma.clientPortal.findFirst({
       where: { token },
       include: { lead: true },
     });
@@ -74,7 +74,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ token: s
   try {
     const { token } = await params;
 
-    const portal = await prisma.clientPortal.findUnique({
+    const portal = await prisma.clientPortal.findFirst({
       where: { token },
       include: {
         telemetryLogs: {

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { requireSession } from '@/lib/services/api-auth';
+import { requirePermissionWithScope } from '@/lib/services/api-auth';
+import { getTeamMemberIds } from '@/lib/services/team-service';
 import { prisma } from '@/lib/db/prisma';
 import { evaluateEngagementTier } from '@/lib/domain/portal-generator';
 
@@ -7,16 +8,38 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
   try {
-    const auth = await requireSession(req);
+    const auth = await requirePermissionWithScope(req, 'portals:view_telemetry');
     if (!auth.ok) return auth.response;
     const { searchParams } = new URL(req.url);
     const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '50', 10)));
     const skip = (page - 1) * limit;
 
+    const where: Record<string, unknown> = { organizationId: auth.session.organizationId };
+
+    if (auth.scope === 'OWN') {
+      where.OR = [
+        { createdById: auth.session.userId },
+        { lead: { assignedBrokerId: auth.session.userId } },
+      ];
+    } else if (auth.scope === 'OWN_AND_ASSIGNED') {
+      where.OR = [
+        { createdById: auth.session.userId },
+        { lead: { assignedBrokerId: auth.session.userId } },
+        { lead: { assignments: { some: { userId: auth.session.userId, unassignedAt: null } } } },
+      ];
+    } else if (auth.scope === 'TEAM') {
+      const teamMemberIds = await getTeamMemberIds(auth.session.userId);
+      where.OR = [
+        { createdById: { in: teamMemberIds } },
+        { lead: { assignedBrokerId: { in: teamMemberIds } } },
+      ];
+    }
+
     const [total, portals] = await Promise.all([
-      prisma.clientPortal.count(),
+      prisma.clientPortal.count({ where }),
       prisma.clientPortal.findMany({
+        where,
         skip,
         take: limit,
         include: {

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { requireSession } from '@/lib/services/api-auth';
+import { requireSession, orgScope } from '@/lib/services/api-auth';
 import { prisma } from '@/lib/db/prisma';
 
 export const dynamic = 'force-dynamic';
@@ -9,8 +9,11 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     const auth = await requireSession(req);
     if (!auth.ok) return auth.response;
     const { id } = await params;
-    const lead = await prisma.lead.findUnique({
-      where: { id },
+    const lead = await prisma.lead.findFirst({
+      where: {
+        id,
+        ...orgScope(auth.session),
+      },
       include: {
         campaign: true,
         assignedBroker: true,
@@ -38,6 +41,17 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     const { id } = await params;
     const body = await req.json();
     const { currentStage, assignedBrokerId, notes, fullName, email } = body;
+
+    const existing = await prisma.lead.findFirst({
+      where: {
+        id,
+        ...orgScope(auth.session),
+      },
+    });
+
+    if (!existing) {
+      return NextResponse.json({ success: false, error: 'Lead not found' }, { status: 404 });
+    }
 
     const lead = await prisma.lead.update({
       where: { id },

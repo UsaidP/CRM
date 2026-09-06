@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { uploadMediaAsset, type MediaCategory } from '@/lib/services/cloud-media-service';
 import { prisma } from '@/lib/db/prisma';
-import { requireSession } from '@/lib/services/api-auth';
+import { requireSession, orgScope } from '@/lib/services/api-auth';
 
 export async function POST(req: NextRequest) {
   const auth = await requireSession(req);
@@ -18,8 +18,8 @@ export async function POST(req: NextRequest) {
     let projectName = (formData.get('projectName') as string) || null;
 
     if (projectId && !projectName) {
-      const project = await prisma.developerProject.findUnique({
-        where: { id: projectId },
+      const project = await prisma.developerProject.findFirst({
+        where: { id: projectId, ...orgScope(auth.session) },
         select: { projectName: true },
       });
       if (project?.projectName) {
@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
 
     // If projectId is provided, update project records
     if (projectId) {
-      const project = await prisma.developerProject.findUnique({ where: { id: projectId } });
+      const project = await prisma.developerProject.findFirst({ where: { id: projectId, ...orgScope(auth.session) } });
       if (project) {
         const updateData: Record<string, any> = {};
 
@@ -117,7 +117,9 @@ export async function POST(req: NextRequest) {
 
     // If unitId is provided, update unit records
     if (unitId) {
-      const unit = await prisma.propertyUnit.findUnique({ where: { id: unitId } });
+      const unit = await prisma.propertyUnit.findFirst({
+        where: { id: unitId, project: { organizationId: auth.session.organizationId } },
+      });
       if (unit) {
         const unitUpdate: Record<string, any> = {};
 

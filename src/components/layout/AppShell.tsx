@@ -42,7 +42,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
-import { isPublicLayoutPath } from '@/lib/navigation';
+import { isPublicLayoutPath, isPublicAuthPath, isPublicPortalPath } from '@/lib/navigation';
 import { BackupModal } from '@/components/admin/BackupModal';
 import { BrandLogo } from '@/components/ui/BrandLogo';
 import { fetchSession, logout } from '@/lib/client/auth';
@@ -254,9 +254,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       .filter((section) => section.items.length > 0);
   }, [currentUser]);
 
-  // Public portal layout: unauthenticated chrome-free render. This early
-  // return is safe here because every hook above now runs unconditionally.
-  const isPublicPortal = isPublicLayout;
+  // Public layout rendering:
+  // - Public auth paths (/login, /forgot-password, etc.) render their own <main> inside the page component.
+  // - Public portal paths (/p/...) are wrapped with the public-portal-main shell.
+  if (isPublicAuthPath(pathname)) {
+    return <>{children}</>;
+  }
+
+  const isPublicPortal = isPublicPortalPath(pathname);
   if (isPublicPortal) {
     return <main className="public-portal-main min-h-screen bg-[#FDFBF7] text-slate-900 selection:bg-amber-100 selection:text-amber-900">{children}</main>;
   }
@@ -296,7 +301,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           >
             <Search className="w-4 h-4" />
           </button>
-          <ThemeToggle variant="compact" />
+          <ThemeToggle id="theme-toggle-mobile" variant="compact" ariaLabelPrefix="Mobile" />
           <button
             type="button"
             className="p-1.5 sm:p-2 rounded-xl text-content-muted hover:text-content hover:bg-surface-subtle transition-colors cursor-pointer"
@@ -387,19 +392,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </nav>
 
           {/* Sidebar Footer: Agent Profile & Shift Status - Fixed at Bottom */}
-          <div className="shrink-0 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] border-t border-border bg-surface/80 backdrop-blur-xs space-y-2.5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 min-w-0">
+          <div className="shrink-0 p-2.5 pb-[max(0.65rem,env(safe-area-inset-bottom))] border-t border-border bg-surface/90 backdrop-blur-xs space-y-2">
+            <div className="flex items-center justify-between gap-1.5">
+              <div className="flex items-center gap-2 min-w-0 flex-1">
                 <div className="w-7 h-7 rounded-full bg-accent text-white flex items-center justify-center text-xs font-bold shadow-2xs shrink-0">
                   {currentUser?.fullName
                     ? currentUser.fullName.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()
                     : 'ZP'}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="text-xs font-bold text-content truncate font-display">
+                  <div className="text-xs font-bold text-content truncate font-display leading-snug">
                     {currentUser?.fullName || 'ZamZam Advisor'}
                   </div>
-                  <div className="text-[10px] text-content-muted truncate font-mono">
+                  <div className="text-[10px] text-content-muted truncate font-mono leading-none mt-0.5">
                     {currentUser?.role === 'SUPER_ADMIN'
                       ? '👑 Super Admin'
                       : currentUser?.role === 'ADMIN'
@@ -416,28 +421,34 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </div>
 
               <div className="flex items-center gap-1 shrink-0">
-                <ThemeToggle variant="compact" />
+                <ThemeToggle 
+                  id="theme-toggle-desktop" 
+                  variant="compact" 
+                  ariaLabelPrefix="Desktop" 
+                  className="!w-7 !h-7 !min-w-[28px] !min-h-[28px] rounded-lg p-0" 
+                />
                 <button
                   type="button"
                   onClick={handleLogout}
                   disabled={isLoggingOut}
-                  className="p-1.5 rounded-xl text-content-muted hover:text-status-danger hover:bg-status-danger-surface transition-colors cursor-pointer disabled:opacity-50"
+                  className="p-1 rounded-lg text-content-muted hover:text-status-danger hover:bg-status-danger-surface transition-colors cursor-pointer disabled:opacity-50"
                   title="Sign Out"
+                  aria-label="Sign Out"
                 >
                   {isLoggingOut ? (
-                    <Loader2 className="w-4 h-4 animate-spin text-accent" />
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-accent" />
                   ) : (
-                    <LogOut className="w-4 h-4" />
+                    <LogOut className="w-3.5 h-3.5" />
                   )}
                 </button>
               </div>
             </div>
 
             {/* Unified Status & Backup Control Bar */}
-            <div className="flex items-center justify-between text-[11px] bg-surface-subtle p-1 rounded-xl border border-border">
-              <div className="flex items-center gap-1.5 px-2 py-1 text-status-success font-bold text-xs">
-                <span className="w-2 h-2 rounded-full bg-status-success animate-pulse" />
-                <span className="truncate">Live Dispatch</span>
+            <div className="flex items-center justify-between text-[11px] bg-surface-subtle px-2 py-1 rounded-xl border border-border">
+              <div className="flex items-center gap-1.5 text-status-success font-bold text-xs min-w-0">
+                <span className="w-2 h-2 rounded-full bg-status-success animate-pulse shrink-0" />
+                <span className="truncate text-[11px]">Live Dispatch</span>
               </div>
               <button
                 type="button"
@@ -445,7 +456,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   setBackupModalMode('BACKUP');
                   setIsBackupModalOpen(true);
                 }}
-                className="flex items-center gap-1 bg-accent-soft hover:bg-accent hover:text-white px-2 py-1 rounded-lg border border-accent/20 text-accent-text font-bold text-[11px] transition-colors cursor-pointer"
+                className="flex items-center gap-1 bg-accent-soft hover:bg-accent hover:text-white px-2 py-0.5 rounded-lg border border-accent/20 text-accent-text font-bold text-[10px] transition-colors cursor-pointer shrink-0"
                 title="Google Drive Cloud Backup"
               >
                 <Cloud className="w-3 h-3 text-accent" />
@@ -531,7 +542,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </header>
 
           {/* Main Page Area */}
-          <main id="main-content" className="flex-1 p-3 sm:p-4 md:p-6 lg:p-8 max-w-[1600px] 2xl:max-w-[1720px] w-full mx-auto">
+          <main id="main-content" className="flex-1 p-3 pb-16 sm:p-4 sm:pb-8 md:p-6 lg:p-8 max-w-[1600px] 2xl:max-w-[1720px] w-full mx-auto">
             {children}
           </main>
         </div>

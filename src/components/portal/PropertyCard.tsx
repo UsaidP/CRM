@@ -168,6 +168,23 @@ export function PropertyCard({
                   )}
                 </span>
               </li>
+              {project.reraCertificateUrl && (
+                <li className="flex items-center justify-between gap-2.5 p-2.5 rounded-xl bg-emerald-50/90 border border-emerald-200">
+                  <div className="flex items-center gap-2 text-emerald-900 font-semibold text-xs">
+                    <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>Official MahaRERA Certificate (Form &lsquo;C&rsquo;) Verified</span>
+                  </div>
+                  <a
+                    href={project.reraCertificateUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold shadow-xs flex items-center gap-1 transition-colors"
+                  >
+                    <Download className="w-3 h-3" />
+                    <span>View PDF</span>
+                  </a>
+                </li>
+              )}
               {project.distanceToMetroKm ? (
                 <li className="flex items-start gap-2.5 p-2.5 rounded-xl bg-slate-50/80 border border-slate-200/80">
                   <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />

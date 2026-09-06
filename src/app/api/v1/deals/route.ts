@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { requireSession, orgScope } from '@/lib/services/api-auth';
+import { requireSession, requirePermissionWithScope, orgScope } from '@/lib/services/api-auth';
 import { prisma } from '@/lib/db/prisma';
 import { calculateDealCommission } from '@/lib/domain/commission-calculator';
 import { createDealSchema } from '@/lib/validators/deal-schemas';
@@ -68,6 +68,7 @@ export async function GET(req: Request) {
     ]);
 
     const allDeals = await prisma.dealTransaction.findMany({
+      where: orgScope(session),
       select: { grossBrokerageAmount: true, dealStatus: true },
     });
 
@@ -97,8 +98,9 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const auth = await requireSession(req);
+    const auth = await requirePermissionWithScope(req, 'deals:create');
     if (!auth.ok) return auth.response;
+    const { session } = auth;
     const body = await req.json();
     const parsed = createDealSchema.safeParse(body);
 
@@ -122,13 +124,21 @@ export async function POST(req: Request) {
       developerInvoiceNumber,
     } = parsed.data;
 
-    const lead = await prisma.lead.findUnique({ where: { id: leadId } });
+    const lead = await prisma.lead.findFirst({
+      where: {
+        id: leadId,
+        ...orgScope(session),
+      },
+    });
     if (!lead) {
       return NextResponse.json({ success: false, error: 'Lead not found' }, { status: 404 });
     }
 
-    const unit = await prisma.propertyUnit.findUnique({
-      where: { id: propertyUnitId },
+    const unit = await prisma.propertyUnit.findFirst({
+      where: {
+        id: propertyUnitId,
+        project: { organizationId: session.organizationId },
+      },
       include: { project: true },
     });
     if (!unit) {

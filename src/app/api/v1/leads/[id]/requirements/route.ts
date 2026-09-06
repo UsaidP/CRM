@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { requireSession } from '@/lib/services/api-auth';
+import { requireSession, orgScope } from '@/lib/services/api-auth';
 import { prisma } from '@/lib/db/prisma';
 
 export const dynamic = 'force-dynamic';
@@ -22,7 +22,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       floorPreference = 'middle',
     } = body;
 
-    const lead = await prisma.lead.findUnique({ where: { id } });
+    const lead = await prisma.lead.findFirst({ where: { id, ...orgScope(auth.session) } });
     if (!lead) {
       return NextResponse.json({ success: false, error: 'Lead not found' }, { status: 404 });
     }

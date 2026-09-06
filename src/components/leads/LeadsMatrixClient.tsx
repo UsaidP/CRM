@@ -239,8 +239,23 @@ export function LeadsMatrixClient({ initialLeads = [] }: { initialLeads?: any[] 
   const handleStageChange = async (leadId: string, newStage: string) => {
     setUiError('');
     const targetLead = leads.find((l) => l.id === leadId);
-    const prevStage = targetLead?.currentStage || 'new_uncontacted';
+    if (!targetLead) return;
+    const prevStage = targetLead.currentStage || 'new_uncontacted';
+    const prevFirstResponseAt = targetLead.firstResponseAt;
     const stageLabel = STAGE_OPTIONS.find((s) => s.value === newStage)?.label || newStage;
+
+    // Optimistic update for instant, butter-smooth Kanban interactions
+    setLeads((prev) =>
+      prev.map((l) =>
+        l.id === leadId
+          ? {
+              ...l,
+              currentStage: newStage,
+              firstResponseAt: newStage !== 'new_uncontacted' && !l.firstResponseAt ? new Date() : l.firstResponseAt,
+            }
+          : l
+      )
+    );
 
     try {
       const res = await fetch(`/api/v1/leads/${leadId}`, {
@@ -253,19 +268,7 @@ export function LeadsMatrixClient({ initialLeads = [] }: { initialLeads?: any[] 
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        setLeads((prev) =>
-          prev.map((l) =>
-            l.id === leadId
-              ? {
-                  ...l,
-                  currentStage: newStage,
-                  firstResponseAt: newStage !== 'new_uncontacted' ? new Date() : l.firstResponseAt,
-                }
-              : l
-          )
-        );
-
-        toast.leadDisposition(targetLead?.fullName || 'Lead', stageLabel, async () => {
+        toast.leadDisposition(targetLead.fullName || 'Lead', stageLabel, async () => {
           try {
             await fetch(`/api/v1/leads/${leadId}`, {
               method: 'PATCH',
@@ -273,15 +276,31 @@ export function LeadsMatrixClient({ initialLeads = [] }: { initialLeads?: any[] 
               body: JSON.stringify({ currentStage: prevStage }),
             });
             fetchLeads();
-            toast.info(`Reverted ${targetLead?.fullName || 'Lead'} to ${prevStage}`);
+            toast.info(`Reverted ${targetLead.fullName || 'Lead'} to ${prevStage}`);
           } catch {
             toast.error('Failed to revert lead stage');
           }
         });
       } else {
+        // Rollback optimistic update
+        setLeads((prev) =>
+          prev.map((l) =>
+            l.id === leadId
+              ? { ...l, currentStage: prevStage, firstResponseAt: prevFirstResponseAt }
+              : l
+          )
+        );
         throw new Error(data.error || 'The stage update was rejected.');
       }
     } catch (err: any) {
+      // Rollback optimistic update on error
+      setLeads((prev) =>
+        prev.map((l) =>
+          l.id === leadId
+            ? { ...l, currentStage: prevStage, firstResponseAt: prevFirstResponseAt }
+            : l
+        )
+      );
       setUiError(`${err.message || 'Unable to update the lead stage.'}`);
       toast.error('Stage Update Failed', { description: err.message });
     }

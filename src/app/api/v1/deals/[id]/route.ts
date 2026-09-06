@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server';
-import { requireSession } from '@/lib/services/api-auth';
+import { requirePermissionWithScope, orgScope } from '@/lib/services/api-auth';
 import { prisma } from '@/lib/db/prisma';
 
 export const dynamic = 'force-dynamic';
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const auth = await requireSession(req);
+    const auth = await requirePermissionWithScope(req, 'deals:advance_stage');
     if (!auth.ok) return auth.response;
+    const { session } = auth;
     const { id } = await params;
     const body = await req.json();
     const {
@@ -17,7 +18,12 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       notes,
     } = body;
 
-    const deal = await prisma.dealTransaction.findUnique({ where: { id } });
+    const deal = await prisma.dealTransaction.findFirst({
+      where: {
+        id,
+        ...orgScope(session),
+      },
+    });
     if (!deal) {
       return NextResponse.json({ success: false, error: 'Deal not found' }, { status: 404 });
     }

@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["relationJoins"]
 }
 
 datasource db {
@@ -344,6 +345,8 @@ model Lead {
   createdAt              DateTime           @default(now())
   updatedAt              DateTime           @updatedAt
 
+  @@index([organizationId])
+  @@index([organizationId, createdAt])
   @@index([currentStage])
   @@index([leadSource])
   @@index([sourceConfidence])

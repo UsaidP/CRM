@@ -36,10 +36,24 @@ const USER_INCLUDE = {
  * A missing, invalid, or stale token returns 401 — it must never fall back
  * to another user record or set a session cookie.
  */
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    const cookieStore = await cookies();
-    const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME)?.value;
+    let sessionCookie: string | undefined;
+
+    if (req) {
+      const cookieHeader = req.headers.get('cookie') || '';
+      const match = cookieHeader.match(new RegExp(`(?:^|;\\s*)${SESSION_COOKIE_NAME}=([^;]+)`));
+      sessionCookie = match ? match[1] : undefined;
+    }
+
+    if (!sessionCookie) {
+      try {
+        const cookieStore = await cookies();
+        sessionCookie = cookieStore.get(SESSION_COOKIE_NAME)?.value;
+      } catch {
+        // Outside Next.js server context
+      }
+    }
 
     // No cookie or invalid signature → unauthenticated. Never fall back.
     if (!sessionCookie) {
@@ -47,7 +61,7 @@ export async function GET() {
     }
 
     const payload = await verifySessionToken(sessionCookie);
-    if (!payload) {
+    if (!payload || !payload.userId) {
       return NextResponse.json({ authenticated: false, user: null }, { status: 401 });
     }
 

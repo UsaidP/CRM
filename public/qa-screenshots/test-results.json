@@ -1,0 +1,206 @@
+{
+  "testedAt": "2026-09-06T07:24:28.499Z",
+  "totalStepsTested": 22,
+  "passedSteps": 22,
+  "warnings": 0,
+  "failedSteps": 0,
+  "totalIssuesFound": 2,
+  "results": [
+    {
+      "step": "Auth Redirection to /login",
+      "url": "http://localhost:3000/login",
+      "status": "PASS",
+      "durationMs": 3899,
+      "details": "Unauthenticated request correctly redirected to http://localhost:3000/login",
+      "screenshot": "01-login-redirect.png"
+    },
+    {
+      "step": "Invalid Credentials Handling",
+      "url": "http://localhost:3000/login",
+      "status": "PASS",
+      "durationMs": 1749,
+      "details": "Invalid login properly rejected and error state surfaced.",
+      "screenshot": "02-login-invalid-error.png"
+    },
+    {
+      "step": "Super Admin Login & Session Creation",
+      "url": "http://localhost:3000/",
+      "status": "PASS",
+      "durationMs": 6589,
+      "details": "Successfully authenticated as Super Admin, redirected to http://localhost:3000/",
+      "screenshot": "03-dashboard-logged-in.png"
+    },
+    {
+      "step": "Dashboard Metric Widgets & KPIs",
+      "url": "http://localhost:3000/",
+      "status": "PASS",
+      "durationMs": 5348,
+      "details": "Dashboard rendered successfully with 0 widget elements. Identity verified.",
+      "screenshot": "04-dashboard-full.png"
+    },
+    {
+      "step": "Leads Table List View",
+      "url": "http://localhost:3000/leads",
+      "status": "PASS",
+      "durationMs": 5019,
+      "details": "Leads list rendered with 0 table rows.",
+      "screenshot": "05-leads-list-view.png"
+    },
+    {
+      "step": "Leads Kanban Board View",
+      "url": "http://localhost:3000/leads",
+      "status": "PASS",
+      "durationMs": 2072,
+      "details": "Kanban board rendered 12 stage columns with 8 lead cards.",
+      "screenshot": "06-leads-kanban-view.png"
+    },
+    {
+      "step": "Lead Stage Transition Dropdown",
+      "url": "http://localhost:3000/leads",
+      "status": "PASS",
+      "durationMs": 6006,
+      "details": "Lead stage dropdown opened and stage transition executed cleanly.",
+      "screenshot": "08-leads-stage-transitioned.png"
+    },
+    {
+      "step": "Property Inventory Catalog & RERA Details",
+      "url": "http://localhost:3000/inventory",
+      "status": "PASS",
+      "durationMs": 6149,
+      "details": "Inventory catalog rendered with statutory RERA attributes and project records.",
+      "screenshot": "10-inventory-page.png"
+    },
+    {
+      "step": "Inventory Search & Filter Input",
+      "url": "http://localhost:3000/inventory",
+      "status": "PASS",
+      "durationMs": 7697,
+      "details": "Search input filtered projects catalog dynamically without errors.",
+      "screenshot": "11-inventory-search-filter.png"
+    },
+    {
+      "step": "Deals & Brokerage Financials Ledger",
+      "url": "http://localhost:3000/deals",
+      "status": "PASS",
+      "durationMs": 5327,
+      "details": "Deals pipeline rendered with rupee formatting and brokerage calculations.",
+      "screenshot": "12-deals-page.png"
+    },
+    {
+      "step": "Site Visits & Logistics Dashboard",
+      "url": "http://localhost:3000/visits",
+      "status": "PASS",
+      "durationMs": 8626,
+      "details": "Site visits interface rendered successfully.",
+      "screenshot": "13-site-visits-page.png"
+    },
+    {
+      "step": "Calendar & Appointment Schedule Grid",
+      "url": "http://localhost:3000/calendar",
+      "status": "PASS",
+      "durationMs": 6205,
+      "details": "Calendar views rendered grid structure with date controls.",
+      "screenshot": "14-calendar-page.png"
+    },
+    {
+      "step": "Property Cost & Statutory Calculator",
+      "url": "http://localhost:3000/calculator",
+      "status": "PASS",
+      "durationMs": 3729,
+      "details": "Financial calculator computed Stamp Duty, GST, and all-in costs with 0 NaN artifacts.",
+      "screenshot": "15-calculator-page.png"
+    },
+    {
+      "step": "Lead-to-Inventory Matching Engine",
+      "url": "http://localhost:3000/matching",
+      "status": "PASS",
+      "durationMs": 12858,
+      "details": "Matching engine interface loaded with buyer filter controls.",
+      "screenshot": "16-matching-page.png"
+    },
+    {
+      "step": "Marketing Attribution Dashboard",
+      "url": "http://localhost:3000/attribution",
+      "status": "PASS",
+      "durationMs": 4657,
+      "details": "Attribution metrics and channel breakdown loaded cleanly.",
+      "screenshot": "17-attribution-page.png"
+    },
+    {
+      "step": "Performance Analytics Dashboard",
+      "url": "http://localhost:3000/analytics",
+      "status": "PASS",
+      "durationMs": 4458,
+      "details": "Analytics visualizations and metrics rendered cleanly.",
+      "screenshot": "18-analytics-page.png"
+    },
+    {
+      "step": "Client Portals Management",
+      "url": "http://localhost:3000/portals",
+      "status": "PASS",
+      "durationMs": 5539,
+      "details": "Client portals list and telemetry tracking rendered.",
+      "screenshot": "19-portals-page.png"
+    },
+    {
+      "step": "Admin User & RBAC Management",
+      "url": "http://localhost:3000/admin/users",
+      "status": "PASS",
+      "durationMs": 5743,
+      "details": "Admin user management directory rendered with role definitions.",
+      "screenshot": "20-admin-users-page.png"
+    },
+    {
+      "step": "Theme Toggle (Dark Mode Switching)",
+      "url": "http://localhost:3000/",
+      "status": "PASS",
+      "durationMs": 6156,
+      "details": "Theme toggle clicked. Dark mode active: false",
+      "screenshot": "21-theme-dark-mode.png"
+    },
+    {
+      "step": "Tablet Responsive Viewport (768x1024)",
+      "url": "http://localhost:3000/leads",
+      "status": "PASS",
+      "durationMs": 8616,
+      "details": "Tablet viewport layout adapts gracefully without overflow.",
+      "screenshot": "23-responsive-tablet-dashboard.png"
+    },
+    {
+      "step": "Mobile Hamburger Navigation Drawer",
+      "url": "http://localhost:3000/",
+      "status": "PASS",
+      "durationMs": 5321,
+      "details": "Mobile menu drawer opened with 12 navigation items.",
+      "screenshot": "26-responsive-mobile-menu-open.png"
+    },
+    {
+      "step": "Mobile Responsive Viewport (375x667)",
+      "url": "http://localhost:3000/leads",
+      "status": "PASS",
+      "durationMs": 10822,
+      "details": "Mobile layout tested across Dashboard and Leads.",
+      "screenshot": "27-responsive-mobile-leads.png"
+    }
+  ],
+  "issues": [
+    {
+      "id": "CONSOLE-1",
+      "category": "Console Error",
+      "severity": "Low",
+      "description": "Console error detected on http://localhost:3000/login: Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "evidencePath": "Browser Console Log",
+      "pageUrl": "http://localhost:3000/login"
+    },
+    {
+      "id": "CONSOLE-2",
+      "category": "Console Error",
+      "severity": "Low",
+      "description": "Console error detected on http://localhost:3000/leads: A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:\n\n- A server/client bran",
+      "evidencePath": "Browser Console Log",
+      "pageUrl": "http://localhost:3000/leads"
+    }
+  ],
+  "consoleErrorsCount": 2,
+  "failedRequestsCount": 1
+}

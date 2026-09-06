@@ -16,6 +16,17 @@
     "openship": {
       "url": "http://127.0.0.1:60134/api/mcp",
       "serverUrl": "http://127.0.0.1:60134/api/mcp"
+    },
+    "agentmemory": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@agentmemory/mcp"
+      ],
+      "env": {
+        "AGENTMEMORY_URL": "http://localhost:3111",
+        "AGENTMEMORY_TOOLS": "all"
+      }
     }
   }
 }

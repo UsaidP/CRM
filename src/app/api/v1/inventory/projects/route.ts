@@ -16,7 +16,9 @@ export async function GET(req: Request) {
     const microMarket = searchParams.get('microMarket');
     const search = searchParams.get('search');
 
-    const where: any = {};
+    const where: any = {
+      organizationId: auth.session.organizationId,
+    };
     if (microMarket && microMarket !== 'ALL') {
       where.microMarket = microMarket;
     }

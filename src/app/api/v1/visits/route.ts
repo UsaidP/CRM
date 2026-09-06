@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { requireSession } from '@/lib/services/api-auth';
+import { requireSession, orgScope } from '@/lib/services/api-auth';
 import { prisma } from '@/lib/db/prisma';
 import { buildWhatsAppSiteVisitItinerary, ItineraryStopInput } from '@/lib/domain/visit-dispatcher';
 
@@ -15,7 +15,7 @@ export async function GET(req: Request) {
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '50', 10)));
     const skip = (page - 1) * limit;
 
-    const where: any = {};
+    const where: any = orgScope(auth.session);
     if (status && status !== 'ALL') {
       where.status = status;
     }
@@ -32,15 +32,15 @@ export async function GET(req: Request) {
               id: true,
               fullName: true,
               phoneE164: true,
-              city: true,
+              currentStage: true,
             },
           },
           assignedBroker: {
             select: {
               id: true,
               fullName: true,
-              phoneE164: true,
               email: true,
+              phoneE164: true,
             },
           },
         },
@@ -48,18 +48,13 @@ export async function GET(req: Request) {
       }),
     ]);
 
-    const formattedVisits = visits.map((v) => ({
-      ...v,
-      itineraryStops: JSON.parse(v.itineraryUnitsJson || '[]'),
-    }));
-
     return NextResponse.json({
       success: true,
-      count: formattedVisits.length,
+      count: visits.length,
       total,
       page,
       totalPages: Math.ceil(total / limit),
-      data: formattedVisits,
+      data: visits,
     });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
@@ -70,13 +65,14 @@ export async function POST(req: Request) {
   try {
     const auth = await requireSession(req);
     if (!auth.ok) return auth.response;
+    const { session } = auth;
     const body = await req.json();
     const {
       leadId,
       unitIds = [],
       scheduledDate,
-      timeSlot = 'Saturday 11:00 AM',
-      pickupLocation = 'Kharghar Railway Station (East)',
+      timeSlot = '11:00 AM - 01:00 PM',
+      pickupLocation = 'Client Residence (Pick & Drop)',
       cabDetails = 'Ertiga MH-46-AZ-1234 (Driver: Ramesh 9820011223)',
       assignedBrokerId,
     } = body;
@@ -85,8 +81,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: 'leadId is required' }, { status: 400 });
     }
 
-    const lead = await prisma.lead.findUnique({
-      where: { id: leadId },
+    const lead = await prisma.lead.findFirst({
+      where: { id: leadId, ...orgScope(session) },
       include: { assignedBroker: true },
     });
 
@@ -95,7 +91,7 @@ export async function POST(req: Request) {
     }
 
     const units = await prisma.propertyUnit.findMany({
-      where: { id: { in: unitIds } },
+      where: { id: { in: unitIds }, project: { organizationId: session.organizationId } },
       include: { project: true },
     });
 
@@ -104,8 +100,8 @@ export async function POST(req: Request) {
     }
 
     const broker = await prisma.user.findFirst({
-      where: { id: assignedBrokerId || lead.assignedBrokerId || undefined },
-    }) || await prisma.user.findFirst();
+      where: { id: assignedBrokerId || lead.assignedBrokerId || undefined, organizationId: session.organizationId },
+    }) || await prisma.user.findFirst({ where: { organizationId: session.organizationId } });
 
     // Build Stops
     const stops: ItineraryStopInput[] = units.map((u, idx) => {

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { extractAndProcessBrochure } from '@/lib/services/brochure-extractor';
 import { persistBrochureExtraction } from '@/lib/services/brochure-persistence';
 import { prisma } from '@/lib/db/prisma';
-import { requireSession } from '@/lib/services/api-auth';
+import { requireSession, orgScope } from '@/lib/services/api-auth';
 
 export async function POST(req: NextRequest) {
   const auth = await requireSession(req);
@@ -16,21 +16,30 @@ export async function POST(req: NextRequest) {
 
     if (contentType.includes('multipart/form-data')) {
       const formData = await req.formData();
-      const file = formData.get('brochure') as File | null;
+      const file = formData.get('file') as File | null;
       projectId = (formData.get('projectId') as string) || '';
 
-      if (file) {
-        const arrayBuffer = await file.arrayBuffer();
-        brochureBuffer = Buffer.from(arrayBuffer);
-        fileName = file.name || 'Project_Brochure.pdf';
-      } else {
-        // Fallback default sample brochure
-        brochureBuffer = Buffer.from('MahaRERA Developer Project Brochure Content', 'utf-8');
+      if (!file) {
+        return NextResponse.json(
+          { error: 'No brochure PDF uploaded. Please attach a file under key "file".' },
+          { status: 400 }
+        );
       }
+
+      const bytes = await file.arrayBuffer();
+      brochureBuffer = Buffer.from(bytes);
+      fileName = file.name || fileName;
     } else {
       const body = await req.json();
       projectId = body.projectId || '';
-      brochureBuffer = Buffer.from('MahaRERA Developer Project Brochure Content', 'utf-8');
+      if (!body.brochureBase64) {
+        return NextResponse.json(
+          { error: 'No brochureBase64 provided in request body.' },
+          { status: 400 }
+        );
+      }
+      brochureBuffer = Buffer.from(body.brochureBase64, 'base64');
+      fileName = body.fileName || fileName;
     }
 
     if (!projectId) {
@@ -40,8 +49,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const project = await prisma.developerProject.findUnique({
-      where: { id: projectId },
+    const project = await prisma.developerProject.findFirst({
+      where: { id: projectId, ...orgScope(auth.session) },
       include: { units: true },
     });
 

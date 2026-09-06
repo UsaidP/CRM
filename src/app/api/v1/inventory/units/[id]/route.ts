@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { requireSession } from '@/lib/services/api-auth';
+import { requireSession, orgScope } from '@/lib/services/api-auth';
 import { prisma } from '@/lib/db/prisma';
 import { assessUnitFreshness } from '@/lib/domain/verification-engine';
 import { updateUnitSchema } from '@/lib/validators/inventory-schemas';
@@ -15,8 +15,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     const auth = await requireSession(req);
     if (!auth.ok) return auth.response;
     const { id } = await params;
-    const unit = await prisma.propertyUnit.findUnique({
-      where: { id },
+    const unit = await prisma.propertyUnit.findFirst({
+      where: { id, project: { organizationId: auth.session.organizationId } },
       include: {
         project: true,
         verifiedBy: {
@@ -58,7 +58,10 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     const { id } = await params;
     const body = await req.json();
     const validated = updateUnitSchema.parse(body);
-    const existing = await prisma.propertyUnit.findUnique({ where: { id }, include: { project: true } });
+    const existing = await prisma.propertyUnit.findFirst({
+      where: { id, project: { organizationId: auth.session.organizationId } },
+      include: { project: true },
+    });
     if (!existing) {
       return NextResponse.json({ success: false, error: 'Property unit not found' }, { status: 404 });
     }
@@ -66,7 +69,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     const nextProjectId = validated.projectId ?? existing.projectId;
     const project = nextProjectId === existing.projectId
       ? existing.project
-      : await prisma.developerProject.findUnique({ where: { id: nextProjectId } });
+      : await prisma.developerProject.findFirst({ where: { id: nextProjectId, ...orgScope(auth.session) } });
     if (!project) {
       return NextResponse.json({ success: false, error: 'Target project does not exist' }, { status: 404 });
     }
@@ -196,6 +199,12 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     const auth = await requireSession(req);
     if (!auth.ok) return auth.response;
     const { id } = await params;
+    const existing = await prisma.propertyUnit.findFirst({
+      where: { id, project: { organizationId: auth.session.organizationId } },
+    });
+    if (!existing) {
+      return NextResponse.json({ success: false, error: 'Property unit not found' }, { status: 404 });
+    }
     await prisma.propertyUnit.delete({
       where: { id },
     });

@@ -64,6 +64,28 @@ export function withTenantGuard<T extends PrismaClient>(client: T): T {
           const a: any = { ...args };
 
           switch (operation) {
+            // Unique reads: delegate to findFirst/findFirstOrThrow with orgFilter injected.
+            // Prisma's findUnique where shape is unique-only (does not accept AND/organizationId).
+            // By rewriting to findFirst, the query is scoped at the database query level so rows
+            // belonging to other tenants are never returned.
+            case 'findUnique':
+            case 'findUniqueOrThrow': {
+              const delegateName = model.charAt(0).toLowerCase() + model.slice(1);
+              const delegate = (client as any)[delegateName];
+              if (!delegate) {
+                return query(a);
+              }
+              const scopedWhere = { AND: [orgFilter, a.where ?? {}] };
+              const findArgs = {
+                ...a,
+                where: scopedWhere,
+              };
+              if (operation === 'findUniqueOrThrow') {
+                return delegate.findFirstOrThrow(findArgs);
+              }
+              return delegate.findFirst(findArgs);
+            }
+
             // Reads: force the org into every where clause
             case 'findMany':
             case 'findFirst':
@@ -134,11 +156,27 @@ export function withTenantGuard<T extends PrismaClient>(client: T): T {
               break;
             }
 
-            // Single-record mutations: force the org into the where clause
-            // (works for unique and non-unique lookups alike).
+            // Single-record mutations: where is unique-only; verify ownership
+            // before executing the mutation to prevent cross-tenant tampering.
             case 'update':
             case 'delete': {
-              a.where = { AND: [orgFilter, a.where ?? {}] };
+              const delegate = (client as any)[
+                model.charAt(0).toLowerCase() + model.slice(1)
+              ];
+              if (isDirect) {
+                const owned = await delegate.findFirst({
+                  where: { ...a.where, ...orgFilter },
+                  select: { id: true },
+                });
+                if (!owned) throw new Error('FORBIDDEN_CROSS_TENANT');
+              } else if (parentScope) {
+                const row = await delegate.findFirst({
+                  where: a.where,
+                  select: { [parentScope.verifyIdField]: true },
+                });
+                if (!row) throw new Error('FORBIDDEN_CROSS_TENANT');
+                await verifyOwnership(row[parentScope.verifyIdField]);
+              }
               break;
             }
 

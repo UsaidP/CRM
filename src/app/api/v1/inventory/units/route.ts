@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { requireSession } from '@/lib/services/api-auth';
+import { requireSession, orgScope } from '@/lib/services/api-auth';
 import { prisma } from '@/lib/db/prisma';
 import { createUnitSchema } from '@/lib/validators/inventory-schemas';
 import { calculateAllInCost } from '@/lib/domain/cost-calculator';
@@ -104,8 +104,8 @@ export async function POST(req: Request) {
     const body = await req.json();
     const validated = createUnitSchema.parse(body);
 
-    const project = await prisma.developerProject.findUnique({
-      where: { id: validated.projectId },
+    const project = await prisma.developerProject.findFirst({
+      where: { id: validated.projectId, ...orgScope(auth.session) },
     });
 
     if (!project) {

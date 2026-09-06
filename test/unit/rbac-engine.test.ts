@@ -63,6 +63,13 @@ describe('RBAC Engine Unit Tests', () => {
       expect(hasPermission(telecallerUser, 'deals:view_financials')).toBe(false);
     });
 
+    it('Telecaller can create portals and view telemetry by default with OWN scope', () => {
+      expect(hasPermission(telecallerUser, 'portals:create')).toBe(true);
+      expect(hasPermission(telecallerUser, 'portals:view_telemetry')).toBe(true);
+      expect(getPermissionScope(telecallerUser, 'portals:create')).toBe('OWN');
+      expect(getPermissionScope(telecallerUser, 'portals:view_telemetry')).toBe('OWN');
+    });
+
     it('Agent can create portals and schedule site visits by default', () => {
       expect(hasPermission(agentUser, 'portals:create')).toBe(true);
       expect(hasPermission(agentUser, 'visits:schedule')).toBe(true);

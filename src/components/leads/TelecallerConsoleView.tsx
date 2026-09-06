@@ -33,7 +33,9 @@ import {
   Compass,
   CheckSquare,
   Layers,
-  ShieldAlert
+  ShieldAlert,
+  Globe,
+  Eye
 } from 'lucide-react';
 import { YoutubeIcon, InstagramIcon } from '@/components/icons/SocialIcons';
 import { BackupModal } from '@/components/admin/BackupModal';
@@ -408,6 +410,11 @@ export function TelecallerConsoleView({
             : prev.connectedCalls,
       }));
 
+      // Auto-provision client portal if lead does not have one yet
+      if (stage === 'portal_shared' && (!selectedLead.portals || selectedLead.portals.length === 0)) {
+        void handleCreatePortalForLead();
+      }
+
       toast.leadDisposition(targetLeadName, dispositionLabel, async () => {
         try {
           await fetch(`/api/v1/leads/${targetLeadId}`, {
@@ -497,19 +504,108 @@ export function TelecallerConsoleView({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedLead, callNotes, qualificationScore, autoAdvanceEnabled, filteredQueue]);
 
-  // Quick WhatsApp Dispatch URL
+  const [isCreatingPortal, setIsCreatingPortal] = useState(false);
+  const [copiedPortal, setCopiedPortal] = useState(false);
+
+  const getPortal = useCallback(() => {
+    if (selectedLead?.portals && selectedLead.portals.length > 0) {
+      return selectedLead.portals[0];
+    }
+    return null;
+  }, [selectedLead]);
+
+  const getPortalLink = useCallback(() => {
+    const portal = getPortal();
+    if (portal) {
+      return `/p/${portal.token || portal.shareToken}`;
+    }
+    return null;
+  }, [getPortal]);
+
+  // Quick WhatsApp Dispatch URL with Client Presentation Portal embedding
   const getWhatsAppUrl = () => {
     if (!selectedLead?.phoneE164) return '#';
     const cleanPhone = selectedLead.phoneE164.replace(/\D/g, '');
-    const prefill = `Assalamu Alaikum / Hello ${selectedLead.fullName || 'Sir/Madam'}, this is ZamZam Properties following up on your inquiry for ${selectedLead.sourceCode || selectedLead.preferredMicroMarket || 'Navi Mumbai luxury projects'}. Here are our MahaRERA verified project brochures and all-in cost sheets:`;
+    const portalLink = getPortalLink();
+    const portalUrl = portalLink
+      ? `${typeof window !== 'undefined' ? window.location.origin : ''}${portalLink}`
+      : null;
+
+    const prefill = portalUrl
+      ? `Assalamu Alaikum / Hello ${selectedLead.fullName || 'Sir/Madam'}, this is ZamZam Properties following up on your inquiry for ${selectedLead.sourceCode || selectedLead.preferredMicroMarket || 'Navi Mumbai luxury projects'}. Here is your private client presentation portal with verified floor plans, photos and all-in cost sheets: ${portalUrl}`
+      : `Assalamu Alaikum / Hello ${selectedLead.fullName || 'Sir/Madam'}, this is ZamZam Properties following up on your inquiry for ${selectedLead.sourceCode || selectedLead.preferredMicroMarket || 'Navi Mumbai luxury projects'}. Here are our MahaRERA verified project brochures and all-in cost sheets:`;
     return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(prefill)}`;
   };
 
-  const getPortalLink = () => {
-    if (selectedLead?.portals && selectedLead.portals.length > 0) {
-      return `/p/${selectedLead.portals[0].shareToken}`;
+  const handleCreatePortalForLead = async (specificUnitIds?: string[]) => {
+    if (!selectedLead) return;
+    setIsCreatingPortal(true);
+    try {
+      let unitIds = specificUnitIds;
+      if (!unitIds || unitIds.length === 0) {
+        const allUnits = inventoryProjects.flatMap((p) => p.units || []);
+        if (allUnits.length > 0) {
+          const bhkMatches = selectedLead.preferredBhk
+            ? allUnits.filter((u) => u.bhk === Number(selectedLead.preferredBhk))
+            : [];
+          const chosen = bhkMatches.length > 0 ? bhkMatches.slice(0, 3) : allUnits.slice(0, 3);
+          unitIds = chosen.map((u) => u.id);
+        }
+      }
+
+      if (!unitIds || unitIds.length === 0) {
+        toast.error('No Inventory Units Available', {
+          description: 'Add units in Projects & Units before generating a presentation portal.',
+        });
+        return;
+      }
+
+      const res = await fetch('/api/v1/portals/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          leadId: selectedLead.id,
+          selectedUnitIds: unitIds,
+          customMessage: `Curated MahaRERA verified options prepared for ${selectedLead.fullName || 'you'} by ZamZam Properties.`,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        toast.success('Client Presentation Portal Created!', {
+          description: `Token: ${data.data.token}`,
+        });
+        const newPortal = data.data.portal;
+        if (newPortal) {
+          selectedLead.portals = [newPortal, ...(selectedLead.portals || [])];
+        }
+        await onRefresh();
+      } else {
+        toast.error('Portal Creation Failed', {
+          description: data.error || 'Could not generate client presentation portal.',
+        });
+      }
+    } catch (err: any) {
+      toast.error('Portal Request Error', {
+        description: err.message || 'Check your network connection and try again.',
+      });
+    } finally {
+      setIsCreatingPortal(false);
     }
-    return null;
+  };
+
+  const handleCopyPortalLink = async () => {
+    const link = getPortalLink();
+    if (!link) return;
+    const fullUrl = `${window.location.origin}${link}`;
+    try {
+      await navigator.clipboard.writeText(fullUrl);
+      setCopiedPortal(true);
+      setTimeout(() => setCopiedPortal(false), 2000);
+      toast.success('Portal Link Copied', { description: fullUrl });
+    } catch {
+      toast.error('Could not copy portal link');
+    }
   };
 
   return (
@@ -701,17 +797,45 @@ export function TelecallerConsoleView({
                         <span className="text-accent-text font-bold">Code: {selectedLead.sourceCode}</span>
                       </>
                     )}
-                    {getPortalLink() && (
-                      <>
-                        <span>•</span>
+                    {getPortalLink() ? (
+                      <div className="inline-flex items-center gap-1.5 bg-accent-soft px-2 py-0.5 rounded-lg border border-accent/20">
+                        <Globe className="w-3 h-3 text-accent" />
                         <a
                           href={getPortalLink()!}
                           target="_blank"
                           rel="noreferrer"
-                          className="inline-flex items-center gap-1 text-accent font-bold hover:underline"
+                          className="inline-flex items-center gap-0.5 text-accent font-bold hover:underline"
+                          title="Open Private Client Presentation Portal"
                         >
-                          <ExternalLink className="w-3 h-3" /> Portal
+                          Portal <ExternalLink className="w-2.5 h-2.5" />
                         </a>
+                        <button
+                          type="button"
+                          onClick={handleCopyPortalLink}
+                          className="p-0.5 rounded text-accent hover:text-accent-hover transition-colors cursor-pointer"
+                          title="Copy Client Portal URL"
+                        >
+                          {copiedPortal ? <Check className="w-2.5 h-2.5 text-status-success" /> : <Copy className="w-2.5 h-2.5" />}
+                        </button>
+                        {getPortal()?.totalViews != null && (
+                          <span className="text-[10px] font-mono font-bold text-accent-text flex items-center gap-0.5">
+                            <Eye className="w-2.5 h-2.5" /> {getPortal()?.totalViews}
+                          </span>
+                        )}
+                      </div>
+                    ) : (
+                      <>
+                        <span>•</span>
+                        <button
+                          type="button"
+                          onClick={() => handleCreatePortalForLead()}
+                          disabled={isCreatingPortal}
+                          className="inline-flex items-center gap-1 text-accent font-bold hover:underline text-xs cursor-pointer disabled:opacity-50"
+                          title="Generate Private Client Presentation Portal for this lead"
+                        >
+                          <Sparkles className="w-3 h-3 text-accent" />
+                          {isCreatingPortal ? 'Generating Portal...' : '+ Create Portal'}
+                        </button>
                       </>
                     )}
                   </div>
@@ -1158,14 +1282,21 @@ export function TelecallerConsoleView({
             {assistantTab === 'INVENTORY' && (
               <LiveInventoryMatcher
                 lead={{
+                  id: selectedLead?.id,
                   fullName: selectedLead?.fullName,
                   phoneE164: selectedLead?.phoneE164,
                   preferredBhk: selectedLead?.preferredBhk,
                   budgetCeiling: selectedLead?.budgetCeiling,
                   preferredMicroMarket: selectedLead?.preferredMicroMarket,
                   sourceCode: selectedLead?.sourceCode,
+                  portals: selectedLead?.portals,
                 }}
                 projects={inventoryProjects}
+                onCreatePortal={async (proj, unitIds) => {
+                  await handleCreatePortalForLead(
+                    unitIds && unitIds.length > 0 ? unitIds : (proj.units ? proj.units.map((u) => u.id) : [])
+                  );
+                }}
               />
             )}
 

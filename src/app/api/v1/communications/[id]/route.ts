@@ -15,8 +15,11 @@ export async function PATCH(
     const { id } = await params;
     const body = await req.json();
 
-    const existingLog = await prisma.communicationLog.findUnique({
-      where: { id },
+    const existingLog = await prisma.communicationLog.findFirst({
+      where: {
+        id,
+        lead: { organizationId: auth.session.organizationId },
+      },
     });
 
     if (!existingLog) {
@@ -95,6 +98,20 @@ export async function DELETE(
 
   try {
     const { id } = await params;
+    const existingLog = await prisma.communicationLog.findFirst({
+      where: {
+        id,
+        lead: { organizationId: auth.session.organizationId },
+      },
+    });
+
+    if (!existingLog) {
+      return NextResponse.json(
+        { success: false, error: 'Communication log not found' },
+        { status: 404 }
+      );
+    }
+
     await prisma.communicationLog.delete({
       where: { id },
     });

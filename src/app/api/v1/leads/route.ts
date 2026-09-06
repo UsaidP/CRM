@@ -59,6 +59,7 @@ export async function GET(req: Request) {
     const [total, leads] = await Promise.all([
       prisma.lead.count({ where }),
       prisma.lead.findMany({
+        relationLoadStrategy: 'join',
         where,
         skip,
         take: limit,
@@ -149,8 +150,8 @@ export async function POST(req: Request) {
       parsed.data as CreateLeadInput
     );
 
-    const lead = await prisma.lead.findUnique({
-      where: { id: result.leadId },
+    const lead = await prisma.lead.findFirst({
+      where: { id: result.leadId, ...orgScope(auth.session) },
       include: {
         contact: { include: { identities: true } },
         assignedBroker: true,

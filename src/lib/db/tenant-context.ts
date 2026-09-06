@@ -116,7 +116,15 @@ export interface TenantContext {
   organizationId: string;
 }
 
-const storage = new AsyncLocalStorage<TenantContext>();
+const globalForTenant = globalThis as unknown as {
+  __tenantStorage?: AsyncLocalStorage<TenantContext>;
+};
+
+export const tenantStorage =
+  globalForTenant.__tenantStorage ??
+  (globalForTenant.__tenantStorage = new AsyncLocalStorage<TenantContext>());
+
+const storage = tenantStorage;
 
 /** Run `fn` with a tenant bound (useful for tests and scripts). */
 export function runWithTenant<T>(organizationId: string, fn: () => Promise<T>): Promise<T> {

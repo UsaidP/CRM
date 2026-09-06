@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { requireSession } from '@/lib/services/api-auth';
+import { requirePermission, orgScope } from '@/lib/services/api-auth';
 import { prisma } from '@/lib/db/prisma';
 import { generatePortalToken, buildWhatsAppPortalShareText } from '@/lib/domain/portal-generator';
 
@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   try {
-    const auth = await requireSession(req);
+    const auth = await requirePermission(req, 'portals:create');
     if (!auth.ok) return auth.response;
     const body = await req.json();
     const {
@@ -24,8 +24,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: 'At least one selected unit is required' }, { status: 400 });
     }
 
-    const lead = await prisma.lead.findUnique({
-      where: { id: leadId },
+    const lead = await prisma.lead.findFirst({
+      where: { id: leadId, ...orgScope(auth.session) },
       include: {
         requirements: { where: { isActive: true }, take: 1 },
       },
@@ -36,7 +36,7 @@ export async function POST(req: Request) {
     }
 
     const units = await prisma.propertyUnit.findMany({
-      where: { id: { in: selectedUnitIds } },
+      where: { id: { in: selectedUnitIds }, project: { organizationId: auth.session.organizationId } },
       include: { project: true },
     });
 

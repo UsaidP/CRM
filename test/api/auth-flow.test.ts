@@ -129,6 +129,54 @@ describe('API Integration: Auth Flow (/api/v1/auth/*)', () => {
     });
   });
 
+  describe('GET /api/v1/auth/session', () => {
+    it('returns 200 with authenticated user on valid session cookie', async () => {
+      const adminCookie = await createTestSessionCookie('admin');
+      const req = new Request('http://localhost:3000/api/v1/auth/session', {
+        headers: { cookie: adminCookie },
+      });
+
+      const res = await sessionHandler(req);
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.authenticated).toBe(true);
+      expect(body.user.email).toBe(PRESET_TEST_USERS.admin.email);
+    });
+
+    it('returns 401 when no session cookie is provided', async () => {
+      const req = new Request('http://localhost:3000/api/v1/auth/session');
+      const res = await sessionHandler(req);
+      expect(res.status).toBe(401);
+      const body = await res.json();
+      expect(body.authenticated).toBe(false);
+      expect(body.user).toBeNull();
+    });
+
+    it('returns 401 cleanly without 500 when session token is malformed (missing userId)', async () => {
+      const { createSessionToken } = await import('@/lib/services/auth-service');
+      // Create signed token with empty/missing userId
+      const malformedToken = await createSessionToken({
+        userId: '',
+        email: 'malformed@zamzam.test',
+        fullName: 'Malformed User',
+        role: 'AGENT',
+        organizationId: TEST_ORG_ID,
+        isSuperAdmin: false,
+      });
+
+      const req = new Request('http://localhost:3000/api/v1/auth/session', {
+        headers: { cookie: `${SESSION_COOKIE_NAME}=${malformedToken}` },
+      });
+
+      const res = await sessionHandler(req);
+      // Must return 401, never throw 500
+      expect(res.status).toBe(401);
+      const body = await res.json();
+      expect(body.authenticated).toBe(false);
+      expect(body.user).toBeNull();
+    });
+  });
+
   describe('POST /api/v1/auth/logout', () => {
     it('clears the session cookie on logout', async () => {
       const req = new Request('http://localhost:3000/api/v1/auth/logout', {

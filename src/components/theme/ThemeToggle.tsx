@@ -5,11 +5,13 @@ import { Moon, Sun, Zap, Laptop } from 'lucide-react';
 import { useTheme } from './ThemeProvider';
 
 interface ThemeToggleProps {
+  id?: string;
   variant?: 'sidebar' | 'compact';
   className?: string;
+  ariaLabelPrefix?: string;
 }
 
-export function ThemeToggle({ variant = 'sidebar', className = '' }: ThemeToggleProps) {
+export function ThemeToggle({ id, variant = 'sidebar', className = '', ariaLabelPrefix = '' }: ThemeToggleProps) {
   const { theme, resolvedTheme, setTheme, toggleTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -17,13 +19,16 @@ export function ThemeToggle({ variant = 'sidebar', className = '' }: ThemeToggle
     setMounted(true);
   }, []);
 
+  const labelSuffix = ariaLabelPrefix ? ` (${ariaLabelPrefix})` : '';
+
   if (!mounted) {
     // Avoid hydration mismatch by rendering placeholder structure
     return variant === 'compact' ? (
       <button 
+        id={id}
         type="button" 
         className={`w-11 h-11 min-w-[44px] min-h-[44px] rounded-xl border border-border bg-surface-raised flex items-center justify-center text-content-secondary ${className}`}
-        aria-label="Toggle theme"
+        aria-label={`Toggle theme${labelSuffix}`}
         disabled
       >
         <Moon className="w-4 h-4" />
@@ -44,11 +49,12 @@ export function ThemeToggle({ variant = 'sidebar', className = '' }: ThemeToggle
   if (variant === 'compact') {
     return (
       <button
+        id={id}
         type="button"
         onClick={toggleTheme}
         className={`relative inline-flex items-center justify-center w-11 h-11 min-w-[44px] min-h-[44px] rounded-xl border border-border-default bg-surface hover:bg-surface-subtle text-content-secondary hover:text-content transition-all shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent cursor-pointer ${className}`}
-        aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
-        title={isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
+        aria-label={isDark ? `Switch to light theme${labelSuffix}` : `Switch to dark theme${labelSuffix}`}
+        title={isDark ? `Switch to Light Theme${labelSuffix}` : `Switch to Dark Theme${labelSuffix}`}
       >
         {isDark ? (
           <Sun className="w-4 h-4 text-amber-400 transition-transform duration-200 hover:rotate-45" />

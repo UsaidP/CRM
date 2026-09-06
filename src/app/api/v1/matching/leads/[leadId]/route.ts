@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { rankMatchingProperties, BuyerRequirementInput, PropertyUnitForMatching } from '@/lib/domain/matching-engine';
 import { generateWhatsAppPitchWithAI } from '@/lib/services/gemini-service';
-import { requireSession } from '@/lib/services/api-auth';
+import { requireSession, orgScope } from '@/lib/services/api-auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,8 +15,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ leadId: 
     const { searchParams } = new URL(req.url);
     const includeAiPitch = searchParams.get('aiPitch') !== 'false';
 
-    const lead = await prisma.lead.findUnique({
-      where: { id: leadId },
+    const lead = await prisma.lead.findFirst({
+      where: { id: leadId, ...orgScope(auth.session) },
       include: {
         requirements: {
           where: { isActive: true },

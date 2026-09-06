@@ -4,10 +4,14 @@ import { assessUnitFreshness } from '@/lib/domain/verification-engine';
 import { evaluateEngagementTier } from '@/lib/domain/portal-generator';
 import { rankFirmLeadsForNextConnect } from '@/lib/domain/prioritization-engine';
 import { DashboardCockpitClient } from '@/components/dashboard/DashboardCockpitClient';
+import { getServerSession } from '@/lib/services/server-auth';
+import { runWithTenant } from '@/lib/db/tenant-context';
 
 export const dynamic = 'force-dynamic';
 
 export default async function DashboardPage() {
+  const session = await getServerSession();
+
   let projectCount = 0;
   let unitCount = 0;
   let activeMarketableCount = 0;
@@ -41,58 +45,65 @@ export default async function DashboardPage() {
       rawVisits,
       rawReminders
     ] = await withDbRetry(async () => {
-      return Promise.all([
-        prisma.developerProject.count(),
-        prisma.propertyUnit.count(),
-        prisma.lead.count(),
-        prisma.inboundCampaign.count(),
-        prisma.clientPortal.count(),
-        prisma.dealTransaction.count(),
-        prisma.dealTransaction.findMany({
-          include: {
-            lead: true,
-            propertyUnit: { include: { project: true } },
-            closingBroker: true,
-          },
-          orderBy: { bookingDate: 'desc' },
-        }),
-        prisma.propertyUnit.findMany({
-          include: { project: true, verifiedBy: true },
-          orderBy: { updatedAt: 'desc' },
-        }),
-        prisma.lead.findMany({
-          include: {
-            campaign: true,
-            assignedBroker: true,
-            requirements: true,
-            portals: { include: { telemetryLogs: true } },
-            reminders: {
-              where: { status: { in: ['PENDING', 'SNOOZED'] } },
-              orderBy: { dueAt: 'asc' },
+      return runWithTenant(session.organizationId, async () => {
+        return Promise.all([
+          prisma.developerProject.count({ where: { organizationId: session.organizationId } }),
+          prisma.propertyUnit.count({ where: { project: { organizationId: session.organizationId } } }),
+          prisma.lead.count({ where: { organizationId: session.organizationId } }),
+          prisma.inboundCampaign.count({ where: { organizationId: session.organizationId } }),
+          prisma.clientPortal.count({ where: { organizationId: session.organizationId } }),
+          prisma.dealTransaction.count({ where: { organizationId: session.organizationId } }),
+          prisma.dealTransaction.findMany({
+            where: { organizationId: session.organizationId },
+            include: {
+              lead: true,
+              propertyUnit: { include: { project: true } },
+              closingBroker: true,
             },
-            communications: {
-              orderBy: { createdAt: 'desc' },
-              take: 3,
+            orderBy: { bookingDate: 'desc' },
+          }),
+          prisma.propertyUnit.findMany({
+            where: { project: { organizationId: session.organizationId } },
+            include: { project: true, verifiedBy: true },
+            orderBy: { updatedAt: 'desc' },
+          }),
+          prisma.lead.findMany({
+            where: { organizationId: session.organizationId },
+            include: {
+              campaign: true,
+              assignedBroker: true,
+              requirements: true,
+              portals: { include: { telemetryLogs: true } },
+              reminders: {
+                where: { status: { in: ['PENDING', 'SNOOZED'] } },
+                orderBy: { dueAt: 'asc' },
+              },
+              communications: {
+                orderBy: { createdAt: 'desc' },
+                take: 3,
+              },
             },
-          },
-          orderBy: { createdAt: 'desc' },
-        }),
-        prisma.clientPortal.findMany({
-          include: { lead: true, telemetryLogs: true, portalUnits: { include: { propertyUnit: { include: { project: true } } } } },
-          orderBy: { updatedAt: 'desc' },
-        }),
-        prisma.siteVisit.findMany({
-          include: { lead: true, assignedBroker: true },
-          orderBy: { scheduledDate: 'asc' },
-        }),
-        prisma.leadReminder.findMany({
-          where: { status: { in: ['PENDING', 'SNOOZED'] } },
-          include: {
-            lead: true,
-          },
-          orderBy: { dueAt: 'asc' },
-        }),
-      ]);
+            orderBy: { createdAt: 'desc' },
+          }),
+          prisma.clientPortal.findMany({
+            where: { organizationId: session.organizationId },
+            include: { lead: true, telemetryLogs: true, portalUnits: { include: { propertyUnit: { include: { project: true } } } } },
+            orderBy: { updatedAt: 'desc' },
+          }),
+          prisma.siteVisit.findMany({
+            where: { organizationId: session.organizationId },
+            include: { lead: true, assignedBroker: true },
+            orderBy: { scheduledDate: 'asc' },
+          }),
+          prisma.leadReminder.findMany({
+            where: { organizationId: session.organizationId, status: { in: ['PENDING', 'SNOOZED'] } },
+            include: {
+              lead: true,
+            },
+            orderBy: { dueAt: 'asc' },
+          }),
+        ]);
+      });
     });
 
     projectCount = pCount;

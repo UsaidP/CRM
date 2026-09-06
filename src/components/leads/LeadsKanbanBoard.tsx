@@ -133,6 +133,7 @@ export function LeadsKanbanBoard({
   const [draggedLeadId, setDraggedLeadId] = useState<string | null>(null);
   const [dragOverStageId, setDragOverStageId] = useState<string | null>(null);
   const [selectedMobileStage, setSelectedMobileStage] = useState<string>('ALL');
+  const activeDragIdRef = React.useRef<string | null>(null);
 
   const handleMoveStage = async (leadId: string, newStage: string, e?: React.MouseEvent | React.ChangeEvent | React.DragEvent) => {
     if (e && 'stopPropagation' in e) {
@@ -148,13 +149,20 @@ export function LeadsKanbanBoard({
 
   const handleDragStart = (leadId: string, e: React.DragEvent) => {
     e.stopPropagation();
+    activeDragIdRef.current = leadId;
     setDraggedLeadId(leadId);
-    e.dataTransfer.setData('text/plain', leadId);
-    e.dataTransfer.effectAllowed = 'move';
+    try {
+      e.dataTransfer.setData('text/plain', leadId);
+      e.dataTransfer.setData('application/x-lead-id', leadId);
+      e.dataTransfer.effectAllowed = 'move';
+    } catch {
+      // Ignore in restricted environments
+    }
   };
 
   const handleDragEnd = (e?: React.DragEvent) => {
     if (e) e.stopPropagation();
+    activeDragIdRef.current = null;
     setDraggedLeadId(null);
     setDragOverStageId(null);
   };
@@ -171,18 +179,30 @@ export function LeadsKanbanBoard({
   const handleDragLeave = (stageId: string, e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (e.currentTarget.contains(e.relatedTarget as Node)) {
-      return;
-    }
-    if (dragOverStageId === stageId) {
-      setDragOverStageId(null);
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX;
+    const y = e.clientY;
+    // Only reset if cursor has actually left the column element boundaries
+    if (x < rect.left || x >= rect.right || y < rect.top || y >= rect.bottom) {
+      if (dragOverStageId === stageId) {
+        setDragOverStageId(null);
+      }
     }
   };
 
   const handleDrop = async (stageId: string, e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const leadId = e.dataTransfer.getData('text/plain') || draggedLeadId;
+    let leadId: string | null = null;
+    try {
+      leadId = e.dataTransfer.getData('application/x-lead-id') || e.dataTransfer.getData('text/plain');
+    } catch {
+      leadId = null;
+    }
+    if (!leadId) {
+      leadId = activeDragIdRef.current || draggedLeadId;
+    }
+    activeDragIdRef.current = null;
     setDragOverStageId(null);
     setDraggedLeadId(null);
 
@@ -273,7 +293,11 @@ export function LeadsKanbanBoard({
               </div>
 
               {/* Cards Container (Drop Target Zone) */}
-              <div className="p-3 flex-1 space-y-3 overflow-y-auto max-h-[calc(100vh-280px)] min-h-[220px]">
+              <div 
+                onDragOver={(e) => handleDragOver(stage.id, e)}
+                onDrop={(e) => handleDrop(stage.id, e)}
+                className="p-3 flex-1 space-y-3 overflow-y-auto max-h-[calc(100vh-280px)] min-h-[220px]"
+              >
                 {/* Active Drop Cue Placeholder when dragging over column */}
                 {isTargetedByDrag && (
                   <div className="p-3 rounded-xl border-2 border-dashed border-accent bg-accent-soft/30 flex items-center justify-center gap-2 text-xs font-bold text-accent-text animate-pulse">

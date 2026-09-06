@@ -171,6 +171,13 @@ html[data-theme="light"],
   --color-chart-4: #06B6D4;
   --color-chart-5: #8B5CF6;
   --color-chart-6: #EC4899;
+  --chart-1: #2563EB;
+  --chart-2: #10B981;
+  --chart-3: #F59E0B;
+  --chart-4: #06B6D4;
+  --chart-5: #8B5CF6;
+  --chart-line-primary: #2563EB;
+  --chart-grid: rgba(226, 232, 240, 0.8);
 
   /* Elevation & Shadows (Light Mode) */
   --shadow-raised: 0 1px 3px 0 rgba(15, 23, 42, 0.06), 0 1px 2px -1px rgba(15, 23, 42, 0.04);
@@ -286,6 +293,13 @@ html[data-theme="dark"],
   --color-chart-4: #22D3EE;
   --color-chart-5: #A78BFA;
   --color-chart-6: #F472B6;
+  --chart-1: #60A5FA;
+  --chart-2: #34D399;
+  --chart-3: #FBBF24;
+  --chart-4: #22D3EE;
+  --chart-5: #A78BFA;
+  --chart-line-primary: #60A5FA;
+  --chart-grid: rgba(30, 41, 59, 0.8);
 
   /* Elevation & Shadows (Dark Mode) */
   --shadow-raised: 0 1px 2px rgba(0, 0, 0, 0.4);
@@ -1720,5 +1734,59 @@ html:not(.dark) [class*="via-[#171d2e]"] {
   .touch-target {
     min-height: 44px;
     min-width: 44px;
+  }
+}
+
+@layer base {
+  :root {
+    --chart-1: oklch(0.32 0 none);
+    --chart-2: oklch(0.41 0 none);
+    --chart-3: oklch(0.54 0 none);
+    --chart-4: oklch(0.71 0 none);
+    --chart-5: oklch(0.89 0 none);
+    --chart-background: oklch(1 0 0);
+    --chart-foreground: oklch(0.145 0.004 285);
+    --chart-foreground-muted: oklch(0.55 0.014 260);
+    --chart-line-primary: var(--chart-1);
+    --chart-line-secondary: var(--chart-2);
+    --chart-crosshair: oklch(0.4 0.1828 274.34);
+    --chart-grid: oklch(0.9 0 0);
+    --chart-brush-border: var(--chart-grid);
+    --chart-tooltip-background: oklch(0.21 0.006 285 / 0.8);
+    --chart-tooltip-foreground: oklch(0.985 0 0);
+    --chart-tooltip-muted: oklch(0.65 0.01 260);
+    --chart-marker-background: oklch(0.97 0.005 260);
+    --chart-marker-border: oklch(0.85 0.01 260);
+    --chart-marker-foreground: oklch(0.3 0.01 260);
+    --chart-label: oklch(0.45 0.01 260);
+    --chart-scale-01: oklch(0.98 0.003 106);
+    --chart-scale-02: oklch(0.92 0.008 106);
+    --chart-scale-03: oklch(0.82 0.015 106);
+    --chart-scale-04: oklch(0.68 0.02 106);
+    --chart-scale-05: oklch(0.55 0.025 106);
+    --chart-scale-pattern-color: oklch(0.96 0.005 106);
+  }
+  .dark {
+    --chart-1: oklch(1 0 none);
+    --chart-2: oklch(0.73 0 none);
+    --chart-3: oklch(0.51 0 none);
+    --chart-4: oklch(0.39 0 none);
+    --chart-5: oklch(0.32 0 none);
+    --chart-background: oklch(0.145 0 0);
+    --chart-foreground: oklch(0.45 0 0);
+    --chart-foreground-muted: oklch(0.65 0.01 260);
+    --chart-crosshair: oklch(0.45 0 0);
+    --chart-grid: oklch(0.25 0 0);
+    --chart-brush-border: var(--chart-grid);
+    --chart-marker-background: oklch(0.25 0.01 260);
+    --chart-marker-border: oklch(0.4 0.01 260);
+    --chart-marker-foreground: oklch(0.9 0 0);
+    --chart-label: oklch(0.75 0.01 260);
+    --chart-scale-01: oklch(0.28 0.03 270);
+    --chart-scale-02: oklch(0.38 0.04 270);
+    --chart-scale-03: oklch(0.48 0.05 270);
+    --chart-scale-04: oklch(0.58 0.06 270);
+    --chart-scale-05: oklch(0.68 0.07 270);
+    --chart-scale-pattern-color: oklch(0.145 0 0);
   }
 }

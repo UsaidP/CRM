@@ -40,7 +40,10 @@ export async function GET(req: Request) {
     }
 
     const rawLeads = await prisma.lead.findMany({
-      where: { OR: leadOrConditions },
+      where: {
+        organizationId: auth.session.organizationId,
+        OR: leadOrConditions,
+      },
       take: 6,
       include: {
         requirements: {
@@ -79,7 +82,10 @@ export async function GET(req: Request) {
     ];
 
     const projects = await prisma.developerProject.findMany({
-      where: { OR: projectOrConditions },
+      where: {
+        organizationId: auth.session.organizationId,
+        OR: projectOrConditions,
+      },
       take: 6,
       select: {
         id: true,
@@ -98,6 +104,7 @@ export async function GET(req: Request) {
     // 3. Search Property Units
     const units = await prisma.propertyUnit.findMany({
       where: {
+        project: { organizationId: auth.session.organizationId },
         OR: [
           { unitNumber: { contains: q } },
           { description: { contains: q } },
@@ -136,7 +143,10 @@ export async function GET(req: Request) {
     }
 
     const rawVisits = await prisma.siteVisit.findMany({
-      where: { OR: visitOrConditions },
+      where: {
+        organizationId: auth.session.organizationId,
+        OR: visitOrConditions,
+      },
       take: 4,
       include: {
         lead: {
@@ -193,7 +203,10 @@ export async function GET(req: Request) {
     }
 
     const rawDeals = await prisma.dealTransaction.findMany({
-      where: { OR: dealOrConditions },
+      where: {
+        organizationId: auth.session.organizationId,
+        OR: dealOrConditions,
+      },
       take: 4,
       include: {
         lead: {

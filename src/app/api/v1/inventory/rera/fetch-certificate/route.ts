@@ -34,20 +34,26 @@ export async function POST(req: Request) {
     const { projectRecord, certificateUrl, fileName, fileSizeBytes, isAuthentic, syncStatus, error: certError } =
       await downloadAndSaveMahaReraCertificate(reraNumber, projectName, developerName, projectName);
 
-    // If a specific project record ID was provided and certificate was retrieved, sync into DB
+    // If a specific project record ID was provided and certificate was retrieved, sync into DB with strict tenant isolation
     if (projectId && typeof projectId === 'string' && certificateUrl) {
       try {
-        await prisma.developerProject.update({
-          where: { id: projectId },
-          data: {
-            reraCertificateUrl: certificateUrl,
-            reraRegisteredName: projectRecord.projectName,
-            reraProjectStatus: projectRecord.projectStatus,
-            reraValidUntil: projectRecord.validUntil ? new Date(projectRecord.validUntil) : undefined,
-            reraVerificationDate: new Date(),
-            reraCertDataJson: JSON.stringify(projectRecord),
-          },
+        const existingProject = await prisma.developerProject.findFirst({
+          where: { id: projectId, organizationId: auth.session.organizationId },
         });
+
+        if (existingProject) {
+          await prisma.developerProject.update({
+            where: { id: projectId },
+            data: {
+              reraCertificateUrl: certificateUrl,
+              reraRegisteredName: projectRecord.projectName,
+              reraProjectStatus: projectRecord.projectStatus,
+              reraValidUntil: projectRecord.validUntil ? new Date(projectRecord.validUntil) : undefined,
+              reraVerificationDate: new Date(),
+              reraCertDataJson: JSON.stringify(projectRecord),
+            },
+          });
+        }
       } catch (dbErr: any) {
         console.warn(`Could not link RERA certificate to project ${projectId}:`, dbErr.message);
       }

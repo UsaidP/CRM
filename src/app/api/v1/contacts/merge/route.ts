@@ -29,8 +29,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: result.error }, { status: 400 });
     }
 
-    const targetContact = await prisma.contact.findUnique({
-      where: { id: result.targetContactId },
+    const targetContact = await prisma.contact.findFirst({
+      where: { id: result.targetContactId, organizationId: org.id },
       include: {
         identities: true,
         leads: true,

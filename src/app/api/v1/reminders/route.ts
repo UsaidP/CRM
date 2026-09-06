@@ -90,6 +90,7 @@ export async function POST(req: Request) {
   try {
     const auth = await requireSession(req);
     if (!auth.ok) return auth.response;
+    const { session } = auth;
     const body = await req.json();
     const {
       leadId,
@@ -121,13 +122,8 @@ export async function POST(req: Request) {
       );
     }
 
-    const org = await prisma.organization.findFirst();
-    if (!org) {
-      return NextResponse.json({ success: false, error: 'Organization not found' }, { status: 500 });
-    }
-
-    const lead = await prisma.lead.findUnique({
-      where: { id: leadId },
+    const lead = await prisma.lead.findFirst({
+      where: { id: leadId, ...orgScope(session) },
     });
 
     if (!lead) {
@@ -136,7 +132,7 @@ export async function POST(req: Request) {
 
     const reminder = await prisma.leadReminder.create({
       data: {
-        organizationId: org.id,
+        organizationId: session.organizationId,
         leadId,
         title: title.trim(),
         reminderType: reminderType.toUpperCase(),

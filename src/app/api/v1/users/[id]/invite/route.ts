@@ -1,17 +1,20 @@
 import { NextResponse } from 'next/server';
-import { requireSession } from '@/lib/services/api-auth';
+import { requireRole, orgScope } from '@/lib/services/api-auth';
 import { prisma } from '@/lib/db/prisma';
 import { generateSecureToken } from '@/lib/services/auth-service';
 
 export const dynamic = 'force-dynamic';
 
+const ADMIN_ROLES = ['SUPER_ADMIN', 'ADMIN'] as const;
+
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const auth = await requireSession(req);
+    const auth = await requireRole(req, [...ADMIN_ROLES]);
     if (!auth.ok) return auth.response;
+    const { session } = auth;
     const { id } = await params;
-    const user = await prisma.user.findUnique({
-      where: { id },
+    const user = await prisma.user.findFirst({
+      where: orgScope(session, { id }),
     });
 
     if (!user) {

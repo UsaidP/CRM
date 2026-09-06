@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireSession } from '@/lib/services/api-auth';
+import { requireSession, orgScope } from '@/lib/services/api-auth';
 import { prisma } from '@/lib/db/prisma';
 import { completeReminderAndScheduleNext } from '@/lib/services/lead-reminder-service';
 
@@ -13,8 +13,8 @@ export async function GET(
     const auth = await requireSession(req);
     if (!auth.ok) return auth.response;
     const { id } = await params;
-    const reminder = await prisma.leadReminder.findUnique({
-      where: { id },
+    const reminder = await prisma.leadReminder.findFirst({
+      where: { id, ...orgScope(auth.session) },
       include: {
         lead: {
           include: {
@@ -76,8 +76,8 @@ export async function PATCH(
       });
     }
 
-    const existing = await prisma.leadReminder.findUnique({
-      where: { id },
+    const existing = await prisma.leadReminder.findFirst({
+      where: { id, ...orgScope(auth.session) },
     });
 
     if (!existing) {
@@ -147,6 +147,12 @@ export async function DELETE(
     const auth = await requireSession(req);
     if (!auth.ok) return auth.response;
     const { id } = await params;
+    const existing = await prisma.leadReminder.findFirst({
+      where: { id, ...orgScope(auth.session) },
+    });
+    if (!existing) {
+      return NextResponse.json({ success: false, error: 'Reminder not found' }, { status: 404 });
+    }
     await prisma.leadReminder.delete({
       where: { id },
     });

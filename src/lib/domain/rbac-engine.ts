@@ -257,6 +257,7 @@ export const DEFAULT_ROLE_SCOPED_PERMISSIONS: Record<CrmRole, ScopedPermission[]
     { permission: 'inventory:view', scope: 'ORGANIZATION' },
     { permission: 'visits:schedule', scope: 'OWN' },
     { permission: 'portals:create', scope: 'OWN' },
+    { permission: 'portals:view_telemetry', scope: 'OWN' },
   ],
 };
 

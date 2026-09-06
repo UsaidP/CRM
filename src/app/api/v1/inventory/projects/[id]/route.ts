@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { requireSession } from '@/lib/services/api-auth';
+import { requireSession, orgScope } from '@/lib/services/api-auth';
 import { prisma } from '@/lib/db/prisma';
 import { updateProjectSchema } from '@/lib/validators/inventory-schemas';
 import { validateReraNumber } from '@/lib/domain/verification-engine';
@@ -13,8 +13,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     const auth = await requireSession(req);
     if (!auth.ok) return auth.response;
     const { id } = await params;
-    const project = await prisma.developerProject.findUnique({
-      where: { id },
+    const project = await prisma.developerProject.findFirst({
+      where: { id, ...orgScope(auth.session) },
       include: {
         units: {
           orderBy: { floorNumber: 'asc' },
@@ -45,7 +45,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     const { id } = await params;
     const body = await req.json();
     const validated = updateProjectSchema.parse(body);
-    const existing = await prisma.developerProject.findUnique({ where: { id } });
+    const existing = await prisma.developerProject.findFirst({ where: { id, ...orgScope(auth.session) } });
 
     if (!existing) {
       return NextResponse.json({ success: false, error: 'Project not found' }, { status: 404 });
@@ -125,8 +125,8 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     if (!auth.ok) return auth.response;
     const { id } = await params;
 
-    const existing = await prisma.developerProject.findUnique({
-      where: { id },
+    const existing = await prisma.developerProject.findFirst({
+      where: { id, ...orgScope(auth.session) },
       include: { units: true },
     });
 

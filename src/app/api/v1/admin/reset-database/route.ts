@@ -99,23 +99,40 @@ export async function POST(req: Request) {
     });
 
     // 3. Create the Sole Super Admin Account
-    const superAdminPassword =
-      body.superAdminPassword ||
-      process.env.SUPER_ADMIN_PASSWORD ||
-      'ZamZam@2026';
-    const superAdminEmail =
-      body.superAdminEmail ||
-      process.env.SUPER_ADMIN_EMAIL ||
-      'usaid@zamzamproperties.in';
+    // Security Guard: Refuse to execute destructive reset without an explicitly provided strong password (no guessable fallback).
+    const superAdminPassword = body.superAdminPassword || process.env.SUPER_ADMIN_PASSWORD;
+    if (!superAdminPassword || typeof superAdminPassword !== 'string' || superAdminPassword.length < 10) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'A strong superAdminPassword (minimum 10 characters) must be explicitly provided in the request body or via SUPER_ADMIN_PASSWORD environment variable. Destructive reset refuses to run with fallback or guessable credentials.',
+        },
+        { status: 400 }
+      );
+    }
+
+    const superAdminEmail = body.superAdminEmail || process.env.SUPER_ADMIN_EMAIL;
+    if (!superAdminEmail || typeof superAdminEmail !== 'string') {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'superAdminEmail must be explicitly provided in the request body or via SUPER_ADMIN_EMAIL environment variable.',
+        },
+        { status: 400 }
+      );
+    }
+
+    const superAdminName = body.superAdminName || process.env.SUPER_ADMIN_NAME || 'Super Administrator';
+    const superAdminPhone = body.superAdminPhone || process.env.SUPER_ADMIN_PHONE || '+919820123456';
 
     const passwordHash = hashPasswordSync(superAdminPassword);
 
     const superAdmin = await prisma.user.create({
       data: {
         organizationId: org.id,
-        fullName: 'Usaid Patel',
+        fullName: superAdminName,
         email: superAdminEmail,
-        phoneE164: '+919820123456',
+        phoneE164: superAdminPhone,
         role: 'SUPER_ADMIN',
         passwordHash,
       },

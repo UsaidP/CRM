@@ -15,7 +15,8 @@ import {
   ChevronDown,
   ChevronUp,
   Share2,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Globe
 } from 'lucide-react';
 import { resolveAssetUrl } from '@/lib/inventory-media';
 
@@ -43,20 +44,24 @@ export interface ProjectMatchItem {
 
 interface LiveInventoryMatcherProps {
   lead: {
+    id?: string | null;
     fullName?: string | null;
     phoneE164?: string | null;
     preferredBhk?: number | string | null;
     budgetCeiling?: number | null;
     preferredMicroMarket?: string | null;
     sourceCode?: string | null;
+    portals?: any[];
   };
   projects: ProjectMatchItem[];
   onOpenCostCalculator?: (project: ProjectMatchItem, unit?: UnitSummary) => void;
+  onCreatePortal?: (project: ProjectMatchItem, unitIds?: string[]) => void | Promise<void>;
 }
 
 export function LiveInventoryMatcher({
   lead,
   projects,
+  onCreatePortal,
 }: LiveInventoryMatcherProps) {
   const [selectedProjectIdForCost, setSelectedProjectIdForCost] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'MATCHED' | 'ALL'>('MATCHED');
@@ -273,13 +278,13 @@ export function LiveInventoryMatcher({
                 </div>
 
                 {/* Quick Pitch Action Buttons */}
-                <div className="grid grid-cols-3 gap-1.5 pt-1">
+                <div className="grid grid-cols-4 gap-1.5 pt-1">
                   {/* Action 1: Send Brochure */}
                   <button
                     type="button"
                     onClick={() => handleSendBrochure(proj)}
                     disabled={!lead.phoneE164}
-                    className="py-1.5 px-2 rounded-lg bg-surface hover:bg-surface-raised border border-border text-[10px] font-semibold text-content flex items-center justify-center gap-1 transition-all cursor-pointer disabled:opacity-50"
+                    className="py-1.5 px-1.5 rounded-lg bg-surface hover:bg-surface-raised border border-border text-[10px] font-semibold text-content flex items-center justify-center gap-1 transition-all cursor-pointer disabled:opacity-50"
                     title="Send Verified Brochure PDF on WhatsApp"
                   >
                     <FileText className="w-3 h-3 text-red-500" />
@@ -291,18 +296,18 @@ export function LiveInventoryMatcher({
                     type="button"
                     onClick={() => handleSendFloorPlan(proj)}
                     disabled={!lead.phoneE164}
-                    className="py-1.5 px-2 rounded-lg bg-surface hover:bg-surface-raised border border-border text-[10px] font-semibold text-content flex items-center justify-center gap-1 transition-all cursor-pointer disabled:opacity-50"
+                    className="py-1.5 px-1.5 rounded-lg bg-surface hover:bg-surface-raised border border-border text-[10px] font-semibold text-content flex items-center justify-center gap-1 transition-all cursor-pointer disabled:opacity-50"
                     title="Send BHK Floor Plan Layout on WhatsApp"
                   >
                     <ImageIcon className="w-3 h-3 text-blue-500" />
-                    <span className="truncate">Floor Plan</span>
+                    <span className="truncate">Plan</span>
                   </button>
 
                   {/* Action 3: Cost & EMI Tooltip */}
                   <button
                     type="button"
                     onClick={() => setSelectedProjectIdForCost(isCostOpen ? null : proj.id)}
-                    className={`py-1.5 px-2 rounded-lg border text-[10px] font-semibold flex items-center justify-center gap-1 transition-all cursor-pointer ${
+                    className={`py-1.5 px-1.5 rounded-lg border text-[10px] font-semibold flex items-center justify-center gap-1 transition-all cursor-pointer ${
                       isCostOpen
                         ? 'bg-accent text-white border-accent'
                         : 'bg-surface hover:bg-surface-raised border-border text-content'
@@ -310,7 +315,23 @@ export function LiveInventoryMatcher({
                     title="Calculate Stamp Duty, GST, and Monthly EMI"
                   >
                     <Calculator className="w-3 h-3 text-emerald-500" />
-                    <span className="truncate">Cost &amp; EMI</span>
+                    <span className="truncate">Cost</span>
+                  </button>
+
+                  {/* Action 4: Client Presentation Portal */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (onCreatePortal) {
+                        const unitIds = proj.units && proj.units.length > 0 ? proj.units.map((u) => u.id) : [];
+                        onCreatePortal(proj, unitIds);
+                      }
+                    }}
+                    className="py-1.5 px-1.5 rounded-lg bg-accent-soft hover:bg-accent/20 border border-accent/30 text-[10px] font-bold text-accent-text flex items-center justify-center gap-1 transition-all cursor-pointer"
+                    title="Generate Tokenized Client Presentation Portal for this Project"
+                  >
+                    <Globe className="w-3 h-3 text-accent" />
+                    <span className="truncate">Portal</span>
                   </button>
                 </div>
 

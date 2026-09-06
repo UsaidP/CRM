@@ -16,8 +16,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const body = await req.json();
     const validated = verifyUnitSchema.parse(body);
 
-    const unit = await prisma.propertyUnit.findUnique({
-      where: { id },
+    const unit = await prisma.propertyUnit.findFirst({
+      where: { id, project: { organizationId: auth.session.organizationId } },
       include: { project: true },
     });
 
@@ -41,7 +41,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     }
 
     // Fetch or create default auditor user if none passed
-    let auditor = await prisma.user.findFirst();
+    let auditor = await prisma.user.findFirst({
+      where: { organizationId: auth.session.organizationId },
+    });
     if (!auditor) {
       const org = await prisma.organization.findFirst();
       auditor = await prisma.user.create({

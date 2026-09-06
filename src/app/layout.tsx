@@ -81,8 +81,12 @@ export default function RootLayout({
           <AppShell>{children}</AppShell>
           <GooeyToastProvider />
           <AgentationToolbar />
-          <Analytics />
-          <SpeedInsights />
+          {(process.env.NEXT_PUBLIC_VERCEL_ENV || process.env.VERCEL) && (
+            <>
+              <Analytics />
+              <SpeedInsights />
+            </>
+          )}
         </ThemeProvider>
       </body>
     </html>

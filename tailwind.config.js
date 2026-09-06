@@ -142,6 +142,18 @@ module.exports = {
           qr: "#D97706",
           web: "#1B4332",
         },
+
+        // Chart & Data Visualization Series (shadcn & Bklit UI compatible)
+        chart: {
+          1: "var(--chart-1)",
+          2: "var(--chart-2)",
+          3: "var(--chart-3)",
+          4: "var(--chart-4)",
+          5: "var(--chart-5)",
+          line: "var(--chart-line-primary)",
+          grid: "var(--chart-grid)",
+          label: "var(--chart-label)",
+        },
       },
       fontFamily: {
         "display-sm": ["Plus Jakarta Sans", "sans-serif"],
