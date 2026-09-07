@@ -6,11 +6,13 @@ import { parseBrochureAsync, parseBrochureText } from '@/lib/services/brochure-p
 import { downloadAndSaveMahaReraCertificate } from '@/lib/services/maharera-service';
 import { extractAndProcessBrochure } from '@/lib/services/brochure-extractor';
 import { persistBrochureExtraction } from '@/lib/services/brochure-persistence';
+import { deduplicateUnitsByConfiguration } from '@/lib/services/unit-deduplication';
 import { uploadMediaAsset } from '@/lib/services/cloud-media-service';
 import { resolveAssetUrl } from '@/lib/inventory-media';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+export const maxDuration = 120; // 2 minutes for processing large (up to 50MB+) PDFs
 
 const MAX_FILE_BYTES = 100 * 1024 * 1024; // 100 MB
 const ALLOWED_MIME_TYPES = new Set([
@@ -204,8 +206,17 @@ export async function POST(req: Request) {
       const primaryElevationUrl = resolveAssetUrl(mediaResult.elevations[0]) || null;
       const primaryMasterPlanUrl = resolveAssetUrl(mediaResult.masterPlan) || null;
 
-      // 4. Enrich extracted distinct units by pre-binding BHK & carpet-matched brochure floor plans
-      const enrichedUnits = (extracted.units || []).map((u: any, idx: number) => {
+      // 4. Ensure units contain all distinct configurations (strictly deduplicated into one record each)
+      const distinctUnits = deduplicateUnitsByConfiguration(extracted.units || [], {
+        totalFloors: extracted.totalFloors,
+        basePricePerSqft: extracted.basePricePerSqft,
+        hasOccupancyCertificate: extracted.hasOccupancyCertificate,
+        projectName: extracted.projectName,
+        carpetToleranceSqft: 5,
+      });
+
+      // Pre-bind BHK & carpet-matched brochure floor plans
+      const enrichedUnits = distinctUnits.map((u: any) => {
         const bhkPlans = (mediaResult.floorPlans || []).filter((fp: any) => Number(fp.bhk) === Number(u.bhk));
         let matchingPlan = bhkPlans.find((fp: any) => fp.carpetAreaSqft && Math.abs(Number(fp.carpetAreaSqft) - Number(u.carpetAreaSqft)) <= 25);
         if (!matchingPlan && bhkPlans.length > 0) {
@@ -214,7 +225,6 @@ export async function POST(req: Request) {
         const unitFloorPlanUrl = u.floorPlanUrl || resolveAssetUrl(matchingPlan) || null;
         return {
           ...u,
-          unitNumber: u.unitNumber || `${u.bhk} BHK (${u.carpetAreaSqft || 500} sqft)`,
           floorPlanUrl: unitFloorPlanUrl,
         };
       });
@@ -228,6 +238,7 @@ export async function POST(req: Request) {
           updatedProject = await prisma.developerProject.update({
             where: { id: projectId },
             data: {
+              brochureUrl: brochureUrl || undefined,
               totalTowers: extracted.totalTowers ? parseInt(String(extracted.totalTowers), 10) : undefined,
               totalFloors: extracted.totalFloors ? parseInt(String(extracted.totalFloors), 10) : undefined,
               basePricePerSqft: extracted.basePricePerSqft ? parseFloat(String(extracted.basePricePerSqft)) : undefined,
@@ -308,8 +319,16 @@ export async function POST(req: Request) {
           ...extracted,
           elevations: mediaResult.elevations,
           floorPlans: mediaResult.floorPlans,
+          brochurePhotos: mediaResult.brochurePhotos,
           masterPlan: mediaResult.masterPlan,
           assetRecords: mediaResult.assetRecords || extracted.assetRecords || [],
+          units: deduplicateUnitsByConfiguration(extracted.units || [], {
+            totalFloors: extracted.totalFloors,
+            basePricePerSqft: extracted.basePricePerSqft,
+            hasOccupancyCertificate: extracted.hasOccupancyCertificate,
+            projectName: extracted.projectName,
+            carpetToleranceSqft: 5,
+          }),
         },
         extractionMethod: 'REGEX_FALLBACK',
         brochureUrl: brochureUrl || null,

@@ -27,6 +27,12 @@
         "AGENTMEMORY_URL": "http://localhost:3111",
         "AGENTMEMORY_TOOLS": "all"
       }
+    },
+    "context7": {
+      "serverUrl": "https://mcp.context7.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ctx7sk-74af3138-efe7-4704-9100-2091e12301e5"
+      }
     }
   }
 }

@@ -48,7 +48,12 @@ export async function persistBrochureExtraction(
     throw new Error(`DeveloperProject not found with ID: ${projectId}`);
   }
 
-  const elevationImagesData = (media.elevations || [])
+  // Enforce storage constraints: strictly at most 2 elevations and at most 3 floor plans
+  const rawElevations = media.elevations || [];
+  const rawFloorPlans = media.floorPlans || [];
+
+  const elevationImagesData = rawElevations
+    .slice(0, 2)
     .map((e, idx) => ({
       id: e.mediaAsset?.publicId || `elev_${idx + 1}`,
       url: resolveAssetUrl(e.mediaAsset),
@@ -59,7 +64,8 @@ export async function persistBrochureExtraction(
     }))
     .filter((a) => Boolean(a.url));
 
-  const floorPlanImagesData = (media.floorPlans || [])
+  const floorPlanImagesData = rawFloorPlans
+    .slice(0, 3)
     .map((fp, idx) => ({
       id: fp.mediaAsset?.publicId || `fp_${idx + 1}`,
       url: resolveAssetUrl(fp.mediaAsset),
@@ -71,7 +77,14 @@ export async function persistBrochureExtraction(
     }))
     .filter((a) => Boolean(a.url));
 
-  const brochurePhotosData = (media.brochurePhotos || [])
+  // Include excess elevations (>2) and excess floor plans (>3) into brochure photos
+  const excessMediaAssets = [
+    ...rawElevations.slice(2),
+    ...rawFloorPlans.slice(3),
+    ...(media.brochurePhotos || []),
+  ];
+
+  const brochurePhotosData = excessMediaAssets
     .map((bp, idx) => ({
       id: bp.mediaAsset?.publicId || `photo_${idx + 1}`,
       url: resolveAssetUrl(bp.mediaAsset),

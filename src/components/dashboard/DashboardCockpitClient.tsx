@@ -197,14 +197,16 @@ export function DashboardCockpitClient({ initialData }: DashboardProps) {
   );
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div className="space-y-4 sm:space-y-6 max-w-7xl mx-auto w-full">
       {/* ─── 1. TOP INTERACTIVE EXECUTIVE CONTROL BAR ─── */}
-      <div className="p-3 sm:p-4 rounded-2xl bg-surface border border-border shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3">
+      <div className="p-2.5 sm:p-4 rounded-2xl bg-surface border border-border shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-2.5 sm:gap-3">
         {/* Market Filter */}
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface-subtle border border-border text-xs font-semibold">
-            <Filter className="w-3.5 h-3.5 text-accent" />
-            <span className="text-content-muted">Market Node:</span>
+        <div className="w-full md:w-auto flex items-center">
+          <div className="w-full md:w-auto flex items-center justify-between sm:justify-start gap-1.5 px-3 py-2 sm:py-1.5 rounded-xl bg-surface-subtle border border-border text-xs font-semibold">
+            <div className="flex items-center gap-1.5 shrink-0">
+              <Filter className="w-3.5 h-3.5 text-accent shrink-0" />
+              <span className="text-content-muted text-[11px] sm:text-xs">Market Node:</span>
+            </div>
             <CustomSelect
               value={selectedMarket}
               onChange={(val) => setSelectedMarket(val as any)}
@@ -214,13 +216,13 @@ export function DashboardCockpitClient({ initialData }: DashboardProps) {
                 { value: 'TALOJA', label: 'Taloja Industrial & CIDCO' },
                 { value: 'PANVEL', label: 'Panvel & Upper Kharghar' },
               ]}
-              className="font-bold text-accent-text bg-transparent border-none p-0 focus:ring-0 cursor-pointer"
+              className="font-bold text-accent-text bg-transparent border-none p-0 focus:ring-0 cursor-pointer text-xs"
             />
           </div>
         </div>
 
         {/* Time Window Filter Pills */}
-        <div className="flex items-center gap-1 bg-surface-subtle p-1 rounded-xl border border-border text-xs font-semibold">
+        <div className="w-full md:w-auto flex items-center gap-1 bg-surface-subtle p-1 rounded-xl border border-border text-xs font-semibold overflow-x-auto no-scrollbar">
           {[
             { key: 'today', label: 'Today' },
             { key: '7d', label: 'Last 7D' },
@@ -231,7 +233,7 @@ export function DashboardCockpitClient({ initialData }: DashboardProps) {
               key={range.key}
               type="button"
               onClick={() => setTimeRange(range.key as any)}
-              className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+              className={`flex-1 md:flex-initial text-center px-2.5 sm:px-3 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap text-[11px] sm:text-xs ${
                 timeRange === range.key
                   ? 'bg-accent text-white shadow-2xs font-bold'
                   : 'text-content-muted hover:text-content hover:bg-surface'
@@ -244,9 +246,9 @@ export function DashboardCockpitClient({ initialData }: DashboardProps) {
       </div>
 
       {/* ─── 2. MAIN COCKPIT HEADER & ACTION LAUNCHPAD ─── */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-2 border-b border-border">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-4 pb-2 border-b border-border">
         <div>
-          <div className="flex items-center gap-2 mb-1 flex-wrap">
+          <div className="flex items-center gap-1.5 sm:gap-2 mb-1 flex-wrap">
             <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-accent-soft text-accent-text border border-accent/20 uppercase tracking-wider">
               {selectedMarket === 'ALL' ? 'Kharghar & Taloja Advisory Network' : `${selectedMarket} Node Hub`}
             </span>
@@ -261,10 +263,10 @@ export function DashboardCockpitClient({ initialData }: DashboardProps) {
         </div>
 
         {/* Action Controls */}
-        <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full lg:w-auto">
+        <div className="grid grid-cols-2 sm:flex sm:flex-wrap md:flex-nowrap items-center gap-2 w-full lg:w-auto">
           <Link
             href="/calendar"
-            className="px-3 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content-secondary hover:text-content border border-border text-xs font-semibold transition-all flex items-center justify-center gap-1.5 shadow-2xs hover:border-accent/40 active:scale-95"
+            className="px-3 py-2.5 sm:py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content-secondary hover:text-content border border-border text-xs font-semibold transition-all flex items-center justify-center gap-1.5 shadow-2xs hover:border-accent/40 active:scale-95"
           >
             <Calendar className="w-3.5 h-3.5 text-accent shrink-0" />
             <span>Reminders</span>
@@ -276,21 +278,21 @@ export function DashboardCockpitClient({ initialData }: DashboardProps) {
           </Link>
           <Link
             href="/matching"
-            className="px-3 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content-secondary hover:text-content border border-border text-xs font-semibold transition-all flex items-center justify-center gap-1.5 shadow-2xs hover:border-accent/40 active:scale-95"
+            className="px-3 py-2.5 sm:py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content-secondary hover:text-content border border-border text-xs font-semibold transition-all flex items-center justify-center gap-1.5 shadow-2xs hover:border-accent/40 active:scale-95"
           >
             <Sparkles className="w-3.5 h-3.5 text-accent shrink-0" />
             <span>Matchmaker</span>
           </Link>
           <Link
             href="/calculator"
-            className="px-3 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content-secondary hover:text-content border border-border text-xs font-semibold transition-all flex items-center justify-center gap-1.5 shadow-2xs hover:border-accent/40 active:scale-95"
+            className="px-3 py-2.5 sm:py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content-secondary hover:text-content border border-border text-xs font-semibold transition-all flex items-center justify-center gap-1.5 shadow-2xs hover:border-accent/40 active:scale-95"
           >
             <Calculator className="w-3.5 h-3.5 text-accent shrink-0" />
             <span>Calculator</span>
           </Link>
           <Link
             href="/deals"
-            className="px-3 sm:px-4 py-2 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-xs hover:shadow-sm active:scale-95"
+            className="px-3 sm:px-4 py-2.5 sm:py-2 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-xs hover:shadow-sm active:scale-95"
           >
             <DollarSign className="w-3.5 h-3.5 shrink-0" />
             <span>Record Deal</span>
@@ -303,15 +305,15 @@ export function DashboardCockpitClient({ initialData }: DashboardProps) {
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-accent/10 via-surface to-surface border-2 border-accent/40 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4 hover:border-accent transition-all duration-300"
+          className="p-3.5 sm:p-5 rounded-2xl bg-gradient-to-r from-accent/10 via-surface to-surface border-2 border-accent/40 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-3.5 sm:gap-4 hover:border-accent transition-all duration-300"
         >
-          <div className="space-y-1.5 min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-accent text-white shadow-2xs">
-                <Sparkles className="w-3.5 h-3.5 fill-white animate-spin" style={{ animationDuration: '4s' }} />
+          <div className="space-y-1.5 min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+              <span className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full text-[11px] sm:text-xs font-bold bg-accent text-white shadow-2xs">
+                <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-white" />
                 #1 Priority Action: Connect Next
               </span>
-              <span className="text-xs font-mono font-bold text-accent-text bg-accent-soft px-2.5 py-0.5 rounded-lg border border-accent/20">
+              <span className="text-[11px] sm:text-xs font-mono font-bold text-accent-text bg-accent-soft px-2.5 py-0.5 rounded-lg border border-accent/20">
                 Score: {topConnectNext.totalScore ?? topConnectNext.priorityScore ?? 95}/100
               </span>
               {topConnectNext.urgencyTier && (
@@ -320,10 +322,10 @@ export function DashboardCockpitClient({ initialData }: DashboardProps) {
                 </span>
               )}
             </div>
-            <h2 className="text-base sm:text-lg font-bold text-content font-display truncate">
-              {topConnectNext.leadName || topConnectNext.lead?.fullName || 'Lead Profile'} &bull;{' '}
+            <h2 className="text-sm sm:text-base md:text-lg font-bold text-content font-display break-words">
+              {topConnectNext.leadName || topConnectNext.lead?.fullName || 'Lead Profile'}{' '}
               <span className="font-normal text-content-secondary font-mono text-xs sm:text-sm">
-                {topConnectNext.phoneE164 || topConnectNext.lead?.phoneE164 || 'No Phone'}
+                &bull; {topConnectNext.phoneE164 || topConnectNext.lead?.phoneE164 || 'No Phone'}
               </span>
             </h2>
             <p className="text-xs text-content-secondary max-w-2xl leading-relaxed">
@@ -340,18 +342,18 @@ export function DashboardCockpitClient({ initialData }: DashboardProps) {
               <>
                 <a
                   href={`tel:${topConnectNext.phoneE164 || topConnectNext.lead?.phoneE164}`}
-                  className="flex-1 sm:flex-none justify-center px-4 py-2.5 rounded-xl bg-status-success hover:bg-status-success-hover text-white text-xs font-bold flex items-center gap-1.5 shadow-xs hover:shadow-sm active:scale-95 transition-all cursor-pointer"
+                  className="flex-1 sm:flex-initial justify-center px-3.5 sm:px-4 py-2.5 rounded-xl bg-status-success hover:bg-status-success-hover text-white text-xs font-bold flex items-center gap-1.5 shadow-xs hover:shadow-sm active:scale-95 transition-all cursor-pointer"
                 >
-                  <Phone className="w-3.5 h-3.5" />
+                  <Phone className="w-3.5 h-3.5 shrink-0" />
                   <span>Call Lead</span>
                 </a>
                 <a
                   href={`https://wa.me/${(topConnectNext.phoneE164 || topConnectNext.lead?.phoneE164 || '').replace(/\D/g, '')}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex-1 sm:flex-none justify-center px-4 py-2.5 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border hover:border-emerald-500 text-xs font-bold flex items-center gap-1.5 shadow-2xs active:scale-95 transition-all"
+                  className="flex-1 sm:flex-initial justify-center px-3.5 sm:px-4 py-2.5 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border hover:border-emerald-500 text-xs font-bold flex items-center gap-1.5 shadow-2xs active:scale-95 transition-all"
                 >
-                  <MessageSquare className="w-3.5 h-3.5 text-status-success" />
+                  <MessageSquare className="w-3.5 h-3.5 text-status-success shrink-0" />
                   <span>WhatsApp</span>
                 </a>
               </>
@@ -439,8 +441,8 @@ export function DashboardCockpitClient({ initialData }: DashboardProps) {
               <TrendingUp className="w-4 h-4" />
             </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black text-content font-display">
+          <div className="flex flex-wrap items-baseline gap-1 sm:gap-2">
+            <span className="text-xl sm:text-2xl font-black text-content font-display">
               {formatINR(currentRealizedNet || currentGrossBrokerage * 0.7)}
             </span>
             <span className="text-xs font-mono text-accent-text font-bold">
@@ -461,16 +463,16 @@ export function DashboardCockpitClient({ initialData }: DashboardProps) {
       />
 
       {/* ─── 6. OPERATIONAL WORKBENCHES & RECENT ACTIVITY ─── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Hot Telemetry Sessions */}
-        <div className="bg-surface border border-border rounded-2xl p-5 shadow-xs space-y-3 hover:border-accent/30 transition-all duration-300">
+        <div className="bg-surface border border-border rounded-2xl p-4 sm:p-5 shadow-xs space-y-3 hover:border-accent/30 transition-all duration-300">
           <div className="flex items-center justify-between pb-3 border-b border-border">
-            <h2 className="text-sm font-bold text-content font-display flex items-center gap-2">
-              <Globe className="w-4 h-4 text-accent" />
-              Live Client Portal Telemetry ({initialData.portalCount} active)
+            <h2 className="text-xs sm:text-sm font-bold text-content font-display flex items-center gap-1.5 sm:gap-2 truncate">
+              <Globe className="w-4 h-4 text-accent shrink-0" />
+              <span className="truncate">Live Client Portal Telemetry ({initialData.portalCount} active)</span>
             </h2>
-            <Link href="/portals" className="text-xs font-bold text-accent-text hover:underline flex items-center gap-1">
-              View all <ChevronRight className="w-3.5 h-3.5" />
+            <Link href="/portals" className="text-xs font-bold text-accent-text hover:underline flex items-center gap-1 shrink-0">
+              <span>View all</span> <ChevronRight className="w-3.5 h-3.5" />
             </Link>
           </div>
 
@@ -479,15 +481,15 @@ export function DashboardCockpitClient({ initialData }: DashboardProps) {
               hotProspects.slice(0, 4).map((hp, i) => (
                 <div
                   key={i}
-                  className="p-3 rounded-xl bg-surface-subtle border border-border flex items-center justify-between text-xs hover:border-accent/40 transition-all"
+                  className="p-2.5 sm:p-3 rounded-xl bg-surface-subtle border border-border flex items-center justify-between gap-2.5 text-xs hover:border-accent/40 transition-all"
                 >
-                  <div>
-                    <span className="font-bold text-content block">{hp.lead?.fullName || 'Client'}</span>
-                    <span className="text-[11px] text-content-muted">
+                  <div className="min-w-0 flex-1">
+                    <span className="font-bold text-content block truncate">{hp.lead?.fullName || 'Client'}</span>
+                    <span className="text-[11px] text-content-muted block truncate">
                       Viewed {hp.portal?.portalUnits?.length || 1} units
                     </span>
                   </div>
-                  <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-accent-soft text-accent-text border border-accent/20">
+                  <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-accent-soft text-accent-text border border-accent/20 shrink-0">
                     {hp.engagement?.engagementTier || 'WARM'}
                   </span>
                 </div>
@@ -501,14 +503,14 @@ export function DashboardCockpitClient({ initialData }: DashboardProps) {
         </div>
 
         {/* Site Tours & Upcoming Calendar */}
-        <div className="bg-surface border border-border rounded-2xl p-5 shadow-xs space-y-3 hover:border-accent/30 transition-all duration-300">
+        <div className="bg-surface border border-border rounded-2xl p-4 sm:p-5 shadow-xs space-y-3 hover:border-accent/30 transition-all duration-300">
           <div className="flex items-center justify-between pb-3 border-b border-border">
-            <h2 className="text-sm font-bold text-content font-display flex items-center gap-2">
-              <Car className="w-4 h-4 text-accent" />
-              Scheduled Site Visits &amp; Tours ({filteredVisits.length})
+            <h2 className="text-xs sm:text-sm font-bold text-content font-display flex items-center gap-1.5 sm:gap-2 truncate">
+              <Car className="w-4 h-4 text-accent shrink-0" />
+              <span className="truncate">Scheduled Site Visits ({filteredVisits.length})</span>
             </h2>
-            <Link href="/visits" className="text-xs font-bold text-accent-text hover:underline flex items-center gap-1">
-              View schedule <ChevronRight className="w-3.5 h-3.5" />
+            <Link href="/visits" className="text-xs font-bold text-accent-text hover:underline flex items-center gap-1 shrink-0">
+              <span>Schedule</span> <ChevronRight className="w-3.5 h-3.5" />
             </Link>
           </div>
 
@@ -517,16 +519,16 @@ export function DashboardCockpitClient({ initialData }: DashboardProps) {
               filteredVisits.slice(0, 4).map((v, i) => (
                 <div
                   key={i}
-                  className="p-3 rounded-xl bg-surface-subtle border border-border flex items-center justify-between text-xs hover:border-accent/40 transition-all"
+                  className="p-2.5 sm:p-3 rounded-xl bg-surface-subtle border border-border flex items-center justify-between gap-2.5 text-xs hover:border-accent/40 transition-all"
                 >
-                  <div>
-                    <span className="font-bold text-content block">{v.lead?.fullName || 'Client Tour'}</span>
-                    <span className="text-[11px] text-content-muted flex items-center gap-1 mt-0.5">
-                      <Clock className="w-3 h-3 text-accent" />
-                      {formatDateTime(v.scheduledDate)}
+                  <div className="min-w-0 flex-1">
+                    <span className="font-bold text-content block truncate">{v.lead?.fullName || 'Client Tour'}</span>
+                    <span className="text-[11px] text-content-muted flex items-center gap-1 mt-0.5 truncate">
+                      <Clock className="w-3 h-3 text-accent shrink-0" />
+                      <span className="truncate">{formatDateTime(v.scheduledDate)}</span>
                     </span>
                   </div>
-                  <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                  <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shrink-0">
                     {v.status || 'CONFIRMED'}
                   </span>
                 </div>

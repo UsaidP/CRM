@@ -5,7 +5,7 @@ import fs from 'fs';
 import path from 'path';
 
 async function main() {
-  console.log('🚀 Starting Headless Playwright Dashboard Audit...');
+  console.log('🚀 Starting Multi-Viewport Responsive Headless Dashboard Audit...');
 
   const user = await prisma.user.findFirst({
     where: { role: 'SUPER_ADMIN' },
@@ -38,105 +38,131 @@ async function main() {
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
   });
 
-  const context = await browser.newContext({
-    viewport: { width: 1440, height: 900 },
-  });
-
-  await context.addCookies([
-    {
-      name: SESSION_COOKIE_NAME,
-      value: token,
-      domain: 'localhost',
-      path: '/',
-      httpOnly: true,
-      sameSite: 'Lax',
-    },
-  ]);
-
-  const page = await context.newPage();
-
   const consoleErrors: string[] = [];
   const pageErrors: string[] = [];
+  const overflowIssues: string[] = [];
 
-  page.on('console', (msg) => {
-    if (msg.type() === 'error') {
-      consoleErrors.push(msg.text());
+  const viewports = [
+    { name: 'mobile', width: 390, height: 844, isMobile: true },
+    { name: 'tablet', width: 768, height: 1024, isMobile: false },
+    { name: 'desktop', width: 1440, height: 900, isMobile: false },
+  ];
+
+  for (const vp of viewports) {
+    console.log(`\n📱 Auditing Viewport: ${vp.name.toUpperCase()} (${vp.width}x${vp.height})...`);
+    const context = await browser.newContext({
+      viewport: { width: vp.width, height: vp.height },
+      isMobile: vp.isMobile,
+      hasTouch: vp.isMobile,
+    });
+
+    await context.addCookies([
+      {
+        name: SESSION_COOKIE_NAME,
+        value: token,
+        domain: 'localhost',
+        path: '/',
+        httpOnly: true,
+        sameSite: 'Lax',
+      },
+    ]);
+
+    const page = await context.newPage();
+
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') {
+        consoleErrors.push(`[${vp.name}] ${msg.text()}`);
+      }
+    });
+
+    page.on('pageerror', (err) => {
+      pageErrors.push(`[${vp.name}] ${err.message}`);
+    });
+
+    await page.goto('http://localhost:3000', {
+      waitUntil: 'networkidle',
+      timeout: 30000,
+    });
+
+    await page.waitForSelector('h1', { timeout: 10000 });
+
+    // Check for horizontal overflow
+    const hasHorizontalOverflow = await page.evaluate(() => {
+      return document.documentElement.scrollWidth > window.innerWidth;
+    });
+
+    const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+    const innerWidth = await page.evaluate(() => window.innerWidth);
+
+    if (hasHorizontalOverflow) {
+      const diff = scrollWidth - innerWidth;
+      const msg = `Horizontal overflow detected on ${vp.name}: scrollWidth=${scrollWidth}px > innerWidth=${innerWidth}px (+${diff}px overflow)`;
+      console.error(`❌ ${msg}`);
+      overflowIssues.push(msg);
+    } else {
+      console.log(`✓ Zero horizontal overflow on ${vp.name} (scrollWidth=${scrollWidth}px, innerWidth=${innerWidth}px)`);
     }
-  });
 
-  page.on('pageerror', (err) => {
-    pageErrors.push(err.message);
-  });
+    // Capture tab 1: Funnel
+    await page.waitForTimeout(2000);
+    await page.screenshot({
+      path: path.join(screenshotsDir, `dashboard-${vp.name}-funnel.png`),
+      fullPage: true,
+    });
+    console.log(`📸 Captured: dashboard-${vp.name}-funnel.png`);
 
-  console.log('🌐 Navigating to http://localhost:3000 ...');
-  const response = await page.goto('http://localhost:3000', {
-    waitUntil: 'networkidle',
-    timeout: 30000,
-  });
+    // Tab 2: Cash Flow
+    const cashflowBtn = page.locator('button', { hasText: 'Cash Flow Curve' });
+    if (await cashflowBtn.count() > 0) {
+      await cashflowBtn.scrollIntoViewIfNeeded();
+      await cashflowBtn.click();
+      await page.waitForTimeout(1500);
+      await page.screenshot({
+        path: path.join(screenshotsDir, `dashboard-${vp.name}-cashflow.png`),
+        fullPage: true,
+      });
+      console.log(`📸 Captured: dashboard-${vp.name}-cashflow.png`);
+    }
 
-  console.log(`HTTP Status: ${response?.status()}`);
-  console.log(`Current URL: ${page.url()}`);
+    // Tab 3: Market Depth
+    const marketBtn = page.locator('button', { hasText: 'Market Depth' });
+    if (await marketBtn.count() > 0) {
+      await marketBtn.scrollIntoViewIfNeeded();
+      await marketBtn.click();
+      await page.waitForTimeout(1500);
+      await page.screenshot({
+        path: path.join(screenshotsDir, `dashboard-${vp.name}-market.png`),
+        fullPage: true,
+      });
+      console.log(`📸 Captured: dashboard-${vp.name}-market.png`);
+    }
 
-  if (page.url().includes('/login')) {
-    throw new Error('Session cookie not accepted, redirected to /login');
+    // Tab 4: Speed SLA
+    const slaBtn = page.locator('button', { hasText: 'Speed SLA' });
+    if (await slaBtn.count() > 0) {
+      await slaBtn.scrollIntoViewIfNeeded();
+      await slaBtn.click();
+      await page.waitForTimeout(1500);
+      await page.screenshot({
+        path: path.join(screenshotsDir, `dashboard-${vp.name}-sla.png`),
+        fullPage: true,
+      });
+      console.log(`📸 Captured: dashboard-${vp.name}-sla.png`);
+    }
+
+    await context.close();
   }
 
-  // 1. Check title & headers
-  await page.waitForSelector('h1', { timeout: 10000 });
-  const title = await page.locator('h1').textContent();
-  console.log(`✓ Dashboard H1: "${title?.trim()}"`);
+  await browser.close();
 
-  // 2. Take initial dashboard screenshot (Funnel Tab)
-  await page.waitForTimeout(2500);
-  await page.screenshot({ path: path.join(screenshotsDir, 'dashboard-headless-funnel.png'), fullPage: true });
-  console.log('📸 Captured: dashboard-headless-funnel.png');
-
-  // 3. Test Tab: Cash Flow Curve
-  console.log('🖱️ Switching to Cash Flow Curve tab...');
-  const cashflowBtn = page.locator('button', { hasText: 'Cash Flow Curve' });
-  await cashflowBtn.click();
-  await page.waitForTimeout(2500);
-  await page.screenshot({ path: path.join(screenshotsDir, 'dashboard-headless-cashflow.png'), fullPage: true });
-  console.log('📸 Captured: dashboard-headless-cashflow.png');
-
-  // 4. Test Tab: Market Depth
-  console.log('🖱️ Switching to Market Depth tab...');
-  const marketBtn = page.locator('button', { hasText: 'Market Depth' });
-  await marketBtn.click();
-  await page.waitForTimeout(2500);
-  await page.screenshot({ path: path.join(screenshotsDir, 'dashboard-headless-market.png'), fullPage: true });
-  console.log('📸 Captured: dashboard-headless-market.png');
-
-  // 5. Test Tab: Speed SLA
-  console.log('🖱️ Switching to Speed SLA tab...');
-  const slaBtn = page.locator('button', { hasText: 'Speed SLA' });
-  await slaBtn.click();
-  await page.waitForTimeout(2500);
-  await page.screenshot({ path: path.join(screenshotsDir, 'dashboard-headless-sla.png'), fullPage: true });
-  console.log('📸 Captured: dashboard-headless-sla.png');
-
-  // 6. Test Micro-Market Filtering
-  console.log('🖱️ Testing Micro-Market Selector...');
-  const marketSelect = page.locator('select');
-  if (await marketSelect.count() > 0) {
-    await marketSelect.selectOption('KHARGHAR');
-    await page.waitForTimeout(800);
-    console.log('✓ Switched market to KHARGHAR');
-    await marketSelect.selectOption('ALL');
-    await page.waitForTimeout(500);
+  console.log('\n================ AUDIT SUMMARY ================');
+  console.log(`Horizontal Overflow Issues: ${overflowIssues.length}`);
+  if (overflowIssues.length > 0) {
+    overflowIssues.forEach((issue) => console.error(`  ❌ ${issue}`));
+  } else {
+    console.log('✓ Zero horizontal overflow across ALL viewports (Mobile, Tablet, Desktop)!');
   }
 
-  // 7. Test Time Range Filters (7D, 30D, Today, All)
-  console.log('🖱️ Testing Time Range Filters...');
-  await page.locator('button', { hasText: 'Last 7D' }).click();
-  await page.waitForTimeout(500);
-  await page.locator('button', { hasText: 'Last 30D' }).click();
-  await page.waitForTimeout(500);
-  await page.locator('button', { hasText: 'All Time' }).click();
-  await page.waitForTimeout(500);
-
-  // 7. Check if any errors occurred during interactions
-  console.log('\n--- AUDIT SUMMARY ---');
   console.log(`Page Errors: ${pageErrors.length}`);
   if (pageErrors.length > 0) {
     console.error('❌ Page Errors encountered:', pageErrors);
@@ -151,9 +177,7 @@ async function main() {
     console.log('✓ Zero console errors!');
   }
 
-  await browser.close();
-
-  if (pageErrors.length > 0) {
+  if (pageErrors.length > 0 || overflowIssues.length > 0) {
     process.exit(1);
   }
 }

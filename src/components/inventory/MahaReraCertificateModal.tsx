@@ -23,8 +23,8 @@ export function MahaReraCertificateModal({
       open={open}
       onClose={onClose}
       titleId="maharera-cert-modal-title"
-      size="xl"
-      panelClassName="p-0 overflow-hidden bg-surface-raised border border-border"
+      size="2xl"
+      panelClassName="p-0 overflow-hidden bg-surface-raised border border-border shadow-2xl"
     >
       {/* Modal Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-surface sticky top-0 z-10">

@@ -43,6 +43,7 @@ import { uploadToCloudinaryChunked } from '@/lib/client/cloudinary-chunked-uploa
 import { parseSafeDate } from '@/lib/date-utils';
 import { MahaReraCertificateModal } from '@/components/inventory/MahaReraCertificateModal';
 import { resolveAssetUrl, parseGalleryUrls } from '@/lib/inventory-media';
+import { deduplicateUnitsByConfiguration } from '@/lib/services/unit-deduplication';
 
 export interface BrochureUploadModalProps {
   open: boolean;
@@ -266,28 +267,38 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
     );
   };
 
+  const MAX_BROCHURE_BYTES = 50 * 1024 * 1024; // 50 MB
+
   const handleFileDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const dropped = e.dataTransfer.files[0];
-      if (isAcceptedFileType(dropped)) {
-        setFile(dropped);
-        setParseError(null);
-      } else {
+      if (!isAcceptedFileType(dropped)) {
         setParseError('Please upload a valid developer brochure PDF or floor plan image (PNG, JPG, WEBP).');
+        return;
       }
+      if (dropped.size > MAX_BROCHURE_BYTES) {
+        setParseError(`Selected file (${(dropped.size / (1024 * 1024)).toFixed(1)} MB) exceeds the 50 MB brochure limit. Please select a file under 50 MB.`);
+        return;
+      }
+      setFile(dropped);
+      setParseError(null);
     }
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const selected = e.target.files[0];
-      if (isAcceptedFileType(selected)) {
-        setFile(selected);
-        setParseError(null);
-      } else {
+      if (!isAcceptedFileType(selected)) {
         setParseError('Please select a PDF brochure document or floor plan image.');
+        return;
       }
+      if (selected.size > MAX_BROCHURE_BYTES) {
+        setParseError(`Selected file (${(selected.size / (1024 * 1024)).toFixed(1)} MB) exceeds the 50 MB brochure limit. Please select a file under 50 MB.`);
+        return;
+      }
+      setFile(selected);
+      setParseError(null);
     }
   };
 
@@ -322,22 +333,11 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
     try {
       let res: Response;
       if (uploadMode === 'file' && file) {
-        // Step 1: Encode Base64 for guaranteed immediate in-memory transport & vision parsing
-        let base64Data: string | null = null;
-        try {
-          base64Data = await new Promise<string>((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result as string);
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-          });
-        } catch (base64Err) {
-          console.warn('[BROCHURE] Base64 encoding notice:', base64Err);
+        if (file.size > MAX_BROCHURE_BYTES) {
+          throw new Error(`File size (${(file.size / (1024 * 1024)).toFixed(1)} MB) exceeds the 50 MB upload limit.`);
         }
 
-        if (controller.signal.aborted) return;
-
-        // Step 2: Direct Cloudinary chunked upload for permanent asset hosting (if configured)
+        // Step 1: Attempt direct Cloudinary chunked upload for permanent asset hosting (bypasses server payload limits)
         let directUploadedUrl: string | null = null;
         try {
           const isPdf = file.type?.includes('pdf') || file.name.match(/\.pdf$/i);
@@ -359,22 +359,60 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
           }
         } catch (cloudUploadErr: any) {
           if (controller.signal.aborted || cloudUploadErr?.name === 'AbortError') return;
-          console.warn('[UPLOAD] Direct Cloudinary chunked upload attempt warning:', cloudUploadErr);
+          console.warn('[UPLOAD] Direct Cloudinary chunked upload attempt notice:', cloudUploadErr);
         }
 
         if (controller.signal.aborted) return;
 
-        res = await fetch('/api/v1/inventory/upload-brochure', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            fileBase64: base64Data,
-            brochureUrl: directUploadedUrl,
-            filename: file.name,
-            mimeType: file.type || 'application/pdf',
-          }),
-          signal: controller.signal,
-        });
+        // Step 2: Send to upload & extraction endpoint
+        if (directUploadedUrl) {
+          // Fast-track: Send the hosted CDN URL directly (< 1KB payload, zero binary memory overhead)
+          res = await fetch('/api/v1/inventory/upload-brochure', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              brochureUrl: directUploadedUrl,
+              filename: file.name,
+              mimeType: file.type || 'application/pdf',
+            }),
+            signal: controller.signal,
+          });
+        } else if (file.size <= 4 * 1024 * 1024) {
+          // Smaller files (<= 4MB): base64 JSON payload is quick and reliable
+          let base64Data: string | null = null;
+          try {
+            base64Data = await new Promise<string>((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = () => resolve(reader.result as string);
+              reader.onerror = reject;
+              reader.readAsDataURL(file);
+            });
+          } catch (base64Err) {
+            console.warn('[BROCHURE] Base64 encoding notice:', base64Err);
+          }
+
+          res = await fetch('/api/v1/inventory/upload-brochure', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              fileBase64: base64Data,
+              filename: file.name,
+              mimeType: file.type || 'application/pdf',
+            }),
+            signal: controller.signal,
+          });
+        } else {
+          // Large files (> 4MB up to 50MB): Stream directly as multipart FormData to avoid memory explosion
+          const formData = new FormData();
+          formData.append('file', file);
+          formData.append('filename', file.name);
+
+          res = await fetch('/api/v1/inventory/upload-brochure', {
+            method: 'POST',
+            body: formData,
+            signal: controller.signal,
+          });
+        }
       } else if (uploadMode === 'text' && pastedText.trim()) {
         res = await fetch('/api/v1/inventory/upload-brochure', {
           method: 'POST',
@@ -395,7 +433,7 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
       } catch {
         if (res.status === 413 || rawText.includes('Request Entity Too Large')) {
           throw new Error(
-            `File size (${(file ? (file.size / (1024 * 1024)).toFixed(1) : '13.9')} MB) exceeds Vercel direct upload limit (4.5 MB). Please configure CLOUDINARY credentials in your Vercel Project Settings for direct cloud uploads, or use the "Paste Brochure / Spec Text" tab.`
+            `File size (${(file ? (file.size / (1024 * 1024)).toFixed(1) : '')} MB) exceeds maximum upload payload limit. Please ensure Cloudinary credentials are active for 50 MB chunked uploads.`
           );
         }
         throw new Error(`Server returned HTTP ${res.status}: ${rawText.slice(0, 150)}`);
@@ -449,9 +487,16 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
         throw new Error(reraCheck.error || 'Please enter a valid MahaRERA registration number.');
       }
 
-      const extractedElevations = projectData.elevations || projectData.classifiedMedia?.elevations || [];
-      const extractedFloorPlans = projectData.floorPlans || projectData.classifiedMedia?.floorPlans || [];
+      const rawElevations = projectData.elevations || projectData.classifiedMedia?.elevations || [];
+      const extractedElevations = rawElevations.slice(0, 2);
+      const rawFloorPlans = projectData.floorPlans || projectData.classifiedMedia?.floorPlans || [];
+      const extractedFloorPlans = rawFloorPlans.slice(0, 3);
       const extractedMasterPlan = projectData.masterPlan || projectData.classifiedMedia?.masterPlan;
+      const excessMedia = [
+        ...rawElevations.slice(2),
+        ...rawFloorPlans.slice(3),
+        ...(projectData.brochurePhotos || []),
+      ];
 
       const coverImageUrl = projectData.coverImageUrl 
         || resolveAssetUrl(extractedElevations[0]) 
@@ -475,6 +520,15 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
         ? projectData.mediaGallery
         : allMediaUrls;
 
+      // Ensure units are strictly deduplicated into distinct configurations (one each)
+      const distinctUnits = deduplicateUnitsByConfiguration(projectData.units || [], {
+        totalFloors: parseInt(projectData.totalFloors || 7, 10),
+        basePricePerSqft: parseFloat(projectData.basePricePerSqft || 6200),
+        hasOccupancyCertificate: projectData.hasOccupancyCertificate || false,
+        projectName: projectData.projectName,
+        carpetToleranceSqft: 5,
+      });
+
       const payload = {
         developerName: projectData.developerName,
         projectName: projectData.projectName,
@@ -490,6 +544,9 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
         coverImageUrl,
         masterPlanUrl,
         mediaGallery,
+        elevationImages: extractedElevations,
+        floorPlanImages: extractedFloorPlans,
+        brochurePhotos: excessMedia,
         hasOccupancyCertificate: projectData.hasOccupancyCertificate || false,
         expectedPossessionDate: parseSafeDate(projectData.expectedPossessionDate)?.toISOString() || null,
         amenities: projectData.amenities || [],
@@ -503,7 +560,7 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
         reraValidUntil: parseSafeDate(projectData.reraVerification?.validUntil)?.toISOString() || null,
         reraVerificationDate: projectData.reraCertificateUrl ? new Date().toISOString() : null,
         reraCertDataJson: projectData.reraVerification ? JSON.stringify(projectData.reraVerification) : null,
-        units: (projectData.units || []).map((u: any, idx: number) => {
+        units: distinctUnits.map((u: any, idx: number) => {
           const matchingPlan = extractedFloorPlans.find((fp: any) => fp.bhk === u.bhk);
           const floorPlanUrl = u.floorPlanUrl 
             || matchingPlan?.mediaAsset?.secureUrl 
@@ -672,7 +729,7 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
                     {file ? file.name : 'Click to select or drag & drop Developer Brochure (PDF / Image / Spec Sheet)'}
                   </p>
                   <p className="text-[11px] text-content-muted mt-0.5 font-mono">
-                    {file ? `${(file.size / (1024 * 1024)).toFixed(2)} MB Document Ready` : 'Supports official MahaRERA brochures, floor plan images (PDF, PNG, JPG, WEBP) up to 100 MB'}
+                    {file ? `${(file.size / (1024 * 1024)).toFixed(2)} MB Document Ready` : 'Supports official MahaRERA brochures, floor plan images (PDF, PNG, JPG, WEBP) up to 50 MB'}
                   </p>
                 </div>
 
@@ -1096,7 +1153,7 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
                 <div className="p-4 bg-surface rounded-2xl border border-border space-y-3.5">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <h3 className="font-bold text-xs uppercase font-mono text-accent-text flex items-center gap-1.5">
-                      <Building2 className="w-4 h-4 text-accent" /> High-Resolution Architectural Elevations ({projectData.elevations?.length || 0})
+                      <Building2 className="w-4 h-4 text-accent" /> High-Resolution Architectural Elevations ({Math.min(2, projectData.elevations?.length || 0)} Stored / Limit 2)
                     </h3>
                     <span className="text-[10px] px-2.5 py-1 rounded-lg bg-accent-soft text-accent-text font-mono font-bold border border-accent/20 truncate">
                       Cloudinary: zamzam_crm/projects/{projectData.projectName ? projectData.projectName.replace(/[^a-zA-Z0-9_-]/g, '_') : 'project'}/elevations
@@ -1104,7 +1161,7 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    {(projectData.elevations || []).map((elev: any, idx: number) => {
+                    {(projectData.elevations || []).slice(0, 2).map((elev: any, idx: number) => {
                       const elevUrl = resolveAssetUrl(elev);
                       const isCover = (projectData.coverImageUrl === elevUrl) || (!projectData.coverImageUrl && idx === 0);
                       return (
@@ -1161,7 +1218,7 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
                 <div className="p-4 bg-surface rounded-2xl border border-border space-y-3.5">
                   <div className="flex items-center justify-between">
                     <h3 className="font-bold text-xs uppercase font-mono text-accent-text flex items-center gap-1.5">
-                      <Home className="w-4 h-4 text-accent" /> Sanctioned Floor Plans &amp; Layouts ({projectData.floorPlans?.length || 0})
+                      <Home className="w-4 h-4 text-accent" /> Sanctioned Floor Plans &amp; Layouts ({Math.min(3, projectData.floorPlans?.length || 0)} Stored / Limit 3)
                     </h3>
                     <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent-soft text-accent-text font-mono font-bold">
                       Extracted from Developer Brochure
@@ -1274,8 +1331,11 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
                       })}
                     </div>
 
-                    {/* 40% Builder Loading Badge */}
+                    {/* Distinct Configurations & 40% Builder Loading Badge */}
                     <div className="flex items-center gap-2">
+                      <span className="px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-[11px] font-bold font-mono">
+                        Distinct Configs (1 Each)
+                      </span>
                       <span className="px-2.5 py-1 rounded-lg bg-accent/10 border border-accent/20 text-accent-text text-[11px] font-bold font-mono">
                         40% Builder Loading (Taloja Std &gt;38%)
                       </span>
@@ -1669,7 +1729,10 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
                   <button
                     type="button"
                     onClick={() => {
-                      onPrefillProjectForm(projectData);
+                      onPrefillProjectForm({
+                        ...projectData,
+                        brochureUrl: brochureUrl || projectData.brochureUrl || null,
+                      });
                       handleCloseModal();
                     }}
                     className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-surface hover:bg-surface-subtle text-accent border border-accent/40 hover:border-accent text-xs font-bold shadow-2xs transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
@@ -1711,8 +1774,14 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
             validUntil: projectData.reraVerification?.validUntil || '2027-12-31',
             signatoryName: projectData.reraVerification?.signatoryName || 'Competent Authority, MahaRERA',
             certificateUrl: projectData.reraCertificateUrl || undefined,
-            originalImageUrl: projectData.reraVerification?.originalDocumentUrl || undefined,
-            isOriginalScannedDocument: Boolean(projectData.reraVerification?.isOriginalScannedDocument),
+            originalImageUrl:
+              projectData.reraVerification?.originalDocumentUrl ||
+              (projectData.reraNumber ? `/images/original-certificates/${projectData.reraNumber.replace(/[^A-Z0-9]/gi, '')}.png` : undefined),
+            isOriginalScannedDocument: Boolean(
+              projectData.reraVerification?.originalDocumentUrl ||
+              projectData.reraVerification?.isOriginalScannedDocument ||
+              projectData.reraCertificateUrl
+            ),
           }}
         />
       )}

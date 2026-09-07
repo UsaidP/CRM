@@ -5,6 +5,7 @@ import { createProjectSchema } from '@/lib/validators/inventory-schemas';
 import { validateReraNumber } from '@/lib/domain/verification-engine';
 import { parseInventoryContent, resolveAssetUrl } from '@/lib/inventory-media';
 import { parseSafeDate } from '@/lib/date-utils';
+import { deduplicateUnitsByConfiguration } from '@/lib/services/unit-deduplication';
 
 export const dynamic = 'force-dynamic';
 
@@ -106,16 +107,20 @@ export async function POST(req: Request) {
       );
     }
 
-    // Default or retrieve organization
-    let org = await prisma.organization.findFirst();
-    if (!org) {
-      org = await prisma.organization.create({
-        data: {
-          name: 'ZamZam Properties Real Estate',
-          slug: 'zamzam-properties',
-          reraBrokerRegistration: 'A52000029381',
-        },
-      });
+    // Default or retrieve organization: prioritize validated.organizationId, then active auth session org, then fallback
+    let effectiveOrgId = validated.organizationId || auth.session.organizationId;
+    if (!effectiveOrgId) {
+      let org = await prisma.organization.findFirst();
+      if (!org) {
+        org = await prisma.organization.create({
+          data: {
+            name: 'ZamZam Properties Real Estate',
+            slug: 'zamzam-properties',
+            reraBrokerRegistration: 'A52000029381',
+          },
+        });
+      }
+      effectiveOrgId = org.id;
     }
 
     // Check if initial units were provided (e.g. from brochure auto-extractor)
@@ -123,9 +128,10 @@ export async function POST(req: Request) {
     const normalizedRera = reraValidation.normalized || validated.reraNumber;
 
     const result = await prisma.$transaction(async (tx) => {
-      // 1. Check for existing duplicate project by RERA number or Project Name + Location
+      // 1. Check for existing duplicate project by RERA number or Project Name + Location in this organization
       const existingProject = await tx.developerProject.findFirst({
         where: {
+          organizationId: effectiveOrgId,
           OR: [
             { reraNumber: normalizedRera },
             {
@@ -175,9 +181,11 @@ export async function POST(req: Request) {
             coverImageUrl: validated.coverImageUrl || existingProject.coverImageUrl,
             masterPlanUrl: validated.masterPlanUrl || existingProject.masterPlanUrl,
             mediaGalleryJson: validated.mediaGallery && validated.mediaGallery.length > 0 ? JSON.stringify(validated.mediaGallery) : existingProject.mediaGalleryJson,
-            elevationImagesJson: validated.elevationImages && validated.elevationImages.length > 0 ? JSON.stringify(validated.elevationImages) : existingProject.elevationImagesJson,
-            floorPlanImagesJson: validated.floorPlanImages && validated.floorPlanImages.length > 0 ? JSON.stringify(validated.floorPlanImages) : existingProject.floorPlanImagesJson,
-            brochurePhotosJson: validated.brochurePhotos && validated.brochurePhotos.length > 0 ? JSON.stringify(validated.brochurePhotos) : existingProject.brochurePhotosJson,
+            elevationImagesJson: validated.elevationImages && validated.elevationImages.length > 0 ? JSON.stringify(validated.elevationImages.slice(0, 2)) : existingProject.elevationImagesJson,
+            floorPlanImagesJson: validated.floorPlanImages && validated.floorPlanImages.length > 0 ? JSON.stringify(validated.floorPlanImages.slice(0, 3)) : existingProject.floorPlanImagesJson,
+            brochurePhotosJson: (validated.brochurePhotos && validated.brochurePhotos.length > 0)
+              ? JSON.stringify([...validated.brochurePhotos, ...(validated.elevationImages?.slice(2) || []), ...(validated.floorPlanImages?.slice(3) || [])])
+              : existingProject.brochurePhotosJson,
             amenitiesJson: JSON.stringify(mergedAmenities),
             developerSalesPocName: validated.developerSalesPocName || existingProject.developerSalesPocName,
             developerSalesPocPhone: validated.developerSalesPocPhone || existingProject.developerSalesPocPhone,
@@ -192,10 +200,18 @@ export async function POST(req: Request) {
           },
         });
       } else {
-        // Create brand new project
+        // Create brand new project with strictly at most 2 elevations and at most 3 floor plans
+        const storedElevations = (validated.elevationImages || []).slice(0, 2);
+        const storedFloorPlans = (validated.floorPlanImages || []).slice(0, 3);
+        const excessPhotos = [
+          ...(validated.elevationImages || []).slice(2),
+          ...(validated.floorPlanImages || []).slice(3),
+          ...(validated.brochurePhotos || []),
+        ];
+
         projectRecord = await tx.developerProject.create({
           data: {
-            organizationId: validated.organizationId || org.id,
+            organizationId: effectiveOrgId,
             developerName: validated.developerName,
             projectName: validated.projectName,
             reraNumber: normalizedRera,
@@ -206,9 +222,9 @@ export async function POST(req: Request) {
             locationDescription: validated.locationDescription,
             keyHighlightsJson: JSON.stringify(validated.keyHighlights || []),
             mediaGalleryJson: JSON.stringify(validated.mediaGallery || []),
-            elevationImagesJson: JSON.stringify(validated.elevationImages || []),
-            floorPlanImagesJson: JSON.stringify(validated.floorPlanImages || []),
-            brochurePhotosJson: JSON.stringify(validated.brochurePhotos || []),
+            elevationImagesJson: JSON.stringify(storedElevations),
+            floorPlanImagesJson: JSON.stringify(storedFloorPlans),
+            brochurePhotosJson: JSON.stringify(excessPhotos),
             coverImageUrl: validated.coverImageUrl || null,
             latitude: validated.latitude,
             longitude: validated.longitude,
@@ -237,12 +253,21 @@ export async function POST(req: Request) {
       }
 
       // Sync Units without creating duplicate unit rows
+      // Strictly deduplicate into ONE record per distinct configuration
+      const distinctInitialUnits: any[] = deduplicateUnitsByConfiguration(initialUnits, {
+        totalFloors: validated.totalFloors,
+        basePricePerSqft: validated.basePricePerSqft,
+        hasOccupancyCertificate: validated.hasOccupancyCertificate,
+        projectName: validated.projectName,
+        carpetToleranceSqft: 5,
+      });
+
       const syncedUnits: any[] = [];
       const existingUnits = existingProject?.units || [];
-      const projElevationImages = validated.elevationImages || [];
-      const projFloorPlanImages = validated.floorPlanImages || [];
+      const projElevationImages = (validated.elevationImages || []).slice(0, 2);
+      const projFloorPlanImages = (validated.floorPlanImages || []).slice(0, 3);
 
-      for (const u of initialUnits) {
+      for (const u of distinctInitialUnits) {
         const agreementValue = Number(u.agreementValue) || Math.round(Number(u.carpetAreaSqft || 500) * validated.basePricePerSqft);
         const stampDutyRate = Number(u.stampDutyRate) || 6.0;
         const registrationFee = Number(u.registrationFee) || 30000.0;
@@ -255,8 +280,8 @@ export async function POST(req: Request) {
         const gstAmount = (agreementValue * gstRate) / 100;
         const allInTotalCost = agreementValue + stampDutyAmount + registrationFee + gstAmount + floorRiseCharges + parkingCharges + societyDevelopmentCharges;
 
-        const bhkNum = Math.max(1, Math.min(6, parseInt(u.bhk || 2, 10)));
-        const carpetNum = Math.max(100, parseInt(u.carpetAreaSqft || 650, 10));
+        const bhkNum = Math.max(1, Math.min(6, parseInt(String(u.bhk || 2), 10)));
+        const carpetNum = Math.max(100, parseInt(String(u.carpetAreaSqft || 650), 10));
 
         // Matching floor plans for unit BHK (Zero-fabrication: only match unit's BHK)
         const matchingFloorPlans = projFloorPlanImages.filter((fp: any) => Number(fp.bhk) === bhkNum);
@@ -341,9 +366,9 @@ export async function POST(req: Request) {
               projectId: projectRecord.id,
               unitNumber: u.unitNumber || `Unit-${syncedUnits.length + 1}`,
               bhk: bhkNum,
-              bathrooms: parseInt(u.bathrooms || (bhkNum >= 3 ? 3 : 2), 10),
-              balconies: parseInt(u.balconies || 1, 10),
-              floorNumber: Math.max(1, parseInt(u.floorNumber || 2, 10)),
+              bathrooms: parseInt(String(u.bathrooms || (bhkNum >= 3 ? 3 : 2)), 10),
+              balconies: parseInt(String(u.balconies || 1), 10),
+              floorNumber: Math.max(1, parseInt(String(u.floorNumber || 2), 10)),
               totalFloors: validated.totalFloors || 15,
               carpetAreaSqft: carpetNum,
               facing: u.facing || 'EAST',

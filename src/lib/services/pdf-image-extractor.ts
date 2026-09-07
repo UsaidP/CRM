@@ -82,8 +82,8 @@ export async function extractRealImagesFromPdf(
       const pagePrefix = path.join(tempDir, 'page');
       try {
         execFileSync(pdftoppmBin, ['-jpeg', '-r', '150', tempPdfPath, pagePrefix], {
-          timeout: 60000,
-          maxBuffer: 50 * 1024 * 1024,
+          timeout: 120000,
+          maxBuffer: 100 * 1024 * 1024,
         });
 
         const generatedFiles = fs.readdirSync(tempDir)
@@ -121,8 +121,8 @@ export async function extractRealImagesFromPdf(
       const rawPrefix = path.join(tempDir, 'rawimg');
       try {
         execFileSync(pdfimagesBin, ['-j', '-png', tempPdfPath, rawPrefix], {
-          timeout: 60000,
-          maxBuffer: 50 * 1024 * 1024,
+          timeout: 120000,
+          maxBuffer: 100 * 1024 * 1024,
         });
 
         const rawFiles = fs.readdirSync(tempDir)
@@ -209,16 +209,30 @@ export async function extractRealImagesFromPdf(
         subtype = 'cover_page';
         title = `${projectName} Main Brochure Cover`;
         description = `Official developer brochure cover and elevation for ${projectName}.`;
+      } else if (pageNum === 2 && totalRendered >= 4) {
+        // Typical page 2 in Indian brochures is either master layout or primary secondary elevation
+        assetType = 'master_plan';
+        subtype = 'master_layout_plan';
+        title = `${projectName} Master Site Layout`;
+        description = `Master site and layout plan extracted from developer brochure.`;
       } else if (totalRendered >= 4 && pageNum === totalRendered) {
         assetType = 'location_map';
         subtype = 'location_connectivity_map';
         title = `${projectName} Location & Transit Map`;
         description = `Official location and connectivity map from developer brochure.`;
-      } else if (totalRendered >= 6 && pageNum >= Math.floor(totalRendered * 0.6)) {
+      } else if (pageNum >= 3 && pageNum < totalRendered) {
         assetType = 'floor_plan';
         subtype = 'typical_floor_plan';
         title = `${projectName} Floor Plan Layout (Page ${pageNum})`;
         description = `Architectural floor plan layout from developer brochure.`;
+        if (bhk === undefined) {
+          bhk = pageNum % 2 === 1 ? 1 : 2;
+        }
+      } else {
+        assetType = 'elevation';
+        subtype = 'elevation_view';
+        title = `${projectName} Architectural Render (Page ${pageNum})`;
+        description = `Architectural view from developer brochure.`;
       }
 
       finalAssets.push({
@@ -236,22 +250,23 @@ export async function extractRealImagesFromPdf(
       });
     }
 
-    // Attach high-res raw embedded images if extracted
+    // Attach high-res raw embedded images if extracted (only when rendered pages are missing or large standalone photos > 250KB, max 6)
     if (rawImages.length > 0) {
-      rawImages.forEach((img, idx) => {
-        // If we didn't have any rendered pages, or if it's additional embedded image
-        if (finalAssets.length === 0 || img.size > 80000) {
-          finalAssets.push({
-            pageNumber: finalAssets.length + 1,
-            assetType: finalAssets.length === 0 && idx === 0 ? 'cover' : 'elevation',
-            subtype: 'embedded_image',
-            title: `${projectName} Photo ${idx + 1}`,
-            description: `High-resolution original asset extracted from ${originalFilename}.`,
-            buffer: img.buffer,
-            fileName: `${cleanSlug}_extracted_${idx + 1}.jpg`,
-            mimeType: 'image/jpeg',
-          });
-        }
+      const candidateRaw = finalAssets.length === 0 
+        ? rawImages.slice(0, 10) 
+        : rawImages.filter(img => img.size > 250000).slice(0, 6);
+
+      candidateRaw.forEach((img, idx) => {
+        finalAssets.push({
+          pageNumber: finalAssets.length + 1,
+          assetType: finalAssets.length === 0 && idx === 0 ? 'cover' : 'elevation',
+          subtype: 'embedded_image',
+          title: `${projectName} Photo ${idx + 1}`,
+          description: `High-resolution original asset extracted from ${originalFilename}.`,
+          buffer: img.buffer,
+          fileName: `${cleanSlug}_extracted_${idx + 1}.jpg`,
+          mimeType: 'image/jpeg',
+        });
       });
     }
 

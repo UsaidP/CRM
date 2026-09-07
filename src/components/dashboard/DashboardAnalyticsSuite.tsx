@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   BarChart3,
@@ -87,21 +87,30 @@ export function DashboardAnalyticsSuite({
 
   const activeStage = selectedFunnelIndex !== null ? funnelStages[selectedFunnelIndex] : null;
 
+  // Responsive breakpoint tracking for chart layout adjustments
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 640);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+
   return (
-    <div className="bg-surface border border-border rounded-2xl p-4 sm:p-6 shadow-xs space-y-6">
+    <div className="bg-surface border border-border rounded-2xl p-3.5 sm:p-5 md:p-6 shadow-xs space-y-4 sm:space-y-6 w-full">
       {/* ─── Suite Header & Dynamic View Switcher ─── */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-border">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-4 pb-3 sm:pb-4 border-b border-border">
         <div>
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center gap-1.5 sm:gap-2 mb-1 flex-wrap">
             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-accent-soft text-accent-text border border-accent/20 uppercase tracking-wider">
               <Zap className="w-3 h-3 text-accent" />
               Real-Time Telemetry
             </span>
-            <span className="text-[11px] font-mono text-content-muted">
+            <span className="text-[10px] sm:text-[11px] font-mono text-content-muted">
               Scope: {selectedMarket === 'ALL' ? 'All Hubs' : selectedMarket} &bull; {timeRange.toUpperCase()}
             </span>
           </div>
-          <h2 className="text-lg sm:text-xl font-bold text-content font-display tracking-tight flex items-center gap-2">
+          <h2 className="text-base sm:text-lg md:text-xl font-bold text-content font-display tracking-tight flex items-center gap-2">
             Dynamic Advisory Intelligence &amp; Analytics
           </h2>
           <p className="text-xs text-content-secondary mt-0.5">
@@ -110,56 +119,56 @@ export function DashboardAnalyticsSuite({
         </div>
 
         {/* Tab Selection Navigation */}
-        <div className="flex items-center gap-1.5 bg-surface-subtle p-1 rounded-xl border border-border text-xs font-bold overflow-x-auto no-scrollbar">
+        <div className="flex items-center gap-1 sm:gap-1.5 bg-surface-subtle p-1 rounded-xl border border-border text-xs font-bold overflow-x-auto no-scrollbar touch-scroll w-full lg:w-auto shrink-0">
           <button
             type="button"
             onClick={() => setActiveTab('funnel')}
-            className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+            className={`px-2.5 sm:px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap text-[11px] sm:text-xs shrink-0 ${
               activeTab === 'funnel'
                 ? 'bg-accent text-white shadow-2xs font-bold'
                 : 'text-content-muted hover:text-content hover:bg-surface'
             }`}
           >
-            <BarChart3 className="w-3.5 h-3.5" />
+            <BarChart3 className="w-3.5 h-3.5 shrink-0" />
             <span>Pipeline Funnel</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('cashflow')}
-            className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+            className={`px-2.5 sm:px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap text-[11px] sm:text-xs shrink-0 ${
               activeTab === 'cashflow'
                 ? 'bg-accent text-white shadow-2xs font-bold'
                 : 'text-content-muted hover:text-content hover:bg-surface'
             }`}
           >
-            <TrendingUp className="w-3.5 h-3.5" />
+            <TrendingUp className="w-3.5 h-3.5 shrink-0" />
             <span>Cash Flow Curve</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('market')}
-            className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+            className={`px-2.5 sm:px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap text-[11px] sm:text-xs shrink-0 ${
               activeTab === 'market'
                 ? 'bg-accent text-white shadow-2xs font-bold'
                 : 'text-content-muted hover:text-content hover:bg-surface'
             }`}
           >
-            <MapPin className="w-3.5 h-3.5" />
+            <MapPin className="w-3.5 h-3.5 shrink-0" />
             <span>Market Depth</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('sla')}
-            className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+            className={`px-2.5 sm:px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap text-[11px] sm:text-xs shrink-0 ${
               activeTab === 'sla'
                 ? 'bg-accent text-white shadow-2xs font-bold'
                 : 'text-content-muted hover:text-content hover:bg-surface'
             }`}
           >
-            <Flame className="w-3.5 h-3.5" />
+            <Flame className="w-3.5 h-3.5 shrink-0" />
             <span>Speed SLA</span>
           </button>
         </div>
@@ -217,7 +226,7 @@ export function DashboardAnalyticsSuite({
             </div>
 
             {/* Bklit Animated Funnel Visualization Container */}
-            <div className="lg:col-span-6 p-6 rounded-2xl bg-surface-subtle border border-border flex flex-col items-center justify-center text-center relative min-h-[360px]">
+            <div className="lg:col-span-6 p-4 sm:p-6 rounded-2xl bg-surface-subtle border border-border flex flex-col items-center justify-center text-center relative min-h-[320px] sm:min-h-[360px]">
               <div className="w-full flex items-center justify-between mb-4">
                 <span className="text-xs font-mono font-bold uppercase tracking-wider text-content-secondary">
                   Animated Funnel Geometry
@@ -227,13 +236,13 @@ export function DashboardAnalyticsSuite({
                 </span>
               </div>
 
-              <div className="w-full max-w-[420px] mx-auto py-2">
+              <div className="w-full max-w-[360px] sm:max-w-[420px] mx-auto py-1 sm:py-2">
                 <FunnelChart
                   data={funnelStages}
                   orientation="vertical"
                   showPercentage={true}
                   showValues={true}
-                  showLabels={true}
+                  showLabels={!isMobile}
                   hoveredIndex={selectedFunnelIndex}
                   onHoverChange={(idx) => setSelectedFunnelIndex(idx)}
                   className="w-full"
@@ -271,30 +280,30 @@ export function DashboardAnalyticsSuite({
 
       {/* ─── TAB 2: CASH FLOW CURVE (BKLIT AREA CHART) ─── */}
       {activeTab === 'cashflow' && (
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {/* Financial Summary Strip */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="p-4 rounded-xl bg-surface-subtle border border-border">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+            <div className="p-3.5 sm:p-4 rounded-xl bg-surface-subtle border border-border">
               <span className="text-[11px] font-mono font-bold uppercase text-content-muted block mb-1">
                 Gross Commission Pipeline
               </span>
-              <span className="text-xl font-black font-display text-content">{formatINR(totalGross)}</span>
+              <span className="text-lg sm:text-xl font-black font-display text-content">{formatINR(totalGross)}</span>
               <span className="text-[10px] text-content-secondary block mt-0.5">Across {filteredDeals.length} deals</span>
             </div>
 
-            <div className="p-4 rounded-xl bg-surface-subtle border border-border">
+            <div className="p-3.5 sm:p-4 rounded-xl bg-surface-subtle border border-border">
               <span className="text-[11px] font-mono font-bold uppercase text-content-muted block mb-1">
                 Realized Net Cashflow
               </span>
-              <span className="text-xl font-black font-display text-status-success">{formatINR(totalNet)}</span>
+              <span className="text-lg sm:text-xl font-black font-display text-status-success">{formatINR(totalNet)}</span>
               <span className="text-[10px] text-status-success block mt-0.5">Firm retained brokerage</span>
             </div>
 
-            <div className="p-4 rounded-xl bg-surface-subtle border border-border">
+            <div className="p-3.5 sm:p-4 rounded-xl bg-surface-subtle border border-border">
               <span className="text-[11px] font-mono font-bold uppercase text-content-muted block mb-1">
                 Retention Margin
               </span>
-              <span className="text-xl font-black font-display text-accent">
+              <span className="text-lg sm:text-xl font-black font-display text-accent">
                 {totalGross > 0 ? Math.round((totalNet / totalGross) * 100) : 70}%
               </span>
               <span className="text-[10px] text-content-secondary block mt-0.5">Net margin after rep split</span>
@@ -302,8 +311,8 @@ export function DashboardAnalyticsSuite({
           </div>
 
           {/* Bklit Composable Area Chart */}
-          <div className="p-6 rounded-2xl bg-surface-subtle border border-border">
-            <div className="flex items-center justify-between mb-4">
+          <div className="p-4 sm:p-6 rounded-2xl bg-surface-subtle border border-border">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4 mb-4">
               <div>
                 <h3 className="text-sm font-bold text-content font-display">
                   Commission Velocity &amp; Cash Flow Series
@@ -313,26 +322,26 @@ export function DashboardAnalyticsSuite({
                 </p>
               </div>
 
-              <div className="flex items-center gap-4 text-xs font-mono">
+              <div className="flex items-center gap-3 sm:gap-4 text-xs font-mono">
                 <span className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-blue-600 inline-block" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-blue-600 inline-block shrink-0" />
                   <span>Gross Brokerage</span>
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block shrink-0" />
                   <span>Realized Net</span>
                 </span>
               </div>
             </div>
 
-            <div className="w-full relative min-h-[300px]">
+            <div className="w-full relative min-h-[240px] sm:min-h-[280px]">
               <AreaChart
                 data={cashFlowPoints}
                 xDataKey="date"
-                aspectRatio="21 / 9"
-                className="w-full h-full"
+                aspectRatio={undefined}
+                className="w-full h-[240px] sm:h-[280px] md:h-[340px]"
                 animationDuration={400}
-                margin={{ top: 20, right: 20, bottom: 40, left: 40 }}
+                margin={{ top: 15, right: 15, bottom: 35, left: 30 }}
               >
                 <Grid horizontal strokeDasharray="3 3" strokeOpacity={0.25} />
                 <Area
@@ -353,7 +362,7 @@ export function DashboardAnalyticsSuite({
               </AreaChart>
 
               {totalGross === 0 && (
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none p-4">
                   <div className="px-3.5 py-2 rounded-xl bg-surface/90 backdrop-blur-xs border border-border shadow-xs text-center max-w-sm">
                     <span className="text-xs font-mono font-bold text-content flex items-center gap-1.5 justify-center">
                       <Clock className="w-3.5 h-3.5 text-accent" />
@@ -372,23 +381,23 @@ export function DashboardAnalyticsSuite({
 
       {/* ─── TAB 3: MICRO-MARKET INVENTORY DEPTH (BKLIT BAR CHART) ─── */}
       {activeTab === 'market' && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+        <div className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-center">
             {/* Market Summaries */}
-            <div className="lg:col-span-5 space-y-3">
+            <div className="lg:col-span-5 space-y-2.5 sm:space-y-3">
               <span className="text-xs font-mono font-bold uppercase tracking-wider text-content-secondary block">
                 Geographic Nodes &amp; Asset Value
               </span>
 
-              <div className="space-y-3">
+              <div className="space-y-2.5 sm:space-y-3">
                 {marketBars.map((m) => (
                   <div
                     key={m.market}
-                    className="p-3.5 rounded-xl bg-surface border border-border space-y-2 hover:border-accent/40 transition-all"
+                    className="p-3 sm:p-3.5 rounded-xl bg-surface border border-border space-y-2 hover:border-accent/40 transition-all"
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold text-content flex items-center gap-1.5 font-display">
-                        <MapPin className="w-3.5 h-3.5 text-accent" />
+                        <MapPin className="w-3.5 h-3.5 text-accent shrink-0" />
                         {m.market} Node
                       </span>
                       <span className="text-xs font-mono font-black text-accent-text">
@@ -396,7 +405,7 @@ export function DashboardAnalyticsSuite({
                       </span>
                     </div>
 
-                    <div className="flex items-center justify-between text-xs font-mono">
+                    <div className="flex items-center justify-between text-[11px] sm:text-xs font-mono">
                       <span className="text-status-success">{m.active} Fresh Marketable</span>
                       <span className="text-content-muted">{m.stale} Needs Verification</span>
                     </div>
@@ -419,8 +428,8 @@ export function DashboardAnalyticsSuite({
             </div>
 
             {/* Bklit Bar Chart Container */}
-            <div className="lg:col-span-7 p-6 rounded-2xl bg-surface-subtle border border-border">
-              <div className="flex items-center justify-between mb-4">
+            <div className="lg:col-span-7 p-4 sm:p-6 rounded-2xl bg-surface-subtle border border-border">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4 mb-4">
                 <div>
                   <h3 className="text-sm font-bold text-content font-display">
                     Comparative Inventory Concentration
@@ -431,25 +440,25 @@ export function DashboardAnalyticsSuite({
                 </div>
                 <div className="flex items-center gap-3 text-xs font-mono">
                   <span className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block shrink-0" />
                     <span>Active</span>
                   </span>
                   <span className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block shrink-0" />
                     <span>Stale</span>
                   </span>
                 </div>
               </div>
 
-              <div className="w-full relative min-h-[280px]">
+              <div className="w-full relative min-h-[240px] sm:min-h-[280px]">
                 <BarChart
                   data={marketBars}
                   xDataKey="market"
-                  aspectRatio="16 / 9"
-                  className="w-full h-full"
+                  aspectRatio={undefined}
+                  className="w-full h-[240px] sm:h-[280px] md:h-[320px]"
                   animationDuration={300}
                   enterTransition={{ duration: 0.35, ease: 'easeOut' }}
-                  margin={{ top: 20, right: 20, bottom: 40, left: 30 }}
+                  margin={{ top: 15, right: 15, bottom: 35, left: 25 }}
                 >
                   <Grid horizontal strokeDasharray="3 3" strokeOpacity={0.25} />
                   <Bar dataKey="active" fill="#10B981" minBarHeight={6} animate={false} />
@@ -464,55 +473,55 @@ export function DashboardAnalyticsSuite({
 
       {/* ─── TAB 4: SPEED SLA VELOCITY ─── */}
       {activeTab === 'sla' && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="p-4 rounded-xl bg-surface-subtle border border-border">
+        <div className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+            <div className="p-3.5 sm:p-4 rounded-xl bg-surface-subtle border border-border">
               <span className="text-[11px] font-mono font-bold uppercase text-content-muted block mb-1">
                 SLA Compliance Rate
               </span>
-              <span className="text-2xl font-black font-display text-status-success">
+              <span className="text-xl sm:text-2xl font-black font-display text-status-success">
                 {slaMetrics.complianceRate}%
               </span>
               <span className="text-[10px] text-status-success block mt-0.5">Contacted within 15 mins</span>
             </div>
 
-            <div className="p-4 rounded-xl bg-surface-subtle border border-border">
+            <div className="p-3.5 sm:p-4 rounded-xl bg-surface-subtle border border-border">
               <span className="text-[11px] font-mono font-bold uppercase text-content-muted block mb-1">
                 Average Speed to Touch
               </span>
-              <span className="text-2xl font-black font-display text-accent">
+              <span className="text-xl sm:text-2xl font-black font-display text-accent">
                 {slaMetrics.averageResponseMinutes} mins
               </span>
               <span className="text-[10px] text-content-secondary block mt-0.5">From inbound webhook trigger</span>
             </div>
 
-            <div className="p-4 rounded-xl bg-surface-subtle border border-border">
+            <div className="p-3.5 sm:p-4 rounded-xl bg-surface-subtle border border-border">
               <span className="text-[11px] font-mono font-bold uppercase text-content-muted block mb-1">
                 Breached Escalations
               </span>
-              <span className="text-2xl font-black font-display text-status-danger">
+              <span className="text-xl sm:text-2xl font-black font-display text-status-danger">
                 {slaMetrics.over1h}
               </span>
               <span className="text-[10px] text-status-danger block mt-0.5">Exceeded 1-hour window</span>
             </div>
           </div>
 
-          <div className="p-6 rounded-2xl bg-surface-subtle border border-border space-y-4">
+          <div className="p-4 sm:p-6 rounded-2xl bg-surface-subtle border border-border space-y-3 sm:space-y-4">
             <h3 className="text-sm font-bold text-content font-display">
               Response Latency Distribution
             </h3>
 
-            <div className="space-y-3">
+            <div className="space-y-2.5 sm:space-y-3">
               {[
                 { label: '< 5 Minutes (Gold Standard)', count: slaMetrics.under5m, color: 'bg-status-success', pct: 70 },
                 { label: '5 – 15 Minutes (Acceptable Window)', count: slaMetrics.under15m, color: 'bg-blue-500', pct: 20 },
                 { label: '15 – 30 Minutes (Warning Threshold)', count: slaMetrics.under30m, color: 'bg-amber-500', pct: 7 },
                 { label: '> 1 Hour (SLA Breached)', count: slaMetrics.over1h, color: 'bg-status-danger', pct: 3 },
               ].map((tier) => (
-                <div key={tier.label} className="p-3.5 rounded-xl bg-surface border border-border space-y-1.5">
+                <div key={tier.label} className="p-3 sm:p-3.5 rounded-xl bg-surface border border-border space-y-1.5">
                   <div className="flex items-center justify-between text-xs font-semibold">
-                    <span className="text-content">{tier.label}</span>
-                    <span className="font-mono font-bold text-accent-text">{tier.count} leads</span>
+                    <span className="text-content truncate pr-2">{tier.label}</span>
+                    <span className="font-mono font-bold text-accent-text shrink-0">{tier.count} leads</span>
                   </div>
                   <div className="h-2 w-full bg-surface-subtle rounded-full overflow-hidden border border-border">
                     <div

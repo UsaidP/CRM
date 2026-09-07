@@ -121,6 +121,12 @@ export function generateCloudinaryUploadSignature(
   const publicId = `${baseName}_${Date.now()}`;
 
   // Signature string: folder=...&public_id=...&timestamp=...<api_secret>
+  // Ensure large PDF brochures default to 'raw' to avoid Cloudinary image payload size limits
+  const resolvedResourceType =
+    resourceType === 'auto' && (category === 'brochures' || fileName.toLowerCase().endsWith('.pdf'))
+      ? 'raw'
+      : resourceType;
+
   const paramsToSign = `folder=${folder}&public_id=${publicId}&timestamp=${timestamp}${config.apiSecret}`;
   const signature = crypto.createHash('sha1').update(paramsToSign).digest('hex');
 
@@ -131,7 +137,7 @@ export function generateCloudinaryUploadSignature(
     cloudName: config.cloudName,
     folder,
     publicId,
-    resourceType,
+    resourceType: resolvedResourceType,
   };
 }
 
@@ -157,21 +163,17 @@ export async function uploadToCloudinary(
   const publicId = `${baseName}_${Date.now()}`;
 
   const isVideo = mimeType.startsWith('video/') || fileName.match(/\.(mp4|mov|webm)$/i);
-  const isPdf = mimeType.includes('pdf') || fileName.match(/\.pdf$/i);
+  const isPdf = mimeType.includes('pdf') || fileName.match(/\.pdf$/i) || category === 'brochures';
   const isRaw = !isPdf && fileName.match(/\.(doc|docx|zip|xls|xlsx|csv)$/i);
-  // Upload PDFs as 'image' with format 'pdf' so Cloudinary provides multi-page rasterization (pg_1, pg_2, etc.)
-  const resourceType = isVideo ? 'video' : isRaw ? 'raw' : 'image';
+  // PDFs and non-image media must always use 'raw' resource type in Cloudinary
+  const resourceType = isVideo ? 'video' : (isPdf || isRaw) ? 'raw' : 'image';
 
   return new Promise<UploadedMediaAsset>((resolve, reject) => {
     const uploadOptions: Record<string, any> = {
       folder,
       public_id: publicId,
       resource_type: resourceType as any,
-      chunk_size: 6000000, // 6 MB chunks for large file support
     };
-    if (isPdf) {
-      uploadOptions.format = 'pdf';
-    }
 
     const handleResult = (error: any, result: any) => {
       if (error || !result) {
@@ -197,12 +199,12 @@ export async function uploadToCloudinary(
       });
     };
 
-    // Use upload_large_stream for files > 5MB to stream in chunks
-    const uploadStream = nodeBuffer.length > 5 * 1024 * 1024
-      ? cloudinary.uploader.upload_large_stream(uploadOptions, handleResult)
-      : cloudinary.uploader.upload_stream(uploadOptions, handleResult);
-
-    uploadStream.end(nodeBuffer);
+    try {
+      const uploadStream = cloudinary.uploader.upload_stream(uploadOptions, handleResult);
+      uploadStream.end(nodeBuffer);
+    } catch (streamErr: any) {
+      reject(new Error(`Cloudinary stream creation failed: ${streamErr.message}`));
+    }
   });
 }
 

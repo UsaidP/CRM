@@ -24,7 +24,11 @@ export async function GET(req: Request) {
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '50', 10)));
     const skip = (page - 1) * limit;
 
-    const where: any = {};
+    const where: any = {
+      project: {
+        organizationId: auth.session.organizationId,
+      },
+    };
     if (bhk && bhk !== 'ALL') {
       where.bhk = Number(bhk);
     }
@@ -32,7 +36,10 @@ export async function GET(req: Request) {
       where.possessionStatus = possessionStatus;
     }
     if (microMarket && microMarket !== 'ALL') {
-      where.project = { microMarket };
+      where.project = {
+        ...where.project,
+        microMarket,
+      };
     }
     if (maxAllInCost) {
       where.allInTotalCost = { lte: Number(maxAllInCost) };

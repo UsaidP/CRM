@@ -4,6 +4,12 @@ import { persistBrochureExtraction } from '@/lib/services/brochure-persistence';
 import { prisma } from '@/lib/db/prisma';
 import { requireSession, orgScope } from '@/lib/services/api-auth';
 
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+export const maxDuration = 120; // 2 minutes for processing large (up to 50MB+) PDFs
+
+const MAX_FILE_BYTES = 100 * 1024 * 1024; // 100 MB
+
 export async function POST(req: NextRequest) {
   const auth = await requireSession(req);
   if (!auth.ok) return auth.response;
@@ -16,12 +22,12 @@ export async function POST(req: NextRequest) {
 
     if (contentType.includes('multipart/form-data')) {
       const formData = await req.formData();
-      const file = formData.get('file') as File | null;
+      const file = (formData.get('file') || formData.get('brochure')) as File | null;
       projectId = (formData.get('projectId') as string) || '';
 
       if (!file) {
         return NextResponse.json(
-          { error: 'No brochure PDF uploaded. Please attach a file under key "file".' },
+          { error: 'No brochure PDF uploaded. Please attach a file under key "file" or "brochure".' },
           { status: 400 }
         );
       }

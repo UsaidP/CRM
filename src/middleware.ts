@@ -21,6 +21,7 @@ const PUBLIC_API_PREFIXES = [
   '/api/v1/webhooks',
   '/api/v1/track',
   '/api/v1/health',
+  '/api/v1/inventory/rera/certificate-view',
 ];
 
 export async function middleware(request: NextRequest) {
@@ -30,6 +31,7 @@ export async function middleware(request: NextRequest) {
   if (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/static') ||
+    pathname.startsWith('/uploads') ||
     pathname.startsWith('/images') ||
     pathname.startsWith('/fonts') ||
     pathname.startsWith('/.well-known') ||
@@ -39,7 +41,7 @@ export async function middleware(request: NextRequest) {
     pathname === '/sitemap.xml' ||
     pathname === '/llms.txt' ||
     pathname === '/llms-full.txt' ||
-    pathname.match(/\.(png|jpg|jpeg|gif|svg|ico|webp|css|js|woff|woff2|ttf|txt|xml|json|webmanifest)$/)
+    pathname.match(/\.(png|jpg|jpeg|gif|svg|ico|webp|pdf|mp4|webm|css|js|woff|woff2|ttf|txt|xml|json|webmanifest)$/)
   ) {
     return NextResponse.next();
   }

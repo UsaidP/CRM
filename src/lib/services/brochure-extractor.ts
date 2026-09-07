@@ -1,6 +1,7 @@
 import { uploadMediaAsset, type UploadedMediaAsset } from '@/lib/services/cloud-media-service';
 import type { ProjectAssetRecord, ExtractedFloorPlanDetail } from '@/lib/services/brochure-parser-service';
 import { resolveAssetUrl } from '@/lib/inventory-media';
+import { persistBrochureExtraction } from '@/lib/services/brochure-persistence';
 
 export interface ExtractedBrochureAsset {
   type: 'ELEVATION' | 'FLOOR_PLAN' | 'MASTER_PLAN' | 'BROCHURE_PHOTO' | 'BROCHURE_PDF';
@@ -122,9 +123,14 @@ export async function extractAndProcessBrochure(
     const uploadedAssetMap = new Map<string, UploadedMediaAsset>();
 
     for (const item of realPdfAssets) {
-      const isFloorPlan = item.assetType.includes('floor') || item.assetType.includes('unit');
-      const isElevationOrCover = item.assetType.includes('elevation') || item.assetType === 'cover';
       const isMasterPlan = item.assetType === 'master_plan' || item.assetType === 'location_map';
+      const isFloorPlan = 
+        item.assetType.includes('floor') || 
+        item.assetType.includes('unit') || 
+        item.assetType.includes('layout') ||
+        item.assetType === 'master_plan' ||
+        item.assetType === 'site_plan';
+      const isElevationOrCover = item.assetType.includes('elevation') || item.assetType === 'cover';
       const category = isFloorPlan ? 'floor-plans' : isElevationOrCover ? 'elevations' : 'gallery';
 
       let uploaded = uploadedAssetMap.get(item.fileName);
@@ -153,6 +159,13 @@ export async function extractAndProcessBrochure(
       if (isMasterPlan) {
         masterPlan = assetObj;
         brochurePhotos.push(assetObj);
+        // Include master layout plan in floorPlans catalog as site schematic
+        floorPlans.push({
+          ...assetObj,
+          type: 'FLOOR_PLAN',
+          title: item.title || `${projectName} Master Site Layout Plan`,
+          description: item.description || 'Master layout & campus site plan extracted from developer brochure.',
+        });
       } else if (isFloorPlan) {
         floorPlans.push(assetObj);
       } else if (isElevationOrCover) {
@@ -307,20 +320,53 @@ export async function extractAndProcessBrochure(
     });
   }
 
-  // 5. Persistence is handled by the caller via persistBrochureExtraction()
-  // (src/lib/services/brochure-persistence.ts). This extractor is pure:
-  // it extracts and returns data, it never writes to the database.
+  // 5. Constraints Enforcement:
+  // - Store strictly at most 2 elevations (front facade + 1 secondary angle).
+  //   Excess elevations are safely routed to brochurePhotos so the full brochure gallery is preserved.
+  // - Store strictly at most 3 floor plans across distinct types (typical, unit, ground, podium, master).
+  //   Excess floor plans are safely routed to brochurePhotos.
+  const storedElevations = elevations.slice(0, 2);
+  const excessElevations = elevations.slice(2);
 
-  const primaryElevationUrl = elevations[0] ? resolveAssetUrl(elevations[0].mediaAsset) : undefined;
+  // For floor plans: prioritize distinct plan types or BHKs up to 3
+  const storedFloorPlans: ExtractedBrochureAsset[] = [];
+  const excessFloorPlans: ExtractedBrochureAsset[] = [];
+  const seenPlanKeys = new Set<string>();
 
-  return {
+  for (const fp of floorPlans) {
+    const key = fp.bhk
+      ? `bhk_${fp.bhk}`
+      : fp.title?.toLowerCase().includes('typical')
+      ? 'typical'
+      : fp.title?.toLowerCase().includes('ground')
+      ? 'ground'
+      : fp.title?.toLowerCase().includes('master')
+      ? 'master'
+      : `fp_${fp.page_number || fp.title}`;
+
+    if (storedFloorPlans.length < 3 && !seenPlanKeys.has(key)) {
+      seenPlanKeys.add(key);
+      storedFloorPlans.push(fp);
+    } else if (storedFloorPlans.length < 3) {
+      storedFloorPlans.push(fp);
+    } else {
+      excessFloorPlans.push(fp);
+    }
+  }
+
+  // All excess visual renders are preserved in brochurePhotos so full brochure assets are retained
+  const consolidatedPhotos = [...brochurePhotos, ...excessElevations, ...excessFloorPlans];
+
+  const primaryElevationUrl = storedElevations[0] ? resolveAssetUrl(storedElevations[0].mediaAsset) : undefined;
+
+  const result: BrochureExtractionResult = {
     projectName,
     developerName,
     reraNumber,
     brochureAsset,
-    elevations,
-    floorPlans,
-    brochurePhotos,
+    elevations: storedElevations,
+    floorPlans: storedFloorPlans,
+    brochurePhotos: consolidatedPhotos,
     masterPlan,
     assetRecords,
     coverImageUrl: primaryElevationUrl,
@@ -332,4 +378,21 @@ export async function extractAndProcessBrochure(
     },
     extractedAt: new Date().toISOString(),
   };
+
+  if (projectInfo.projectId) {
+    try {
+      await persistBrochureExtraction(projectInfo.projectId, {
+        elevations: storedElevations,
+        floorPlans: storedFloorPlans,
+        brochurePhotos: consolidatedPhotos,
+        masterPlan,
+        brochureAsset,
+        assetRecords,
+      });
+    } catch (persistErr: any) {
+      console.warn('[BROCHURE-EXTRACT] Project persistence notice:', persistErr.message);
+    }
+  }
+
+  return result;
 }

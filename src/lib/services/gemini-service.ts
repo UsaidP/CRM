@@ -7,6 +7,7 @@ import type {
   ProjectAssetRecord, 
   ExtractedFloorPlanDetail 
 } from './brochure-parser-service';
+import { deduplicateUnitsByConfiguration } from './unit-deduplication';
 import type { BuyerRequirementInput, PropertyUnitForMatching } from '@/lib/domain/matching-engine';
 
 /**
@@ -147,151 +148,12 @@ export function aggregateUnitsByDistinctCarpetArea(
   hasOccupancyCertificate: boolean = false,
   projectName: string = 'Project'
 ): ExtractedBrochureUnit[] {
-  if (!Array.isArray(rawUnits) || rawUnits.length === 0) {
-    return [];
-  }
-
-  // Map to store grouped configurations: Key = `${bhk}_${normalizedCarpet}`
-  const groupedMap = new Map<string, {
-    bhk: number;
-    carpetAreaSqft: number;
-    bathrooms: number;
-    balconies: number;
-    flatNumbers: string[];
-    count: number;
-    facing: string;
-    originalLabels: string[];
-    descriptions: string[];
-  }>();
-
-  for (const u of rawUnits) {
-    const rawCarpet = Number(u.carpet_area_sqft || u.carpetAreaSqft) || 0;
-    if (rawCarpet <= 0) continue;
-
-    const bhk = Number(u.bhk) || (u.bhkLabel?.match(/(\d+)\s*BHK/i)?.[1] ? parseInt(u.bhkLabel.match(/(\d+)\s*BHK/i)[1], 10) : 1);
-    
-    // Normalize carpet area: round to nearest integer
-    const normalizedCarpet = Math.round(rawCarpet);
-
-    // Grouping key: BHK + carpet area
-    const key = `${bhk}_${normalizedCarpet}`;
-
-    const flatNo = (u.unit_number || u.unitNumber || u.flatNumber || u.flat_number || '').trim();
-    const facing = (u.orientation || u.facing || 'EAST').trim();
-
-    const existing = groupedMap.get(key);
-    if (!existing) {
-      groupedMap.set(key, {
-        bhk,
-        carpetAreaSqft: normalizedCarpet,
-        bathrooms: Number(u.bathrooms) || (bhk >= 2 ? 2 : 1),
-        balconies: Number(u.balconies) || (bhk >= 2 ? 2 : 1),
-        flatNumbers: flatNo ? [flatNo] : [],
-        count: Number(u.totalUnitsCount) || 1,
-        facing,
-        originalLabels: [u.bhkLabel || u.bhk_label].filter(Boolean),
-        descriptions: [u.description].filter(Boolean),
-      });
-    } else {
-      existing.count += Number(u.totalUnitsCount) || 1;
-      if (flatNo && !existing.flatNumbers.includes(flatNo)) {
-        existing.flatNumbers.push(flatNo);
-      }
-      if (u.bhkLabel && !existing.originalLabels.includes(u.bhkLabel)) {
-        existing.originalLabels.push(u.bhkLabel);
-      }
-      if (u.description && !existing.descriptions.includes(u.description)) {
-        existing.descriptions.push(u.description);
-      }
-    }
-  }
-
-  // Convert grouped configurations into distinct ExtractedBrochureUnit objects
-  const distinctConfigs = Array.from(groupedMap.values()).sort((a, b) => {
-    if (a.bhk !== b.bhk) return a.bhk - b.bhk;
-    return a.carpetAreaSqft - b.carpetAreaSqft;
-  });
-
-  // Count configurations per BHK for Config A, Config B naming
-  const bhkConfigCounters: Record<number, number> = {};
-
-  return distinctConfigs.map((cfg) => {
-    const bhk = cfg.bhk;
-    bhkConfigCounters[bhk] = (bhkConfigCounters[bhk] || 0) + 1;
-    const configLetter = String.fromCharCode(64 + bhkConfigCounters[bhk]); // A, B, C...
-
-    const carpetAreaSqft = cfg.carpetAreaSqft;
-    const floorNumber = Math.min(totalFloors, Math.max(1, bhk === 1 ? 1 : 2));
-
-    // Agreement Value
-    let agreementValue = 0;
-    if (basePricePerSqft > 0) {
-      agreementValue = Math.round(carpetAreaSqft * basePricePerSqft);
-    }
-
-    // Cost calculation with 1% GST <= 45L, 5% > 45L, and 40% builder loading (Taloja standard >= 38%)
-    const costBreakdown = calculateAllInCost({
-      agreementValue,
-      floorNumber,
-      carpetAreaSqft,
-      hasOccupancyCertificate,
-      parkingCharges: 250000,
-      societyDevCharges: 150000,
-      builderLoadingPercentage: 40,
-    });
-
-    // Clean representative flat / series label
-    let seriesOrFlatNumbers = '';
-    if (cfg.flatNumbers.length > 0) {
-      if (cfg.flatNumbers.length <= 4) {
-        seriesOrFlatNumbers = cfg.flatNumbers.join(', ');
-      } else {
-        seriesOrFlatNumbers = `${cfg.flatNumbers.slice(0, 3).join(', ')} +${cfg.flatNumbers.length - 3} more (${cfg.count} flats)`;
-      }
-    } else {
-      seriesOrFlatNumbers = `Config ${configLetter} Series`;
-    }
-
-    const bhkLabel = `${bhk} BHK • ${carpetAreaSqft} sq.ft (Config ${configLetter})`;
-    const unitNumber = `${bhk}BHK-${configLetter} (${carpetAreaSqft} sqft)`;
-
-    const highlights: string[] = [
-      `${carpetAreaSqft} sq.ft Usable RERA Carpet Area`,
-      `${costBreakdown.saleableAreaSqft} sq.ft Saleable Area (40% Loading)`,
-      `Available across typical floors (Total ${totalFloors} Storeys)`,
-    ];
-    if (seriesOrFlatNumbers) {
-      highlights.push(`Represented Flats: ${seriesOrFlatNumbers}`);
-    }
-
-    return {
-      unitNumber,
-      bhk,
-      bhkLabel,
-      carpetAreaSqft,
-      saleableAreaSqft: costBreakdown.saleableAreaSqft,
-      builtUpAreaSqft: costBreakdown.builtUpAreaSqft,
-      loadingPercentage: 40,
-      seriesOrFlatNumbers,
-      totalUnitsCount: cfg.count,
-      bathrooms: cfg.bathrooms,
-      balconies: cfg.balconies,
-      floorNumber,
-      totalFloors,
-      facing: (cfg.facing as any) || 'EAST',
-      agreementValue,
-      stampDutyRate: costBreakdown.stampDutyRate,
-      stampDutyAmount: costBreakdown.stampDutyAmount,
-      registrationFee: costBreakdown.registrationFee,
-      gstRate: costBreakdown.gstRate,
-      gstAmount: costBreakdown.gstAmount,
-      parkingCharges: costBreakdown.parkingCharges,
-      societyDevelopmentCharges: costBreakdown.societyDevCharges,
-      allInTotalCost: costBreakdown.totalAllInCost,
-      possessionStatus: hasOccupancyCertificate ? 'READY_TO_MOVE' : 'UNDER_CONSTRUCTION',
-      description: `${bhk} BHK residential apartment (${carpetAreaSqft} sq.ft usable carpet, ${costBreakdown.saleableAreaSqft} sq.ft saleable at 40% loading) in ${projectName}.`,
-      featureHighlights: highlights,
-    };
+  return deduplicateUnitsByConfiguration(rawUnits, {
+    totalFloors,
+    basePricePerSqft,
+    hasOccupancyCertificate,
+    projectName,
+    carpetToleranceSqft: 5,
   });
 }
 
@@ -320,39 +182,72 @@ export async function extractBrochureWithAI(
     effectiveMime = 'image/webp';
   }
 
-  const base64Data = buffer.toString('base64');
+  const isLargeFile = buffer.length > 15 * 1024 * 1024;
+  let uploadedFile: any = null;
+
+  if (isLargeFile) {
+    try {
+      const blob = new Blob([new Uint8Array(buffer)], { type: effectiveMime });
+      uploadedFile = await ai.files.upload({
+        file: blob,
+        config: { mimeType: effectiveMime },
+      });
+    } catch (uploadErr: any) {
+      console.warn('[Gemini Files API] Large file upload notice, falling back to standard payload:', uploadErr.message);
+    }
+  }
+
+  const contentPart = uploadedFile
+    ? {
+        fileData: {
+          fileUri: uploadedFile.uri,
+          mimeType: uploadedFile.mimeType || effectiveMime,
+        },
+      }
+    : {
+        inlineData: {
+          mimeType: effectiveMime,
+          data: buffer.toString('base64'),
+        },
+      };
+
   let lastError: any = null;
   let parsed: any = null;
   let successfulModel: string = GEMINI_MODEL;
 
-  // Multi-model retry cascade for rate-limit and availability resilience
-  for (const modelName of GEMINI_MODEL_CANDIDATES) {
-    try {
-      const response = await ai.models.generateContent({
-        model: modelName,
-        contents: [
-          {
-            inlineData: {
-              mimeType: effectiveMime,
-              data: base64Data,
-            },
+  try {
+    // Multi-model retry cascade for rate-limit and availability resilience
+    for (const modelName of GEMINI_MODEL_CANDIDATES) {
+      try {
+        const response = await ai.models.generateContent({
+          model: modelName,
+          contents: [
+            contentPart,
+            BROCHURE_EXTRACTION_PROMPT,
+          ],
+          config: {
+            responseMimeType: 'application/json',
+            temperature: 0.1, // High precision for architectural parameters
           },
-          BROCHURE_EXTRACTION_PROMPT,
-        ],
-        config: {
-          responseMimeType: 'application/json',
-          temperature: 0.1, // High precision for architectural parameters
-        },
-      });
+        });
 
-      const responseText = response.text || '{}';
-      parsed = JSON.parse(responseText.trim().replace(/^```json\s*/i, '').replace(/\s*```$/i, ''));
-      successfulModel = modelName;
-      break; // Succeeded!
-    } catch (err: any) {
-      lastError = err;
-      const rateLimited = isRateLimitError(err);
-      console.warn(`[Gemini Vision] Model "${modelName}" failed (${rateLimited ? 'Rate limit / quota reached' : err.message || err}). Trying next candidate...`);
+        const responseText = response.text || '{}';
+        parsed = JSON.parse(responseText.trim().replace(/^```json\s*/i, '').replace(/\s*```$/i, ''));
+        successfulModel = modelName;
+        break; // Succeeded!
+      } catch (err: any) {
+        lastError = err;
+        const rateLimited = isRateLimitError(err);
+        console.warn(`[Gemini Vision] Model "${modelName}" failed (${rateLimited ? 'Rate limit / quota reached' : err.message || err}). Trying next candidate...`);
+      }
+    }
+  } finally {
+    if (uploadedFile?.name) {
+      try {
+        await ai.files.delete({ name: uploadedFile.name });
+      } catch (delErr: any) {
+        console.warn('[Gemini Files API] Cleanup notice:', delErr.message);
+      }
     }
   }
 

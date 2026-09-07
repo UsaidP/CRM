@@ -386,6 +386,7 @@ export function InventoryClient({
           keyHighlights: projectForm.keyHighlights,
           mediaGallery: projectForm.mediaGallery,
           coverImageUrl: coverUrl || null,
+          brochureUrl: projectForm.brochureUrl || null,
           youtubeWalkthroughUrl: walkthroughUrl || null,
           elevationImages: imageAssets.map((asset) => ({
             url: asset.url,
@@ -1216,9 +1217,18 @@ export function InventoryClient({
                           </h3>
                         </div>
                         <div className="shrink-0 text-right">
-                          <span className="text-[10px] font-mono font-bold text-white/90 bg-black/50 backdrop-blur-md px-2 py-1 rounded-lg border border-white/10 block">
-                            {project.unitCount || 0} units ({project.activeUnitCount || 0} live)
-                          </span>
+                          {(() => {
+                            const pUnits = Array.isArray(project.units) && project.units.length > 0
+                              ? project.units
+                              : units.filter((u) => u.projectId === project.id || u.project?.id === project.id);
+                            const totalCount = project.unitCount ?? pUnits.length;
+                            const liveCount = project.activeUnitCount ?? pUnits.filter((u: any) => u.verificationStatus === 'ACTIVE_MARKETABLE' || u.freshness?.effectiveMarketableStatus === 'ACTIVE_MARKETABLE').length;
+                            return (
+                              <span className="text-[10px] font-mono font-bold text-white/90 bg-black/50 backdrop-blur-md px-2 py-1 rounded-lg border border-white/10 block">
+                                {totalCount} {totalCount === 1 ? 'unit' : 'units'} ({liveCount} live)
+                              </span>
+                            );
+                          })()}
                         </div>
                       </div>
                     </div>
@@ -1697,18 +1707,33 @@ export function InventoryClient({
                 />
               </div>
             </div>
-            <div>
-              <label className="text-xs font-bold text-content block mb-1">
-                Cover image URL <span className="text-content-muted font-normal">(optional)</span>
-              </label>
-              <input
-                aria-label="Project cover image URL"
-                type="url"
-                placeholder="https://…"
-                value={projectForm.coverImageUrl}
-                onChange={(e) => setProjectForm({ ...projectForm, coverImageUrl: e.target.value })}
-                className="w-full bg-surface border border-border rounded-xl p-2.5 text-xs text-content placeholder-content-muted focus:outline-hidden focus:border-accent font-medium"
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-bold text-content block mb-1">
+                  Cover image URL <span className="text-content-muted font-normal">(optional)</span>
+                </label>
+                <input
+                  aria-label="Project cover image URL"
+                  type="url"
+                  placeholder="https://…"
+                  value={projectForm.coverImageUrl}
+                  onChange={(e) => setProjectForm({ ...projectForm, coverImageUrl: e.target.value })}
+                  className="w-full bg-surface border border-border rounded-xl p-2.5 text-xs text-content placeholder-content-muted focus:outline-hidden focus:border-accent font-medium"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-content block mb-1">
+                  Developer Brochure PDF URL <span className="text-content-muted font-normal">(optional)</span>
+                </label>
+                <input
+                  aria-label="Developer Brochure PDF URL"
+                  type="text"
+                  placeholder="https://… or /uploads/…"
+                  value={projectForm.brochureUrl}
+                  onChange={(e) => setProjectForm({ ...projectForm, brochureUrl: e.target.value })}
+                  className="w-full bg-surface border border-border rounded-xl p-2.5 text-xs text-content placeholder-content-muted focus:outline-hidden focus:border-accent font-medium"
+                />
+              </div>
             </div>
             <MediaUploader value={projectForm.mediaGallery} onChange={(mediaGallery) => setProjectForm({ ...projectForm, mediaGallery })} label="Project gallery" />
           </div>
@@ -3150,7 +3175,10 @@ export function InventoryClient({
           onEditUnit={(unit) => {
             openEditUnit(unit);
           }}
-          onProjectUpdated={() => {
+          onProjectUpdated={(updated) => {
+            if (updated && typeof updated === 'object') {
+              setInspectProject((prev: any) => (prev?.id === updated.id ? { ...prev, ...updated } : prev));
+            }
             fetchInventory();
           }}
         />
@@ -3334,8 +3362,14 @@ export function InventoryClient({
             validUntil: formCModalProject.validUntil ? String(formCModalProject.validUntil) : (formCModalProject.reraValidUntil ? String(formCModalProject.reraValidUntil) : '2027-12-31'),
             signatoryName: formCModalProject.signatoryName || 'Competent Authority, MahaRERA',
             certificateUrl: formCModalProject.reraCertificateUrl || undefined,
-            originalImageUrl: formCModalProject.originalDocumentUrl || undefined,
-            isOriginalScannedDocument: Boolean(formCModalProject.originalDocumentUrl || formCModalProject.isOriginalScannedDocument),
+            originalImageUrl:
+              formCModalProject.originalDocumentUrl ||
+              (formCModalProject.reraNumber ? `/images/original-certificates/${formCModalProject.reraNumber.replace(/[^A-Z0-9]/gi, '')}.png` : undefined),
+            isOriginalScannedDocument: Boolean(
+              formCModalProject.originalDocumentUrl ||
+              formCModalProject.isOriginalScannedDocument ||
+              formCModalProject.reraCertificateUrl
+            ),
           }}
         />
       )}

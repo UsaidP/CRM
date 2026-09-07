@@ -27,7 +27,9 @@ import {
   ImagePlus,
   Loader2,
   Check,
-  CheckCircle
+  CheckCircle,
+  Upload,
+  AlertCircle,
 } from 'lucide-react';
 import { formatDateFull } from '@/lib/date-utils';
 import { AccessibleDialog } from '@/components/ui/AccessibleDialog';
@@ -87,8 +89,40 @@ export function ProjectDetailsModal({
   const [localUnits, setLocalUnits] = useState<any[]>(units);
 
   useEffect(() => {
+    if (project) {
+      setCurrentProject(project);
+    }
+  }, [project]);
+
+  useEffect(() => {
     setLocalUnits(units);
   }, [units]);
+
+  useEffect(() => {
+    if (!currentProject?.id) return;
+    let isMounted = true;
+    fetch(`/api/v1/inventory/projects/${currentProject.id}`)
+      .then((r) => r.json())
+      .then((json) => {
+        if (isMounted && json?.success && json?.data) {
+          setCurrentProject((prev: any) => ({
+            ...prev,
+            ...json.data,
+          }));
+          if (Array.isArray(json.data.units) && json.data.units.length > 0) {
+            setLocalUnits((prev) => {
+              const existingIds = new Set(prev.map((u) => u.id));
+              const newUnits = json.data.units.filter((u: any) => !existingIds.has(u.id));
+              return [...prev, ...newUnits];
+            });
+          }
+        }
+      })
+      .catch((err) => console.warn('Could not auto-refresh project units:', err));
+    return () => {
+      isMounted = false;
+    };
+  }, [currentProject?.id]);
 
   const handleSyncCertificate = async () => {
     if (!currentProject?.reraNumber) return;
@@ -216,9 +250,21 @@ export function ProjectDetailsModal({
 
     try {
       // 1. Identify all units having this floor plan or image
-      const activeProjectUnits = (localUnits && localUnits.length > 0 ? localUnits : units).filter(
-        (u) => u.projectId === currentProject.id
-      );
+      const allActivePool = [
+        ...(Array.isArray(currentProject?.units) ? currentProject.units : []),
+        ...(Array.isArray(localUnits) ? localUnits : []),
+        ...(Array.isArray(units) ? units : []),
+      ];
+      const activeKeys = new Set<string>();
+      const activeProjectUnits = allActivePool.filter((u) => {
+        if (!u) return false;
+        const match = u.projectId === currentProject.id || u.project?.id === currentProject.id;
+        if (!match) return false;
+        const key = u.id || `${u.unitNumber}_${u.carpetAreaSqft}`;
+        if (activeKeys.has(key)) return false;
+        activeKeys.add(key);
+        return true;
+      });
 
       const matchingUnits = activeProjectUnits.filter((u: any) => {
         if (u.floorPlanUrl === imgUrl) return true;
@@ -353,6 +399,11 @@ export function ProjectDetailsModal({
 
   const handleOneShotBrochureExtract = async (file: File) => {
     if (!currentProject?.id) return;
+    if (file.size > 50 * 1024 * 1024) {
+      alert(`Selected file (${(file.size / (1024 * 1024)).toFixed(1)} MB) exceeds 50 MB limit. Please choose a file under 50 MB.`);
+      return;
+    }
+
     setOneShotExtracting(true);
     setOneShotExtractMsg('Ingesting brochure & extracting project blueprints with AI multimodal vision…');
 
@@ -393,7 +444,7 @@ export function ProjectDetailsModal({
             projectId: currentProject.id,
           }),
         });
-      } else {
+      } else if (file.size <= 4 * 1024 * 1024) {
         const base64Data = await new Promise<string>((resolve, reject) => {
           const reader = new FileReader();
           reader.onload = () => resolve(reader.result as string);
@@ -410,6 +461,16 @@ export function ProjectDetailsModal({
             mimeType: file.type || 'application/pdf',
             projectId: currentProject.id,
           }),
+        });
+      } else {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('filename', file.name);
+        formData.append('projectId', currentProject.id);
+
+        res = await fetch('/api/v1/inventory/upload-brochure', {
+          method: 'POST',
+          body: formData,
         });
       }
 
@@ -456,7 +517,21 @@ export function ProjectDetailsModal({
     return `₹${Number(val).toLocaleString('en-IN')}`;
   };
 
-  const projectUnits = (localUnits && localUnits.length > 0 ? localUnits : units).filter((u) => u.projectId === currentProject.id);
+  const allCandidateUnits = [
+    ...(Array.isArray(currentProject?.units) ? currentProject.units : []),
+    ...(Array.isArray(localUnits) ? localUnits : []),
+    ...(Array.isArray(units) ? units : []),
+  ];
+  const seenUnitKeys = new Set<string>();
+  const projectUnits = allCandidateUnits.filter((u) => {
+    if (!u) return false;
+    const match = u.projectId === currentProject?.id || u.project?.id === currentProject?.id;
+    if (!match) return false;
+    const key = u.id || `${u.projectId || currentProject?.id}_${u.unitNumber}_${u.carpetAreaSqft}`;
+    if (seenUnitKeys.has(key)) return false;
+    seenUnitKeys.add(key);
+    return true;
+  });
 
   const rawGallery = Array.isArray(currentProject.mediaGalleryJson) 
     ? currentProject.mediaGalleryJson 
@@ -920,6 +995,71 @@ export function ProjectDetailsModal({
                   <div className="p-2.5 bg-status-success-surface border border-status-success/30 rounded-xl text-status-success text-xs font-semibold flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4" />
                     <span>{certificateMsg}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Developer Sales Brochure Card */}
+              <div className="p-4 rounded-xl border border-border bg-surface-raised space-y-3">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                  <div className="flex items-start sm:items-center gap-3 min-w-0">
+                    <div className="p-2.5 rounded-xl bg-blue-500/10 text-blue-500 border border-blue-500/20 shrink-0 mt-0.5 sm:mt-0">
+                      <FileText className="w-5 h-5" />
+                    </div>
+                    <div className="min-w-0">
+                      <h4 className="text-sm font-bold text-content font-display truncate">
+                        Developer Sales Brochure (PDF)
+                      </h4>
+                      <p className="text-xs text-content-muted mt-0.5 line-clamp-2">
+                        {currentProject.brochureUrl
+                          ? 'Official Developer PDF Vault Linked • Original blueprints, master layouts & elevation specs.'
+                          : 'No brochure PDF linked yet. Upload a developer PDF (up to 50MB) to auto-extract plans and specifications.'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+                    {currentProject.brochureUrl && (
+                      <a
+                        href={currentProject.brochureUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 sm:flex-initial justify-center px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition-all flex items-center gap-1.5 cursor-pointer shrink-0 min-w-[130px]"
+                      >
+                        <Download className="w-4 h-4" />
+                        <span>View Brochure PDF</span>
+                      </a>
+                    )}
+
+                    <button
+                      type="button"
+                      disabled={oneShotExtracting}
+                      onClick={() => brochureExtractInputRef.current?.click()}
+                      className="flex-1 sm:flex-initial justify-center px-3.5 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-accent border border-accent/30 text-xs font-bold shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 shrink-0 min-w-[130px]"
+                    >
+                      {oneShotExtracting ? (
+                        <>
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                          <span>Extracting…</span>
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="w-3.5 h-3.5" />
+                          <span>{currentProject.brochureUrl ? 'Replace / Re-extract' : 'Upload PDF Brochure'}</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {oneShotExtractMsg && (
+                  <div className={`p-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 ${
+                    oneShotExtractMsg.includes('failed')
+                      ? 'bg-status-error-surface border border-status-error/30 text-status-error'
+                      : 'bg-status-success-surface border border-status-success/30 text-status-success'
+                  }`}>
+                    {oneShotExtractMsg.includes('failed') ? <AlertCircle className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
+                    <span>{oneShotExtractMsg}</span>
                   </div>
                 )}
               </div>
@@ -1667,10 +1807,15 @@ export function ProjectDetailsModal({
             registeredOffice: currentProject.registeredOffice || `${currentProject.developerName || 'Developer'} Corporate Office`,
             registrationDate: currentProject.registrationDate ? String(currentProject.registrationDate) : '2024-01-01',
             validUntil: currentProject.validUntil ? String(currentProject.validUntil) : (currentProject.reraValidUntil ? formatDateFull(currentProject.reraValidUntil) : '2027-12-31'),
-            signatoryName: currentProject.signatoryName || 'Competent Authority, MahaRERA',
             certificateUrl: currentProject.reraCertificateUrl || undefined,
-            originalImageUrl: currentProject.originalDocumentUrl || undefined,
-            isOriginalScannedDocument: Boolean(currentProject.originalDocumentUrl || currentProject.isOriginalScannedDocument),
+            originalImageUrl:
+              currentProject.originalDocumentUrl ||
+              (currentProject.reraNumber ? `/images/original-certificates/${currentProject.reraNumber.replace(/[^A-Z0-9]/gi, '')}.png` : undefined),
+            isOriginalScannedDocument: Boolean(
+              currentProject.originalDocumentUrl ||
+              currentProject.isOriginalScannedDocument ||
+              currentProject.reraCertificateUrl
+            ),
           }}
         />
       )}

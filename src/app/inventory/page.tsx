@@ -4,6 +4,7 @@ import { InventoryClient } from '@/components/inventory/InventoryClient';
 import { assessUnitFreshness } from '@/lib/domain/verification-engine';
 import { getServerSession } from '@/lib/services/server-auth';
 import { runWithTenant } from '@/lib/db/tenant-context';
+import { parseInventoryContent } from '@/lib/inventory-media';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -28,6 +29,9 @@ export default async function InventoryPage() {
           }),
           prisma.developerProject.findMany({
             where: { organizationId: session.organizationId },
+            include: {
+              units: true,
+            },
             orderBy: { projectName: 'asc' },
           }),
         ]);
@@ -40,13 +44,32 @@ export default async function InventoryPage() {
           const freshness = assessUnitFreshness(u.verificationStatus, u.lastVerifiedAt);
           return {
             ...u,
+            ...parseInventoryContent(u),
             freshness,
           };
         })
       )
     );
 
-    initialProjects = JSON.parse(JSON.stringify(projects));
+    initialProjects = JSON.parse(
+      JSON.stringify(
+        projects.map((p) => {
+          const parsed = parseInventoryContent(p);
+          const pUnits = Array.isArray(p.units) ? p.units : [];
+          return {
+            ...p,
+            ...parsed,
+            units: pUnits.map((u: any) => ({
+              ...u,
+              ...parseInventoryContent(u),
+              freshness: assessUnitFreshness(u.verificationStatus, u.lastVerifiedAt),
+            })),
+            unitCount: pUnits.length,
+            activeUnitCount: pUnits.filter((u: any) => u.verificationStatus === 'ACTIVE_MARKETABLE').length,
+          };
+        })
+      )
+    );
   } catch (err) {
     console.error('Error loading initial inventory:', err);
   }

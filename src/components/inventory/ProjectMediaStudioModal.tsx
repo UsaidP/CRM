@@ -102,6 +102,11 @@ export function ProjectMediaStudioModal({
 
   async function handleExtractFromBrochure(brochureFile?: File) {
     if (!project?.id) return;
+    if (brochureFile && brochureFile.size > 50 * 1024 * 1024) {
+      setErrorMessage(`Brochure PDF (${(brochureFile.size / (1024 * 1024)).toFixed(1)} MB) exceeds the 50 MB limit. Please select a file under 50 MB.`);
+      return;
+    }
+
     setExtracting(true);
     setErrorMessage(null);
     setSuccessMessage(null);

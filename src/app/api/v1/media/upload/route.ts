@@ -3,6 +3,13 @@ import { uploadMediaAsset, type MediaCategory } from '@/lib/services/cloud-media
 import { prisma } from '@/lib/db/prisma';
 import { requireSession, orgScope } from '@/lib/services/api-auth';
 
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+export const maxDuration = 120; // 2 minutes for processing large media files
+
+const MAX_IMAGE_OR_PDF_BYTES = 50 * 1024 * 1024; // 50 MB
+const MAX_VIDEO_BYTES = 300 * 1024 * 1024; // 300 MB
+
 export async function POST(req: NextRequest) {
   const auth = await requireSession(req);
   if (!auth.ok) return auth.response;
@@ -31,6 +38,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { error: 'No file uploaded. Please attach a file in the form-data under key "file".' },
         { status: 400 }
+      );
+    }
+
+    const isVideoFile = category === 'videos' || file.type?.startsWith('video/') || file.name.match(/\.(mp4|mov|webm|m4v)$/i);
+    const maxBytes = isVideoFile ? MAX_VIDEO_BYTES : MAX_IMAGE_OR_PDF_BYTES;
+    if (file.size > maxBytes) {
+      return NextResponse.json(
+        { error: `File size (${(file.size / (1024 * 1024)).toFixed(1)} MB) exceeds the ${isVideoFile ? '300 MB video' : '50 MB'} limit.` },
+        { status: 413 }
       );
     }
 
