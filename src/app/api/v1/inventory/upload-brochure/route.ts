@@ -200,6 +200,7 @@ export async function POST(req: Request) {
           assetRecords: extracted.assetRecords,
           floorPlansList: extracted.floorPlansList,
           pages: extracted.pages,
+          brochureUrl: brochureUrl || undefined,
         }
       );
 

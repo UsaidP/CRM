@@ -35,6 +35,22 @@ export const GEMINI_MODEL_CANDIDATES = [
   'gemini-1.5-flash',
 ];
 
+export function isInvalidApiKeyError(err: any): boolean {
+  const msg = (err?.message || err?.toString() || '').toLowerCase();
+  const status = err?.status || err?.statusCode || err?.code;
+  return (
+    status === 401 ||
+    status === 403 ||
+    msg.includes('401') ||
+    msg.includes('403') ||
+    msg.includes('permission_denied') ||
+    msg.includes('api key') ||
+    msg.includes('leaked') ||
+    msg.includes('invalid_api_key') ||
+    msg.includes('unauthorized')
+  );
+}
+
 export function isRateLimitError(err: any): boolean {
   const msg = (err?.message || err?.toString() || '').toLowerCase();
   const status = err?.status || err?.statusCode || err?.code;
@@ -237,6 +253,10 @@ export async function extractBrochureWithAI(
         break; // Succeeded!
       } catch (err: any) {
         lastError = err;
+        if (isInvalidApiKeyError(err)) {
+          console.warn(`[Gemini Vision] Fatal API key authentication issue (${err.message || err}). Aborting cloud AI attempts immediately to use local OCR engine.`);
+          break;
+        }
         const rateLimited = isRateLimitError(err);
         console.warn(`[Gemini Vision] Model "${modelName}" failed (${rateLimited ? 'Rate limit / quota reached' : err.message || err}). Trying next candidate...`);
       }

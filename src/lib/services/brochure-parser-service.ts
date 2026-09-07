@@ -561,7 +561,7 @@ export function parseBrochureText(rawText: string, filename: string = 'brochure.
 
   let unitIndex = 1;
   for (const bhk of Array.from(detectedBhks).sort()) {
-    const defaultCarpet = bhk === 1 ? 425 : bhk === 2 ? 650 : 950;
+    const defaultCarpet = 0;
     const areasForThisBhk = carpetAreaMap[bhk]?.length > 0 ? carpetAreaMap[bhk] : [defaultCarpet];
 
     for (let areaIdx = 0; areaIdx < areasForThisBhk.length; areaIdx++) {

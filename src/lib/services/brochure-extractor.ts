@@ -63,6 +63,7 @@ export async function extractAndProcessBrochure(
     assetRecords?: ProjectAssetRecord[];
     floorPlansList?: ExtractedFloorPlanDetail[];
     pages?: Array<{ page_number: number; page_type: string; title?: string }>;
+    brochureUrl?: string;
   }
 ): Promise<BrochureExtractionResult> {
   const {
@@ -74,6 +75,7 @@ export async function extractAndProcessBrochure(
     assetRecords: aiAssetHints,
     floorPlansList,
     pages,
+    brochureUrl: existingBrochureUrl,
   } = projectInfo;
 
   // Determine appropriate MIME type from file extension
@@ -83,14 +85,32 @@ export async function extractAndProcessBrochure(
   else if (['jpg', 'jpeg'].includes(ext)) mimeType = 'image/jpeg';
   else if (['webp'].includes(ext)) mimeType = 'image/webp';
 
-  // 1. Upload original brochure/spec document to Cloud/Local Media Vault under project folder
-  const brochureAsset = await uploadMediaAsset(
-    brochureBuffer,
-    fileName,
-    'brochures',
-    mimeType,
-    projectName
-  );
+  const bBuffer = Buffer.isBuffer(brochureBuffer) ? brochureBuffer : Buffer.from(brochureBuffer);
+
+  // 1. Upload original brochure/spec document if not already uploaded
+  let brochureAsset: UploadedMediaAsset | undefined;
+  if (existingBrochureUrl) {
+    brochureAsset = {
+      url: existingBrochureUrl,
+      secureUrl: existingBrochureUrl,
+      publicId: `brochure_${projectName}`,
+      storageProvider: existingBrochureUrl.includes('cloudinary') ? 'CLOUDINARY' : 'LOCAL',
+      fileName,
+      fileSizeBytes: bBuffer.length,
+      mimeType,
+      category: 'brochures',
+      format: ext,
+      createdAt: new Date().toISOString(),
+    };
+  } else {
+    brochureAsset = await uploadMediaAsset(
+      bBuffer,
+      fileName,
+      'brochures',
+      mimeType,
+      projectName
+    );
+  }
 
   const elevations: ExtractedBrochureAsset[] = [];
   const floorPlans: ExtractedBrochureAsset[] = [];
@@ -102,7 +122,6 @@ export async function extractAndProcessBrochure(
 
   // 2. Extract Real High-Resolution Raster Pages & Embedded Images from PDF
   let realPdfAssets: any[] = [];
-  const bBuffer = Buffer.isBuffer(brochureBuffer) ? brochureBuffer : Buffer.from(brochureBuffer);
 
   if (mimeType === 'application/pdf' || ext === 'pdf') {
     try {
@@ -122,6 +141,38 @@ export async function extractAndProcessBrochure(
   if (realPdfAssets && realPdfAssets.length > 0) {
     const uploadedAssetMap = new Map<string, UploadedMediaAsset>();
 
+    // Parallelize image asset uploads in batches of 4 to drastically cut latency
+    const BATCH_SIZE = 4;
+    for (let i = 0; i < realPdfAssets.length; i += BATCH_SIZE) {
+      const batch = realPdfAssets.slice(i, i + BATCH_SIZE);
+      await Promise.all(
+        batch.map(async (item) => {
+          if (uploadedAssetMap.has(item.fileName)) return;
+          const isFloorPlan = 
+            item.assetType.includes('floor') || 
+            item.assetType.includes('unit') || 
+            item.assetType.includes('layout') ||
+            item.assetType === 'master_plan' ||
+            item.assetType === 'site_plan';
+          const isElevationOrCover = item.assetType.includes('elevation') || item.assetType === 'cover';
+          const category = isFloorPlan ? 'floor-plans' : isElevationOrCover ? 'elevations' : 'gallery';
+
+          try {
+            const uploaded = await uploadMediaAsset(
+              item.buffer,
+              item.fileName,
+              category,
+              item.mimeType || 'image/jpeg',
+              projectName
+            );
+            uploadedAssetMap.set(item.fileName, uploaded);
+          } catch (uploadErr: any) {
+            console.warn(`[BROCHURE] Image asset upload failed for ${item.fileName}:`, uploadErr.message);
+          }
+        })
+      );
+    }
+
     for (const item of realPdfAssets) {
       const isMasterPlan = item.assetType === 'master_plan' || item.assetType === 'location_map';
       const isFloorPlan = 
@@ -131,19 +182,19 @@ export async function extractAndProcessBrochure(
         item.assetType === 'master_plan' ||
         item.assetType === 'site_plan';
       const isElevationOrCover = item.assetType.includes('elevation') || item.assetType === 'cover';
-      const category = isFloorPlan ? 'floor-plans' : isElevationOrCover ? 'elevations' : 'gallery';
 
-      let uploaded = uploadedAssetMap.get(item.fileName);
-      if (!uploaded) {
-        uploaded = await uploadMediaAsset(
-          item.buffer,
-          item.fileName,
-          category,
-          item.mimeType || 'image/jpeg',
-          projectName
-        );
-        uploadedAssetMap.set(item.fileName, uploaded);
-      }
+      const uploaded = uploadedAssetMap.get(item.fileName) || {
+        url: `/uploads/projects/${cleanProjSlug}/${item.fileName}`,
+        secureUrl: `/uploads/projects/${cleanProjSlug}/${item.fileName}`,
+        publicId: `local_${cleanProjSlug}_${item.fileName}`,
+        storageProvider: 'LOCAL' as const,
+        fileName: item.fileName,
+        fileSizeBytes: item.buffer?.length || 0,
+        mimeType: item.mimeType || 'image/jpeg',
+        category: isFloorPlan ? 'floor-plans' : isElevationOrCover ? 'elevations' : 'gallery',
+        format: 'jpg',
+        createdAt: new Date().toISOString(),
+      };
 
       const assetObj: ExtractedBrochureAsset = {
         type: isMasterPlan ? 'MASTER_PLAN' : isFloorPlan ? 'FLOOR_PLAN' : isElevationOrCover ? 'ELEVATION' : 'BROCHURE_PHOTO',

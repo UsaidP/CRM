@@ -52,13 +52,40 @@ const ERROR_PATTERNS: Array<{
   },
   // 4. Forbidden / Access Denied (403)
   {
-    pattern: /forbidden|403|insufficient\s*permissions|access\s*denied|not\s*permitted/i,
+    pattern: /forbidden|insufficient\s*permissions|access\s*denied|not\s*permitted/i,
     resolve: () => ({
       title: 'Access Restricted',
       description: 'You do not have administrative permission to perform this action. Please contact your team manager.',
       actionLabel: 'Contact Admin',
       actionType: 'contact_admin',
     }),
+  },
+  // 4b. AI Service Key & Quota (Gemini API)
+  {
+    pattern: /leaked|invalid_api_key|api\s*key\s*(?:not\s*valid|was\s*reported|invalid|expired|missing)|permission_denied/i,
+    resolve: (str) => ({
+      title: 'AI Service Authentication Notice',
+      description: str.toLowerCase().includes('leaked')
+        ? 'The Gemini API key was reported leaked and revoked by Google. Please update your GEMINI_API_KEY in .env.'
+        : 'AI service authentication failed. Please verify your GEMINI_API_KEY in .env settings.',
+      actionLabel: 'Check Settings',
+      actionType: 'dismiss',
+    }),
+  },
+  // 4c. Payload Size Limit Exceeded (413)
+  {
+    pattern: /413|payload\s*too\s*large|request\s*entity\s*too\s*large|exceeds\s*(?:the\s*)?\d+\s*mb/i,
+    resolve: (str) => {
+      const mbMatch = str.match(/(\d+(?:\.\d+)?\s*MB)/i);
+      return {
+        title: 'File Size Limit Exceeded',
+        description: mbMatch
+          ? `Selected file (${mbMatch[1]}) exceeds the maximum upload limit. Please select a file under 50 MB.`
+          : 'Selected file exceeds the maximum upload limit. Please select a file under 50 MB.',
+        actionLabel: 'Choose Smaller File',
+        actionType: 'dismiss',
+      };
+    },
   },
   // 5. MahaRERA Verification
   {
@@ -82,11 +109,22 @@ const ERROR_PATTERNS: Array<{
   },
   // 7. Brochure Extraction / OCR / File Uploads
   {
-    pattern: /brochure|extraction|ocr|pdf\s*parsing|file\s*upload|unsupported\s*format/i,
+    pattern: /unsupported\s*format|corrupt|damaged\s*pdf|invalid\s*pdf/i,
     resolve: () => ({
-      title: 'Document Processing Issue',
-      description: 'We could not extract details from this file. Please verify it is a valid PDF or high-resolution image under the size limit.',
+      title: 'Document Format Issue',
+      description: 'We could not read this file. Please verify it is a valid, uncorrupted PDF or high-resolution floor plan image.',
       actionLabel: 'Choose Another File',
+      actionType: 'dismiss',
+    }),
+  },
+  {
+    pattern: /failed to extract|extraction\s*failed|could not extract|pdf\s*parsing|parse\s*brochure/i,
+    resolve: (str) => ({
+      title: 'Document Processing Issue',
+      description: str && str.length > 15 && !str.includes('{') && !str.includes('SQL')
+        ? str
+        : 'Could not extract project details from this document. You can paste specifications directly or enter details manually.',
+      actionLabel: 'Enter Manually',
       actionType: 'dismiss',
     }),
   },

@@ -326,9 +326,10 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
     if (progressTimerRef.current) {
       clearInterval(progressTimerRef.current);
     }
+    const stepInterval = (uploadMode === 'file' && file && file.size > 10 * 1024 * 1024) ? 2500 : 900;
     progressTimerRef.current = setInterval(() => {
-      setParseProgressStep((prev) => (prev < 5 ? prev + 1 : prev));
-    }, 450);
+      setParseProgressStep((prev) => (prev < 6 ? prev + 1 : prev));
+    }, stepInterval);
 
     try {
       let res: Response;
@@ -622,11 +623,11 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
   };
 
   const parseSteps = [
-    'Scanning brochure graphics & text streams…',
+    'Securely streaming document to project media vault…',
+    'AI scanning brochure graphics, elevations & spec sheets…',
     'Extracting MahaRERA registration ID & developer identity…',
-    'Analyzing architectural elevation (G+7), storeys & commercial shops…',
-    'Detecting 1 & 2 BHK floor plans, carpet areas & balconies…',
-    'Cataloging luxury specifications & amenities…',
+    'Identifying floor plates, 1/2/3 BHK layouts & distinct carpet areas…',
+    'Extracting authentic elevation renders & lifestyle amenities…',
     'Computing statutory agreement values, GST & all-in costs…',
   ];
 

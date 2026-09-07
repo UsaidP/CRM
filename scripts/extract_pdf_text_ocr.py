@@ -49,7 +49,7 @@ def extract_text(pdf_path):
 
             for idx in range(len(doc)):
                 page = doc[idx]
-                pix = page.get_pixmap(dpi=150)
+                pix = page.get_pixmap(dpi=100)
                 png_bytes = pix.tobytes('png')
                 ns_data = NSData.dataWithBytes_length_(png_bytes, len(png_bytes))
 
