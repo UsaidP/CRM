@@ -64,6 +64,7 @@ export async function extractAndProcessBrochure(
     floorPlansList?: ExtractedFloorPlanDetail[];
     pages?: Array<{ page_number: number; page_type: string; title?: string }>;
     brochureUrl?: string;
+    alreadySanitized?: boolean;
   }
 ): Promise<BrochureExtractionResult> {
   const {
@@ -76,6 +77,7 @@ export async function extractAndProcessBrochure(
     floorPlansList,
     pages,
     brochureUrl: existingBrochureUrl,
+    alreadySanitized,
   } = projectInfo;
 
   // Determine appropriate MIME type from file extension
@@ -87,8 +89,8 @@ export async function extractAndProcessBrochure(
 
   let bBuffer = Buffer.isBuffer(brochureBuffer) ? brochureBuffer : Buffer.from(brochureBuffer);
 
-  // Broker Shield: Sanitize PDF brochure to ensure phone numbers are erased on the stored document
-  if (mimeType === 'application/pdf' || ext === 'pdf') {
+  // Broker Shield: Sanitize PDF brochure to ensure phone numbers are erased on the stored document (skip if already sanitized at ingestion)
+  if (!alreadySanitized && (mimeType === 'application/pdf' || ext === 'pdf')) {
     try {
       const { sanitizeBrochurePdfBuffer } = await import('@/lib/services/pdf-image-extractor');
       const sanitized = sanitizeBrochurePdfBuffer(bBuffer);
@@ -142,6 +144,7 @@ export async function extractAndProcessBrochure(
         aiAssetHints,
         floorPlansList,
         pages,
+        alreadySanitized: true,
       });
     } catch (err: any) {
       console.warn('[BROCHURE] Real PDF extraction notice:', err.message);

@@ -335,15 +335,23 @@ export async function uploadMediaAsset(
   mimeType = 'image/jpeg',
   projectName?: string
 ): Promise<UploadedMediaAsset> {
+  const nodeBuffer = Buffer.isBuffer(buffer) ? buffer : Buffer.from(buffer as ArrayBuffer);
+  const isPdfOrRaw = mimeType.includes('pdf') || category === 'brochures' || fileName.toLowerCase().endsWith('.pdf');
+
+  // Cloudinary free plan has a hard 10MB limit for raw/PDF files. Route directly to local vault to avoid timeouts.
+  if (isPdfOrRaw && nodeBuffer.length > 10 * 1024 * 1024) {
+    return await uploadToLocalStorage(nodeBuffer, fileName, category, mimeType, projectName);
+  }
+
   if (isCloudinaryConfigured()) {
     try {
-      return await uploadToCloudinary(buffer, fileName, category, mimeType, projectName);
+      return await uploadToCloudinary(nodeBuffer, fileName, category, mimeType, projectName);
     } catch (err: any) {
       console.warn(`[MEDIA] Cloudinary upload notice (${err.message}). Storing in local media vault.`);
-      return await uploadToLocalStorage(buffer, fileName, category, mimeType, projectName);
+      return await uploadToLocalStorage(nodeBuffer, fileName, category, mimeType, projectName);
     }
   }
-  return await uploadToLocalStorage(buffer, fileName, category, mimeType, projectName);
+  return await uploadToLocalStorage(nodeBuffer, fileName, category, mimeType, projectName);
 }
 
 /**

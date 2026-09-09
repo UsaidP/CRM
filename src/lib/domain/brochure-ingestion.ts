@@ -189,6 +189,7 @@ export async function ingestBrochure(
         floorPlansList: extracted.floorPlansList,
         pages: extracted.pages,
         brochureUrl: brochureUrl || undefined,
+        alreadySanitized: phoneNumbersErased,
       }
     );
 

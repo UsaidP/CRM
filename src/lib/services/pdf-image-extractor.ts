@@ -98,6 +98,7 @@ export async function extractRealImagesFromPdf(
     aiAssetHints?: ProjectAssetRecord[];
     floorPlansList?: any[];
     pages?: any[];
+    alreadySanitized?: boolean;
   }
 ): Promise<ExtractedRealAsset[]> {
   const cleanSlug = projectName.toLowerCase().replace(/[^a-z0-9]/g, '_');
@@ -110,10 +111,10 @@ export async function extractRealImagesFromPdf(
     const tempPdfPath = path.join(tempDir, 'brochure.pdf');
     fs.writeFileSync(rawPdfPath, pdfBuffer);
 
-    // Step 0: Sanitize PDF to erase all phone numbers from pages before rendering
+    // Step 0: Sanitize PDF to erase all phone numbers from pages before rendering (skip if already sanitized at ingestion)
     const sanitizeScriptPath = path.join(process.cwd(), 'scripts', 'sanitize_brochure_media.py');
     let effectivePdfPath = rawPdfPath;
-    if (fs.existsSync(sanitizeScriptPath)) {
+    if (!options?.alreadySanitized && fs.existsSync(sanitizeScriptPath)) {
       try {
         const sanitizeOut = execFileSync('python3', [sanitizeScriptPath, rawPdfPath, tempPdfPath], {
           encoding: 'utf8',
