@@ -223,12 +223,26 @@ const MICRO_MARKETS = [
 ];
 
 /**
- * Extracts plain text from raw PDF buffer without external native binary dependencies
- */
-/**
  * Extracts plain text from PDF buffer using local Python PyMuPDF + Apple Vision OCR, with in-memory regex fallback
  */
-export function extractTextFromPdfBuffer(buffer: Buffer): string {
+export interface ExtractedPdfTextResult {
+  fullText: string;
+  pages: Array<{ page_number: number; text: string }>;
+}
+
+export interface ClassifiedPageResult {
+  page_number: number;
+  page_type: 'cover' | 'elevation' | 'master_plan' | 'floor_plan' | 'unit_floor_plan' | 'typical_floor_plan' | 'location_map' | 'amenity' | 'specifications' | 'brochure_photo';
+  title: string;
+  description: string;
+  bhk?: number;
+  carpet_area_sqft?: number;
+}
+
+/**
+ * Extracts plain text and per-page text chunks from PDF buffer using local Python PyMuPDF + Apple Vision OCR
+ */
+export function extractTextAndPagesFromPdfBuffer(buffer: Buffer): ExtractedPdfTextResult {
   // 1. High-accuracy local OCR & PyMuPDF extractor via scripts/extract_pdf_text_ocr.py
   try {
     const fs = require('fs');
@@ -241,7 +255,7 @@ export function extractTextFromPdfBuffer(buffer: Buffer): string {
 
     const scriptPath = path.join(process.cwd(), 'scripts', 'extract_pdf_text_ocr.py');
     if (fs.existsSync(scriptPath)) {
-      const output = execFileSync('python3', [scriptPath, tempPdf], {
+      const output = execFileSync(/*turbopackIgnore: true*/ 'python3', [scriptPath, tempPdf], {
         encoding: 'utf8',
         timeout: 45000,
         maxBuffer: 20 * 1024 * 1024,
@@ -252,7 +266,10 @@ export function extractTextFromPdfBuffer(buffer: Buffer): string {
 
       const parsed = JSON.parse(output);
       if (parsed.full_text && parsed.full_text.length > 50) {
-        return parsed.full_text;
+        return {
+          fullText: parsed.full_text,
+          pages: Array.isArray(parsed.pages) ? parsed.pages : [],
+        };
       }
     }
   } catch (ocrErr: any) {
@@ -268,10 +285,10 @@ export function extractTextFromPdfBuffer(buffer: Buffer): string {
 
     const tempPdf = path.join(os.tmpdir(), `brochure_pdftotext_${Date.now()}.pdf`);
     fs.writeFileSync(tempPdf, buffer);
-    const txt = execFileSync('pdftotext', [tempPdf, '-'], { encoding: 'utf8', timeout: 15000 });
+    const txt = execFileSync(/*turbopackIgnore: true*/ 'pdftotext', [tempPdf, '-'], { encoding: 'utf8', timeout: 15000 });
     try { fs.unlinkSync(tempPdf); } catch {}
     if (txt && txt.trim().length > 50) {
-      return txt.trim();
+      return { fullText: txt.trim(), pages: [] };
     }
   } catch {}
 
@@ -309,11 +326,176 @@ export function extractTextFromPdfBuffer(buffer: Buffer): string {
       }
     }
 
-    return extracted;
+    return { fullText: extracted, pages: [] };
   } catch (err) {
-    console.error('extractTextFromPdfBuffer failed:', err);
-    return '';
+    console.error('extractTextAndPagesFromPdfBuffer failed:', err);
+    return { fullText: '', pages: [] };
   }
+}
+
+/**
+ * Extracts plain text from raw PDF buffer without external native binary dependencies
+ */
+export function extractTextFromPdfBuffer(buffer: Buffer): string {
+  return extractTextAndPagesFromPdfBuffer(buffer).fullText;
+}
+
+/**
+ * Intelligently classifies an extracted brochure page from its OCR/text tokens
+ */
+export function classifyBrochurePageFromText(
+  pageText: string,
+  pageNum: number,
+  totalPages: number,
+  projectName: string
+): ClassifiedPageResult {
+  const norm = pageText.toLowerCase();
+
+  // 1. Floor Plan & Unit Layout Check
+  const hasFloorPlanKeyword = 
+    norm.includes('floor plan') ||
+    norm.includes('typical floor') ||
+    norm.includes('unit plan') ||
+    norm.includes('layout plan') ||
+    norm.includes('carpet area') ||
+    norm.includes('living/dining') ||
+    norm.includes('master bed') ||
+    (norm.includes('kitchen platform') && norm.includes('balcony')) ||
+    (/\b[1-5]\s*bhk\b/i.test(norm) && (norm.includes('sq.ft') || norm.includes('sqft') || norm.includes('plan')));
+
+  if (hasFloorPlanKeyword) {
+    let bhk: number | undefined;
+    const bhkMatch = norm.match(/\b([1-5])\s*(?:bhk|bed)/i);
+    if (bhkMatch) {
+      bhk = parseInt(bhkMatch[1], 10);
+    }
+
+    let carpetAreaSqft: number | undefined;
+    const carpetMatch = norm.match(/(?:carpet|usable|rera\s*carpet)[^0-9]{1,20}(\d{3,4})\s*(?:sq\.?\s*ft|sqft)/i) ||
+      norm.match(/\b(\d{3,4})\s*(?:sq\.?\s*ft|sqft)/i);
+    if (carpetMatch) {
+      const parsedArea = parseInt(carpetMatch[1], 10);
+      if (parsedArea >= 200 && parsedArea <= 3500) {
+        carpetAreaSqft = parsedArea;
+      }
+    }
+
+    const isTypical = norm.includes('typical') || norm.includes('cluster');
+    const page_type = bhk ? 'unit_floor_plan' : isTypical ? 'typical_floor_plan' : 'floor_plan';
+    const title = bhk 
+      ? `${projectName} ${bhk} BHK Unit Floor Plan${carpetAreaSqft ? ` (${carpetAreaSqft} sq.ft)` : ''}`
+      : `${projectName} Typical Floor Layout Plan`;
+
+    return {
+      page_number: pageNum,
+      page_type,
+      title,
+      description: `Architectural ${bhk ? `${bhk} BHK` : 'typical'} floor plan layout extracted from brochure.`,
+      bhk,
+      carpet_area_sqft: carpetAreaSqft,
+    };
+  }
+
+  // 2. Master Site Layout Plan
+  if (
+    norm.includes('master plan') ||
+    norm.includes('master layout') ||
+    norm.includes('site plan') ||
+    norm.includes('site layout') ||
+    norm.includes('ground layout') ||
+    norm.includes('campus layout')
+  ) {
+    return {
+      page_number: pageNum,
+      page_type: 'master_plan',
+      title: `${projectName} Master Site Layout Plan`,
+      description: `Comprehensive master layout and site schematic from developer brochure.`,
+    };
+  }
+
+  // 3. Location & Connectivity Map
+  if (
+    norm.includes('location map') ||
+    norm.includes('connectivity') ||
+    norm.includes('how to reach') ||
+    norm.includes('strategic location') ||
+    norm.includes('proximity') ||
+    norm.includes('transit') ||
+    (norm.includes('railway station') && norm.includes('highway') && norm.includes('mins'))
+  ) {
+    return {
+      page_number: pageNum,
+      page_type: 'location_map',
+      title: `${projectName} Location & Connectivity Map`,
+      description: `Strategic location and transit connectivity map from developer brochure.`,
+    };
+  }
+
+  // 4. Amenities
+  if (
+    norm.includes('amenities') ||
+    norm.includes('swimming pool') ||
+    norm.includes('fitness center') ||
+    norm.includes('gymnasium') ||
+    norm.includes('clubhouse') ||
+    norm.includes('club house') ||
+    norm.includes('rooftop lounge') ||
+    norm.includes('podium garden')
+  ) {
+    return {
+      page_number: pageNum,
+      page_type: 'amenity',
+      title: `${projectName} Lifestyle Amenities`,
+      description: `Curated lifestyle amenities and recreation spaces from developer brochure.`,
+    };
+  }
+
+  // 5. Technical Specifications
+  if (
+    norm.includes('specifications') ||
+    (norm.includes('flooring') && norm.includes('electrification')) ||
+    norm.includes('internal amenities')
+  ) {
+    return {
+      page_number: pageNum,
+      page_type: 'specifications',
+      title: `${projectName} Technical Specifications`,
+      description: `High-quality construction and interior specifications table.`,
+    };
+  }
+
+  // 6. Cover & Elevation Page
+  if (pageNum === 1) {
+    return {
+      page_number: pageNum,
+      page_type: 'cover',
+      title: `${projectName} Main Cover & Facade`,
+      description: `Official developer brochure cover and main elevation for ${projectName}.`,
+    };
+  }
+
+  if (
+    norm.includes('elevation') ||
+    norm.includes('architectural render') ||
+    norm.includes('artist impression') ||
+    norm.includes('grand tower') ||
+    norm.includes('perspective')
+  ) {
+    return {
+      page_number: pageNum,
+      page_type: 'elevation',
+      title: `${projectName} 3D Architectural Elevation`,
+      description: `Architectural exterior perspective from developer brochure.`,
+    };
+  }
+
+  // 7. General Brochure Photo / Profile
+  return {
+    page_number: pageNum,
+    page_type: 'brochure_photo',
+    title: `${projectName} Brochure Page ${pageNum}`,
+    description: `Official brochure page ${pageNum} for ${projectName}.`,
+  };
 }
 
 /**
@@ -379,7 +561,11 @@ export function erasePhoneNumbersFromText(text: string): string {
 /**
  * Deterministic Semantic Parsing Engine for Real Estate Brochures
  */
-export function parseBrochureText(rawText: string, filename: string = 'brochure.pdf'): ExtractedBrochureData {
+export function parseBrochureText(
+  rawText: string,
+  filename: string = 'brochure.pdf',
+  pagesData?: Array<{ page_number: number; text: string }>
+): ExtractedBrochureData {
   const sanitizedInputText = erasePhoneNumbersFromText(rawText);
   const cleanedRawText = sanitizedInputText.replace(/---\s*PAGE\s*\d+\s*---/gi, ' ');
   const normalizedText = cleanedRawText.replace(/\r?\n/g, ' ').replace(/\s+/g, ' ').trim();
@@ -689,63 +875,134 @@ export function parseBrochureText(rawText: string, filename: string = 'brochure.
   const shortDescription = `${elevation} situated at ${microMarket} (${subLocality}). Featuring premium ${Array.from(detectedBhks).map(b => `${b} BHK`).join(' & ')} flats with balconies and ground floor commercial shops.`;
   const description = `${projectName} by ${developerName}${subLocality ? ` located at ${subLocality}, ${microMarket}` : ` located in ${microMarket}`}${reraNumber ? `. Approved under MahaRERA Reg No: ${reraNumber}.` : '.'}`;
 
-  return {
-    projectName,
-    developerName,
-    reraNumber,
-    microMarket,
-    subLocality,
-    elevation,
-    totalTowers,
-    totalFloors,
-    podiumLevels: 0,
-    hasOccupancyCertificate,
-    expectedPossessionDate,
-    possessionStatus,
-    basePricePerSqft,
-    plotDetails: undefined,
-    structureType: undefined,
-    floorPlateSummary: undefined,
-    shortDescription: erasePhoneNumbersFromText(shortDescription),
-    description: erasePhoneNumbersFromText(description),
-    amenities: Array.from(new Set(extractedAmenities)),
-    specifications: {},
-    transitConnectivity: [],
-    keyHighlights: [
-      ...(reraNumber ? [`MahaRERA Registered Project: ${reraNumber}`] : []),
-      ...(elevation ? [`Elevation: ${elevation}`] : []),
-      ...(subLocality ? [`Location: ${subLocality}`] : []),
-      ...(detectedBhks.size > 0 ? [`Typologies: ${Array.from(detectedBhks).map(b => `${b} BHK`).join(' & ')}`] : []),
-    ].map(erasePhoneNumbersFromText).filter(Boolean),
-    developerSalesPocName,
-    developerSalesPocPhone: undefined,
-    developerEmail,
-    architects,
-    rccConsultants,
-    standardCommissionPercent: 2.5,
-    confidentialBrokerData: {
+  // Classify pages if per-page text is provided
+  const classifiedPages: any[] = [];
+    const localAssetRecords: ProjectAssetRecord[] = [];
+    const localFloorPlansList: ExtractedFloorPlanDetail[] = [];
+    const cleanProjSlug = projectName.toLowerCase().replace(/[^a-z0-9]/g, '_');
+    let sortCounter = 1;
+
+    if (Array.isArray(pagesData) && pagesData.length > 0) {
+      const totalPages = pagesData.length;
+      for (const p of pagesData) {
+        const classified = classifyBrochurePageFromText(p.text, p.page_number, totalPages, projectName);
+        classifiedPages.push(classified);
+
+        let displayPos = 'gallery';
+        if (classified.page_type === 'cover' || classified.page_type === 'elevation') {
+          displayPos = 'elevation';
+        } else if (classified.page_type === 'master_plan') {
+          displayPos = 'master_plan';
+        } else if (classified.page_type.includes('floor') || classified.page_type.includes('unit')) {
+          displayPos = 'floor_plan';
+          localFloorPlansList.push({
+            floor: 'Typical Floor',
+            plan_type: classified.page_type,
+            page_number: classified.page_number,
+            original_image: true,
+            title: classified.title,
+            units: classified.bhk ? [{ bhk: classified.bhk, carpetAreaSqft: classified.carpet_area_sqft }] : [],
+          });
+        } else if (classified.page_type === 'location_map') {
+          displayPos = 'location_map';
+        } else if (classified.page_type === 'amenity') {
+          displayPos = 'amenities';
+        }
+
+        localAssetRecords.push({
+          asset_id: `asset_${cleanProjSlug}_${sortCounter}`,
+          asset_type: classified.page_type as any,
+          subtype: classified.page_type,
+          title: classified.title,
+          file_url: '',
+          page_number: classified.page_number,
+          original: true,
+          display_position: displayPos,
+          sort_order: sortCounter++,
+          confidence: 0.95,
+          source_position: 'full_page',
+          bhk: classified.bhk,
+          carpetAreaSqft: classified.carpet_area_sqft,
+          description: classified.description,
+        });
+      }
+    }
+
+    const elevationsCount = localAssetRecords.filter(a => a.display_position === 'elevation').length;
+    const floorPlansCount = localAssetRecords.filter(a => a.display_position === 'floor_plan').length;
+    const hasMasterPlan = localAssetRecords.some(a => a.display_position === 'master_plan');
+
+    return {
+      projectName,
+      developerName,
+      reraNumber,
+      microMarket,
+      subLocality,
+      elevation,
+      totalTowers,
+      totalFloors,
+      podiumLevels: 0,
+      hasOccupancyCertificate,
+      expectedPossessionDate,
+      possessionStatus,
+      basePricePerSqft,
+      plotDetails: undefined,
+      structureType: undefined,
+      floorPlateSummary: undefined,
+      shortDescription: erasePhoneNumbersFromText(shortDescription),
+      description: erasePhoneNumbersFromText(description),
+      amenities: Array.from(new Set(extractedAmenities)),
+      specifications: {},
+      transitConnectivity: [],
+      keyHighlights: [
+        ...(reraNumber ? [`MahaRERA Registered Project: ${reraNumber}`] : []),
+        ...(elevation ? [`Elevation: ${elevation}`] : []),
+        ...(subLocality ? [`Location: ${subLocality}`] : []),
+        ...(detectedBhks.size > 0 ? [`Typologies: ${Array.from(detectedBhks).map(b => `${b} BHK`).join(' & ')}`] : []),
+      ].map(erasePhoneNumbersFromText).filter(Boolean),
       developerSalesPocName,
       developerSalesPocPhone: undefined,
       developerEmail,
-      siteAddress: subLocality ? `Site Address: ${subLocality}, ${microMarket}` : undefined,
-      officeAddress: undefined,
       architects,
       rccConsultants,
       standardCommissionPercent: 2.5,
-      brokerShieldActive: true,
-      notes: 'Direct builder booking phone numbers auto-erased to prevent client bypass.',
-    },
-    classifiedMedia: {
-      elevationsCount: 0,
-      floorPlansCount: 0,
-      hasMasterPlan: false,
-      elevations: [],
-      floorPlans: [],
-    },
-    units,
-    rawTextPreview: erasePhoneNumbersFromText(normalizedText).slice(0, 500) + '...',
-  };
-}
+      confidentialBrokerData: {
+        developerSalesPocName,
+        developerSalesPocPhone: undefined,
+        developerEmail,
+        siteAddress: subLocality ? `Site Address: ${subLocality}, ${microMarket}` : undefined,
+        officeAddress: undefined,
+        architects,
+        rccConsultants,
+        standardCommissionPercent: 2.5,
+        brokerShieldActive: true,
+        notes: 'Direct builder booking phone numbers auto-erased to prevent client bypass.',
+      },
+      classifiedMedia: {
+        elevationsCount,
+        floorPlansCount,
+        hasMasterPlan,
+        elevations: localAssetRecords.filter(a => a.display_position === 'elevation').map(a => ({
+          title: a.title,
+          viewAngle: a.subtype,
+          description: a.description,
+          page_number: a.page_number,
+        })),
+        floorPlans: localAssetRecords.filter(a => a.display_position === 'floor_plan').map(a => ({
+          bhk: a.bhk ?? 0,
+          carpetAreaSqft: a.carpetAreaSqft ?? 0,
+          title: a.title,
+          description: a.description,
+          page_number: a.page_number,
+        })),
+      },
+      assetRecords: localAssetRecords,
+      floorPlansList: localFloorPlansList,
+      pages: classifiedPages,
+      units,
+      rawTextPreview: erasePhoneNumbersFromText(normalizedText).slice(0, 500) + '...',
+    };
+  }
 
 /**
  * Universal Unified Async Parser
@@ -764,8 +1021,9 @@ export async function parseBrochureAsync(
     };
   } catch (error: any) {
     console.warn('Gemini AI brochure extraction encountered rate limits or network issue, using smart local parser:', error.message || error);
-    const rawText = extractTextFromPdfBuffer(buffer) || `Project: ${filename.replace(/\.pdf$/i, '').replace(/[-_]/g, ' ')}`;
-    const fallbackData = parseBrochureText(rawText, filename);
+    const { fullText, pages } = extractTextAndPagesFromPdfBuffer(buffer);
+    const rawText = fullText || `Project: ${filename.replace(/\.pdf$/i, '').replace(/[-_]/g, ' ')}`;
+    const fallbackData = parseBrochureText(rawText, filename, pages);
     return {
       data: fallbackData,
       extractionMethod: 'REGEX_FALLBACK',

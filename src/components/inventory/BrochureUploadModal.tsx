@@ -40,6 +40,7 @@ import { ReraVerificationBadge } from '@/components/inventory/ReraVerificationBa
 import { FeedbackAlert } from '@/components/ui/FeedbackAlert';
 import { CustomSelect } from '@/components/ui/CustomSelect';
 import { uploadToCloudinaryChunked } from '@/lib/client/cloudinary-chunked-upload';
+import { uploadBrochureChunked } from '@/lib/client/chunked-brochure-uploader';
 import { parseSafeDate } from '@/lib/date-utils';
 import { MahaReraCertificateModal } from '@/components/inventory/MahaReraCertificateModal';
 import { resolveAssetUrl, parseGalleryUrls } from '@/lib/inventory-media';
@@ -59,6 +60,7 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
   const [pastedText, setPastedText] = useState('');
   const [parsing, setParsing] = useState(false);
   const [parseProgressStep, setParseProgressStep] = useState(0);
+  const [customProgressText, setCustomProgressText] = useState<string | null>(null);
   const [parseError, setParseError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [activeReviewTab, setActiveReviewTab] = useState<'overview' | 'media' | 'units' | 'amenities' | 'connectivity'>('overview');
@@ -94,6 +96,7 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
     }
     setParsing(false);
     setParseProgressStep(0);
+    setCustomProgressText(null);
   };
 
   const resetState = () => {
@@ -104,6 +107,7 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
     setPastedText('');
     setParsing(false);
     setParseProgressStep(0);
+    setCustomProgressText(null);
     setParseError(null);
     setSaving(false);
     setProjectData(null);
@@ -258,6 +262,107 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
     }
   };
 
+  const handleReclassifyAsset = (
+    assetUrl: string,
+    targetCategory: 'elevation' | 'floor_plan' | 'master_plan' | 'brochure_photo',
+    options?: { bhk?: number; carpetAreaSqft?: number }
+  ) => {
+    if (!projectData) return;
+
+    let targetItem: any = null;
+
+    const nextElevations = (projectData.elevations || []).filter((item: any) => {
+      if (resolveAssetUrl(item) === assetUrl) {
+        targetItem = item;
+        return false;
+      }
+      return true;
+    });
+
+    const nextFloorPlans = (projectData.floorPlans || []).filter((item: any) => {
+      if (resolveAssetUrl(item) === assetUrl) {
+        targetItem = item;
+        return false;
+      }
+      return true;
+    });
+
+    let nextMasterPlan = projectData.masterPlan;
+    if (projectData.masterPlan && resolveAssetUrl(projectData.masterPlan) === assetUrl) {
+      targetItem = projectData.masterPlan;
+      nextMasterPlan = undefined;
+    }
+
+    const nextBrochurePhotos = (projectData.brochurePhotos || []).filter((item: any) => {
+      if (resolveAssetUrl(item) === assetUrl) {
+        targetItem = item;
+        return false;
+      }
+      return true;
+    });
+
+    if (!targetItem) return;
+
+    if (targetCategory === 'elevation') {
+      targetItem = {
+        ...targetItem,
+        type: 'ELEVATION',
+        title: targetItem.title || `${projectData.projectName} Architectural Elevation`,
+      };
+      nextElevations.push(targetItem);
+    } else if (targetCategory === 'floor_plan') {
+      const bhk = options?.bhk ?? targetItem.bhk ?? 2;
+      const carpetAreaSqft = options?.carpetAreaSqft ?? targetItem.carpetAreaSqft;
+      targetItem = {
+        ...targetItem,
+        type: 'FLOOR_PLAN',
+        bhk,
+        carpetAreaSqft,
+        title: targetItem.title || `${bhk} BHK Architectural Floor Plan`,
+      };
+      nextFloorPlans.push(targetItem);
+    } else if (targetCategory === 'master_plan') {
+      if (nextMasterPlan) {
+        nextBrochurePhotos.push(nextMasterPlan);
+      }
+      targetItem = {
+        ...targetItem,
+        type: 'MASTER_PLAN',
+        title: targetItem.title || `${projectData.projectName} Master Layout Plan`,
+      };
+      nextMasterPlan = targetItem;
+    } else {
+      targetItem = {
+        ...targetItem,
+        type: 'BROCHURE_PHOTO',
+      };
+      nextBrochurePhotos.push(targetItem);
+    }
+
+    setProjectData({
+      ...projectData,
+      elevations: nextElevations,
+      floorPlans: nextFloorPlans,
+      masterPlan: nextMasterPlan,
+      brochurePhotos: nextBrochurePhotos,
+    });
+  };
+
+  const handleUpdateFloorPlan = (idx: number, updates: { bhk?: number; carpetAreaSqft?: number; title?: string }) => {
+    if (!projectData || !projectData.floorPlans) return;
+    const nextFloorPlans = [...projectData.floorPlans];
+    if (nextFloorPlans[idx]) {
+      nextFloorPlans[idx] = {
+        ...nextFloorPlans[idx],
+        ...updates,
+      };
+      setProjectData({
+        ...projectData,
+        floorPlans: nextFloorPlans,
+      });
+    }
+  };
+
   const isAcceptedFileType = (f: File) => {
     return (
       f.type === 'application/pdf' ||
@@ -332,53 +437,25 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
     }, stepInterval);
 
     try {
-      let res: Response;
+      let json: any;
       if (uploadMode === 'file' && file) {
         if (file.size > MAX_BROCHURE_BYTES) {
           throw new Error(`File size (${(file.size / (1024 * 1024)).toFixed(1)} MB) exceeds the 50 MB upload limit.`);
         }
 
-        // Step 1: Attempt direct Cloudinary chunked upload for permanent asset hosting (bypasses server payload limits)
-        let directUploadedUrl: string | null = null;
-        try {
-          const isPdf = file.type?.includes('pdf') || file.name.match(/\.pdf$/i);
-          const resourceType = isPdf ? 'raw' : 'auto';
-          const signRes = await fetch(
-            `/api/v1/media/sign-upload?category=brochures&filename=${encodeURIComponent(file.name)}&resourceType=${resourceType}`,
-            { signal: controller.signal }
-          );
-          if (signRes.ok) {
-            const signData = await signRes.json();
-            if (signData.success && signData.signed) {
-              const cloudAsset = await uploadToCloudinaryChunked(
-                file,
-                signData.signed,
-                file.name
-              );
-              directUploadedUrl = cloudAsset.secure_url || cloudAsset.url;
-            }
-          }
-        } catch (cloudUploadErr: any) {
-          if (controller.signal.aborted || cloudUploadErr?.name === 'AbortError') return;
-          console.warn('[UPLOAD] Direct Cloudinary chunked upload attempt notice:', cloudUploadErr);
-        }
-
-        if (controller.signal.aborted) return;
-
-        // Step 2: Send to upload & extraction endpoint
-        if (directUploadedUrl) {
-          // Fast-track: Send the hosted CDN URL directly (< 1KB payload, zero binary memory overhead)
-          res = await fetch('/api/v1/inventory/upload-brochure', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              brochureUrl: directUploadedUrl,
-              filename: file.name,
-              mimeType: file.type || 'application/pdf',
-            }),
+        if (file.size > 4 * 1024 * 1024) {
+          // Large files (> 4MB up to 50MB): Stream via self-contained chunked uploader
+          // Bypasses Vercel 4.5MB serverless payload limit and Cloudinary 10MB free-tier limits seamlessly
+          json = await uploadBrochureChunked({
+            file,
             signal: controller.signal,
+            onProgress: (prog) => {
+              const step = Math.min(5, Math.max(1, Math.ceil((prog.percent / 100) * 5)));
+              setParseProgressStep(step);
+              setCustomProgressText(prog.statusText);
+            },
           });
-        } else if (file.size <= 4 * 1024 * 1024) {
+        } else {
           // Smaller files (<= 4MB): base64 JSON payload is quick and reliable
           let base64Data: string | null = null;
           try {
@@ -392,7 +469,7 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
             console.warn('[BROCHURE] Base64 encoding notice:', base64Err);
           }
 
-          res = await fetch('/api/v1/inventory/upload-brochure', {
+          const res = await fetch('/api/v1/inventory/upload-brochure', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -402,53 +479,46 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
             }),
             signal: controller.signal,
           });
-        } else {
-          // Large files (> 4MB up to 50MB): Stream directly as multipart FormData to avoid memory explosion
-          const formData = new FormData();
-          formData.append('file', file);
-          formData.append('filename', file.name);
 
-          res = await fetch('/api/v1/inventory/upload-brochure', {
-            method: 'POST',
-            body: formData,
-            signal: controller.signal,
-          });
+          const rawText = await res.text();
+          try {
+            json = JSON.parse(rawText);
+          } catch {
+            if (res.status === 413 || rawText.includes('Request Entity Too Large')) {
+              throw new Error(
+                `File size (${(file ? (file.size / (1024 * 1024)).toFixed(1) : '')} MB) exceeds maximum upload payload limit.`
+              );
+            }
+            throw new Error(`Server returned HTTP ${res.status}: ${rawText.slice(0, 150)}`);
+          }
         }
       } else if (uploadMode === 'text' && pastedText.trim()) {
-        res = await fetch('/api/v1/inventory/upload-brochure', {
+        const res = await fetch('/api/v1/inventory/upload-brochure', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text: pastedText, filename: 'Developer_Brochure.pdf' }),
           signal: controller.signal,
         });
+
+        const rawText = await res.text();
+        try {
+          json = JSON.parse(rawText);
+        } catch {
+          throw new Error(`Server returned HTTP ${res.status}: ${rawText.slice(0, 150)}`);
+        }
       } else {
         throw new Error('Please select a PDF brochure or paste brochure specification text.');
       }
 
       if (controller.signal.aborted) return;
 
-      const rawText = await res.text();
-      let json: any;
-      try {
-        json = JSON.parse(rawText);
-      } catch {
-        if (res.status === 413 || rawText.includes('Request Entity Too Large')) {
-          throw new Error(
-            `File size (${(file ? (file.size / (1024 * 1024)).toFixed(1) : '')} MB) exceeds maximum upload payload limit. Please ensure Cloudinary credentials are active for 50 MB chunked uploads.`
-          );
-        }
-        throw new Error(`Server returned HTTP ${res.status}: ${rawText.slice(0, 150)}`);
-      }
-
       if (progressTimerRef.current) {
         clearInterval(progressTimerRef.current);
         progressTimerRef.current = null;
       }
 
-      if (controller.signal.aborted) return;
-
-      if (!res.ok || !json.success) {
-        throw new Error(formatErrorMsg(json.error || 'Failed to extract project information from brochure.'));
+      if (!json || !json.success) {
+        throw new Error(formatErrorMsg(json?.error || 'Failed to extract project information from brochure.'));
       }
 
       setProjectData(json.data);
@@ -488,16 +558,10 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
         throw new Error(reraCheck.error || 'Please enter a valid MahaRERA registration number.');
       }
 
-      const rawElevations = projectData.elevations || projectData.classifiedMedia?.elevations || [];
-      const extractedElevations = rawElevations.slice(0, 2);
-      const rawFloorPlans = projectData.floorPlans || projectData.classifiedMedia?.floorPlans || [];
-      const extractedFloorPlans = rawFloorPlans.slice(0, 3);
+      const extractedElevations = projectData.elevations || projectData.classifiedMedia?.elevations || [];
+      const extractedFloorPlans = projectData.floorPlans || projectData.classifiedMedia?.floorPlans || [];
       const extractedMasterPlan = projectData.masterPlan || projectData.classifiedMedia?.masterPlan;
-      const excessMedia = [
-        ...rawElevations.slice(2),
-        ...rawFloorPlans.slice(3),
-        ...(projectData.brochurePhotos || []),
-      ];
+      const excessMedia = projectData.brochurePhotos || [];
 
       const coverImageUrl = projectData.coverImageUrl 
         || resolveAssetUrl(extractedElevations[0]) 
@@ -800,7 +864,7 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
                   </div>
                 </div>
                 <p className="text-[11px] text-content-secondary font-mono">
-                  {parseSteps[parseProgressStep - 1] || 'Processing brochure streams…'}
+                  {customProgressText || parseSteps[parseProgressStep - 1] || 'Processing brochure streams…'}
                 </p>
                 <div className="w-full bg-surface-subtle rounded-full h-1.5 overflow-hidden">
                   <div
@@ -1180,126 +1244,184 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
                 <div className="p-4 bg-surface rounded-2xl border border-border space-y-3.5">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <h3 className="font-bold text-xs uppercase font-mono text-accent-text flex items-center gap-1.5">
-                      <Building2 className="w-4 h-4 text-accent" /> High-Resolution Architectural Elevations ({Math.min(2, projectData.elevations?.length || 0)} Stored / Limit 2)
+                      <Building2 className="w-4 h-4 text-accent" /> High-Resolution Architectural Elevations ({(projectData.elevations || []).length})
                     </h3>
                     <span className="text-[10px] px-2.5 py-1 rounded-lg bg-accent-soft text-accent-text font-mono font-bold border border-accent/20 truncate">
-                      Cloudinary: zamzam_crm/projects/{projectData.projectName ? projectData.projectName.replace(/[^a-zA-Z0-9_-]/g, '_') : 'project'}/elevations
+                      Cloud Vault: {projectData.projectName ? projectData.projectName.replace(/[^a-zA-Z0-9_-]/g, '_') : 'project'}/elevations
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    {(projectData.elevations || []).slice(0, 2).map((elev: any, idx: number) => {
-                      const elevUrl = resolveAssetUrl(elev);
-                      const isCover = (projectData.coverImageUrl === elevUrl) || (!projectData.coverImageUrl && idx === 0);
-                      return (
-                        <div
-                          key={idx}
-                          className={`p-3 rounded-xl border space-y-2 group transition-all ${
-                            isCover
-                              ? 'border-accent bg-accent-soft/20 shadow-xs ring-1 ring-accent/30'
-                              : 'bg-surface-subtle border-border hover:border-accent/40'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-accent/10 text-accent font-mono">
-                              {elev.viewAngle?.replace(/_/g, ' ') || 'ELEVATION'}
-                            </span>
-                            {isCover ? (
-                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-accent text-white font-mono flex items-center gap-1">
-                                <Check className="w-2.5 h-2.5" /> Cover Image
-                              </span>
-                            ) : (
-                              <button
-                                type="button"
-                                onClick={() => setProjectData({ ...projectData, coverImageUrl: elevUrl })}
-                                className="text-[10px] text-accent font-bold hover:underline cursor-pointer"
+                  {(projectData.elevations || []).length === 0 ? (
+                    <p className="text-xs text-content-muted italic">No elevations categorized yet. Reclassify any page below as Elevation.</p>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      {(projectData.elevations || []).map((elev: any, idx: number) => {
+                        const elevUrl = resolveAssetUrl(elev);
+                        const isCover = (projectData.coverImageUrl === elevUrl) || (!projectData.coverImageUrl && idx === 0);
+                        return (
+                          <div
+                            key={idx}
+                            className={`p-3 rounded-xl border space-y-2 group transition-all ${
+                              isCover
+                                ? 'border-accent bg-accent-soft/20 shadow-xs ring-1 ring-accent/30'
+                                : 'bg-surface-subtle border-border hover:border-accent/40'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between gap-1">
+                              <select
+                                value="elevation"
+                                onChange={(e) => handleReclassifyAsset(elevUrl, e.target.value as any)}
+                                className="text-[10px] bg-surface-inset border border-border rounded px-1.5 py-0.5 text-accent font-bold font-mono focus:outline-none"
                               >
-                                Set as Cover
-                              </button>
-                            )}
+                                <option value="elevation">Elevation</option>
+                                <option value="floor_plan">Move to Floor Plan</option>
+                                <option value="master_plan">Move to Master Plan</option>
+                                <option value="brochure_photo">Move to Gallery</option>
+                              </select>
+                              {isCover ? (
+                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-accent text-white font-mono flex items-center gap-1">
+                                  <Check className="w-2.5 h-2.5" /> Cover
+                                </span>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => setProjectData({ ...projectData, coverImageUrl: elevUrl })}
+                                  className="text-[10px] text-accent font-bold hover:underline cursor-pointer"
+                                >
+                                  Set as Cover
+                                </button>
+                              )}
+                            </div>
+                            <p className="text-xs font-bold text-content truncate font-display">{elev.title}</p>
+                            <p className="text-[11px] text-content-secondary line-clamp-2">{elev.description}</p>
+                            {elevUrl ? (
+                              <div className="relative aspect-[16/10] w-full rounded-lg overflow-hidden bg-slate-950 my-1.5 border border-border">
+                                <img
+                                  src={elevUrl}
+                                  alt={elev.title || 'Architectural Elevation'}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                            ) : null}
+                            {elevUrl ? (
+                              <div className="flex items-center justify-between pt-1">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setPreviewLightboxUrl(elevUrl);
+                                    setPreviewLightboxTitle(elev.title || 'Architectural Elevation');
+                                  }}
+                                  className="inline-flex items-center gap-1 text-[11px] font-bold text-accent hover:underline cursor-pointer"
+                                >
+                                  <Eye className="w-3.5 h-3.5" />
+                                  <span>Preview Image</span>
+                                </button>
+                                <span className="text-[10px] text-content-muted font-mono">{elev.page_number ? `Page ${elev.page_number}` : ''}</span>
+                              </div>
+                            ) : null}
                           </div>
-                          <p className="text-xs font-bold text-content truncate font-display">{elev.title}</p>
-                          <p className="text-[11px] text-content-secondary line-clamp-2">{elev.description}</p>
-                          {elevUrl ? (
-                            <div className="relative aspect-[16/10] w-full rounded-lg overflow-hidden bg-slate-950 my-1.5 border border-border">
-                              <img
-                                src={elevUrl}
-                                alt={elev.title || 'Architectural Elevation'}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                          ) : null}
-                          {elevUrl ? (
-                            <div className="flex items-center justify-between pt-1">
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setPreviewLightboxUrl(elevUrl);
-                                  setPreviewLightboxTitle(elev.title || 'Architectural Elevation');
-                                }}
-                                className="inline-flex items-center gap-1 text-[11px] font-bold text-accent hover:underline cursor-pointer"
-                              >
-                                <Eye className="w-3.5 h-3.5" />
-                                <span>Preview Image</span>
-                              </button>
-                            </div>
-                          ) : null}
-                        </div>
-                      );
-                    })}
-                  </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
 
                 {/* Floor Plans */}
                 <div className="p-4 bg-surface rounded-2xl border border-border space-y-3.5">
                   <div className="flex items-center justify-between">
                     <h3 className="font-bold text-xs uppercase font-mono text-accent-text flex items-center gap-1.5">
-                      <Home className="w-4 h-4 text-accent" /> Sanctioned Floor Plans &amp; Layouts ({Math.min(3, projectData.floorPlans?.length || 0)} Stored / Limit 3)
+                      <Home className="w-4 h-4 text-accent" /> Sanctioned Floor Plans &amp; Layouts ({(projectData.floorPlans || []).length})
                     </h3>
                     <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent-soft text-accent-text font-mono font-bold">
                       Extracted from Developer Brochure
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    {(projectData.floorPlans || []).map((fp: any, idx: number) => {
-                      const fpUrl = resolveAssetUrl(fp);
-                      return (
-                        <div key={idx} className="p-3 bg-surface-subtle rounded-xl border border-border space-y-2 group hover:border-accent/40 transition-all">
-                          <div className="flex items-center justify-between">
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-mono">
-                              {fp.bhk ? `${fp.bhk} BHK PLAN` : 'FLOOR PLAN'}
-                            </span>
-                            <span className="text-[10px] text-content-muted font-mono">{fp.page_number ? `Page ${fp.page_number}` : fp.carpetAreaSqft ? `${fp.carpetAreaSqft} sq.ft` : 'RERA Layout'}</span>
-                          </div>
-                          <p className="text-xs font-bold text-content truncate font-display">{fp.title}</p>
-                          <p className="text-[11px] text-content-secondary line-clamp-2">{fp.description}</p>
-                          {fpUrl ? (
-                            <div className="relative aspect-[16/10] w-full rounded-lg overflow-hidden bg-slate-950 my-1.5 border border-border p-1">
-                              <img
-                                src={fpUrl}
-                                alt={fp.title || 'Floor Plan'}
-                                className="w-full h-full object-contain"
-                              />
+                  {(projectData.floorPlans || []).length === 0 ? (
+                    <p className="text-xs text-content-muted italic">No floor plans categorized yet. You can reclassify any page below as Floor Plan.</p>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      {(projectData.floorPlans || []).map((fp: any, idx: number) => {
+                        const fpUrl = resolveAssetUrl(fp);
+                        return (
+                          <div key={idx} className="p-3 bg-surface-subtle rounded-xl border border-border space-y-2 group hover:border-accent/40 transition-all">
+                            <div className="flex items-center justify-between gap-1">
+                              <select
+                                value="floor_plan"
+                                onChange={(e) => handleReclassifyAsset(fpUrl, e.target.value as any)}
+                                className="text-[10px] bg-surface-inset border border-border rounded px-1.5 py-0.5 text-emerald-600 dark:text-emerald-400 font-bold font-mono focus:outline-none"
+                              >
+                                <option value="floor_plan">Floor Plan</option>
+                                <option value="elevation">Move to Elevation</option>
+                                <option value="master_plan">Move to Master Plan</option>
+                                <option value="brochure_photo">Move to Gallery</option>
+                              </select>
+                              <select
+                                value={fp.bhk ? String(fp.bhk) : ''}
+                                onChange={(e) => handleUpdateFloorPlan(idx, { bhk: e.target.value ? Number(e.target.value) : undefined })}
+                                className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-mono border border-emerald-500/20 focus:outline-none"
+                              >
+                                <option value="">Typical Layout</option>
+                                <option value="1">1 BHK</option>
+                                <option value="2">2 BHK</option>
+                                <option value="3">3 BHK</option>
+                                <option value="4">4 BHK</option>
+                                <option value="5">5 BHK</option>
+                              </select>
                             </div>
-                          ) : null}
-                          {fpUrl ? (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setPreviewLightboxUrl(fpUrl);
-                                setPreviewLightboxTitle(fp.title || 'Floor Plan Layout');
-                              }}
-                              className="inline-flex items-center gap-1 text-[11px] font-bold text-accent hover:underline pt-1 cursor-pointer"
-                            >
-                              <Eye className="w-3.5 h-3.5" />
-                              <span>View Floor Plan</span>
-                            </button>
-                          ) : null}
-                        </div>
-                      );
-                    })}
-                  </div>
+
+                            <div className="space-y-1">
+                              <input
+                                type="text"
+                                value={fp.title || ''}
+                                onChange={(e) => handleUpdateFloorPlan(idx, { title: e.target.value })}
+                                className="w-full text-xs font-bold text-content bg-transparent border-b border-border/50 focus:border-accent focus:outline-none truncate font-display"
+                                placeholder="Floor Plan Title"
+                              />
+                              <div className="flex items-center justify-between text-[10px] text-content-muted font-mono">
+                                <div className="flex items-center gap-1">
+                                  <span>Carpet:</span>
+                                  <input
+                                    type="number"
+                                    value={fp.carpetAreaSqft || ''}
+                                    onChange={(e) => handleUpdateFloorPlan(idx, { carpetAreaSqft: Number(e.target.value) || undefined })}
+                                    placeholder="Area"
+                                    className="w-14 bg-surface-inset border border-border rounded px-1 text-[10px] text-content text-right font-mono"
+                                  />
+                                  <span>sq.ft</span>
+                                </div>
+                                <span>{fp.page_number ? `Page ${fp.page_number}` : ''}</span>
+                              </div>
+                            </div>
+
+                            {fpUrl ? (
+                              <div className="relative aspect-[16/10] w-full rounded-lg overflow-hidden bg-slate-950 my-1.5 border border-border p-1">
+                                <img
+                                  src={fpUrl}
+                                  alt={fp.title || 'Floor Plan'}
+                                  className="w-full h-full object-contain"
+                                />
+                              </div>
+                            ) : null}
+
+                            {fpUrl ? (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setPreviewLightboxUrl(fpUrl);
+                                  setPreviewLightboxTitle(fp.title || 'Floor Plan Layout');
+                                }}
+                                className="inline-flex items-center gap-1 text-[11px] font-bold text-accent hover:underline pt-1 cursor-pointer"
+                              >
+                                <Eye className="w-3.5 h-3.5" />
+                                <span>View Floor Plan</span>
+                              </button>
+                            ) : null}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
 
                 {/* Master Plan */}
@@ -1311,9 +1433,23 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
                         <h3 className="font-bold text-xs uppercase font-mono text-accent-text flex items-center gap-1.5">
                           <Layers className="w-4 h-4 text-accent" /> MahaRERA Master Layout Plan
                         </h3>
-                        <span className="text-[10px] px-2 py-0.5 rounded bg-status-success-surface text-status-success font-bold font-mono">
-                          {masterUrl ? 'Campus Footprint Extracted' : 'Schematic Pending'}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          {masterUrl && (
+                            <select
+                              value="master_plan"
+                              onChange={(e) => handleReclassifyAsset(masterUrl, e.target.value as any)}
+                              className="text-[10px] bg-surface-inset border border-border rounded px-1.5 py-0.5 text-accent font-bold font-mono focus:outline-none"
+                            >
+                              <option value="master_plan">Master Plan</option>
+                              <option value="elevation">Move to Elevation</option>
+                              <option value="floor_plan">Move to Floor Plan</option>
+                              <option value="brochure_photo">Move to Gallery</option>
+                            </select>
+                          )}
+                          <span className="text-[10px] px-2 py-0.5 rounded bg-status-success-surface text-status-success font-bold font-mono">
+                            {masterUrl ? 'Campus Footprint Extracted' : 'Schematic Pending'}
+                          </span>
+                        </div>
                       </div>
                       <p className="text-[11px] text-content-secondary">
                         Overall project site schematic detailing access roads, tower positioning, and podium leisure layout.
@@ -1336,28 +1472,34 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
                 })()}
 
                 {/* Additional Authentic Brochure Pages Gallery */}
-                {((projectData.brochurePhotos || []).length > 0 || (projectData.elevations || []).length > 2 || (projectData.floorPlans || []).length > 3) && (
+                {(projectData.brochurePhotos || []).length > 0 && (
                   <div className="p-4 bg-surface rounded-2xl border border-border space-y-3.5">
                     <div className="flex items-center justify-between">
                       <h3 className="font-bold text-xs uppercase font-mono text-accent-text flex items-center gap-1.5">
-                        <Sparkles className="w-4 h-4 text-amber-500" /> Additional Brochure Pages &amp; Lifestyle Renders ({(projectData.brochurePhotos?.length || 0) + Math.max(0, (projectData.elevations?.length || 0) - 2) + Math.max(0, (projectData.floorPlans?.length || 0) - 3)})
+                        <Sparkles className="w-4 h-4 text-amber-500" /> Additional Brochure Pages &amp; Lifestyle Renders ({(projectData.brochurePhotos || []).length})
                       </h3>
                       <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-300 font-mono font-bold">
                         Brochure Vault Archive
                       </span>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                      {[
-                        ...((projectData.elevations || []).slice(2)),
-                        ...((projectData.floorPlans || []).slice(3)),
-                        ...(projectData.brochurePhotos || []),
-                      ].map((item: any, idx: number) => {
+                      {(projectData.brochurePhotos || []).map((item: any, idx: number) => {
                         const itemUrl = resolveAssetUrl(item);
                         return (
                           <div key={idx} className="p-3 bg-surface-subtle rounded-xl border border-border space-y-2 group hover:border-accent/40 transition-all">
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-300 font-mono">
-                              PAGE VISUAL
-                            </span>
+                            <div className="flex items-center justify-between gap-1">
+                              <select
+                                value="brochure_photo"
+                                onChange={(e) => handleReclassifyAsset(itemUrl, e.target.value as any)}
+                                className="text-[10px] bg-surface-inset border border-border rounded px-1.5 py-0.5 text-amber-600 dark:text-amber-400 font-bold font-mono focus:outline-none"
+                              >
+                                <option value="brochure_photo">Gallery / Photo</option>
+                                <option value="elevation">Move to Elevation</option>
+                                <option value="floor_plan">Move to Floor Plan</option>
+                                <option value="master_plan">Move to Master Plan</option>
+                              </select>
+                              <span className="text-[10px] text-content-muted font-mono">{item.page_number ? `Page ${item.page_number}` : ''}</span>
+                            </div>
                             <p className="text-xs font-bold text-content truncate font-display">{item.title || `Brochure Page ${idx + 1}`}</p>
                             {itemUrl ? (
                               <div

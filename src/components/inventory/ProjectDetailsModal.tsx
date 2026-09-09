@@ -39,6 +39,7 @@ import { ProjectMediaStudioModal } from '@/components/inventory/ProjectMediaStud
 import { UnitDetailsModal } from '@/components/inventory/UnitDetailsModal';
 import { resolveAssetUrl, parseGalleryUrls, parseJsonArray } from '@/lib/inventory-media';
 import { uploadToCloudinaryChunked } from '@/lib/client/cloudinary-chunked-upload';
+import { uploadBrochureChunked } from '@/lib/client/chunked-brochure-uploader';
 import { isDummyOrPlaceholderUrl } from '@/lib/domain/unit-differentiation';
 
 interface ProjectDetailsModalProps {
@@ -438,43 +439,15 @@ export function ProjectDetailsModal({
     setOneShotExtractMsg('Ingesting brochure & extracting project blueprints with AI multimodal vision…');
 
     try {
-      let directUploadedUrl: string | null = null;
+      let json: any;
 
       if (file.size > 4 * 1024 * 1024) {
-        try {
-          const isPdf = file.type?.includes('pdf') || file.name.match(/\.pdf$/i);
-          const resourceType = isPdf ? 'raw' : 'auto';
-          const signRes = await fetch(
-            `/api/v1/media/sign-upload?category=brochures&filename=${encodeURIComponent(file.name)}&resourceType=${resourceType}`
-          );
-          if (signRes.ok) {
-            const signData = await signRes.json();
-            if (signData.success && signData.signed) {
-              const cloudAsset = await uploadToCloudinaryChunked(
-                file,
-                signData.signed,
-                file.name
-              );
-              directUploadedUrl = cloudAsset.secure_url || cloudAsset.url;
-            }
-          }
-        } catch (signErr) {
-          console.warn('[1-SHOT] Cloudinary chunked direct upload notice:', signErr);
-        }
-      }
-
-      let res: Response;
-      if (directUploadedUrl) {
-        res = await fetch('/api/v1/inventory/upload-brochure', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            brochureUrl: directUploadedUrl,
-            filename: file.name,
-            projectId: currentProject.id,
-          }),
+        // Large files (> 4MB up to 50MB): Stream via chunked uploader to bypass Vercel 4.5MB limit
+        json = await uploadBrochureChunked({
+          file,
+          projectId: currentProject.id,
         });
-      } else if (file.size <= 4 * 1024 * 1024) {
+      } else {
         const base64Data = await new Promise<string>((resolve, reject) => {
           const reader = new FileReader();
           reader.onload = () => resolve(reader.result as string);
@@ -482,7 +455,7 @@ export function ProjectDetailsModal({
           reader.readAsDataURL(file);
         });
 
-        res = await fetch('/api/v1/inventory/upload-brochure', {
+        const res = await fetch('/api/v1/inventory/upload-brochure', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -492,28 +465,17 @@ export function ProjectDetailsModal({
             projectId: currentProject.id,
           }),
         });
-      } else {
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('filename', file.name);
-        formData.append('projectId', currentProject.id);
 
-        res = await fetch('/api/v1/inventory/upload-brochure', {
-          method: 'POST',
-          body: formData,
-        });
+        const rawText = await res.text();
+        try {
+          json = JSON.parse(rawText);
+        } catch {
+          throw new Error(`Server response error: ${rawText.slice(0, 100)}`);
+        }
       }
 
-      const rawText = await res.text();
-      let json: any;
-      try {
-        json = JSON.parse(rawText);
-      } catch {
-        throw new Error(`Server response error: ${rawText.slice(0, 100)}`);
-      }
-
-      if (!res.ok || !json.success) {
-        throw new Error(json.error || 'Failed to extract brochure information.');
+      if (!json || !json.success) {
+        throw new Error(json?.error || 'Failed to extract brochure information.');
       }
 
       const updatedProjectData = json.data?.updatedProject || json.data;

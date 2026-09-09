@@ -585,3 +585,18 @@ model RolePermission {
   @@index([organizationId, role])
 }
 
+model BrochureUploadChunk {
+  id          String   @id @default(uuid())
+  uploadId    String
+  chunkIndex  Int
+  totalChunks Int
+  filename    String
+  mimeType    String
+  chunkData   Bytes
+  createdAt   DateTime @default(now())
+
+  @@unique([uploadId, chunkIndex])
+  @@index([uploadId])
+  @@index([createdAt])
+}
+

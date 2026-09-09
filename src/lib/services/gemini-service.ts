@@ -99,6 +99,18 @@ CRITICAL EXTRACTION GUIDELINES:
 9. BROKER SHIELD & PHONE ERASURE:
    - Real estate broker protection rule: NEVER include builder or broker phone numbers or telephone digits in any descriptions, highlights, or specifications.
    - All phone numbers written on brochures must be strictly ERASED from public data. Set developerSalesPocPhone to null.
+10. COMPREHENSIVE PAGE-BY-PAGE CLASSIFICATION:
+   - Analyze every page from page 1 to the last page.
+   - For every page, determine its exact category:
+     * "cover": Front cover page, title & main project name, or main facade render
+     * "elevation": Architectural exterior 3D perspectives, tower elevations, podium views, evening facade renders
+     * "master_plan": Master site layout plan, campus footprint, boundary/plot schematic
+     * "floor_plan": Typical floor plans, wing cluster plans, floor architectural layouts
+     * "unit_floor_plan": Dedicated individual flat/apartment layouts (extract "bhk" and "carpet_area_sqft" if printed)
+     * "location_map": Location map, regional connectivity schematic, road/transit/metro networks
+     * "amenity": Lifestyle amenity renders/photos (swimming pool, gym, clubhouse, kids play area, rooftop garden, etc.)
+     * "specifications": Technical specifications & fittings table
+     * "brochure_photo": Developer profile, philosophy, or general marketing pages
 
 Output purely valid JSON conforming to this schema:
 {
@@ -123,6 +135,14 @@ Output purely valid JSON conforming to this schema:
   "specifications": Record<string, string>,
   "transitConnectivity": Array<{ "destination": string, "timeOrDistance": string, "type": string }>,
   "keyHighlights": string[],
+  "pages": Array<{
+    "page_number": number,
+    "page_type": "cover" | "elevation" | "master_plan" | "floor_plan" | "unit_floor_plan" | "location_map" | "amenity" | "specifications" | "brochure_photo",
+    "title": string,
+    "description": string,
+    "bhk": number | null,
+    "carpet_area_sqft": number | null
+  }>,
   "units": Array<{
     "unitNumber": string,
     "bhk": number,
@@ -148,8 +168,10 @@ Output purely valid JSON conforming to this schema:
   },
   "images": {
     "elevation": Array<{ "asset_type": "elevation", "subtype": string, "title": string, "page_number": number, "description": string }>,
-    "floor_plans": Array<{ "floor": string, "plan_type": string, "page_number": number, "bhk": number, "carpet_area_sqft": number }>,
-    "location_map": Array<{ "asset_type": "location_map", "subtype": string, "title": string, "page_number": number }>
+    "floor_plans": Array<{ "floor": string, "plan_type": string, "page_number": number, "bhk": number, "carpet_area_sqft": number, "title": string }>,
+    "master_plan": Array<{ "asset_type": "master_plan", "subtype": string, "title": string, "page_number": number, "description": string }>,
+    "location_map": Array<{ "asset_type": "location_map", "subtype": string, "title": string, "page_number": number, "description": string }>,
+    "amenities": Array<{ "asset_type": "amenity", "subtype": string, "title": string, "page_number": number, "description": string }>
   }
 }
 `;
@@ -340,16 +362,85 @@ export async function extractBrochureWithAI(
   const assetRecords: ProjectAssetRecord[] = [];
   const rawImages = parsed.images || {};
   let sortCounter = 1;
+  const recordedPages = new Set<number>();
+
+  // Ingest pages if provided by Gemini AI
+  const rawPages = Array.isArray(parsed.pages) ? parsed.pages : [];
+  for (const p of rawPages) {
+    const pageNum = Number(p.page_number) || 0;
+    if (pageNum <= 0 || recordedPages.has(pageNum)) continue;
+    recordedPages.add(pageNum);
+
+    let assetType = (p.page_type || 'elevation').toLowerCase();
+    let displayPos = 'gallery';
+    let subtype = assetType;
+
+    if (assetType === 'cover') {
+      displayPos = 'elevation';
+      subtype = 'front_facade';
+    } else if (assetType === 'elevation') {
+      displayPos = 'elevation';
+      subtype = 'elevation_view';
+    } else if (assetType === 'master_plan') {
+      displayPos = 'master_plan';
+      subtype = 'master_layout_plan';
+    } else if (assetType.includes('floor') || assetType.includes('unit')) {
+      displayPos = 'floor_plan';
+      subtype = p.bhk ? `${p.bhk}_bhk_unit_plan` : 'typical_floor_plan';
+      assetType = p.bhk ? 'unit_floor_plan' : 'floor_plan';
+    } else if (assetType === 'location_map') {
+      displayPos = 'location_map';
+      subtype = 'location_connectivity_map';
+    } else if (assetType === 'amenity' || assetType === 'amenities') {
+      displayPos = 'amenities';
+      subtype = 'amenity_view';
+      assetType = 'amenity';
+    } else if (assetType === 'specifications') {
+      displayPos = 'gallery';
+      subtype = 'specifications_sheet';
+    }
+
+    assetRecords.push({
+      asset_id: `asset_${cleanProjSlug}_${sortCounter}`,
+      asset_type: assetType as any,
+      subtype,
+      title: p.title || `${projectName} Page ${pageNum}`,
+      file_url: '',
+      page_number: pageNum,
+      original: true,
+      display_position: displayPos,
+      sort_order: sortCounter++,
+      confidence: 0.99,
+      source_position: 'full_page',
+      bhk: p.bhk ? Number(p.bhk) : undefined,
+      carpetAreaSqft: p.carpet_area_sqft ? Number(p.carpet_area_sqft) : undefined,
+      description: p.description || `${projectName} brochure page ${pageNum}`,
+    });
+  }
 
   // Helper to ingest image list into normalized ProjectAssetRecord items
   const ingestCategory = (list: any[], defaultType: string, defaultSub: string, displayPos: string) => {
     if (!Array.isArray(list)) return;
     for (const img of list) {
+      const page_number = Number(img.page_number) || 0;
+      if (page_number > 0 && recordedPages.has(page_number)) {
+        // Update existing record with finer details if available
+        const existing = assetRecords.find(a => a.page_number === page_number);
+        if (existing) {
+          if (img.title) existing.title = img.title;
+          if (img.description) existing.description = img.description;
+          if (img.bhk) existing.bhk = Number(img.bhk);
+          if (img.carpet_area_sqft || img.carpetAreaSqft) {
+            existing.carpetAreaSqft = Number(img.carpet_area_sqft || img.carpetAreaSqft);
+          }
+        }
+        continue;
+      }
+      if (page_number > 0) recordedPages.add(page_number);
+
       const asset_type = (img.asset_type || defaultType) as any;
       const subtype = img.subtype || defaultSub;
-      const page_number = Number(img.page_number) || 0;
       const title = img.title || `${projectName} ${subtype.replace(/_/g, ' ')}`;
-      const filename = img.filename || `${cleanProjSlug}_${subtype}.jpg`;
 
       assetRecords.push({
         asset_id: `asset_${cleanProjSlug}_${sortCounter}`,
@@ -364,8 +455,8 @@ export async function extractBrochureWithAI(
         confidence: img.confidence || 0.99,
         source_position: img.source_position || 'full_page',
         bbox: img.bbox,
-        bhk: img.bhk,
-        carpetAreaSqft: img.carpet_area_sqft || img.carpetAreaSqft,
+        bhk: img.bhk ? Number(img.bhk) : undefined,
+        carpetAreaSqft: img.carpet_area_sqft ? Number(img.carpet_area_sqft) : (img.carpetAreaSqft ? Number(img.carpetAreaSqft) : undefined),
         description: img.description,
       });
     }
@@ -381,18 +472,56 @@ export async function extractBrochureWithAI(
   ingestCategory(rawImages.location_map, 'location_map', 'location_connectivity_map', 'location_map');
   ingestCategory(rawImages.amenities, 'amenity', 'amenity_view', 'amenities');
 
-  // Floor plans list
-  const floorPlansList: ExtractedFloorPlanDetail[] = Array.isArray(parsed.floorPlans || parsed.floor_plans)
-    ? (parsed.floorPlans || parsed.floor_plans).map((fp: any) => ({
-        floor: fp.floor || '',
-        plan_type: fp.plan_type || fp.planType || 'floor_plan',
-        page_number: Number(fp.page_number || fp.pageNumber) || 0,
-        image_asset: fp.image_asset,
-        orientation: fp.orientation || undefined,
+  // Floor plans list: Aggregate from parsed.floorPlans, parsed.floor_plans, parsed.images.floor_plans, and parsed.pages
+  const rawFpCandidates = [
+    ...(Array.isArray(parsed.floorPlans) ? parsed.floorPlans : []),
+    ...(Array.isArray(parsed.floor_plans) ? parsed.floor_plans : []),
+    ...(Array.isArray(rawImages.floor_plans) ? rawImages.floor_plans : []),
+  ];
+
+  const floorPlansList: ExtractedFloorPlanDetail[] = [];
+  const seenFpPages = new Set<number>();
+
+  for (const fp of rawFpCandidates) {
+    const pageNum = Number(fp.page_number || fp.pageNumber) || 0;
+    if (pageNum > 0 && seenFpPages.has(pageNum)) continue;
+    if (pageNum > 0) seenFpPages.add(pageNum);
+
+    const bhk = fp.bhk ? Number(fp.bhk) : undefined;
+    const carpetAreaSqft = fp.carpet_area_sqft ? Number(fp.carpet_area_sqft) : (fp.carpetAreaSqft ? Number(fp.carpetAreaSqft) : undefined);
+
+    floorPlansList.push({
+      floor: fp.floor || 'Typical Floor',
+      plan_type: fp.plan_type || fp.planType || (bhk ? `${bhk} BHK Floor Plan` : 'floor_plan'),
+      page_number: pageNum,
+      image_asset: fp.image_asset,
+      orientation: fp.orientation || undefined,
+      original_image: true,
+      title: fp.title || (bhk ? `${bhk} BHK Architectural Floor Plan` : `${projectName} Floor Layout Plan`),
+      units: fp.units || (bhk ? [{ bhk, carpetAreaSqft }] : []),
+      room_dimensions: fp.room_dimensions,
+    });
+  }
+
+  // Also include any floor plan pages from parsed.pages if not already captured
+  for (const p of rawPages) {
+    const pageNum = Number(p.page_number) || 0;
+    const pType = (p.page_type || '').toLowerCase();
+    if (pageNum > 0 && !seenFpPages.has(pageNum) && (pType.includes('floor') || pType.includes('unit'))) {
+      seenFpPages.add(pageNum);
+      const bhk = p.bhk ? Number(p.bhk) : undefined;
+      const carpetAreaSqft = p.carpet_area_sqft ? Number(p.carpet_area_sqft) : undefined;
+
+      floorPlansList.push({
+        floor: 'Typical Floor',
+        plan_type: pType,
+        page_number: pageNum,
         original_image: true,
-        units: fp.units || [],
-      }))
-    : [];
+        title: p.title || (bhk ? `${bhk} BHK Floor Plan Layout` : `${projectName} Floor Plan Layout`),
+        units: bhk ? [{ bhk, carpetAreaSqft }] : [],
+      });
+    }
+  }
 
   const transitConnectivity = Array.isArray(locObj.connectivity || parsed.transitConnectivity)
     ? (locObj.connectivity || parsed.transitConnectivity).map((c: any) => ({
