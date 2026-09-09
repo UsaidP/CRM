@@ -32,7 +32,7 @@ function findExecutable(name: string): string | null {
 
   for (const p of commonPaths) {
     try {
-      execFileSync(p, ['-v'], { stdio: 'ignore' });
+      execFileSync(/*turbopackIgnore: true*/ p, ['-v'], { stdio: 'ignore' });
       return p;
     } catch (err: any) {
       if (err.status === 0 || err.status === 1 || err.code !== 'ENOENT') {
@@ -142,7 +142,7 @@ export async function extractRealImagesFromPdf(
     if (pdftoppmBin) {
       const pagePrefix = path.join(tempDir, 'page');
       try {
-        execFileSync(pdftoppmBin, ['-jpeg', '-r', '150', effectivePdfPath, pagePrefix], {
+        execFileSync(/*turbopackIgnore: true*/ pdftoppmBin, ['-jpeg', '-r', '150', effectivePdfPath, pagePrefix], {
           timeout: 120000,
           maxBuffer: 100 * 1024 * 1024,
         });
@@ -182,7 +182,7 @@ export async function extractRealImagesFromPdf(
       if (pdfimagesBin) {
         const rawPrefix = path.join(tempDir, 'rawimg');
         try {
-          execFileSync(pdfimagesBin, ['-j', '-png', effectivePdfPath, rawPrefix], {
+          execFileSync(/*turbopackIgnore: true*/ pdfimagesBin, ['-j', '-png', effectivePdfPath, rawPrefix], {
             timeout: 120000,
             maxBuffer: 100 * 1024 * 1024,
           });

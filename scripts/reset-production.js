@@ -82,6 +82,7 @@ async function resetRemoteProduction() {
         confirmPurge: 'CONFIRM_PURGE_ALL_DATA',
         superAdminPassword: superAdminPassword,
         superAdminEmail: superAdminEmail,
+        superAdminName: 'Usaid Patel',
       }),
     });
 

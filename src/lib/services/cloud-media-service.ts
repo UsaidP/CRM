@@ -168,44 +168,89 @@ export async function uploadToCloudinary(
   // PDFs and non-image media must always use 'raw' resource type in Cloudinary
   const resourceType = isVideo ? 'video' : (isPdf || isRaw) ? 'raw' : 'image';
 
-  return new Promise<UploadedMediaAsset>((resolve, reject) => {
-    const uploadOptions: Record<string, any> = {
-      folder,
-      public_id: publicId,
-      resource_type: resourceType as any,
-    };
+  const timestamp = Math.floor(Date.now() / 1000);
+  const paramsToSign = `folder=${folder}&public_id=${publicId}&timestamp=${timestamp}${config.apiSecret}`;
+  const signature = crypto.createHash('sha1').update(paramsToSign).digest('hex');
 
-    const handleResult = (error: any, result: any) => {
-      if (error || !result) {
-        reject(new Error(`Cloudinary upload failed: ${error?.message || 'Unknown upload failure'}`));
-        return;
+  try {
+    const formData = new FormData();
+    formData.append('file', new Blob([new Uint8Array(nodeBuffer)], { type: mimeType }), fileName);
+    formData.append('api_key', config.apiKey);
+    formData.append('timestamp', String(timestamp));
+    formData.append('signature', signature);
+    formData.append('folder', folder);
+    formData.append('public_id', publicId);
+
+    const uploadRes = await fetch(
+      `https://api.cloudinary.com/v1_1/${config.cloudName}/${resourceType}/upload`,
+      {
+        method: 'POST',
+        body: formData,
       }
+    );
 
-      resolve({
-        url: result.secure_url || result.url,
-        secureUrl: result.secure_url || result.url,
-        publicId: result.public_id || publicId,
-        storageProvider: 'CLOUDINARY',
-        fileName,
-        fileSizeBytes: result.bytes || nodeBuffer.length,
-        mimeType,
-        category,
-        width: result.width,
-        height: result.height,
-        format: result.format || path.extname(fileName).replace('.', '') || (isPdf ? 'pdf' : 'jpg'),
-        pages: result.pages || undefined,
-        version: result.version || undefined,
-        createdAt: result.created_at || new Date().toISOString(),
-      });
-    };
-
-    try {
-      const uploadStream = cloudinary.uploader.upload_stream(uploadOptions, handleResult);
-      uploadStream.end(nodeBuffer);
-    } catch (streamErr: any) {
-      reject(new Error(`Cloudinary stream creation failed: ${streamErr.message}`));
+    const result = await uploadRes.json();
+    if (!uploadRes.ok || !result || result.error) {
+      throw new Error(result?.error?.message || `Cloudinary API returned HTTP ${uploadRes.status}`);
     }
-  });
+
+    return {
+      url: result.secure_url || result.url,
+      secureUrl: result.secure_url || result.url,
+      publicId: result.public_id || publicId,
+      storageProvider: 'CLOUDINARY',
+      fileName,
+      fileSizeBytes: result.bytes || nodeBuffer.length,
+      mimeType,
+      category,
+      width: result.width,
+      height: result.height,
+      format: result.format || path.extname(fileName).replace('.', '') || (isPdf ? 'pdf' : 'jpg'),
+      pages: result.pages || undefined,
+      version: result.version || undefined,
+      createdAt: result.created_at || new Date().toISOString(),
+    };
+  } catch (apiErr: any) {
+    console.warn(`[CLOUDINARY] Direct REST upload notice: ${apiErr.message}. Attempting SDK upload_stream fallback...`);
+    return new Promise<UploadedMediaAsset>((resolve, reject) => {
+      const uploadOptions: Record<string, any> = {
+        folder,
+        public_id: publicId,
+        resource_type: resourceType as any,
+      };
+
+      const handleResult = (error: any, result: any) => {
+        if (error || !result) {
+          reject(new Error(`Cloudinary upload failed: ${error?.message || 'Unknown upload failure'}`));
+          return;
+        }
+
+        resolve({
+          url: result.secure_url || result.url,
+          secureUrl: result.secure_url || result.url,
+          publicId: result.public_id || publicId,
+          storageProvider: 'CLOUDINARY',
+          fileName,
+          fileSizeBytes: result.bytes || nodeBuffer.length,
+          mimeType,
+          category,
+          width: result.width,
+          height: result.height,
+          format: result.format || path.extname(fileName).replace('.', '') || (isPdf ? 'pdf' : 'jpg'),
+          pages: result.pages || undefined,
+          version: result.version || undefined,
+          createdAt: result.created_at || new Date().toISOString(),
+        });
+      };
+
+      try {
+        const uploadStream = cloudinary.uploader.upload_stream(uploadOptions, handleResult);
+        uploadStream.end(nodeBuffer);
+      } catch (streamErr: any) {
+        reject(new Error(`Cloudinary stream creation failed: ${streamErr.message}`));
+      }
+    });
+  }
 }
 
 /**

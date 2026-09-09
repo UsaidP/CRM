@@ -37,7 +37,7 @@ import { ReraVerificationBadge } from '@/components/inventory/ReraVerificationBa
 import { MahaReraCertificateModal } from '@/components/inventory/MahaReraCertificateModal';
 import { ProjectMediaStudioModal } from '@/components/inventory/ProjectMediaStudioModal';
 import { UnitDetailsModal } from '@/components/inventory/UnitDetailsModal';
-import { resolveAssetUrl, parseGalleryUrls } from '@/lib/inventory-media';
+import { resolveAssetUrl, parseGalleryUrls, parseJsonArray } from '@/lib/inventory-media';
 import { uploadToCloudinaryChunked } from '@/lib/client/cloudinary-chunked-upload';
 import { isDummyOrPlaceholderUrl } from '@/lib/domain/unit-differentiation';
 
@@ -199,18 +199,46 @@ export function ProjectDetailsModal({
       const mergedGallery = Array.from(new Set([...existingUrls, ...uploadedUrls]));
       const nextCover = currentProject.coverImageUrl || (category === 'elevations' ? uploadedUrls[0] : null);
 
+      let nextElevations = Array.isArray(currentProject.elevationImages) 
+        ? [...currentProject.elevationImages] 
+        : parseJsonArray<any>(currentProject.elevationImagesJson);
+      let nextFloorPlans = Array.isArray(currentProject.floorPlanImages) 
+        ? [...currentProject.floorPlanImages] 
+        : parseJsonArray<any>(currentProject.floorPlanImagesJson);
+
+      if (category === 'elevations') {
+        const newElevations = uploadedUrls.map((url, idx) => ({
+          url,
+          title: `${currentProject.projectName} Elevation ${nextElevations.length + idx + 1}`,
+          viewAngle: nextElevations.length === 0 && idx === 0 ? 'FRONT_FACADE' : 'PODIUM_VIEW',
+        }));
+        nextElevations = [...nextElevations, ...newElevations].slice(0, 2);
+      } else if (category === 'floorplans') {
+        const newFloorPlans = uploadedUrls.map((url, idx) => ({
+          url,
+          title: `${currentProject.projectName} Floor Plan Layout ${nextFloorPlans.length + idx + 1}`,
+          bhk: 2,
+        }));
+        nextFloorPlans = [...nextFloorPlans, ...newFloorPlans].slice(0, 3);
+      }
+
       // Save to database
       const updateRes = await fetch(`/api/v1/inventory/projects/${currentProject.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           mediaGallery: mergedGallery,
+          ...(category === 'elevations' ? { elevationImages: nextElevations } : {}),
+          ...(category === 'floorplans' ? { floorPlanImages: nextFloorPlans } : {}),
           ...(nextCover ? { coverImageUrl: nextCover } : {}),
         }),
       });
 
       const updateData = await updateRes.json();
       if (!updateRes.ok || !updateData.success) {
+        if (updateRes.status === 404) {
+          throw new Error('This project was removed or not found in the database. Please refresh the inventory page.');
+        }
         throw new Error(updateData.error || 'Failed to update project media gallery in database.');
       }
 
@@ -218,6 +246,8 @@ export function ProjectDetailsModal({
         ...prev,
         ...updateData.data,
         mediaGalleryJson: mergedGallery,
+        ...(category === 'elevations' ? { elevationImages: nextElevations, elevationImagesJson: nextElevations } : {}),
+        ...(category === 'floorplans' ? { floorPlanImages: nextFloorPlans, floorPlanImagesJson: nextFloorPlans } : {}),
         ...(nextCover ? { coverImageUrl: nextCover } : {}),
       }));
 
@@ -492,7 +522,11 @@ export function ProjectDetailsModal({
         setCurrentProject((prev: any) => ({
           ...prev,
           ...updatedProjectData,
+          units: updatedProjectData.units || prev.units,
         }));
+        if (Array.isArray(updatedProjectData.units)) {
+          setLocalUnits(updatedProjectData.units);
+        }
         onProjectUpdated?.(updatedProjectData);
       }
 
@@ -613,7 +647,7 @@ export function ProjectDetailsModal({
     }
   });
 
-  // Build Elevation Images List
+  // 1. Build Elevation Images List
   const elevationList: Array<{ url: string; title: string; category: string; badge?: string; pageNumber?: number }> = [];
 
   // Add coverImageUrl
@@ -623,18 +657,43 @@ export function ProjectDetailsModal({
       title: `${currentProject.projectName} Primary Elevation (Cover)`,
       category: 'elevation',
       badge: 'PRIMARY ELEVATION COVER',
-      pageNumber: 3,
+      pageNumber: 1,
     });
   }
 
+  // Add elevations from structured fields (elevationImages / elevationImagesJson)
+  const rawProjectElevations = [
+    ...(Array.isArray(currentProject.elevationImages) ? currentProject.elevationImages : []),
+    ...parseJsonArray<any>(currentProject.elevationImagesJson),
+  ];
+  rawProjectElevations.forEach((item: any, idx: number) => {
+    const url = resolveAssetUrl(item);
+    if (url && !elevationList.some(e => e.url === url)) {
+      let badge = 'ARCHITECTURAL VIEW';
+      const angle = String(item.viewAngle || '').toUpperCase();
+      if (angle.includes('FRONT') || angle.includes('FACADE')) badge = 'FRONT FACADE';
+      else if (angle.includes('PODIUM')) badge = 'PODIUM VIEW';
+      else if (angle.includes('NIGHT') || angle.includes('AERIAL')) badge = 'NIGHT AERIAL';
+      else if (idx === 0 && elevationList.length === 0) badge = 'PRIMARY ELEVATION COVER';
+
+      elevationList.push({
+        url,
+        title: item.title || `${currentProject.projectName} Elevation ${idx + 1}`,
+        category: 'elevation',
+        badge,
+        pageNumber: item.pageNumber ?? item.page_number ?? (idx === 0 ? 1 : idx + 1),
+      });
+    }
+  });
+
   // Add elevations from gallery
   normalizedGallery
-    .filter(m => m.category === 'elevation' || m.category === 'exterior' || (m.type && m.type.toLowerCase().includes('elevation')))
+    .filter(m => m.category === 'elevation' || m.category === 'exterior' || m.category === 'cover' || (m.type && m.type.toLowerCase().includes('elevation')) || (m.type && m.type.toLowerCase().includes('cover')))
     .forEach((m) => {
       if (!elevationList.some(e => e.url === m.url)) {
         let badge = 'ARCHITECTURAL VIEW';
         const lower = (m.title + ' ' + m.url).toLowerCase();
-        if (lower.includes('front') || lower.includes('facade')) badge = 'FRONT FACADE';
+        if (lower.includes('front') || lower.includes('facade') || lower.includes('cover')) badge = 'FRONT FACADE';
         else if (lower.includes('podium')) badge = 'PODIUM VIEW';
         else if (lower.includes('night') || lower.includes('aerial')) badge = 'NIGHT AERIAL';
         elevationList.push({
@@ -646,7 +705,7 @@ export function ProjectDetailsModal({
 
   const elevationImages = elevationList.filter((e) => !isDummyOrPlaceholderUrl(e.url));
 
-  // Build Floor Plans & Blueprints List
+  // 2. Build Floor Plans & Blueprints List
   const floorPlanList: Array<{ url: string; title: string; category: string; badge?: string; bhk?: number; carpet?: number; pageNumber?: number }> = [];
 
   // Add masterPlanUrl
@@ -656,9 +715,31 @@ export function ProjectDetailsModal({
       title: `${currentProject.projectName} Sanctioned Master Layout Plan`,
       category: 'floorplan',
       badge: 'MASTER LAYOUT PLAN',
-      pageNumber: 8,
+      pageNumber: 2,
     });
   }
+
+  // Add structured floor plans from project (floorPlanImages / floorPlanImagesJson)
+  const rawProjectFloorPlans = [
+    ...(Array.isArray(currentProject.floorPlanImages) ? currentProject.floorPlanImages : []),
+    ...parseJsonArray<any>(currentProject.floorPlanImagesJson),
+  ];
+  rawProjectFloorPlans.forEach((item: any, idx: number) => {
+    const url = resolveAssetUrl(item);
+    if (url && !floorPlanList.some(f => f.url === url)) {
+      const bhk = item.bhk ? Number(item.bhk) : undefined;
+      const carpet = item.carpetAreaSqft ? Number(item.carpetAreaSqft) : (item.carpet_area_sqft ? Number(item.carpet_area_sqft) : undefined);
+      floorPlanList.push({
+        url,
+        title: item.title || (bhk ? `${bhk} BHK Architectural Floor Plan` : `${currentProject.projectName} Floor Plan Layout ${idx + 1}`),
+        category: 'floorplan',
+        badge: bhk ? `${bhk} BHK BLUEPRINT` : 'SANCTIONED BLUEPRINT',
+        bhk,
+        carpet,
+        pageNumber: item.pageNumber ?? item.page_number,
+      });
+    }
+  });
 
   // Add unit floor plans
   projectUnits.forEach((unit: any) => {
@@ -673,6 +754,24 @@ export function ProjectDetailsModal({
         pageNumber: 7,
       });
     }
+    const unitFps = [
+      ...(Array.isArray(unit.floorPlanImages) ? unit.floorPlanImages : []),
+      ...parseJsonArray<any>(unit.floorPlanImagesJson),
+    ];
+    unitFps.forEach((ufp: any) => {
+      const uFpUrl = resolveAssetUrl(ufp);
+      if (uFpUrl && !floorPlanList.some(f => f.url === uFpUrl)) {
+        floorPlanList.push({
+          url: uFpUrl,
+          title: ufp.title || `${unit.bhk} BHK Floor Plan Layout`,
+          category: 'floorplan',
+          badge: `${unit.bhk} BHK BLUEPRINT`,
+          bhk: unit.bhk,
+          carpet: unit.carpetAreaSqft,
+          pageNumber: ufp.pageNumber ?? ufp.page_number,
+        });
+      }
+    });
   });
 
   // Add floor plans from gallery
@@ -688,6 +787,41 @@ export function ProjectDetailsModal({
     });
 
   const floorPlanImages = floorPlanList.filter((f) => !isDummyOrPlaceholderUrl(f.url));
+
+  // 3. Build Brochure Photos & Lifestyle Visuals List (all extra extracted pages)
+  const brochurePhotoList: Array<{ url: string; title: string; category?: string; badge?: string; pageNumber?: number; description?: string }> = [];
+  const rawProjectBrochurePhotos = [
+    ...(Array.isArray(currentProject.brochurePhotos) ? currentProject.brochurePhotos : []),
+    ...parseJsonArray<any>(currentProject.brochurePhotosJson),
+  ];
+  rawProjectBrochurePhotos.forEach((item: any, idx: number) => {
+    const url = resolveAssetUrl(item);
+    if (url && !elevationImages.some(e => e.url === url) && !floorPlanImages.some(f => f.url === url) && !brochurePhotoList.some(b => b.url === url)) {
+      brochurePhotoList.push({
+        url,
+        title: item.title || `${currentProject.projectName} Brochure Visual ${idx + 1}`,
+        category: 'gallery',
+        badge: 'BROCHURE PAGE',
+        description: item.description,
+        pageNumber: item.pageNumber ?? item.page_number,
+      });
+    }
+  });
+
+  // Also include any gallery items not yet assigned to elevation or floor plan
+  normalizedGallery.forEach((m) => {
+    if (!elevationImages.some(e => e.url === m.url) && !floorPlanImages.some(f => f.url === m.url) && !brochurePhotoList.some(b => b.url === m.url)) {
+      brochurePhotoList.push({
+        url: m.url,
+        title: m.title || `${currentProject.projectName} Visual`,
+        category: m.category,
+        badge: m.category ? m.category.replace(/_/g, ' ').toUpperCase() : 'BROCHURE PAGE',
+        pageNumber: m.pageNumber,
+      });
+    }
+  });
+
+  const brochurePhotos = brochurePhotoList.filter((b) => !isDummyOrPlaceholderUrl(b.url));
 
   return (
     <AccessibleDialog
@@ -877,7 +1011,7 @@ export function ProjectDetailsModal({
                 : 'border-transparent text-content-muted hover:text-content'
             }`}
           >
-            <Building2 className="w-4 h-4" /> Elevations &amp; Facades ({elevationImages.length})
+            <Building2 className="w-4 h-4" /> Elevations &amp; Facades ({elevationImages.length + brochurePhotos.length})
           </button>
           <button
             onClick={() => setActiveTab('floorplans')}
@@ -1305,6 +1439,63 @@ export function ProjectDetailsModal({
                     </div>
                   );
                 })}
+              </div>
+            )}
+
+            {/* Authentic Brochure Renders & Lifestyle Gallery */}
+            {brochurePhotos.length > 0 && (
+              <div className="space-y-3 pt-2">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold text-content uppercase tracking-wider flex items-center gap-1.5">
+                    <Sparkles className="w-4 h-4 text-amber-500" /> Brochure Visuals &amp; Lifestyle Renders ({brochurePhotos.length})
+                  </h4>
+                  <span className="text-[10px] text-content-muted">Extracted authentic brochure pages</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {brochurePhotos.map((img: any, idx: number) => (
+                    <div
+                      key={idx}
+                      className="group relative rounded-xl overflow-hidden border border-border/80 bg-slate-950 aspect-[16/10] cursor-pointer shadow-sm hover:border-accent hover:shadow-md transition-all flex flex-col justify-end"
+                      onClick={() => setSelectedImage(img.url)}
+                    >
+                      <img
+                        src={img.url}
+                        alt={img.title || `${currentProject.projectName} Brochure Visual ${idx + 1}`}
+                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-black/40 flex flex-col justify-between p-3.5 pointer-events-none">
+                        <div className="flex items-center justify-between w-full">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/90 text-white shadow-sm tracking-wide">
+                            {img.badge || 'BROCHURE PAGE'}
+                          </span>
+                          {Boolean(img.pageNumber) && (
+                            <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-black/80 text-amber-300 border border-amber-500/30">
+                              Page {img.pageNumber}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center justify-between w-full">
+                          <span className="text-xs font-semibold text-white truncate pr-2">
+                            {img.title || `Brochure Visual ${idx + 1}`}
+                          </span>
+                          <div className="flex items-center gap-1.5 shrink-0 pointer-events-auto">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedImage(img.url);
+                              }}
+                              className="p-1.5 rounded-md bg-black/70 text-white hover:bg-accent cursor-pointer transition-all"
+                              title="Expand image"
+                            >
+                              <Maximize2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 

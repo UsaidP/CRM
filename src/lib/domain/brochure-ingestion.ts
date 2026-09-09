@@ -21,7 +21,7 @@ import { extractAndProcessBrochure } from '@/lib/services/brochure-extractor';
 import { persistBrochureExtraction } from '@/lib/services/brochure-persistence';
 import { deduplicateUnitsByConfiguration } from '@/lib/services/unit-deduplication';
 import { uploadMediaAsset } from '@/lib/services/cloud-media-service';
-import { resolveAssetUrl } from '@/lib/inventory-media';
+import { resolveAssetUrl, parseInventoryContent } from '@/lib/inventory-media';
 
 export const MAX_BROCHURE_BYTES = 100 * 1024 * 1024; // 100 MB
 
@@ -228,9 +228,9 @@ export async function ingestBrochure(
     let updatedProject: any = null;
     if (projectId) {
       try {
-        const { project: persistedProject } = await persistBrochureExtraction(projectId, mediaResult);
+        await persistBrochureExtraction(projectId, mediaResult);
 
-        updatedProject = await prisma.developerProject.update({
+        await prisma.developerProject.update({
           where: { id: projectId },
           data: {
             brochureUrl: brochureUrl || undefined,
@@ -245,7 +245,21 @@ export async function ingestBrochure(
             masterPlanUrl: primaryMasterPlanUrl || undefined,
           },
         });
-        void persistedProject;
+
+        const fullProject = await prisma.developerProject.findUnique({
+          where: { id: projectId },
+          include: { units: true },
+        });
+
+        if (fullProject) {
+          updatedProject = {
+            ...parseInventoryContent(fullProject),
+            units: fullProject.units.map((u) => ({
+              ...u,
+              ...parseInventoryContent(u),
+            })),
+          };
+        }
       } catch (syncErr: any) {
         console.warn('[BROCHURE-INGESTION] Server-side atomic project sync warning:', syncErr.message);
       }
@@ -310,9 +324,23 @@ export async function ingestBrochure(
       }
     );
 
+    let updatedProject: any = null;
     if (projectId) {
       try {
         await persistBrochureExtraction(projectId, mediaResult);
+        const fullProject = await prisma.developerProject.findUnique({
+          where: { id: projectId },
+          include: { units: true },
+        });
+        if (fullProject) {
+          updatedProject = {
+            ...parseInventoryContent(fullProject),
+            units: fullProject.units.map((u) => ({
+              ...u,
+              ...parseInventoryContent(u),
+            })),
+          };
+        }
       } catch (persistErr: any) {
         console.warn('[BROCHURE-INGESTION] Pasted-text media persistence warning:', persistErr.message);
       }
@@ -333,6 +361,7 @@ export async function ingestBrochure(
           projectName: extracted.projectName,
           carpetToleranceSqft: 5,
         }),
+        updatedProject,
       },
       extractionMethod: 'REGEX_FALLBACK',
       brochureUrl,

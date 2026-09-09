@@ -183,8 +183,10 @@ export function resolveUnitMediaAssets(unit: any): UnitResolvedMedia {
         kind: item.kind === 'video' ? 'video' : 'image',
         category: item.category || 'interior',
       });
-      // Also merge image into photos if not already present
-      if (item.kind !== 'video' && !photos.includes(url)) {
+      // Also merge image into photos if not already present (excluding floor plans so blueprints stay distinct)
+      const cat = String(item.category || '').toLowerCase();
+      const isFloorPlan = cat.includes('floor') || cat.includes('plan') || cat.includes('blueprint');
+      if (item.kind !== 'video' && !isFloorPlan && !photos.includes(url)) {
         photos.push(url);
       }
     }

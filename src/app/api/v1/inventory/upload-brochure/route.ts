@@ -75,8 +75,8 @@ export async function POST(req: Request) {
             path.join(process.cwd(), 'public', 'uploads', filename),
           ];
           for (const p of localPaths) {
-            if (fs.existsSync(p)) {
-              buffer = fs.readFileSync(p);
+            if (fs.existsSync(/*turbopackIgnore: true*/ p)) {
+              buffer = fs.readFileSync(/*turbopackIgnore: true*/ p);
               break;
             }
           }

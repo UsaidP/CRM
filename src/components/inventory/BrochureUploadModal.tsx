@@ -545,9 +545,33 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
         coverImageUrl,
         masterPlanUrl,
         mediaGallery,
-        elevationImages: extractedElevations,
-        floorPlanImages: extractedFloorPlans,
-        brochurePhotos: excessMedia,
+        elevationImages: extractedElevations.map((e: any, idx: number) => ({
+          id: e.mediaAsset?.publicId || e.id || `elev_${idx + 1}`,
+          url: resolveAssetUrl(e),
+          title: e.title || `${projectData.projectName} Elevation ${idx + 1}`,
+          viewAngle: e.viewAngle || (idx === 0 ? 'FRONT_FACADE' : 'PODIUM_VIEW'),
+          description: e.description,
+          pageNumber: e.page_number || e.pageNumber,
+          page_number: e.page_number || e.pageNumber,
+        })),
+        floorPlanImages: extractedFloorPlans.map((fp: any, idx: number) => ({
+          id: fp.mediaAsset?.publicId || fp.id || `fp_${idx + 1}`,
+          url: resolveAssetUrl(fp),
+          title: fp.title || `${fp.bhk || 2} BHK Architectural Floor Plan`,
+          bhk: fp.bhk ? Number(fp.bhk) : undefined,
+          carpetAreaSqft: fp.carpetAreaSqft ? Number(fp.carpetAreaSqft) : undefined,
+          description: fp.description,
+          pageNumber: fp.page_number || fp.pageNumber,
+          page_number: fp.page_number || fp.pageNumber,
+        })),
+        brochurePhotos: excessMedia.map((bp: any, idx: number) => ({
+          id: bp.mediaAsset?.publicId || bp.id || `photo_${idx + 1}`,
+          url: resolveAssetUrl(bp),
+          title: bp.title || `Brochure Photo ${idx + 1}`,
+          description: bp.description,
+          pageNumber: bp.page_number || bp.pageNumber,
+          page_number: bp.page_number || bp.pageNumber,
+        })),
         hasOccupancyCertificate: projectData.hasOccupancyCertificate || false,
         expectedPossessionDate: parseSafeDate(projectData.expectedPossessionDate)?.toISOString() || null,
         amenities: projectData.amenities || [],
@@ -562,11 +586,9 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
         reraVerificationDate: projectData.reraCertificateUrl ? new Date().toISOString() : null,
         reraCertDataJson: projectData.reraVerification ? JSON.stringify(projectData.reraVerification) : null,
         units: distinctUnits.map((u: any, idx: number) => {
-          const matchingPlan = extractedFloorPlans.find((fp: any) => fp.bhk === u.bhk);
+          const matchingPlan = extractedFloorPlans.find((fp: any) => Number(fp.bhk) === Number(u.bhk));
           const floorPlanUrl = u.floorPlanUrl 
-            || matchingPlan?.mediaAsset?.secureUrl 
-            || matchingPlan?.mediaAsset?.url 
-            || matchingPlan?.url 
+            || resolveAssetUrl(matchingPlan) 
             || null;
 
           return {
@@ -1199,6 +1221,15 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
                           <p className="text-xs font-bold text-content truncate font-display">{elev.title}</p>
                           <p className="text-[11px] text-content-secondary line-clamp-2">{elev.description}</p>
                           {elevUrl ? (
+                            <div className="relative aspect-[16/10] w-full rounded-lg overflow-hidden bg-slate-950 my-1.5 border border-border">
+                              <img
+                                src={elevUrl}
+                                alt={elev.title || 'Architectural Elevation'}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          ) : null}
+                          {elevUrl ? (
                             <div className="flex items-center justify-between pt-1">
                               <button
                                 type="button"
@@ -1231,46 +1262,124 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    {(projectData.floorPlans || []).map((fp: any, idx: number) => (
-                      <div key={idx} className="p-3 bg-surface-subtle rounded-xl border border-border space-y-2 group hover:border-accent/40 transition-all">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-mono">
-                            {fp.bhk ? `${fp.bhk} BHK PLAN` : 'FLOOR PLAN'}
-                          </span>
-                          <span className="text-[10px] text-content-muted font-mono">{fp.page_number ? `Page ${fp.page_number}` : fp.carpetAreaSqft ? `${fp.carpetAreaSqft} sq.ft` : 'RERA Layout'}</span>
+                    {(projectData.floorPlans || []).map((fp: any, idx: number) => {
+                      const fpUrl = resolveAssetUrl(fp);
+                      return (
+                        <div key={idx} className="p-3 bg-surface-subtle rounded-xl border border-border space-y-2 group hover:border-accent/40 transition-all">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-mono">
+                              {fp.bhk ? `${fp.bhk} BHK PLAN` : 'FLOOR PLAN'}
+                            </span>
+                            <span className="text-[10px] text-content-muted font-mono">{fp.page_number ? `Page ${fp.page_number}` : fp.carpetAreaSqft ? `${fp.carpetAreaSqft} sq.ft` : 'RERA Layout'}</span>
+                          </div>
+                          <p className="text-xs font-bold text-content truncate font-display">{fp.title}</p>
+                          <p className="text-[11px] text-content-secondary line-clamp-2">{fp.description}</p>
+                          {fpUrl ? (
+                            <div className="relative aspect-[16/10] w-full rounded-lg overflow-hidden bg-slate-950 my-1.5 border border-border p-1">
+                              <img
+                                src={fpUrl}
+                                alt={fp.title || 'Floor Plan'}
+                                className="w-full h-full object-contain"
+                              />
+                            </div>
+                          ) : null}
+                          {fpUrl ? (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setPreviewLightboxUrl(fpUrl);
+                                setPreviewLightboxTitle(fp.title || 'Floor Plan Layout');
+                              }}
+                              className="inline-flex items-center gap-1 text-[11px] font-bold text-accent hover:underline pt-1 cursor-pointer"
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                              <span>View Floor Plan</span>
+                            </button>
+                          ) : null}
                         </div>
-                        <p className="text-xs font-bold text-content truncate font-display">{fp.title}</p>
-                        <p className="text-[11px] text-content-secondary line-clamp-2">{fp.description}</p>
-                        {resolveAssetUrl(fp) ? (
-                          <a
-                            href={resolveAssetUrl(fp)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-[11px] font-bold text-accent hover:underline pt-1"
-                          >
-                            <Eye className="w-3.5 h-3.5" />
-                            <span>View Floor Plan</span>
-                          </a>
-                        ) : null}
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
 
                 {/* Master Plan */}
-                <div className="p-4 bg-surface rounded-2xl border border-border space-y-2.5">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-bold text-xs uppercase font-mono text-accent-text flex items-center gap-1.5">
-                      <Layers className="w-4 h-4 text-accent" /> MahaRERA Master Layout Plan
-                    </h3>
-                    <span className="text-[10px] px-2 py-0.5 rounded bg-status-success-surface text-status-success font-bold font-mono">
-                      Campus Footprint Ready
-                    </span>
+                {(() => {
+                  const masterUrl = projectData.masterPlanUrl || resolveAssetUrl(projectData.masterPlan);
+                  return (
+                    <div className="p-4 bg-surface rounded-2xl border border-border space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-bold text-xs uppercase font-mono text-accent-text flex items-center gap-1.5">
+                          <Layers className="w-4 h-4 text-accent" /> MahaRERA Master Layout Plan
+                        </h3>
+                        <span className="text-[10px] px-2 py-0.5 rounded bg-status-success-surface text-status-success font-bold font-mono">
+                          {masterUrl ? 'Campus Footprint Extracted' : 'Schematic Pending'}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-content-secondary">
+                        Overall project site schematic detailing access roads, tower positioning, and podium leisure layout.
+                      </p>
+                      {masterUrl && (
+                        <div className="relative aspect-[16/9] max-h-48 w-full rounded-lg overflow-hidden bg-slate-950 my-1.5 border border-border p-1">
+                          <img
+                            src={masterUrl}
+                            alt="Master Layout Plan"
+                            className="w-full h-full object-contain cursor-pointer"
+                            onClick={() => {
+                              setPreviewLightboxUrl(masterUrl);
+                              setPreviewLightboxTitle('Master Site Layout Plan');
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+
+                {/* Additional Authentic Brochure Pages Gallery */}
+                {((projectData.brochurePhotos || []).length > 0 || (projectData.elevations || []).length > 2 || (projectData.floorPlans || []).length > 3) && (
+                  <div className="p-4 bg-surface rounded-2xl border border-border space-y-3.5">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-bold text-xs uppercase font-mono text-accent-text flex items-center gap-1.5">
+                        <Sparkles className="w-4 h-4 text-amber-500" /> Additional Brochure Pages &amp; Lifestyle Renders ({(projectData.brochurePhotos?.length || 0) + Math.max(0, (projectData.elevations?.length || 0) - 2) + Math.max(0, (projectData.floorPlans?.length || 0) - 3)})
+                      </h3>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-300 font-mono font-bold">
+                        Brochure Vault Archive
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      {[
+                        ...((projectData.elevations || []).slice(2)),
+                        ...((projectData.floorPlans || []).slice(3)),
+                        ...(projectData.brochurePhotos || []),
+                      ].map((item: any, idx: number) => {
+                        const itemUrl = resolveAssetUrl(item);
+                        return (
+                          <div key={idx} className="p-3 bg-surface-subtle rounded-xl border border-border space-y-2 group hover:border-accent/40 transition-all">
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-300 font-mono">
+                              PAGE VISUAL
+                            </span>
+                            <p className="text-xs font-bold text-content truncate font-display">{item.title || `Brochure Page ${idx + 1}`}</p>
+                            {itemUrl ? (
+                              <div
+                                className="relative aspect-[16/10] w-full rounded-lg overflow-hidden bg-slate-950 my-1.5 border border-border cursor-pointer"
+                                onClick={() => {
+                                  setPreviewLightboxUrl(itemUrl);
+                                  setPreviewLightboxTitle(item.title || 'Brochure Page Visual');
+                                }}
+                              >
+                                <img
+                                  src={itemUrl}
+                                  alt={item.title || 'Brochure Page Visual'}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                            ) : null}
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                  <p className="text-[11px] text-content-secondary">
-                    Overall project site schematic detailing 24m entry road, Wing A/B tower positioning, and podium leisure deck.
-                  </p>
-                </div>
+                )}
               </div>
             )}
 

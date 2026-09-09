@@ -67,6 +67,7 @@ export function ProjectsGridSlice({
           {filteredProjects.map((project) => {
             const cover =
               project.coverImageUrl ||
+              project.elevationImages?.[0]?.url ||
               project.mediaGallery?.find((asset: MediaAsset) => asset.kind === 'image')?.url;
 
             return (
