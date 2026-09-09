@@ -29,6 +29,8 @@ import { YoutubeIcon, InstagramIcon } from '@/components/icons/SocialIcons';
 import { OFFICIAL_BROKER_NUMBERS } from '@/lib/constants/broker-constants';
 import { formatDateTime } from '@/lib/date-utils';
 import { CustomSelect, type CustomSelectOption } from '@/components/ui/CustomSelect';
+import { toast } from '@/lib/client/toast';
+import { AccessibleDialog } from '@/components/ui/AccessibleDialog';
 
 const DRAWER_CHANNEL_OPTIONS: CustomSelectOption[] = [
   { value: 'PHONE_CALL', label: '📞 Phone Call' },
@@ -70,16 +72,20 @@ const DRAWER_STAGE_OPTIONS: CustomSelectOption[] = [
 
 interface SourceEvidenceDrawerProps {
   lead: any | null;
+  canDeleteLeads?: boolean;
   onClose: () => void;
   onOpenMergeModal: (lead: any) => void;
   onLeadUpdated?: () => void;
+  onLeadDeleted?: (deletedLeadId: string) => void;
 }
 
 export function SourceEvidenceDrawer({
   lead,
+  canDeleteLeads = false,
   onClose,
   onOpenMergeModal,
   onLeadUpdated,
+  onLeadDeleted,
 }: SourceEvidenceDrawerProps) {
   // Hooks must run unconditionally — guard values with `lead?.` instead of
   // returning early before them (react-hooks/rules-of-hooks).
@@ -278,6 +284,36 @@ export function SourceEvidenceDrawer({
     }
   };
 
+  const [isDeletingLead, setIsDeletingLead] = useState(false);
+  const [showDeleteLeadConfirm, setShowDeleteLeadConfirm] = useState(false);
+
+  const handleDeleteLead = async () => {
+    if (!lead?.id) return;
+    setIsDeletingLead(true);
+    try {
+      const res = await fetch(`/api/v1/leads/${lead.id}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to delete lead.');
+      }
+      toast.success('Lead Deleted', {
+        description: `Lead "${lead.fullName || lead.phoneE164 || 'Lead'}" removed.`,
+      });
+      if (onLeadDeleted) {
+        onLeadDeleted(lead.id);
+      }
+      onClose();
+    } catch (err: any) {
+      toast.error('Deletion Failed', { description: err.message });
+    } finally {
+      setIsDeletingLead(false);
+      setShowDeleteLeadConfirm(false);
+    }
+  };
+
+
   return (
     <>
       {/* Backdrop */}
@@ -311,6 +347,17 @@ export function SourceEvidenceDrawer({
             </div>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
+            {canDeleteLeads && (
+              <button
+                type="button"
+                onClick={() => setShowDeleteLeadConfirm(true)}
+                className="p-2 rounded-xl text-content-muted hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors shrink-0 cursor-pointer border border-transparent hover:border-rose-200 dark:hover:border-rose-800"
+                title="Permanently Delete Lead"
+                aria-label="Delete Lead"
+              >
+                <Trash2 className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
+              </button>
+            )}
             <button
               type="button"
               onClick={() => setIsFullScreen(!isFullScreen)}
@@ -773,6 +820,61 @@ export function SourceEvidenceDrawer({
           </div>
         </div>
       </div>
+
+      {/* Delete Lead Confirmation Modal */}
+      <AccessibleDialog
+        open={showDeleteLeadConfirm}
+        onClose={() => !isDeletingLead && setShowDeleteLeadConfirm(false)}
+        titleId="drawer-delete-lead-title"
+        descriptionId="drawer-delete-lead-desc"
+        size="sm"
+      >
+        <div className="p-6">
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-900/30 text-rose-600 flex items-center justify-center shrink-0">
+              <AlertCircle className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 id="drawer-delete-lead-title" className="text-base font-bold text-content">
+                Delete Lead
+              </h3>
+              <p id="drawer-delete-lead-desc" className="text-xs text-content-secondary mt-1 leading-relaxed">
+                Are you sure you want to permanently delete{' '}
+                <strong className="text-content font-semibold">
+                  {lead?.fullName || lead?.phoneE164 || 'this prospect'}
+                </strong>
+                ? All associated communication logs, site visits, portal links, and reminders will be deleted immediately. This action cannot be undone.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-6 flex items-center justify-end gap-3">
+            <button
+              type="button"
+              disabled={isDeletingLead}
+              onClick={() => setShowDeleteLeadConfirm(false)}
+              className="px-4 py-2 rounded-xl text-xs font-semibold text-content-secondary hover:bg-surface-subtle border border-border transition-colors cursor-pointer disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              disabled={isDeletingLead}
+              onClick={handleDeleteLead}
+              className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 transition-colors cursor-pointer flex items-center gap-2 shadow-xs disabled:opacity-50"
+            >
+              {isDeletingLead ? (
+                <span>Deleting…</span>
+              ) : (
+                <>
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Delete Permanently</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </AccessibleDialog>
     </>
   );
 }

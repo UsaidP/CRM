@@ -1,11 +1,12 @@
 import { GoogleGenAI } from '@google/genai';
 import { validateReraNumber } from '@/lib/domain/verification-engine';
 import { calculateAllInCost } from '@/lib/domain/cost-calculator';
-import type { 
-  ExtractedBrochureData, 
-  ExtractedBrochureUnit, 
-  ProjectAssetRecord, 
-  ExtractedFloorPlanDetail 
+import { 
+  type ExtractedBrochureData, 
+  type ExtractedBrochureUnit, 
+  type ProjectAssetRecord, 
+  type ExtractedFloorPlanDetail,
+  erasePhoneNumbersFromText 
 } from './brochure-parser-service';
 import { deduplicateUnitsByConfiguration } from './unit-deduplication';
 import type { BuyerRequirementInput, PropertyUnitForMatching } from '@/lib/domain/matching-engine';
@@ -95,7 +96,9 @@ CRITICAL EXTRACTION GUIDELINES:
    - Extract all listed lifestyle amenities (e.g., Fitness Center, Swimming Pool, Rooftop Garden, Kids Play Area, CCTV, Covered Parking, High Speed Elevators).
    - Extract technical specifications (flooring, sanitary ware, concealed plumbing, copper wiring, aluminum windows, granite platform).
 8. CONNECTIVITY & TRANSIT: Extract all railway stations, highways, airports, and distance/time metrics mentioned in the brochure.
-9. CONTACT DETAILS: Extract direct builder sales phone numbers, emails, site office address, and registered head office address.
+9. BROKER SHIELD & PHONE ERASURE:
+   - Real estate broker protection rule: NEVER include builder or broker phone numbers or telephone digits in any descriptions, highlights, or specifications.
+   - All phone numbers written on brochures must be strictly ERASED from public data. Set developerSalesPocPhone to null.
 
 Output purely valid JSON conforming to this schema:
 {
@@ -416,19 +419,19 @@ export async function extractBrochureWithAI(
     plotDetails: projObj.plot_number || parsed.plotDetails || undefined,
     structureType: parsed.structureType || undefined,
     floorPlateSummary: parsed.floorPlateSummary || undefined,
-    shortDescription: parsed.shortDescription || undefined,
-    description: parsed.description || undefined,
-    amenities: Array.isArray(parsed.amenities) && parsed.amenities.length > 0 ? parsed.amenities : [],
+    shortDescription: erasePhoneNumbersFromText(parsed.shortDescription || `${elevation || 'Residential Project'} situated at ${microMarket}.`),
+    description: erasePhoneNumbersFromText(parsed.description || `${projectName} by ${developerName} located in ${microMarket}${reraNumber ? `. MahaRERA: ${reraNumber}` : '.'}`),
+    amenities: Array.isArray(parsed.amenities) && parsed.amenities.length > 0 ? parsed.amenities.map(erasePhoneNumbersFromText).filter(Boolean) : [],
     specifications: parsed.specifications || {},
     transitConnectivity,
     keyHighlights: Array.isArray(parsed.keyHighlights) && parsed.keyHighlights.length > 0
-      ? parsed.keyHighlights
+      ? parsed.keyHighlights.map(erasePhoneNumbersFromText).filter(Boolean)
       : [
           ...(reraNumber ? [`MahaRERA Registered: ${reraNumber}`] : []),
           ...(elevation ? [`Elevation: ${elevation}`] : []),
-        ],
+        ].map(erasePhoneNumbersFromText).filter(Boolean),
     developerSalesPocName: parsed.confidentialBrokerData?.developerSalesPocName || contactObj.sales_poc_name || contactObj.developerSalesPocName || parsed.developerSalesPocName || undefined,
-    developerSalesPocPhone: parsed.confidentialBrokerData?.developerSalesPocPhone || (Array.isArray(contactObj.phone) ? contactObj.phone[0] : (typeof contactObj.phone === 'string' ? contactObj.phone : parsed.developerSalesPocPhone)) || undefined,
+    developerSalesPocPhone: undefined, // Broker Shield: Erased to prevent client bypass
     developerEmail: parsed.confidentialBrokerData?.developerEmail || (Array.isArray(contactObj.email) ? contactObj.email[0] : (typeof contactObj.email === 'string' ? contactObj.email : parsed.developerEmail)) || undefined,
     siteAddress: parsed.confidentialBrokerData?.siteAddress || locObj.siteOffice || locObj.address || parsed.siteAddress || subLocality || undefined,
     officeAddress: parsed.confidentialBrokerData?.officeAddress || locObj.officeAddress || contactObj.office_address || contactObj.officeAddress || parsed.officeAddress || undefined,
@@ -438,7 +441,7 @@ export async function extractBrochureWithAI(
     standardCommissionPercent: typeof parsed.standardCommissionPercent === 'number' ? parsed.standardCommissionPercent : (typeof parsed.confidentialBrokerData?.standardCommissionPercent === 'number' ? parsed.confidentialBrokerData.standardCommissionPercent : 2.5),
     confidentialBrokerData: {
       developerSalesPocName: parsed.confidentialBrokerData?.developerSalesPocName || contactObj.sales_poc_name || contactObj.developerSalesPocName || parsed.developerSalesPocName || undefined,
-      developerSalesPocPhone: parsed.confidentialBrokerData?.developerSalesPocPhone || (Array.isArray(contactObj.phone) ? contactObj.phone[0] : (typeof contactObj.phone === 'string' ? contactObj.phone : parsed.developerSalesPocPhone)) || undefined,
+      developerSalesPocPhone: undefined,
       developerEmail: parsed.confidentialBrokerData?.developerEmail || (Array.isArray(contactObj.email) ? contactObj.email[0] : (typeof contactObj.email === 'string' ? contactObj.email : parsed.developerEmail)) || undefined,
       siteAddress: parsed.confidentialBrokerData?.siteAddress || locObj.siteOffice || locObj.address || parsed.siteAddress || subLocality || undefined,
       officeAddress: parsed.confidentialBrokerData?.officeAddress || locObj.officeAddress || contactObj.office_address || contactObj.officeAddress || parsed.officeAddress || undefined,
@@ -446,7 +449,7 @@ export async function extractBrochureWithAI(
       rccConsultants: parsed.confidentialBrokerData?.rccConsultants || parsed.rccConsultants || undefined,
       standardCommissionPercent: typeof parsed.standardCommissionPercent === 'number' ? parsed.standardCommissionPercent : (typeof parsed.confidentialBrokerData?.standardCommissionPercent === 'number' ? parsed.confidentialBrokerData.standardCommissionPercent : 2.5),
       brokerShieldActive: true,
-      notes: 'Builder direct booking contact and site address are secured for internal CRM broker use only.',
+      notes: 'Direct builder booking phone numbers auto-erased to prevent client bypass.',
     },
     classifiedMedia: {
       elevationsCount: assetRecords.filter(a => a.display_position === 'elevation').length,

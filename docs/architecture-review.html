@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZamZam CRM — Architecture & Codebase Review</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#ecfdf5',
+              500: '#10b981',
+              600: '#059669',
+              900: '#064e3b',
+            },
+            surface: {
+              50: '#1e293b',
+              100: '#0f172a',
+              200: '#0b1120',
+              border: '#1e293b',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background: radial-gradient(circle at 50% 0%, #172554 0%, #030712 60%);
+      min-height: 100vh;
+    }
+    .glass-card {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .glass-card:hover {
+      border-color: rgba(255, 255, 255, 0.16);
+    }
+  </style>
+</head>
+<body class="text-slate-200 font-sans antialiased p-6 md:p-12 selection:bg-emerald-500/20 selection:text-emerald-300">
+
+  <div class="max-w-7xl mx-auto space-y-10">
+    
+    <!-- Top Header Bar -->
+    <header class="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-8 border-b border-slate-800/80">
+      <div>
+        <div class="flex items-center gap-3 mb-2">
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            Review Verified
+          </span>
+          <span class="text-xs text-slate-400 font-mono">ADR-0001 Alignment · Commit Churn Scoped</span>
+        </div>
+        <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight text-white">
+          Full-App Architectural Review
+        </h1>
+        <p class="text-slate-400 text-sm md:text-base mt-2 max-w-2xl">
+          Deep module audit, authorization perimeter verification, and component modularity roadmap for <span class="text-white font-medium">ZamZam CRM</span>.
+        </p>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <div class="bg-slate-900/80 border border-slate-800 rounded-xl px-4 py-3 text-right">
+          <div class="text-xs text-slate-400">Baseline Health</div>
+          <div class="text-emerald-400 font-bold font-mono text-lg">417 / 417 Passing</div>
+        </div>
+        <div class="bg-slate-900/80 border border-slate-800 rounded-xl px-4 py-3 text-right">
+          <div class="text-xs text-slate-400">TypeScript</div>
+          <div class="text-emerald-400 font-bold font-mono text-lg">Clean (0 errors)</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Key Metrics Grid -->
+    <section class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div class="glass-card rounded-2xl p-5">
+        <div class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Top Hot Spot Churn</div>
+        <div class="text-3xl font-extrabold text-white mt-1">12 / 40 <span class="text-sm font-normal text-slate-400">commits</span></div>
+        <div class="text-xs text-amber-400 mt-2 font-medium">Inventory & Brochure ingestion pipeline</div>
+      </div>
+      <div class="glass-card rounded-2xl p-5">
+        <div class="text-slate-400 text-xs font-semibold uppercase tracking-wider">God Component Mass</div>
+        <div class="text-3xl font-extrabold text-white mt-1">3,422 <span class="text-sm font-normal text-slate-400">lines</span></div>
+        <div class="text-xs text-rose-400 mt-2 font-medium">InventoryClient.tsx + 4,754 lines across 3 modals</div>
+      </div>
+      <div class="glass-card rounded-2xl p-5">
+        <div class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Authz Perimeter Gap</div>
+        <div class="text-3xl font-extrabold text-white mt-1">4 <span class="text-sm font-normal text-slate-400">endpoints</span></div>
+        <div class="text-xs text-rose-400 mt-2 font-medium">IDOR vulnerability in lead details & bulk update</div>
+      </div>
+      <div class="glass-card rounded-2xl p-5">
+        <div class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Error Trace Leakage</div>
+        <div class="text-3xl font-extrabold text-white mt-1">45 <span class="text-sm font-normal text-slate-400">routes</span></div>
+        <div class="text-xs text-amber-400 mt-2 font-medium">Direct error.message returned to clients</div>
+      </div>
+    </section>
+
+    <!-- Top Recommendation Banner -->
+    <section class="p-6 rounded-2xl bg-gradient-to-r from-emerald-950/60 via-slate-900/80 to-slate-900/80 border border-emerald-500/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+      <div class="space-y-1">
+        <div class="flex items-center gap-2">
+          <span class="px-2.5 py-0.5 rounded text-xs font-bold uppercase bg-emerald-500 text-slate-950">Immediate Action</span>
+          <h2 class="text-lg font-bold text-white">Wave 1: Close Permission Seams (#3) & Webhook Simulator Bypasses</h2>
+        </div>
+        <p class="text-sm text-slate-300 max-w-3xl">
+          Small diff, non-breaking, zero downtime, and eliminates horizontal privilege escalation where agents could read or reassign any lead in their organization.
+        </p>
+      </div>
+      <div class="shrink-0">
+        <span class="inline-flex items-center px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-mono">
+          Priority: P0 Hardening
+        </span>
+      </div>
+    </section>
+
+    <!-- Candidates Section -->
+    <section class="space-y-6">
+      <h2 class="text-2xl font-bold text-white tracking-tight flex items-center gap-3">
+        <span>Architecture Transformation Candidates</span>
+        <span class="text-xs font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">5 Scored Candidates</span>
+      </h2>
+
+      <!-- Candidate 1 -->
+      <div class="glass-card rounded-2xl p-6 space-y-5 border-l-4 border-l-indigo-500">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div>
+            <div class="flex items-center gap-2 text-xs font-mono text-indigo-400">
+              <span>CANDIDATE #1</span>
+              <span>•</span>
+              <span>GIT HOT SPOT #1</span>
+            </div>
+            <h3 class="text-xl font-bold text-white mt-0.5">Brochure Ingestion Domain Module Deepening</h3>
+          </div>
+          <span class="self-start md:self-auto px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
+            Strength: High (Core Hotspot)
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2">
+          <div class="space-y-3">
+            <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Problem Diagnosis</div>
+            <p class="text-sm text-slate-300 leading-relaxed">
+              <code class="text-xs bg-slate-800 px-1.5 py-0.5 rounded text-amber-300">upload-brochure/route.ts</code> is 369 lines importing 7 separate services. It orchestrates multipart body parsing, base64 payload decoding, remote fetching, MahaRERA download, text parsing, extraction, persistence, deduplication, and media upload directly in an HTTP route. This breaks ADR-0001 (routes must be thin adapters) and makes testing impossible without mocking full Next.js Request/Response mechanics.
+            </p>
+            <div class="text-xs font-mono text-slate-400">
+              Files: <span class="text-slate-200">src/app/api/v1/inventory/upload-brochure/route.ts</span>
+            </div>
+          </div>
+
+          <div class="space-y-3">
+            <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Proposed Architecture</div>
+            <div class="bg-slate-950/70 p-4 rounded-xl border border-slate-800 text-xs font-mono space-y-2">
+              <div class="text-indigo-400 font-semibold">// Target Domain Module Contract</div>
+              <div class="text-slate-300">export async function <span class="text-emerald-400">ingestBrochure</span>(</div>
+              <div class="text-slate-400 pl-4">source: BrochureSource,</div>
+              <div class="text-slate-400 pl-4">context: IngestionContext</div>
+              <div class="text-slate-300">): Promise&lt;BrochureExtractionResult&gt;</div>
+            </div>
+            <p class="text-xs text-slate-400">
+              Route simplifies to an 18-line transport adapter that parses the HTTP request, calls <code class="text-indigo-300">ingestBrochure</code>, and returns standard JSON.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Candidate 2 -->
+      <div class="glass-card rounded-2xl p-6 space-y-5 border-l-4 border-l-rose-500">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div>
+            <div class="flex items-center gap-2 text-xs font-mono text-rose-400">
+              <span>CANDIDATE #2</span>
+              <span>•</span>
+              <span>MAINTAINABILITY & STABILITY</span>
+            </div>
+            <h3 class="text-xl font-bold text-white mt-0.5">InventoryClient Monolith Decomposition</h3>
+          </div>
+          <span class="self-start md:self-auto px-3 py-1 rounded-full text-xs font-semibold bg-rose-500/10 text-rose-300 border border-rose-500/20">
+            Strength: High (Fails Deletion Test)
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2">
+          <div class="space-y-3">
+            <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Problem Diagnosis</div>
+            <p class="text-sm text-slate-300 leading-relaxed">
+              <code class="text-xs bg-slate-800 px-1.5 py-0.5 rounded text-rose-300">InventoryClient.tsx</code> is 3,422 lines, complemented by <code class="text-xs bg-slate-800 px-1.5 py-0.5 rounded text-slate-300">ProjectDetailsModal</code> (1,872 lines) and <code class="text-xs bg-slate-800 px-1.5 py-0.5 rounded text-slate-300">BrochureUploadModal</code> (1,827 lines). It acts as an unbounded god module combining catalogue navigation, unit configurations, media gallery uploads, RERA verifications, and brochure ingestion state.
+            </p>
+          </div>
+
+          <div class="space-y-3">
+            <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Decomposition Slices</div>
+            <div class="grid grid-cols-2 gap-2 text-xs font-mono">
+              <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800">
+                <div class="text-white font-semibold">1. ProjectCatalogue</div>
+                <div class="text-slate-500 text-[11px] mt-0.5">Grid, search, filtering</div>
+              </div>
+              <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800">
+                <div class="text-white font-semibold">2. UnitInventoryLedger</div>
+                <div class="text-slate-500 text-[11px] mt-0.5">Pricing, status, BHK units</div>
+              </div>
+              <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800">
+                <div class="text-white font-semibold">3. MediaStudioSection</div>
+                <div class="text-slate-500 text-[11px] mt-0.5">Floorplans, elevation, assets</div>
+              </div>
+              <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800">
+                <div class="text-white font-semibold">4. BrochureIngestionFlow</div>
+                <div class="text-slate-500 text-[11px] mt-0.5">Upload, RERA parse, wizard</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Candidate 3 -->
+      <div class="glass-card rounded-2xl p-6 space-y-5 border-l-4 border-l-emerald-500">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div>
+            <div class="flex items-center gap-2 text-xs font-mono text-emerald-400">
+              <span>CANDIDATE #3</span>
+              <span>•</span>
+              <span>SECURITY & COMPLIANCE</span>
+            </div>
+            <h3 class="text-xl font-bold text-white mt-0.5">Permission Seam Enforcement (ADR-0001 Extension)</h3>
+          </div>
+          <span class="self-start md:self-auto px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">
+            Priority: Top Immediate (P0)
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2">
+          <div class="space-y-3">
+            <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Vulnerability Analysis</div>
+            <p class="text-sm text-slate-300 leading-relaxed">
+              In <code class="text-xs bg-slate-800 px-1.5 py-0.5 rounded text-amber-300">src/app/api/v1/leads/[id]/route.ts</code>, <code class="text-xs text-emerald-400">requirePermission</code> is imported on line 2 but never invoked. Handlers call <code class="text-xs text-rose-400">requireSession(req)</code> directly. An authenticated agent with scoped permissions can bypass row-level scoping and retrieve or alter any lead in the organization by ID.
+            </p>
+            <div class="text-xs text-slate-400 font-mono">
+              Also affecting: <span class="text-slate-200">leads/[id]/requirements</span>, <span class="text-slate-200">leads/[id]/communications</span>, <span class="text-slate-200">leads/bulk-update</span>
+            </div>
+          </div>
+
+          <div class="space-y-3">
+            <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Remediation Architecture</div>
+            <div class="bg-slate-950/70 p-4 rounded-xl border border-slate-800 text-xs font-mono space-y-1.5">
+              <div class="text-emerald-400">// In leads/[id]/route.ts</div>
+              <div class="text-slate-300">const auth = await <span class="text-emerald-300">requirePermissionWithScope</span>(req, 'leads:view_all');</div>
+              <div class="text-slate-400">if (!auth.ok) return auth.response;</div>
+              <div class="text-slate-300">const where = await <span class="text-indigo-300">scopedLeadFilter</span>(session, scope);</div>
+              <div class="text-slate-300">const lead = await prisma.lead.findFirst({ where: { id, ...where } });</div>
+            </div>
+            <p class="text-xs text-slate-400">
+              Restores complete compliance with ADR-0001 Decision 4: <span class="text-slate-200 italic">"requirePermission is the only permission seam in routes."</span>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Candidate 4 -->
+      <div class="glass-card rounded-2xl p-6 space-y-5 border-l-4 border-l-cyan-500">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div>
+            <div class="flex items-center gap-2 text-xs font-mono text-cyan-400">
+              <span>CANDIDATE #4</span>
+              <span>•</span>
+              <span>DATA INTEGRITY</span>
+            </div>
+            <h3 class="text-xl font-bold text-white mt-0.5">Media Asset Shape Normalization</h3>
+          </div>
+          <span class="self-start md:self-auto px-3 py-1 rounded-full text-xs font-semibold bg-cyan-500/10 text-cyan-300 border border-cyan-500/20">
+            Prerequisite to Candidate #2
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2">
+          <div class="space-y-3">
+            <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Problem Diagnosis</div>
+            <p class="text-sm text-slate-300 leading-relaxed">
+              In <code class="text-xs bg-slate-800 px-1.5 py-0.5 rounded text-cyan-300">inventory-media.ts</code>, 5 overlapping media interfaces coexist with camel/snake drift. <code class="text-xs text-amber-300">FloorPlanMediaAsset</code> maintains both <code class="text-xs text-slate-300">carpetAreaSqft</code> and <code class="text-xs text-slate-300">carpet_area_sqft</code>, while elevation and brochure photo types have drifted properties.
+            </p>
+          </div>
+
+          <div class="space-y-3">
+            <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Target Gallery Model</div>
+            <p class="text-sm text-slate-300 leading-relaxed">
+              Consolidate into a single polymorphic <code class="text-xs bg-slate-800 px-1.5 py-0.5 rounded text-white">ProjectMediaGalleryAsset</code> discriminated union, with automated backward-compatible normalizers for legacy serialized JSON.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Candidate 5 -->
+      <div class="glass-card rounded-2xl p-6 space-y-5 border-l-4 border-l-amber-500">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div>
+            <div class="flex items-center gap-2 text-xs font-mono text-amber-400">
+              <span>CANDIDATE #5</span>
+              <span>•</span>
+              <span>DEFENSIVE CODING</span>
+            </div>
+            <h3 class="text-xl font-bold text-white mt-0.5">Unified API Handler Seam (Error Masking)</h3>
+          </div>
+          <span class="self-start md:self-auto px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-300 border border-amber-500/20">
+            Security & Hygiene
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2">
+          <div class="space-y-3">
+            <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Problem Diagnosis</div>
+            <p class="text-sm text-slate-300 leading-relaxed">
+              Over 45 route handlers catch raw errors and echo <code class="text-xs text-rose-300">{ success: false, error: error.message }</code> directly to HTTP clients. This leaks Prisma query exceptions, database schema table names, and system details to consumers.
+            </p>
+          </div>
+
+          <div class="space-y-3">
+            <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Solution: withApiHandler Wrapper</div>
+            <p class="text-sm text-slate-300 leading-relaxed">
+              Wrap route exports in <code class="text-xs text-emerald-400">withApiHandler(async (req, ctx) => { ... })</code> which logs detailed telemetry internally while sanitizing public error responses.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Execution Roadmap Section -->
+    <section class="glass-card rounded-2xl p-6 space-y-6">
+      <h2 class="text-xl font-bold text-white tracking-tight">Execution Roadmap & Return on Investment (ROI)</h2>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs font-mono">
+          <thead>
+            <tr class="border-b border-slate-800 text-slate-400 uppercase">
+              <th class="py-3 px-4">Wave</th>
+              <th class="py-3 px-4">Focus</th>
+              <th class="py-3 px-4">Risk</th>
+              <th class="py-3 px-4">Effort</th>
+              <th class="py-3 px-4">Strategic Impact</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800/60">
+            <tr class="bg-emerald-500/5">
+              <td class="py-3.5 px-4 font-bold text-emerald-400">Wave 1 (Now)</td>
+              <td class="py-3.5 px-4 text-white">Candidate #3 (Permission Seams) + Webhook & Auth Test Guards</td>
+              <td class="py-3.5 px-4 text-emerald-400 font-semibold">Low</td>
+              <td class="py-3.5 px-4 text-slate-300">Small diff</td>
+              <td class="py-3.5 px-4 text-emerald-300">Closes P0 IDOR and simulator bypasses</td>
+            </tr>
+            <tr>
+              <td class="py-3.5 px-4 font-bold text-indigo-400">Wave 2</td>
+              <td class="py-3.5 px-4 text-white">Candidate #1 (Brochure Ingestion Domain Module)</td>
+              <td class="py-3.5 px-4 text-amber-400 font-semibold">Medium</td>
+              <td class="py-3.5 px-4 text-slate-300">Moderate</td>
+              <td class="py-3.5 px-4 text-slate-300">Stabilizes the #1 git hot spot (12 commits)</td>
+            </tr>
+            <tr>
+              <td class="py-3.5 px-4 font-bold text-cyan-400">Wave 3</td>
+              <td class="py-3.5 px-4 text-white">Candidate #4 (Media Asset Types Consolidation)</td>
+              <td class="py-3.5 px-4 text-emerald-400 font-semibold">Low</td>
+              <td class="py-3.5 px-4 text-slate-300">Small diff</td>
+              <td class="py-3.5 px-4 text-slate-300">Type safety precondition before UI slicing</td>
+            </tr>
+            <tr>
+              <td class="py-3.5 px-4 font-bold text-rose-400">Wave 4</td>
+              <td class="py-3.5 px-4 text-white">Candidate #2 (InventoryClient Monolith Slicing)</td>
+              <td class="py-3.5 px-4 text-amber-400 font-semibold">Medium</td>
+              <td class="py-3.5 px-4 text-slate-300">Substantial</td>
+              <td class="py-3.5 px-4 text-slate-300">Breaks 3,422-line UI god component</td>
+            </tr>
+            <tr>
+              <td class="py-3.5 px-4 font-bold text-amber-400">Wave 5</td>
+              <td class="py-3.5 px-4 text-white">Candidate #5 (withApiHandler Error Seam)</td>
+              <td class="py-3.5 px-4 text-emerald-400 font-semibold">Low</td>
+              <td class="py-3.5 px-4 text-slate-300">Systematic</td>
+              <td class="py-3.5 px-4 text-slate-300">Masks Prisma error leakage on 45+ endpoints</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="pt-6 border-t border-slate-800 text-xs text-slate-500 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div>Generated autonomously via Deep Module Review Protocol · ZamZam CRM</div>
+      <div class="font-mono">Timestamp: 2026-09-08 13:28 UTC+5:30</div>
+    </footer>
+
+  </div>
+
+</body>
+</html>

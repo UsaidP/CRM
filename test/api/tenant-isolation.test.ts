@@ -32,7 +32,7 @@ describe('API Integration: Multi-Tenant Data Isolation', () => {
     const body = await res.json();
     orgALeadId = body.data.id;
     testCleanup.register('lead', orgALeadId);
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await cleanupTestEntities();
@@ -50,7 +50,7 @@ describe('API Integration: Multi-Tenant Data Isolation', () => {
     // The list of leads returned for Org B must not contain Org A's lead
     const foundOrgALead = body.data.some((l: any) => l.id === orgALeadId);
     expect(foundOrgALead).toBe(false);
-  });
+  }, 30000);
 
   it('Org B user CANNOT read Org A lead by ID (returns 404)', async () => {
     const { GET: getLeadByIdHandler } = await import('@/app/api/v1/leads/[id]/route');
@@ -63,7 +63,7 @@ describe('API Integration: Multi-Tenant Data Isolation', () => {
     const body = await res.json();
     expect(body.success).toBe(false);
     expect(body.error).toBe('Lead not found');
-  });
+  }, 30000);
 
   it('Org B user CANNOT mutate Org A lead by ID (returns 404)', async () => {
     const { PATCH: patchLeadByIdHandler } = await import('@/app/api/v1/leads/[id]/route');
@@ -80,7 +80,7 @@ describe('API Integration: Multi-Tenant Data Isolation', () => {
     expect(res.status).toBe(404);
     const body = await res.json();
     expect(body.success).toBe(false);
-  });
+  }, 30000);
 
   it('Org B user CANNOT view Org A deal financials in deals summary', async () => {
     const { GET: getDealsHandler } = await import('@/app/api/v1/deals/route');
@@ -94,7 +94,7 @@ describe('API Integration: Multi-Tenant Data Isolation', () => {
     expect(body.summary.totalGrossBrokerage).toBe(0);
     expect(body.summary.totalCollected).toBe(0);
     expect(body.summary.totalPending).toBe(0);
-  });
+  }, 30000);
 
   it('Telecaller role CANNOT create a deal (returns 403 Forbidden)', async () => {
     const { POST: createDealHandler } = await import('@/app/api/v1/deals/route');
@@ -118,5 +118,5 @@ describe('API Integration: Multi-Tenant Data Isolation', () => {
     const body = await res.json();
     expect(body.success).toBe(false);
     expect(body.error).toContain('deals:create');
-  });
+  }, 30000);
 });

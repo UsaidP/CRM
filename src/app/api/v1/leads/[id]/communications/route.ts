@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireSession } from '@/lib/services/api-auth';
+import { requirePermissionWithScope, scopedLeadFilter } from '@/lib/services/api-auth';
 import { prisma } from '@/lib/db/prisma';
 
 export const dynamic = 'force-dynamic';
@@ -9,9 +9,20 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const auth = await requireSession(req);
+    const auth = await requirePermissionWithScope(req, 'leads:view_all');
     if (!auth.ok) return auth.response;
+    const { session, scope } = auth;
     const { id } = await params;
+
+    const scopeWhere = await scopedLeadFilter(session, scope);
+    const lead = await prisma.lead.findFirst({
+      where: { id, ...scopeWhere },
+      select: { id: true },
+    });
+    if (!lead) {
+      return NextResponse.json({ success: false, error: 'Lead not found' }, { status: 404 });
+    }
+
     const communications = await prisma.communicationLog.findMany({
       where: { leadId: id },
       orderBy: { createdAt: 'desc' },
@@ -31,9 +42,20 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const auth = await requireSession(req);
+    const auth = await requirePermissionWithScope(req, 'leads:edit_all');
     if (!auth.ok) return auth.response;
+    const { session, scope } = auth;
     const { id } = await params;
+
+    const scopeWhere = await scopedLeadFilter(session, scope);
+    const lead = await prisma.lead.findFirst({
+      where: { id, ...scopeWhere },
+      select: { id: true, organizationId: true },
+    });
+    if (!lead) {
+      return NextResponse.json({ success: false, error: 'Lead not found' }, { status: 404 });
+    }
+
     const body = await req.json();
 
     const {

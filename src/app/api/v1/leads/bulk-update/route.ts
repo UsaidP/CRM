@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { requireSession, orgScope } from '@/lib/services/api-auth';
+import { requirePermission, requirePermissionWithScope, scopedLeadFilter, orgScope } from '@/lib/services/api-auth';
 import { prisma } from '@/lib/db/prisma';
 import { ensureLeadFallbackReminder } from '@/lib/services/lead-reminder-service';
 
@@ -7,9 +7,9 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   try {
-    const auth = await requireSession(req);
+    const auth = await requirePermissionWithScope(req, 'leads:edit_all');
     if (!auth.ok) return auth.response;
-    const { session } = auth;
+    const { session, scope } = auth;
 
     const body = await req.json();
     const { leadIds, currentStage, assignedBrokerId, notes } = body;
@@ -19,6 +19,11 @@ export async function POST(req: Request) {
         { success: false, error: 'Please provide an array of lead IDs to update.' },
         { status: 400 }
       );
+    }
+
+    if (assignedBrokerId !== undefined) {
+      const reassignAuth = await requirePermission(req, 'leads:reassign');
+      if (!reassignAuth.ok) return reassignAuth.response;
     }
 
     const updateData: any = {};
@@ -42,11 +47,12 @@ export async function POST(req: Request) {
       );
     }
 
-    // Ensure we only update leads belonging to this organization
+    // Ensure we only update leads within the user's permissible data scope
+    const scopeWhere = await scopedLeadFilter(session, scope);
     const updateResult = await prisma.lead.updateMany({
       where: {
         id: { in: leadIds },
-        ...orgScope(session),
+        ...scopeWhere,
       },
       data: updateData,
     });

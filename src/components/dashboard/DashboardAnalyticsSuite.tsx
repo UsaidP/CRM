@@ -176,48 +176,107 @@ export function DashboardAnalyticsSuite({
 
       {/* ─── TAB 1: PIPELINE FUNNEL (BKLIT FUNNEL CHART) ─── */}
       {activeTab === 'funnel' && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-            {/* Interactive Stages Card List */}
-            <div className="lg:col-span-6 space-y-3">
-              <div className="flex items-center justify-between">
+        <div className="space-y-4 sm:space-y-6">
+          {/* Top Executive KPI Strip for Funnel Conversion */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+            <div className="p-3.5 sm:p-4 rounded-xl bg-surface-subtle border border-border">
+              <span className="text-[11px] font-mono font-bold uppercase text-content-muted block mb-1">
+                Active Ingestion Volume
+              </span>
+              <span className="text-lg sm:text-xl font-black font-display text-content">
+                {filteredLeads.length} Leads
+              </span>
+              <span className="text-[10px] text-content-secondary block mt-0.5">
+                Across 6 sequential advisory gates
+              </span>
+            </div>
+
+            <div className="p-3.5 sm:p-4 rounded-xl bg-surface-subtle border border-border">
+              <span className="text-[11px] font-mono font-bold uppercase text-content-muted block mb-1">
+                Full Funnel Conversion
+              </span>
+              <span className="text-lg sm:text-xl font-black font-display text-status-success">
+                {((funnelStages[5]?.value || 0) / Math.max(1, filteredLeads.length) * 100).toFixed(1)}%
+              </span>
+              <span className="text-[10px] text-content-secondary block mt-0.5">
+                Inbound to Won &amp; Booked
+              </span>
+            </div>
+
+            <div className="p-3.5 sm:p-4 rounded-xl bg-surface-subtle border border-border">
+              <span className="text-[11px] font-mono font-bold uppercase text-content-muted block mb-1">
+                Primary Pipeline Bottleneck
+              </span>
+              <span className="text-lg sm:text-xl font-black font-display text-accent truncate block">
+                {funnelStages[0]?.value > 0 ? '01. Inbound Ingestion' : 'Pipeline Clear'}
+              </span>
+              <span className="text-[10px] text-content-secondary block mt-0.5 truncate">
+                {funnelStages[0]?.value > 0
+                  ? `${funnelStages[0]?.value} leads awaiting First Connect`
+                  : 'Healthy flow across gates'}
+              </span>
+            </div>
+          </div>
+
+          {/* Symmetrical 2-Column Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-stretch">
+            {/* Left Column: Interactive Stages Breakdown */}
+            <div className="lg:col-span-6 flex flex-col justify-between space-y-3">
+              <div className="flex items-center justify-between pb-1">
                 <span className="text-xs font-mono font-bold uppercase tracking-wider text-content-secondary">
                   Pipeline Stage Breakdown
                 </span>
-                <span className="text-[11px] font-mono text-accent-text font-bold">
+                <span className="text-[11px] font-mono text-accent-text font-bold bg-accent-soft px-2.5 py-0.5 rounded-md border border-accent/20">
                   Total Active: {filteredLeads.length} Leads
                 </span>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-2 flex-1 flex flex-col justify-between">
                 {funnelStages.map((stage, idx) => {
                   const isSelected = selectedFunnelIndex === idx;
+
                   return (
                     <div
                       key={stage.label}
                       onClick={() => setSelectedFunnelIndex(isSelected ? null : idx)}
-                      className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
+                      onMouseEnter={() => setSelectedFunnelIndex(idx)}
+                      className={`p-3 rounded-xl border transition-all cursor-pointer flex flex-col justify-between gap-1.5 ${
                         isSelected
-                          ? 'bg-accent-soft border-accent shadow-xs'
+                          ? 'bg-accent-soft/70 border-accent shadow-xs ring-1 ring-accent/30'
                           : 'bg-surface hover:bg-surface-subtle border-border'
                       }`}
                     >
-                      <div className="space-y-0.5">
-                        <div className="flex items-center gap-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 min-w-0">
                           <span
-                            className="w-2.5 h-2.5 rounded-full shrink-0"
+                            className="w-2.5 h-2.5 rounded-full shrink-0 shadow-2xs"
                             style={{ backgroundColor: stage.color || '#3B82F6' }}
                           />
-                          <span className="text-xs font-bold text-content">{stage.label}</span>
+                          <span className="text-xs font-bold text-content truncate font-display">
+                            {stage.label}
+                          </span>
                         </div>
-                        <span className="text-[10px] text-content-muted font-mono pl-4.5 block">
-                          Relative Pipeline Velocity: {stage.percentage}%
-                        </span>
+
+                        <div className="text-right shrink-0 flex items-baseline gap-1">
+                          <span className="text-sm font-black font-mono text-content tabular-nums">{stage.value}</span>
+                          <span className="text-[10px] font-mono text-content-muted">leads</span>
+                        </div>
                       </div>
 
-                      <div className="text-right">
-                        <span className="text-sm font-black font-mono text-content">{stage.value}</span>
-                        <span className="text-[10px] font-mono text-content-muted block">leads</span>
+                      {/* Micro Progress Bar & Metric Footer */}
+                      <div className="flex items-center justify-between gap-2 text-[10px] font-mono">
+                        <div className="h-1.5 flex-1 bg-surface-subtle rounded-full overflow-hidden border border-border/40">
+                          <div
+                            className="h-full rounded-full transition-all duration-500"
+                            style={{
+                              width: `${Math.max(stage.percentage || 0, stage.value > 0 ? 8 : 0)}%`,
+                              backgroundColor: stage.color || '#3B82F6',
+                            }}
+                          />
+                        </div>
+                        <span className="text-content-muted shrink-0 tabular-nums">
+                          {stage.percentage}% velocity
+                        </span>
                       </div>
                     </div>
                   );
@@ -225,18 +284,21 @@ export function DashboardAnalyticsSuite({
               </div>
             </div>
 
-            {/* Bklit Animated Funnel Visualization Container */}
-            <div className="lg:col-span-6 p-4 sm:p-6 rounded-2xl bg-surface-subtle border border-border flex flex-col items-center justify-center text-center relative min-h-[320px] sm:min-h-[360px]">
-              <div className="w-full flex items-center justify-between mb-4">
-                <span className="text-xs font-mono font-bold uppercase tracking-wider text-content-secondary">
-                  Animated Funnel Geometry
-                </span>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-surface text-content-secondary border border-border">
-                  Click / Hover to Inspect
+            {/* Right Column: Animated Funnel & Stage Inspector */}
+            <div className="lg:col-span-6 p-4 sm:p-5 rounded-2xl bg-surface-subtle border border-border flex flex-col justify-between">
+              <div className="w-full flex items-center justify-between mb-2">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs font-mono font-bold uppercase tracking-wider text-content-secondary">
+                    Animated Funnel Geometry
+                  </span>
+                </div>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-surface text-content-secondary border border-border shadow-2xs">
+                  Hover / Click to Inspect
                 </span>
               </div>
 
-              <div className="w-full max-w-[360px] sm:max-w-[420px] mx-auto py-1 sm:py-2">
+              {/* Proportional Funnel Container */}
+              <div className="w-full max-w-[380px] sm:max-w-[420px] mx-auto py-2 flex-1 flex items-center justify-center">
                 <FunnelChart
                   data={funnelStages}
                   orientation="vertical"
@@ -248,31 +310,50 @@ export function DashboardAnalyticsSuite({
                   className="w-full"
                   formatValue={(v) => `${v} leads`}
                   formatPercentage={(p) => `${p}%`}
+                  aspectRatio="1.15 / 1"
                 />
               </div>
 
-              {/* Stage Insight Banner */}
-              {activeStage ? (
-                <motion.div
-                  initial={{ opacity: 0, y: 4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mt-4 p-3 rounded-xl bg-surface border border-accent/40 w-full text-left flex items-center justify-between"
-                >
-                  <div>
-                    <span className="text-xs font-bold text-accent-text block">{activeStage.label}</span>
-                    <span className="text-[11px] text-content-secondary">
-                      {activeStage.value} leads currently situated at this operational milestone.
+              {/* Stage Intelligence Inspector */}
+              <div className="mt-2 pt-2.5 border-t border-border/70">
+                {activeStage ? (
+                  <motion.div
+                    key={activeStage.label}
+                    initial={{ opacity: 0, y: 3 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-3 rounded-xl bg-surface border border-accent/30 shadow-2xs space-y-1.5 text-left"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <span
+                          className="w-2.5 h-2.5 rounded-full"
+                          style={{ backgroundColor: activeStage.color || '#3B82F6' }}
+                        />
+                        <span className="text-xs font-bold text-content font-display">{activeStage.label}</span>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-accent-soft text-accent-text border border-accent/20">
+                          {activeStage.value > 0 ? 'Active Milestone' : 'Awaiting Flow'}
+                        </span>
+                      </div>
+                      <span className="text-xs font-mono font-black text-accent-text tabular-nums">
+                        {activeStage.percentage}% of Top
+                      </span>
+                    </div>
+
+                    <p className="text-[11px] text-content-secondary leading-relaxed">
+                      {activeStage.value > 0
+                        ? `${activeStage.value} leads currently situated at this operational milestone. Prompt advisory action recommended to maintain pipeline velocity.`
+                        : 'No leads currently queued at this operational gate. Pipeline progression from upstream milestones will populate this stage.'}
+                    </p>
+                  </motion.div>
+                ) : (
+                  <div className="p-2.5 rounded-xl bg-surface/70 border border-border flex items-center justify-between text-[11px] text-content-muted font-mono">
+                    <span>Overall conversion from Inbound to Closed Won:</span>
+                    <span className="font-bold text-content tabular-nums">
+                      {((funnelStages[5]?.value || 0) / Math.max(1, filteredLeads.length) * 100).toFixed(1)}%
                     </span>
                   </div>
-                  <span className="text-sm font-mono font-black text-accent-text">
-                    {activeStage.percentage}% of Top
-                  </span>
-                </motion.div>
-              ) : (
-                <p className="text-[11px] text-content-muted font-mono mt-3">
-                  Overall conversion from Inbound to Closed Won: {((funnelStages[5]?.value || 0) / Math.max(1, filteredLeads.length) * 100).toFixed(1)}%
-                </p>
-              )}
+                )}
+              </div>
             </div>
           </div>
         </div>

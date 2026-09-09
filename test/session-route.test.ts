@@ -1,4 +1,4 @@
-import { describe, it, expect, mock, beforeAll } from 'bun:test';
+import { describe, it, expect, mock, beforeAll, afterAll } from 'bun:test';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { fromAny } from '@total-typescript/shoehorn';
@@ -38,6 +38,10 @@ async function callGet(): Promise<Response> {
 
 describe('GET /api/v1/auth/session must never mint sessions for unauthenticated callers', () => {
   beforeAll(() => {
+    cookieJar = {};
+  });
+
+  afterAll(() => {
     cookieJar = {};
   });
 

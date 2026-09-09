@@ -1,16 +1,21 @@
 import { describe, it, expect, beforeAll, afterAll } from 'bun:test';
 import { GET as getLeadsHandler, POST as createLeadHandler } from '@/app/api/v1/leads/route';
+import { GET as getLeadByIdHandler, PATCH as patchLeadByIdHandler, DELETE as deleteLeadHandler } from '@/app/api/v1/leads/[id]/route';
+import { POST as bulkUpdateLeadsHandler } from '@/app/api/v1/leads/bulk-update/route';
+import { POST as bulkDeleteLeadsHandler } from '@/app/api/v1/leads/bulk-delete/route';
 import { ensureTestOrganization, cleanupTestEntities } from '../helpers/test-db';
 import { createTestSessionCookie, PRESET_TEST_USERS, testCleanup } from '../helpers/test-setup';
 
 describe('API Integration: Leads CRUD (/api/v1/leads)', () => {
   let adminCookie: string;
   let agentCookie: string;
+  let telecallerCookie: string;
 
   beforeAll(async () => {
     await ensureTestOrganization();
     adminCookie = await createTestSessionCookie('admin');
     agentCookie = await createTestSessionCookie('agent');
+    telecallerCookie = await createTestSessionCookie('telecaller');
   }, 30000);
 
   afterAll(async () => {
@@ -188,4 +193,218 @@ describe('API Integration: Leads CRUD (/api/v1/leads)', () => {
       expect(Array.isArray(body.data)).toBe(true);
     }, 30000);
   });
+
+  describe('DELETE /api/v1/leads/[id] — permission-gated deletion', () => {
+    it('rejects unauthenticated deletion with 401', async () => {
+      const req = new Request('http://localhost:3000/api/v1/leads/non-existent-id', {
+        method: 'DELETE',
+      });
+      const res = await deleteLeadHandler(req, { params: Promise.resolve({ id: 'non-existent-id' }) });
+      expect(res.status).toBe(401);
+    });
+
+    it('rejects deletion with 403 Forbidden if user lacks leads:delete (e.g. Agent)', async () => {
+      // First create a lead as agent
+      const timestamp = Date.now();
+      const createReq = new Request('http://localhost:3000/api/v1/leads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', cookie: agentCookie },
+        body: JSON.stringify({
+          fullName: `Delete Perm Test Lead ${timestamp}`,
+          phone: `+9198333${String(timestamp).slice(-5)}`,
+        }),
+      });
+      const createRes = await createLeadHandler(createReq);
+      expect(createRes.status).toBe(201);
+      const createdLead = (await createRes.json()).data;
+      testCleanup.register('lead', createdLead.id);
+
+      // Now attempt to delete as agent (who lacks leads:delete by default)
+      const deleteReq = new Request(`http://localhost:3000/api/v1/leads/${createdLead.id}`, {
+        method: 'DELETE',
+        headers: { cookie: agentCookie },
+      });
+      const deleteRes = await deleteLeadHandler(deleteReq, { params: Promise.resolve({ id: createdLead.id }) });
+      expect(deleteRes.status).toBe(403);
+      const body = await deleteRes.json();
+      expect(body.success).toBe(false);
+      expect(body.error).toContain('leads:delete');
+    }, 30000);
+
+    it('allows deletion with 200 OK for user with leads:delete (e.g. Admin)', async () => {
+      // Create a lead to delete
+      const timestamp = Date.now();
+      const createReq = new Request('http://localhost:3000/api/v1/leads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', cookie: adminCookie },
+        body: JSON.stringify({
+          fullName: `Admin Delete Test Lead ${timestamp}`,
+          phone: `+9198444${String(timestamp).slice(-5)}`,
+        }),
+      });
+      const createRes = await createLeadHandler(createReq);
+      expect(createRes.status).toBe(201);
+      const createdLead = (await createRes.json()).data;
+
+      // Delete as admin
+      const deleteReq = new Request(`http://localhost:3000/api/v1/leads/${createdLead.id}`, {
+        method: 'DELETE',
+        headers: { cookie: adminCookie },
+      });
+      const deleteRes = await deleteLeadHandler(deleteReq, { params: Promise.resolve({ id: createdLead.id }) });
+      expect(deleteRes.status).toBe(200);
+      const body = await deleteRes.json();
+      expect(body.success).toBe(true);
+      expect(body.message).toContain('deleted');
+    }, 30000);
+  });
+
+  describe('POST /api/v1/leads/bulk-delete — permission-gated bulk deletion', () => {
+    it('rejects unauthenticated bulk deletion with 401', async () => {
+      const req = new Request('http://localhost:3000/api/v1/leads/bulk-delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ leadIds: ['lead-1', 'lead-2'] }),
+      });
+      const res = await bulkDeleteLeadsHandler(req);
+      expect(res.status).toBe(401);
+    });
+
+    it('rejects bulk deletion with 403 Forbidden for users without leads:delete', async () => {
+      const req = new Request('http://localhost:3000/api/v1/leads/bulk-delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', cookie: agentCookie },
+        body: JSON.stringify({ leadIds: ['lead-1', 'lead-2'] }),
+      });
+      const res = await bulkDeleteLeadsHandler(req);
+      expect(res.status).toBe(403);
+    });
+
+    it('rejects empty or invalid leadIds with 400 Bad Request', async () => {
+      const req = new Request('http://localhost:3000/api/v1/leads/bulk-delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', cookie: adminCookie },
+        body: JSON.stringify({ leadIds: [] }),
+      });
+      const res = await bulkDeleteLeadsHandler(req);
+      expect(res.status).toBe(400);
+    });
+
+    it('successfully bulk deletes leads for authorized admin', async () => {
+      const timestamp = Date.now();
+      // Create 2 test leads
+      const ids: string[] = [];
+      for (let i = 0; i < 2; i++) {
+        const createReq = new Request('http://localhost:3000/api/v1/leads', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', cookie: adminCookie },
+          body: JSON.stringify({
+            fullName: `Bulk Delete Lead ${i} ${timestamp}`,
+            phone: `+9198555${String(timestamp + i).slice(-5)}`,
+          }),
+        });
+        const createRes = await createLeadHandler(createReq);
+        const lead = (await createRes.json()).data;
+        ids.push(lead.id);
+      }
+
+      const bulkReq = new Request('http://localhost:3000/api/v1/leads/bulk-delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', cookie: adminCookie },
+        body: JSON.stringify({ leadIds: ids }),
+      });
+      const bulkRes = await bulkDeleteLeadsHandler(bulkReq);
+      expect(bulkRes.status).toBe(200);
+      const body = await bulkRes.json();
+      expect(body.success).toBe(true);
+      expect(body.deletedCount).toBe(2);
+    }, 60000);
+  });
+
+  describe('GET /api/v1/leads/[id] — permission-gated detail view', () => {
+    it('rejects unauthenticated request with 401', async () => {
+      const req = new Request('http://localhost:3000/api/v1/leads/lead-dummy-id');
+      const res = await getLeadByIdHandler(req, { params: Promise.resolve({ id: 'lead-dummy-id' }) });
+      expect(res.status).toBe(401);
+    });
+
+    it('returns 404 for non-existent lead ID for authenticated user', async () => {
+      const req = new Request('http://localhost:3000/api/v1/leads/non-existent-lead-id', {
+        headers: { cookie: adminCookie },
+      });
+      const res = await getLeadByIdHandler(req, { params: Promise.resolve({ id: 'non-existent-lead-id' }) });
+      expect(res.status).toBe(404);
+    });
+  });
+
+  describe('PATCH /api/v1/leads/[id] — permission-gated updates', () => {
+    it('rejects unauthenticated update with 401', async () => {
+      const req = new Request('http://localhost:3000/api/v1/leads/lead-dummy-id', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notes: 'Unauth attempt' }),
+      });
+      const res = await patchLeadByIdHandler(req, { params: Promise.resolve({ id: 'lead-dummy-id' }) });
+      expect(res.status).toBe(401);
+    });
+
+    it('rejects update with 403 Forbidden if user lacks leads:edit_all (e.g. Telecaller)', async () => {
+      const req = new Request('http://localhost:3000/api/v1/leads/lead-dummy-id', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', cookie: telecallerCookie },
+        body: JSON.stringify({ notes: 'Telecaller update attempt' }),
+      });
+      const res = await patchLeadByIdHandler(req, { params: Promise.resolve({ id: 'lead-dummy-id' }) });
+      expect(res.status).toBe(403);
+    });
+
+    it('allows update for authorized user with leads:edit_all', async () => {
+      const timestamp = Date.now();
+      const createReq = new Request('http://localhost:3000/api/v1/leads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', cookie: adminCookie },
+        body: JSON.stringify({
+          fullName: `Update Target Lead ${timestamp}`,
+          phone: `+9198666${String(timestamp).slice(-5)}`,
+        }),
+      });
+      const createRes = await createLeadHandler(createReq);
+      const lead = (await createRes.json()).data;
+      testCleanup.register('lead', lead.id);
+
+      const patchReq = new Request(`http://localhost:3000/api/v1/leads/${lead.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', cookie: adminCookie },
+        body: JSON.stringify({ notes: 'Updated notes via authorized patch' }),
+      });
+      const patchRes = await patchLeadByIdHandler(patchReq, { params: Promise.resolve({ id: lead.id }) });
+      expect(patchRes.status).toBe(200);
+      const patchBody = await patchRes.json();
+      expect(patchBody.success).toBe(true);
+      expect(patchBody.data.notes).toBe('Updated notes via authorized patch');
+    }, 30000);
+  });
+
+  describe('POST /api/v1/leads/bulk-update — permission-gated bulk update', () => {
+    it('rejects unauthenticated bulk update with 401', async () => {
+      const req = new Request('http://localhost:3000/api/v1/leads/bulk-update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ leadIds: ['lead-1'], notes: 'test' }),
+      });
+      const res = await bulkUpdateLeadsHandler(req);
+      expect(res.status).toBe(401);
+    });
+
+    it('rejects bulk update with 403 Forbidden for user lacking leads:edit_all (e.g. Telecaller)', async () => {
+      const req = new Request('http://localhost:3000/api/v1/leads/bulk-update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', cookie: telecallerCookie },
+        body: JSON.stringify({ leadIds: ['lead-1'], notes: 'test' }),
+      });
+      const res = await bulkUpdateLeadsHandler(req);
+      expect(res.status).toBe(403);
+    });
+  });
 });
+

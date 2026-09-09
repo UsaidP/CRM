@@ -51,8 +51,43 @@ function computeHash(buf: Buffer): string {
 }
 
 /**
+ * Sanitizes a PDF buffer by erasing any builder/broker phone numbers from all pages.
+ */
+export function sanitizeBrochurePdfBuffer(pdfBuffer: Buffer): { buffer: Buffer; erasedCount: number } {
+  const tempDir = path.join(os.tmpdir(), `crm_pdf_sanitize_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`);
+  try {
+    fs.mkdirSync(tempDir, { recursive: true });
+    const inPath = path.join(tempDir, 'input.pdf');
+    const outPath = path.join(tempDir, 'sanitized.pdf');
+    fs.writeFileSync(inPath, pdfBuffer);
+
+    const scriptPath = path.join(process.cwd(), 'scripts', 'sanitize_brochure_media.py');
+    if (fs.existsSync(scriptPath)) {
+      const output = execFileSync('python3', [scriptPath, inPath, outPath], {
+        encoding: 'utf8',
+        timeout: 60000,
+        maxBuffer: 20 * 1024 * 1024,
+      });
+      if (fs.existsSync(outPath)) {
+        const parsed = JSON.parse(output);
+        const sanitizedBuf = fs.readFileSync(outPath);
+        return { buffer: sanitizedBuf, erasedCount: parsed.total_erased || 0 };
+      }
+    }
+  } catch (err: any) {
+    console.warn('[PDF-SANITIZE] Phone erasure notice:', err.message);
+  } finally {
+    try {
+      if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true, force: true });
+    } catch {}
+  }
+  return { buffer: pdfBuffer, erasedCount: 0 };
+}
+
+/**
  * Extracts genuine high-resolution JPEG images and rendered pages from any PDF brochure dynamically.
  * Zero-fabrication policy: Never invents carpet areas, bhk numbers, or customer-specific mappings.
+ * Phone erasure: Automatically detects and erases builder/broker phone numbers from all visual assets.
  */
 export async function extractRealImagesFromPdf(
   pdfBuffer: Buffer,
@@ -71,17 +106,43 @@ export async function extractRealImagesFromPdf(
 
   try {
     fs.mkdirSync(tempDir, { recursive: true });
+    const rawPdfPath = path.join(tempDir, 'brochure_raw.pdf');
     const tempPdfPath = path.join(tempDir, 'brochure.pdf');
-    fs.writeFileSync(tempPdfPath, pdfBuffer);
+    fs.writeFileSync(rawPdfPath, pdfBuffer);
 
-    // Step 1: Execute pdftoppm to render every page of the PDF as a real 150 DPI JPEG
+    // Step 0: Sanitize PDF to erase all phone numbers from pages before rendering
+    const sanitizeScriptPath = path.join(process.cwd(), 'scripts', 'sanitize_brochure_media.py');
+    let effectivePdfPath = rawPdfPath;
+    if (fs.existsSync(sanitizeScriptPath)) {
+      try {
+        const sanitizeOut = execFileSync('python3', [sanitizeScriptPath, rawPdfPath, tempPdfPath], {
+          encoding: 'utf8',
+          timeout: 60000,
+          maxBuffer: 20 * 1024 * 1024,
+        });
+        if (fs.existsSync(tempPdfPath)) {
+          effectivePdfPath = tempPdfPath;
+          const parsed = JSON.parse(sanitizeOut);
+          console.log(`[PDF-EXTRACT] Broker Shield erased ${parsed.total_erased || 0} phone numbers from PDF pages.`);
+        }
+      } catch (err: any) {
+        console.warn('[PDF-EXTRACT] Phone erasure warning:', err.message);
+        fs.copyFileSync(rawPdfPath, tempPdfPath);
+        effectivePdfPath = tempPdfPath;
+      }
+    } else {
+      fs.copyFileSync(rawPdfPath, tempPdfPath);
+      effectivePdfPath = tempPdfPath;
+    }
+
+    // Step 1: Execute pdftoppm to render every page of the sanitized PDF as a real 150 DPI JPEG
     const pdftoppmBin = findExecutable('pdftoppm');
     const renderedPages: Array<{ pageNum: number; buffer: Buffer; filePath: string }> = [];
 
     if (pdftoppmBin) {
       const pagePrefix = path.join(tempDir, 'page');
       try {
-        execFileSync(pdftoppmBin, ['-jpeg', '-r', '150', tempPdfPath, pagePrefix], {
+        execFileSync(pdftoppmBin, ['-jpeg', '-r', '150', effectivePdfPath, pagePrefix], {
           timeout: 120000,
           maxBuffer: 100 * 1024 * 1024,
         });
@@ -113,41 +174,62 @@ export async function extractRealImagesFromPdf(
       }
     }
 
-    // Step 2: Extract embedded raw bitmap images using pdfimages
-    const pdfimagesBin = findExecutable('pdfimages');
+    // Step 2: Fallback extraction of embedded bitmap images only if pdftoppm produced 0 pages
     const rawImages: Array<{ buffer: Buffer; fileName: string; size: number }> = [];
 
-    if (pdfimagesBin) {
-      const rawPrefix = path.join(tempDir, 'rawimg');
-      try {
-        execFileSync(pdfimagesBin, ['-j', '-png', tempPdfPath, rawPrefix], {
-          timeout: 120000,
-          maxBuffer: 100 * 1024 * 1024,
-        });
+    if (renderedPages.length === 0) {
+      const pdfimagesBin = findExecutable('pdfimages');
+      if (pdfimagesBin) {
+        const rawPrefix = path.join(tempDir, 'rawimg');
+        try {
+          execFileSync(pdfimagesBin, ['-j', '-png', effectivePdfPath, rawPrefix], {
+            timeout: 120000,
+            maxBuffer: 100 * 1024 * 1024,
+          });
 
-        const rawFiles = fs.readdirSync(tempDir)
-          .filter(f => f.startsWith('rawimg-') && (f.endsWith('.jpg') || f.endsWith('.png') || f.endsWith('.jpeg')))
-          .sort();
+          const rawFiles = fs.readdirSync(tempDir)
+            .filter(f => f.startsWith('rawimg-') && (f.endsWith('.jpg') || f.endsWith('.png') || f.endsWith('.jpeg')))
+            .sort();
 
-        for (const f of rawFiles) {
-          const p = path.join(tempDir, f);
-          const stat = fs.statSync(p);
-          // Filter out tiny UI icons / decorative artifacts < 20KB
-          if (stat.size > 20000) {
-            const imgBuf = fs.readFileSync(p);
-            const h = computeHash(imgBuf);
-            if (!seenHashes.has(h)) {
-              seenHashes.add(h);
-              rawImages.push({
-                buffer: imgBuf,
-                fileName: f,
-                size: stat.size,
-              });
+          for (const f of rawFiles) {
+            const p = path.join(tempDir, f);
+            const stat = fs.statSync(p);
+            // Filter out tiny artifacts < 25KB
+            if (stat.size > 25000) {
+              // Sanitize and validate image: rejects black masks, standalone barcodes, and converts CMYK to sRGB
+              let isValid = true;
+              if (fs.existsSync(sanitizeScriptPath)) {
+                try {
+                  const sanitizeOut = execFileSync('python3', [sanitizeScriptPath, p, p], {
+                    encoding: 'utf8',
+                    timeout: 15000,
+                  });
+                  const parsed = JSON.parse(sanitizeOut);
+                  if (parsed.valid === false) {
+                    isValid = false;
+                  }
+                } catch {
+                  // Ignore script error
+                }
+              }
+
+              if (isValid && fs.existsSync(p)) {
+                const imgBuf = fs.readFileSync(p);
+                const h = computeHash(imgBuf);
+                if (!seenHashes.has(h)) {
+                  seenHashes.add(h);
+                  rawImages.push({
+                    buffer: imgBuf,
+                    fileName: f,
+                    size: imgBuf.length,
+                  });
+                }
+              }
             }
           }
+        } catch (imgErr: any) {
+          console.warn('[PDF-EXTRACT] pdfimages extraction warning:', imgErr.message);
         }
-      } catch (imgErr: any) {
-        console.warn('[PDF-EXTRACT] pdfimages extraction warning:', imgErr.message);
       }
     }
 
@@ -250,16 +332,12 @@ export async function extractRealImagesFromPdf(
       });
     }
 
-    // Attach high-res raw embedded images if extracted (only when rendered pages are missing or large standalone photos > 250KB, max 6)
-    if (rawImages.length > 0) {
-      const candidateRaw = finalAssets.length === 0 
-        ? rawImages.slice(0, 10) 
-        : rawImages.filter(img => img.size > 250000).slice(0, 6);
-
-      candidateRaw.forEach((img, idx) => {
+    // Fallback: If no pages were rendered, populate finalAssets with validated raw images (max 10)
+    if (finalAssets.length === 0 && rawImages.length > 0) {
+      rawImages.slice(0, 10).forEach((img, idx) => {
         finalAssets.push({
-          pageNumber: finalAssets.length + 1,
-          assetType: finalAssets.length === 0 && idx === 0 ? 'cover' : 'elevation',
+          pageNumber: idx + 1,
+          assetType: idx === 0 ? 'cover' : 'elevation',
           subtype: 'embedded_image',
           title: `${projectName} Photo ${idx + 1}`,
           description: `High-resolution original asset extracted from ${originalFilename}.`,

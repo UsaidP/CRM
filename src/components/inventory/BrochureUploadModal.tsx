@@ -841,6 +841,10 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
                       Document Attached
                     </span>
                   )}
+                  <span className="inline-flex items-center gap-1 font-mono text-[10px] bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 px-2.5 py-1 rounded-lg border border-emerald-500/30">
+                    <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                    Phone Numbers Erased
+                  </span>
                 </div>
               </div>
               {extractionNote && (
@@ -1636,16 +1640,16 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
                     <h3 className="font-bold text-xs uppercase font-mono text-accent-text flex items-center gap-1.5">
                       <Phone className="w-4 h-4 text-accent" /> Developer Sales Contact &amp; Professional Consultants
                     </h3>
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/30 text-[10px] font-bold font-mono">
-                      <Lock className="w-3 h-3 text-amber-600" />
-                      BROKER SHIELD ACTIVE • CRM INTERNAL ONLY
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 text-[10px] font-bold font-mono">
+                      <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                      BROKER SHIELD ACTIVE • PHONE NUMBERS AUTO-ERASED
                     </span>
                   </div>
 
-                  <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-900 dark:text-amber-200 text-[11px] leading-relaxed flex items-start gap-2">
-                    <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                  <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-900 dark:text-emerald-200 text-[11px] leading-relaxed flex items-start gap-2">
+                    <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                     <div>
-                      <strong>Lead &amp; Brokerage Commission Protection:</strong> Direct developer sales contact numbers, booking desk phones, and site addresses are strictly saved for internal CRM broker management only. They are automatically stripped from all client portals and client-facing dossier exports so buyers cannot bypass you to go direct to the builder.
+                      <strong>Lead &amp; Brokerage Commission Protection:</strong> Phone numbers written on developer brochures have been automatically erased from all extracted floor plans, elevation images, and property text data. Direct builder booking numbers are stripped so buyers cannot bypass you.
                     </div>
                   </div>
 

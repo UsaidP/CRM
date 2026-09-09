@@ -60,6 +60,14 @@ import { MahaReraCertificateModal } from '@/components/inventory/MahaReraCertifi
 import { FeedbackAlert } from '@/components/ui/FeedbackAlert';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ProjectMediaStudioModal } from '@/components/inventory/ProjectMediaStudioModal';
+import { formatINR } from '@/lib/formatters';
+import {
+  InventoryFilterBar,
+  ProjectsGridSlice,
+  UnitsTableSlice,
+  UnitAuditModal,
+  UnitCostModal,
+} from '@/components/inventory/slices';
 
 export function InventoryClient({
   initialUnits = [],
@@ -692,13 +700,6 @@ export function InventoryClient({
     setShowAddModal(true);
   };
 
-  const formatINR = (val: number) => {
-    if (!val && val !== 0) return '₹0';
-    if (val >= 10000000) return `₹${(val / 10000000).toFixed(2)} Cr`;
-    if (val >= 100000) return `₹${(val / 100000).toFixed(2)} Lakh`;
-    return `₹${Number(val).toLocaleString('en-IN')}`;
-  };
-
   // Live Statutory Calculation for the unit form preview
   const liveUnitCalc = useMemo(() => {
     const av = Number(unitForm.agreementValue) || 0;
@@ -1036,537 +1037,69 @@ export function InventoryClient({
         </div>
       </div>
 
-      {/* Filter and Search Bar */}
-      <div className="p-3 sm:p-4 rounded-2xl bg-surface border border-border shadow-xs flex flex-col lg:flex-row items-stretch lg:items-center gap-3 text-xs font-sans">
-        <div className="relative flex-1 min-w-0 flex items-center">
-          <Search className="w-4 h-4 text-content-muted absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-          <label htmlFor="inventory-search" className="sr-only">Search inventory records</label>
-          <input
-            id="inventory-search"
-            name="inventorySearch"
-            type="text"
-            placeholder="Search by project, unit number, RERA ID, or micro-market…"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="search-input w-full bg-surface-subtle/70 border border-border rounded-xl pl-9 pr-12 py-2.5 text-xs text-content placeholder:text-content-muted focus:outline-none focus:border-accent shadow-2xs"
-          />
-          <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 text-[10px] font-mono font-bold text-content-muted bg-surface border border-border rounded-md absolute right-3 top-1/2 -translate-y-1/2 shadow-2xs pointer-events-none">
-            ⌘K
-          </kbd>
-        </div>
+      {/* Filter and Search Bar Slice */}
+      <InventoryFilterBar
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        selectedMarket={selectedMarket}
+        onMarketChange={setSelectedMarket}
+        selectedBhk={selectedBhk}
+        onBhkChange={setSelectedBhk}
+        selectedStatus={selectedStatus}
+        onStatusChange={setSelectedStatus}
+        marketOptions={marketOptions}
+      />
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 lg:flex items-center gap-2.5 shrink-0">
-          <div className="w-full sm:w-auto lg:w-[220px]">
-            <CustomSelect
-              options={marketOptions}
-              value={selectedMarket}
-              onChange={(val) => setSelectedMarket(val)}
-            />
-          </div>
-
-          <div className="w-full sm:w-auto lg:w-[155px]">
-            <CustomSelect
-              options={[
-                { value: 'ALL', label: 'All Configurations' },
-                { value: '1', label: '1 BHK' },
-                { value: '2', label: '2 BHK' },
-                { value: '3', label: '3 BHK' },
-              ]}
-              value={selectedBhk}
-              onChange={(val) => setSelectedBhk(val)}
-            />
-          </div>
-
-          <div className="w-full sm:w-auto lg:w-[195px]">
-            <CustomSelect
-              options={[
-                { value: 'ALL', label: 'All Audit Statuses' },
-                { value: 'ACTIVE_MARKETABLE', label: 'Active Marketable (<14d)', dotColor: 'bg-emerald-500', description: 'Fresh & ready to pitch' },
-                { value: 'STALE_EXPIRED', label: 'Stale Expired (>14d)', dotColor: 'bg-rose-500', description: 'Requires physical audit' },
-              ]}
-              value={selectedStatus}
-              onChange={(val) => setSelectedStatus(val)}
-            />
-          </div>
-        </div>
-      </div>
-
+      {/* Project Catalogue Slice */}
       {inventoryTab === 'projects' && (
-      <section aria-labelledby="project-catalogue-title" className="space-y-3">
-        <div className="flex items-center justify-between gap-3 px-1">
-          <div>
-            <h2 id="project-catalogue-title" className="font-display text-sm font-bold uppercase tracking-wider text-content">Project Catalogue</h2>
-            <p className="mt-0.5 text-xs text-content-secondary">Maintain the story, location context, media, and RERA profile clients will see.</p>
-          </div>
-          <span className="font-mono text-xs font-bold text-accent-text">
-            {filteredProjects.length} {filteredProjects.length === projects.length ? 'projects' : `of ${projects.length} projects`}
-          </span>
-        </div>
-        {filteredProjects.length > 0 ? (
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-            {filteredProjects.map((project) => {
-              const cover = project.coverImageUrl || project.mediaGallery?.find((asset: MediaAsset) => asset.kind === 'image')?.url;
-              return (
-                <article key={project.id} className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-border bg-surface shadow-xs hover:shadow-md hover:border-accent/40 transition-all duration-300">
-                  <div>
-                    {/* Card Hero Image Header */}
-                    <div className="relative h-44 w-full bg-surface-subtle overflow-hidden">
-                      {cover ? (
-                        <img
-                          src={cover}
-                          alt={project.projectName}
-                          className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
-                          onError={(e) => {
-                            (e.target as HTMLElement).style.display = 'none';
-                            const fallback = (e.target as HTMLElement).nextElementSibling;
-                            if (fallback) (fallback as HTMLElement).classList.remove('hidden');
-                          }}
-                        />
-                      ) : null}
-                      
-                      {/* Fallback pattern when no image or image fails */}
-                      <div className={`h-full w-full bg-gradient-to-br from-surface via-surface-subtle to-accent-soft/30 flex flex-col items-center justify-center p-4 text-center ${cover ? 'hidden' : 'flex'}`}>
-                        <div className="w-12 h-12 rounded-2xl bg-accent-soft text-accent flex items-center justify-center mb-2 shadow-2xs">
-                          <Building2 className="h-6 w-6 text-accent" />
-                        </div>
-                        <span className="font-display font-bold text-xs text-content truncate max-w-[200px]">{project.projectName}</span>
-                        <span className="text-[10px] text-content-muted">{project.microMarket}</span>
-                      </div>
-
-                      {/* Dark/Gradient Scrim Overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-black/10 pointer-events-none" />
-
-                      {/* Top Overlay Badge Bar */}
-                      <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2 pointer-events-auto">
-                        <div className="flex items-center gap-1.5">
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-md border border-white/15 text-white text-[10px] font-mono font-bold tracking-tight shadow-xs">
-                            <ShieldCheck className="w-3 h-3 text-status-success" />
-                            <span className="truncate max-w-[120px]">{project.reraNumber || 'RERA VERIFIED'}</span>
-                          </span>
-                          {project.hasOccupancyCertificate && (
-                            <span className="inline-flex items-center px-2 py-1 rounded-lg bg-status-success/80 backdrop-blur-md text-white text-[9px] font-bold tracking-wider uppercase shadow-xs">
-                              OC Ready
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Quick Menu Icons on Card Header */}
-                        <div className="flex items-center gap-1 bg-black/50 backdrop-blur-md p-1 rounded-xl border border-white/15 shadow-xs">
-                          <button
-                            type="button"
-                            onClick={() => setMediaStudioProject(project)}
-                            aria-label={`Open Elevation & Floor Plan Studio for ${project.projectName}`}
-                            title="Elevation & Floor Plan Studio (Brochure Extractor & Cloud Storage)"
-                            className="grid h-6 w-6 place-items-center rounded-lg text-amber-300 hover:text-white hover:bg-amber-500/30 transition-colors cursor-pointer"
-                          >
-                            <Sparkles className="h-3 w-3" />
-                          </button>
-                          {project.reraCertificateUrl && (
-                            <button
-                              type="button"
-                              onClick={() => setFormCModalProject(project)}
-                              aria-label={`View ${project.projectName} MahaRERA Form C Certificate`}
-                              title="View Official MahaRERA Form 'C' Certificate"
-                              className="grid h-6 w-6 place-items-center rounded-lg text-emerald-300 hover:text-white hover:bg-emerald-500/30 transition-colors cursor-pointer"
-                            >
-                              <FileCheck className="h-3 w-3" />
-                            </button>
-                          )}
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setInspectUnit(null);
-                              setInspectProject(project);
-                            }}
-                            aria-label={`Inspect ${project.projectName} Specifications`}
-                            title="Inspect Full Building & RERA Specs"
-                            className="grid h-6 w-6 place-items-center rounded-lg text-white/80 hover:text-white hover:bg-white/20 transition-colors cursor-pointer"
-                          >
-                            <Eye className="h-3 w-3" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => openEditProject(project)}
-                            aria-label={`Edit ${project.projectName}`}
-                            title="Edit Project"
-                            className="grid h-6 w-6 place-items-center rounded-lg text-white/80 hover:text-white hover:bg-white/20 transition-colors cursor-pointer"
-                          >
-                            <Pencil className="h-3 w-3" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setDeleteConfirmProject({ id: project.id, name: project.projectName, unitCount: project.unitCount || 0 })}
-                            aria-label={`Delete ${project.projectName}`}
-                            title="Delete Project"
-                            className="grid h-6 w-6 place-items-center rounded-lg text-white/80 hover:text-status-danger hover:bg-red-500/20 transition-colors cursor-pointer"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Bottom Overlay on Image: Location & Developer */}
-                      <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between gap-2 pointer-events-none">
-                        <div className="min-w-0">
-                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-white/90 bg-white/15 backdrop-blur-md px-2 py-0.5 rounded-md border border-white/10 mb-1">
-                            <MapPin className="w-2.5 h-2.5 text-accent-soft" />
-                            <span className="truncate max-w-[180px]">{project.microMarket}</span>
-                          </span>
-                          <h3 className="truncate font-display text-base font-bold text-white drop-shadow-xs">
-                            {project.projectName}
-                          </h3>
-                        </div>
-                        <div className="shrink-0 text-right">
-                          {(() => {
-                            const pUnits = Array.isArray(project.units) && project.units.length > 0
-                              ? project.units
-                              : units.filter((u) => u.projectId === project.id || u.project?.id === project.id);
-                            const totalCount = project.unitCount ?? pUnits.length;
-                            const liveCount = project.activeUnitCount ?? pUnits.filter((u: any) => u.verificationStatus === 'ACTIVE_MARKETABLE' || u.freshness?.effectiveMarketableStatus === 'ACTIVE_MARKETABLE').length;
-                            return (
-                              <span className="text-[10px] font-mono font-bold text-white/90 bg-black/50 backdrop-blur-md px-2 py-1 rounded-lg border border-white/10 block">
-                                {totalCount} {totalCount === 1 ? 'unit' : 'units'} ({liveCount} live)
-                              </span>
-                            );
-                          })()}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Card Body Specs & Highlights */}
-                    <div className="p-4 space-y-3">
-                      {/* Developer, Rate & Sublocality Row */}
-                      <div className="flex items-center justify-between text-xs gap-2">
-                        <span className="font-semibold text-content flex items-center gap-1 truncate">
-                          <Building2 className="w-3.5 h-3.5 text-accent shrink-0" />
-                          <span className="truncate">{project.developerName}</span>
-                        </span>
-                        <div className="flex items-center gap-1.5 shrink-0">
-                          {project.basePricePerSqft ? (
-                            <span className="text-[11px] font-mono text-accent-text font-bold bg-accent-soft/70 px-2 py-0.5 rounded-md border border-accent/20">
-                              ₹{project.basePricePerSqft.toLocaleString('en-IN')}/sq.ft
-                            </span>
-                          ) : null}
-                          {project.distanceToMetroKm ? (
-                            <span className="text-[11px] font-mono text-content-secondary font-medium bg-surface-subtle px-1.5 py-0.5 rounded-md border border-border">
-                              {project.distanceToMetroKm} km to Metro
-                            </span>
-                          ) : null}
-                        </div>
-                      </div>
-
-                      {/* Description */}
-                      <p className="line-clamp-2 text-xs text-content-secondary leading-relaxed min-h-[32px]">
-                        {project.shortDescription || project.description || 'Verified residential project in prime sector with standard developer amenities.'}
-                      </p>
-
-                      {/* Key Highlights Tags */}
-                      {project.keyHighlights && project.keyHighlights.length > 0 ? (
-                        <div className="flex flex-wrap gap-1.5 pt-1">
-                          {project.keyHighlights.slice(0, 2).map((hl: string, idx: number) => (
-                            <span key={idx} className="inline-flex items-center gap-1 text-[10px] font-medium text-accent-text bg-accent-soft/80 border border-accent/20 px-2 py-0.5 rounded-md truncate max-w-[200px]">
-                              <Star className="w-2.5 h-2.5 text-accent shrink-0" />
-                              <span className="truncate">{hl}</span>
-                            </span>
-                          ))}
-                          {project.keyHighlights.length > 2 && (
-                            <span className="text-[10px] font-mono font-semibold text-content-muted px-1.5 py-0.5">
-                              +{project.keyHighlights.length - 2} more
-                            </span>
-                          )}
-                        </div>
-                      ) : null}
-                    </div>
-                  </div>
-
-                  {/* Card Bottom CTA Actions */}
-                  <div className="px-4 pb-4 pt-2 border-t border-border flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setInspectUnit(null);
-                        setInspectProject(project);
-                      }}
-                      className="flex-1 h-8 rounded-xl bg-surface-subtle hover:bg-accent-soft text-content hover:text-accent-text border border-border hover:border-accent/30 text-xs font-semibold transition-all flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer"
-                      title="View full specs, amenities, brochure and map"
-                    >
-                      <Eye className="w-3.5 h-3.5 text-accent" />
-                      <span>View Details</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => openNewUnit(project.id)}
-                      className="h-8 px-3.5 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
-                      title="Add unit under this project"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      <span>Add Unit</span>
-                    </button>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="p-8 text-center bg-surface rounded-2xl border border-border space-y-2">
-            <Building2 className="w-8 h-8 mx-auto text-content-muted/40" />
-            <p className="text-xs font-bold text-content">No projects match the current search &amp; filter criteria</p>
-            <p className="text-[11px] text-content-muted">Try adjusting your search query or micro-market filter.</p>
-            <button
-              type="button"
-              onClick={() => {
-                setSearchQuery('');
-                setSelectedMarket('ALL');
-                setSelectedBhk('ALL');
-                setSelectedStatus('ALL');
-              }}
-              className="mt-2 px-3 py-1.5 rounded-xl text-xs font-bold bg-accent text-white hover:bg-accent-hover cursor-pointer"
-            >
-              Reset Filters
-            </button>
-          </div>
-        )}
-      </section>
+        <ProjectsGridSlice
+          filteredProjects={filteredProjects}
+          allProjectsCount={projects.length}
+          allUnits={units}
+          onOpenMediaStudio={(project) => setMediaStudioProject(project)}
+          onOpenFormC={(project) => setFormCModalProject(project)}
+          onInspectProject={(project) => {
+            setInspectUnit(null);
+            setInspectProject(project);
+          }}
+          onEditProject={openEditProject}
+          onDeleteProject={setDeleteConfirmProject}
+          onAddUnit={openNewUnit}
+          onResetFilters={() => {
+            setSearchQuery('');
+            setSelectedMarket('ALL');
+            setSelectedBhk('ALL');
+            setSelectedStatus('ALL');
+          }}
+        />
       )}
 
-      {/* UNITS MATRIX SECTION (TABLE OR CARD VIEW) */}
+      {/* Units Matrix Slice (Table & Cards) */}
       {inventoryTab === 'units' && (
-        <section aria-labelledby="marketable-units-title" className="space-y-3">
-          <div className="flex items-center justify-between gap-3 px-1">
-            <div>
-              <h2 id="marketable-units-title" className="font-display text-sm font-bold uppercase tracking-wider text-content">Marketable Units Matrix</h2>
-              <p className="mt-0.5 text-xs text-content-secondary">Individual floor plate flats, statutory tax schedules, and 14-day broker verification status.</p>
-            </div>
-            <span className="font-mono text-xs font-bold text-accent-text">
-              {filteredUnits.length} {filteredUnits.length === units.length ? 'units' : `of ${units.length} units`}
-            </span>
-          </div>
-
-      {/* TABLE VIEW */}
-      {viewMode === 'table' && (
-        <div className="rounded-2xl bg-surface border border-border shadow-xs overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-surface-subtle text-content-secondary uppercase text-[10px] font-bold border-b border-border">
-                <tr>
-                  <th className="p-3.5 pl-4">Project &amp; Developer</th>
-                  <th className="p-3.5">Unit / Floor</th>
-                  <th className="p-3.5">Config &amp; Carpet</th>
-                  <th className="p-3.5 text-right">Agreement Value</th>
-                  <th className="p-3.5 text-right">
-                    <div className="flex items-center justify-end gap-1" title="All-Inclusive Total Cost including Stamp Duty, Registration, GST and Society charges">
-                      <span>All-In Cost</span>
-                      <span className="text-[9px] font-mono text-content-muted font-normal lowercase">(all taxes incl.)</span>
-                    </div>
-                  </th>
-                  <th className="p-3.5">RERA ID</th>
-                  <th className="p-3.5 text-center">Broker Update</th>
-                  <th className="p-3.5 pr-4 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border text-content-secondary">
-                {filteredUnits.map((unit) => {
-                  const isFresh = unit.freshness?.effectiveMarketableStatus === 'ACTIVE_MARKETABLE';
-                  const isStale = unit.freshness?.effectiveMarketableStatus === 'STALE_EXPIRED';
-                  const daysAgo = unit.freshness?.daysSinceVerification ?? 0;
-
-                  return (
-                    <tr key={unit.id} className={`hover:bg-surface-subtle/80 transition-colors ${isStale ? 'bg-status-danger-surface/30' : ''}`}>
-                      <td className="p-3.5 pl-4">
-                        <div className="font-bold text-content font-sans text-sm">{unit.project?.projectName}</div>
-                        <div className="text-[11px] text-content-muted mt-0.5">{unit.project?.developerName} • {unit.project?.microMarket}</div>
-                      </td>
-
-                      <td className="p-3.5">
-                        <div className="font-semibold text-content">Unit {unit.unitNumber || 'N/A'}</div>
-                        <div className="text-[11px] text-content-muted mt-0.5">Floor {unit.floorNumber} of {unit.totalFloors}</div>
-                      </td>
-
-                      <td className="p-3.5">
-                        <div className="text-accent-text font-bold">{unit.bhk} BHK • {unit.facing}</div>
-                        <div className="text-[11px] text-content-muted mt-0.5 font-mono">{unit.carpetAreaSqft} sq.ft carpet</div>
-                      </td>
-
-                      <td className="p-3.5 text-right font-bold text-content font-mono">
-                        {formatINR(unit.agreementValue)}
-                      </td>
-
-                      <td className="p-3.5 text-right">
-                        <div className="font-bold text-accent-text font-mono">{formatINR(unit.allInTotalCost)}</div>
-                        <button
-                          onClick={() => setCalcModalUnit(unit)}
-                          className="text-[11px] text-content-muted hover:text-accent underline cursor-pointer"
-                        >
-                          View Breakdown
-                        </button>
-                      </td>
-
-                      <td className="p-3.5">
-                        <HallmarkStamp
-                          type="rera"
-                          code={unit.project?.reraNumber}
-                          label="Format checked"
-                          size="sm"
-                        />
-                      </td>
-
-                      <td className="p-3.5 text-center">
-                        <span className={`inline-block px-2.5 py-0.5 rounded-lg text-[10px] font-bold border ${
-                          isFresh
-                            ? 'bg-status-success-surface text-status-success border-status-success/30'
-                            : 'bg-status-danger-surface text-status-danger border-status-danger/30 animate-pulse'
-                        }`}>
-                          {isFresh ? `Updated ${daysAgo}d ago` : `Stale: ${daysAgo}d old`}
-                        </span>
-                      </td>
-
-                      <td className="p-3.5 pr-4 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setInspectUnit(unit);
-                              setInspectProject(unit.project || projects.find((p) => p.id === unit.projectId));
-                            }}
-                            aria-label={`Inspect ${unit.project?.projectName} specifications for Unit ${unit.unitNumber}`}
-                            title="Inspect Unit & Building Specs"
-                            className="grid h-8 w-8 place-items-center rounded-lg border border-border bg-surface text-content-secondary hover:text-accent hover:border-accent/40 shadow-2xs transition-all"
-                          >
-                            <Eye className="h-3.5 w-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => openEditUnit(unit)}
-                            aria-label={`Edit unit ${unit.unitNumber || 'record'}`}
-                            title="Edit unit"
-                            className="grid h-8 w-8 place-items-center rounded-lg border border-border bg-surface text-content-secondary hover:text-content shadow-2xs transition-all cursor-pointer"
-                          >
-                            <Pencil className="h-3.5 w-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setDeleteConfirmUnit({ id: unit.id, unitNumber: unit.unitNumber || 'Unit', projectName: unit.project?.projectName || 'Project' })}
-                            aria-label={`Delete unit ${unit.unitNumber || 'record'}`}
-                            title="Delete property unit"
-                            className="grid h-8 w-8 place-items-center rounded-lg border border-border bg-surface text-content-secondary hover:text-status-danger hover:border-status-danger/30 hover:bg-status-danger-surface shadow-2xs transition-all cursor-pointer"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setVerifyModalUnit(unit);
-                              setTargetStatus(unit.verificationStatus);
-                              setAuditNotes(unit.verificationNotes || '');
-                            }}
-                            className="rounded-xl bg-surface hover:bg-surface-subtle px-3 py-1.5 text-xs font-bold text-accent-text border border-border hover:border-accent/40 shadow-2xs transition-all cursor-pointer"
-                          >
-                            Record Update
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-
-                {filteredUnits.length === 0 && (
-                  <tr>
-                    <td colSpan={8} className="p-8">
-                      <EmptyState
-                        type="filter"
-                        title="No Units Found"
-                        description="No property units match the selected filters or search keyword. Try clearing filters or selecting another project."
-                        actionLabel="Clear Filters"
-                        onAction={() => {
-                          setSearchQuery('');
-                          setSelectedMarket('ALL');
-                          setSelectedBhk('ALL');
-                          setSelectedStatus('ALL');
-                        }}
-                      />
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* CARD GRID VIEW */}
-      {viewMode === 'cards' && (
-        filteredUnits.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {filteredUnits.map((unit) => {
-              return (
-                <div key={unit.id} className="p-5 rounded-2xl bg-surface border border-border shadow-xs space-y-3 font-sans text-xs hover:border-accent/40 transition-all">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="font-bold text-content text-base font-display">{unit.project?.projectName}</h3>
-                      <p className="text-xs text-content-muted mt-0.5">Unit {unit.unitNumber} ({unit.bhk} BHK • {unit.carpetAreaSqft} sqft)</p>
-                    </div>
-                    <HallmarkStamp type="rera" code={unit.project?.reraNumber} size="sm" />
-                  </div>
-                  <div className="pt-3 border-t border-border flex justify-between items-center">
-                    <div>
-                      <span className="text-[10px] text-content-muted uppercase font-semibold block">Total All-In Cost</span>
-                      <strong className="text-content text-sm font-bold font-mono">{formatINR(unit.allInTotalCost)}</strong>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setInspectUnit(unit);
-                          setInspectProject(unit.project || projects.find((p) => p.id === unit.projectId));
-                        }}
-                        aria-label={`Inspect ${unit.project?.projectName} specifications for Unit ${unit.unitNumber}`}
-                        title="Inspect Unit & Building Specs"
-                        className="grid h-8 w-8 place-items-center rounded-lg border border-border bg-surface text-content-secondary hover:text-accent hover:border-accent/40 shadow-2xs transition-all cursor-pointer"
-                      >
-                        <Eye className="h-3.5 w-3.5" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => openEditUnit(unit)}
-                        aria-label={`Edit unit ${unit.unitNumber || 'record'}`}
-                        title="Edit unit"
-                        className="grid h-8 w-8 place-items-center rounded-lg border border-border bg-surface text-content-secondary hover:text-content shadow-2xs transition-all cursor-pointer"
-                      >
-                        <Pencil className="h-3.5 w-3.5" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setDeleteConfirmUnit({ id: unit.id, unitNumber: unit.unitNumber || 'Unit', projectName: unit.project?.projectName || 'Project' })}
-                        aria-label={`Delete unit ${unit.unitNumber || 'record'}`}
-                        title="Delete property unit"
-                        className="grid h-8 w-8 place-items-center rounded-lg border border-border bg-surface text-content-secondary hover:text-status-danger hover:border-status-danger/30 hover:bg-status-danger-surface shadow-2xs transition-all cursor-pointer"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setVerifyModalUnit(unit);
-                          setTargetStatus(unit.verificationStatus);
-                          setAuditNotes(unit.verificationNotes || '');
-                        }}
-                        className="px-3 py-1.5 rounded-xl bg-surface hover:bg-surface-subtle text-accent-text border border-border hover:border-accent/40 font-bold text-xs shadow-2xs transition-all cursor-pointer"
-                      >
-                        Record Update
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="p-8 text-center bg-surface rounded-2xl border border-border text-content-muted text-xs">
-            No property units match the current criteria.
-          </div>
-        )
-      )}
-        </section>
+        <UnitsTableSlice
+          viewMode={viewMode}
+          filteredUnits={filteredUnits}
+          allUnitsCount={units.length}
+          allProjects={projects}
+          onInspectUnit={(unit, project) => {
+            setInspectUnit(unit);
+            setInspectProject(project || unit.project || projects.find((p) => p.id === unit.projectId));
+          }}
+          onEditUnit={openEditUnit}
+          onDeleteUnit={setDeleteConfirmUnit}
+          onOpenCalcModal={setCalcModalUnit}
+          onOpenVerifyModal={(unit) => {
+            setVerifyModalUnit(unit);
+            setTargetStatus(unit.verificationStatus);
+            setAuditNotes(unit.verificationNotes || '');
+          }}
+          onResetFilters={() => {
+            setSearchQuery('');
+            setSelectedMarket('ALL');
+            setSelectedBhk('ALL');
+            setSelectedStatus('ALL');
+          }}
+        />
       )}
 
       {/* ========================================================================= */}
@@ -2905,216 +2438,31 @@ export function InventoryClient({
       </AccessibleDialog>
 
       {/* ========================================================================= */}
-      {/* MODAL 3: RE-VERIFICATION AUDIT                                            */}
+      {/* MODAL 3: RE-VERIFICATION AUDIT SLICE                                      */}
       {/* ========================================================================= */}
-      <AccessibleDialog
-        open={Boolean(verifyModalUnit)}
+      <UnitAuditModal
+        unit={verifyModalUnit}
+        isOpen={Boolean(verifyModalUnit)}
         onClose={() => setVerifyModalUnit(null)}
-        titleId="verify-unit-title"
-        descriptionId="verify-unit-description"
-        size="md"
-      >
-        {verifyModalUnit && (
-          <>
-            <div className="flex items-center justify-between pb-3 border-b border-border">
-              <div>
-                <h2 id="verify-unit-title" className="font-bold text-content text-base font-display flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-accent" />
-                  Inventory Update Record
-                </h2>
-                <p id="verify-unit-description" className="mt-1 text-xs text-content-muted">
-                  Record the source and status used for the freshness date.
-                </p>
-              </div>
-              <button
-                type="button"
-                data-dialog-close
-                aria-label="Close inventory update"
-                onClick={() => setVerifyModalUnit(null)}
-                className="p-1 rounded-lg text-content-muted hover:text-content hover:bg-surface-subtle transition-colors cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-
-            {auditSuccessMsg ? (
-              <div className="my-3">
-                <FeedbackAlert
-                  variant="success"
-                  title="Unit Verified"
-                  description={auditSuccessMsg}
-                />
-              </div>
-            ) : (
-              <>
-                {actionError && (
-                  <div className="mt-3">
-                    <FeedbackAlert
-                      variant="error"
-                      error={actionError}
-                      onDismiss={() => setActionError(null)}
-                    />
-                  </div>
-                )}
-                <form onSubmit={handleVerifyUnit} className="space-y-4 pt-3">
-                  <div className="p-3 rounded-xl bg-surface-subtle border border-border">
-                    <span className="text-content-muted text-[11px] block">Target Unit:</span>
-                    <strong className="text-content text-xs font-bold">
-                      {verifyModalUnit.project?.projectName} - Unit {verifyModalUnit.unitNumber} ({verifyModalUnit.bhk} BHK)
-                    </strong>
-                  </div>
-
-                  <div>
-                    <CustomSelect
-                      id="unit-target-verification-status"
-                      label="Target Verification Status:"
-                      value={targetStatus}
-                      onChange={(val) => setTargetStatus(val)}
-                      options={[
-                        {
-                          value: 'ACTIVE_MARKETABLE',
-                          label: 'Active Marketable',
-                          description: 'Broker updated within <14 days',
-                          dotColor: 'bg-status-success',
-                        },
-                        {
-                          value: 'PHYSICALLY_AUDITED',
-                          label: 'Physically Audited',
-                          description: 'Internal site inspection verified',
-                          dotColor: 'bg-accent',
-                        },
-                        {
-                          value: 'STALE_EXPIRED',
-                          label: 'Stale / Expired',
-                          description: 'No broker updates for >30 days',
-                          dotColor: 'bg-status-warning',
-                        },
-                        {
-                          value: 'ARCHIVED_SOLD',
-                          label: 'Archived / Sold',
-                          description: 'Unit no longer available on market',
-                          dotColor: 'bg-content-muted',
-                        },
-                      ]}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-bold text-content block mb-1">Mandatory Update Notes:</label>
-                    <textarea
-                      aria-label="Mandatory update notes"
-                      rows={3}
-                      value={auditNotes}
-                      onChange={(e) => setAuditNotes(e.target.value)}
-                      placeholder="Record the source, price check, availability update, or site review…"
-                      className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content placeholder-content-muted focus:outline-hidden focus:border-accent focus:ring-1 focus:ring-accent font-medium"
-                      required
-                    />
-                  </div>
-
-                  <div className="pt-3 flex flex-col-reverse sm:flex-row justify-end gap-2 border-t border-border">
-                    <button
-                      type="button"
-                      onClick={() => setVerifyModalUnit(null)}
-                      className="px-4 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-bold transition-colors cursor-pointer"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={submittingAudit}
-                      className="px-5 py-2 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold shadow-sm transition-all cursor-pointer"
-                    >
-                      {submittingAudit ? 'Recording…' : 'Record Update'}
-                    </button>
-                  </div>
-                </form>
-              </>
-            )}
-          </>
-        )}
-      </AccessibleDialog>
+        targetStatus={targetStatus}
+        onTargetStatusChange={setTargetStatus}
+        auditNotes={auditNotes}
+        onAuditNotesChange={setAuditNotes}
+        submitting={submittingAudit}
+        actionError={actionError}
+        auditSuccessMsg={auditSuccessMsg}
+        onSubmit={handleVerifyUnit}
+        onDismissError={() => setActionError(null)}
+      />
 
       {/* ========================================================================= */}
-      {/* MODAL 4: ALL-IN COST BREAKDOWN SHEET                                      */}
+      {/* MODAL 4: ALL-IN COST BREAKDOWN SHEET SLICE                                */}
       {/* ========================================================================= */}
-      <AccessibleDialog
-        open={Boolean(calcModalUnit)}
+      <UnitCostModal
+        unit={calcModalUnit}
+        isOpen={Boolean(calcModalUnit)}
         onClose={() => setCalcModalUnit(null)}
-        titleId="cost-sheet-title"
-        descriptionId="cost-sheet-description"
-        size="lg"
-      >
-        {calcModalUnit && (
-          <>
-            <div className="flex items-center justify-between pb-3 border-b border-border">
-              <div>
-                <h2 id="cost-sheet-title" className="font-bold text-content text-base font-display">
-                  Statutory All-in Cost Sheet
-                </h2>
-                <p id="cost-sheet-description" className="text-xs text-content-muted">
-                  {calcModalUnit.project?.projectName} • Unit {calcModalUnit.unitNumber}
-                </p>
-              </div>
-              <button
-                type="button"
-                data-dialog-close
-                aria-label="Close cost sheet"
-                onClick={() => setCalcModalUnit(null)}
-                className="p-1 rounded-lg text-content-muted hover:text-content hover:bg-surface-subtle transition-colors cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="space-y-2 divide-y divide-border text-xs text-content-muted pt-2">
-              <div className="flex justify-between pt-2">
-                <span>Agreement Base Value:</span>
-                <strong className="text-content font-mono font-bold">{formatINR(calcModalUnit.agreementValue)}</strong>
-              </div>
-              <div className="flex justify-between pt-2">
-                <span>Maharashtra Stamp Duty ({calcModalUnit.stampDutyRate}%):</span>
-                <strong className="text-content font-mono font-bold">{formatINR(Math.round((calcModalUnit.agreementValue * calcModalUnit.stampDutyRate) / 100))}</strong>
-              </div>
-              <div className="flex justify-between pt-2">
-                <span>Registration Fee (1% capped at ₹30k):</span>
-                <strong className="text-content font-mono font-bold">{formatINR(calcModalUnit.registrationFee)}</strong>
-              </div>
-              <div className="flex justify-between pt-2">
-                <span>GST ({calcModalUnit.gstRate}% {calcModalUnit.gstRate === 0 ? 'OC Received' : 'Under-Construction'}):</span>
-                <strong className="text-content font-mono font-bold">{formatINR(Math.round((calcModalUnit.agreementValue * calcModalUnit.gstRate) / 100))}</strong>
-              </div>
-              <div className="flex justify-between pt-2">
-                <span>Floor Rise Charges:</span>
-                <strong className="text-content font-mono font-bold">{formatINR(calcModalUnit.floorRiseCharges)}</strong>
-              </div>
-              <div className="flex justify-between pt-2">
-                <span>Covered Car Parking:</span>
-                <strong className="text-content font-mono font-bold">{formatINR(calcModalUnit.parkingCharges)}</strong>
-              </div>
-              <div className="flex justify-between pt-2">
-                <span>Society Development / Club Charges:</span>
-                <strong className="text-content font-mono font-bold">{formatINR(calcModalUnit.societyDevelopmentCharges)}</strong>
-              </div>
-              <div className="flex justify-between pt-3 border-t border-border text-sm font-bold text-accent">
-                <span>Total All-Inclusive Capitalized Cost:</span>
-                <span className="font-mono">{formatINR(calcModalUnit.allInTotalCost)}</span>
-              </div>
-            </div>
-
-            <div className="pt-4 flex justify-end border-t border-border mt-3">
-              <button
-                type="button"
-                data-dialog-autofocus
-                onClick={() => setCalcModalUnit(null)}
-                className="px-5 py-2 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold shadow-sm transition-all cursor-pointer"
-              >
-                Close Cost Sheet
-              </button>
-            </div>
-          </>
-        )}
-      </AccessibleDialog>
+      />
 
       {/* Dedicated Unit Specifications & Differentiated Media Inspector Modal */}
       {inspectUnit && (

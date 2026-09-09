@@ -280,6 +280,13 @@ export async function POST(req: Request) {
     }
 
     // Flattened Fallback for Direct Unit Testing / Simulator
+    if (process.env.NODE_ENV === 'production' && process.env.ALLOW_INSECURE_WEBHOOKS !== '1') {
+      return NextResponse.json(
+        { error: 'Direct simulation payloads are disabled in production' },
+        { status: 403 }
+      );
+    }
+
     const {
       fromPhone,
       senderName = 'Navi Mumbai Prospect',

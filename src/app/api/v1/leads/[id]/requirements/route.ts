@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server';
-import { requireSession, orgScope } from '@/lib/services/api-auth';
+import { requirePermissionWithScope, scopedLeadFilter } from '@/lib/services/api-auth';
 import { prisma } from '@/lib/db/prisma';
 
 export const dynamic = 'force-dynamic';
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const auth = await requireSession(req);
+    const auth = await requirePermissionWithScope(req, 'leads:edit_all');
     if (!auth.ok) return auth.response;
+    const { session, scope } = auth;
     const { id } = await params;
     const body = await req.json();
     const {
@@ -22,7 +23,8 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       floorPreference = 'middle',
     } = body;
 
-    const lead = await prisma.lead.findFirst({ where: { id, ...orgScope(auth.session) } });
+    const scopeWhere = await scopedLeadFilter(session, scope);
+    const lead = await prisma.lead.findFirst({ where: { id, ...scopeWhere } });
     if (!lead) {
       return NextResponse.json({ success: false, error: 'Lead not found' }, { status: 404 });
     }

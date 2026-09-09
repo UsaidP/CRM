@@ -85,7 +85,18 @@ export async function extractAndProcessBrochure(
   else if (['jpg', 'jpeg'].includes(ext)) mimeType = 'image/jpeg';
   else if (['webp'].includes(ext)) mimeType = 'image/webp';
 
-  const bBuffer = Buffer.isBuffer(brochureBuffer) ? brochureBuffer : Buffer.from(brochureBuffer);
+  let bBuffer = Buffer.isBuffer(brochureBuffer) ? brochureBuffer : Buffer.from(brochureBuffer);
+
+  // Broker Shield: Sanitize PDF brochure to ensure phone numbers are erased on the stored document
+  if (mimeType === 'application/pdf' || ext === 'pdf') {
+    try {
+      const { sanitizeBrochurePdfBuffer } = await import('@/lib/services/pdf-image-extractor');
+      const sanitized = sanitizeBrochurePdfBuffer(bBuffer);
+      bBuffer = sanitized.buffer;
+    } catch (sanErr: any) {
+      console.warn('[BROCHURE] PDF buffer pre-upload sanitization notice:', sanErr.message);
+    }
+  }
 
   // 1. Upload original brochure/spec document if not already uploaded
   let brochureAsset: UploadedMediaAsset | undefined;

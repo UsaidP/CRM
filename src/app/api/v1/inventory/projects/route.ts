@@ -6,6 +6,7 @@ import { validateReraNumber } from '@/lib/domain/verification-engine';
 import { parseInventoryContent, resolveAssetUrl } from '@/lib/inventory-media';
 import { parseSafeDate } from '@/lib/date-utils';
 import { deduplicateUnitsByConfiguration } from '@/lib/services/unit-deduplication';
+import { handleApiError } from '@/lib/services/api-handler';
 
 export const dynamic = 'force-dynamic';
 
@@ -84,10 +85,7 @@ export async function GET(req: Request) {
 
     return NextResponse.json({ success: true, count: enriched.length, data: enriched });
   } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error.message || 'Failed to fetch developer projects' },
-      { status: 500 }
-    );
+    return handleApiError(error, 'Failed to fetch developer projects');
   }
 }
 
@@ -420,15 +418,6 @@ export async function POST(req: Request) {
       },
     }, { status: result.isDuplicate ? 200 : 201 });
   } catch (error: any) {
-    let errorMessage = 'Failed to create developer project';
-    if (error?.errors && Array.isArray(error.errors)) {
-      errorMessage = error.errors.map((e: any) => `${e.path?.join('.') || 'field'}: ${e.message}`).join(', ');
-    } else if (typeof error?.message === 'string') {
-      errorMessage = error.message;
-    }
-    return NextResponse.json(
-      { success: false, error: errorMessage },
-      { status: 400 }
-    );
+    return handleApiError(error, 'Failed to create developer project');
   }
 }

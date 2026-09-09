@@ -6,6 +6,7 @@ import { calculateAllInCost } from '@/lib/domain/cost-calculator';
 import { assessUnitFreshness, validateReraNumber } from '@/lib/domain/verification-engine';
 import { parseInventoryContent, resolveAssetUrl } from '@/lib/inventory-media';
 import { parseSafeDate } from '@/lib/date-utils';
+import { handleApiError } from '@/lib/services/api-handler';
 
 export const dynamic = 'force-dynamic';
 
@@ -97,10 +98,7 @@ export async function GET(req: Request) {
       data: enrichedUnits,
     });
   } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error.message || 'Failed to fetch property units' },
-      { status: 500 }
-    );
+    return handleApiError(error, 'Failed to fetch property units');
   }
 }
 
@@ -236,13 +234,6 @@ export async function POST(req: Request) {
       },
     }, { status: 201 });
   } catch (error: any) {
-    console.error('[INVENTORY_UNIT_CREATE_ERROR]', error);
-    const errorMessage = error?.issues
-      ? error.issues.map((i: any) => `${i.path.join('.') || 'field'}: ${i.message}`).join('; ')
-      : error?.message || 'Failed to create unit';
-    return NextResponse.json(
-      { success: false, error: errorMessage },
-      { status: 400 }
-    );
+    return handleApiError(error, 'Failed to create unit');
   }
 }

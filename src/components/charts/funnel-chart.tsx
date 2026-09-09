@@ -43,6 +43,8 @@ export interface FunnelChartProps {
   layers?: number;
   className?: string;
   style?: CSSProperties;
+  /** Override the default aspect ratio (defaults to 2.2/1 for horizontal, 1.1/1 for vertical) */
+  aspectRatio?: string;
   showPercentage?: boolean;
   showValues?: boolean;
   showLabels?: boolean;
@@ -153,8 +155,8 @@ function vSegmentPath(
   straight = false
 ) {
   const mx = W / 2;
-  const w0 = normStart * W * 0.44 * layerScale;
-  const w1 = normEnd * W * 0.44 * layerScale;
+  const w0 = Math.max(normStart * W * 0.44 * layerScale, 2);
+  const w1 = Math.max(normEnd * W * 0.44 * layerScale, 2);
 
   if (straight) {
     return `M ${mx - w0} 0 L ${mx - w1} ${segH} L ${mx + w1} ${segH} L ${mx + w0} 0 Z`;
@@ -429,6 +431,7 @@ function VSegment({
   renderPattern,
   straight,
   gradientStops,
+  hasValue = true,
 }: {
   index: number;
   normStart: number;
@@ -444,17 +447,10 @@ function VSegment({
   renderPattern?: (id: string, color: string) => ReactNode;
   straight: boolean;
   gradientStops?: FunnelGradientStop[];
+  hasValue?: boolean;
 }) {
   const patternId = `funnel-v-pattern-${index}`;
   const gradientId = `funnel-v-grad-${index}`;
-  const mountProgress = useMountProgress(
-    enterTransition,
-    index * staggerDelay,
-    index
-  );
-  const enterComplete = useEnterComplete(mountProgress);
-  const entranceScaleY = useTransform(mountProgress, [0, 1], [0, 1]);
-  const entranceScaleX = useTransform(mountProgress, [0, 1], [0, 1]);
 
   const rings = Array.from({ length: layers }, (_, l) => {
     const scale = 1 - (l / layers) * 0.35;
@@ -465,9 +461,11 @@ function VSegment({
     };
   });
 
+  const conduitD = vSegmentPath(normStart, normEnd, segH, fullW, 1, straight);
+
   return (
     <motion.div
-      animate={{ opacity: dimmed ? 0.4 : 1 }}
+      animate={{ opacity: dimmed ? 0.35 : 1 }}
       className="pointer-events-none relative shrink-0 overflow-visible"
       style={{
         width: fullW,
@@ -476,92 +474,51 @@ function VSegment({
       }}
       transition={{ opacity: { duration: 0.15 } }}
     >
-      {enterComplete ? (
-        <div className="absolute inset-0 overflow-visible">
-          <svg
-            aria-hidden="true"
-            className="absolute inset-0 h-full w-full overflow-visible"
-            preserveAspectRatio="none"
-            role="presentation"
-            viewBox={`0 0 ${fullW} ${segH}`}
-          >
-            <defs>
-              {gradientStops && (
-                <linearGradient id={gradientId} x1="0" x2="0" y1="0" y2="1">
-                  {gradientStops.map((stop) => (
-                    <stop
-                      key={`${stop.offset}-${stop.color}`}
-                      offset={
-                        typeof stop.offset === "number"
-                          ? `${stop.offset * 100}%`
-                          : stop.offset
-                      }
-                      stopColor={stop.color}
-                    />
-                  ))}
-                </linearGradient>
-              )}
-              {renderPattern?.(patternId, color)}
-            </defs>
-            {rings.map((r, i) => {
-              const isInnermost = i === rings.length - 1;
-              let ringFill: string | undefined;
-              if (isInnermost && renderPattern) {
-                ringFill = `url(#${patternId})`;
-              } else if (isInnermost && gradientStops) {
-                ringFill = `url(#${gradientId})`;
-              }
-              const ringKey = `v-ring-${r.opacity.toFixed(2)}`;
-              return (
-                <VRing
-                  color={color}
-                  d={r.d}
-                  fill={ringFill}
-                  hovered={hovered}
-                  key={ringKey}
-                  opacity={r.opacity}
-                  ringIndex={i}
-                  totalRings={layers}
-                />
-              );
-            })}
-          </svg>
-        </div>
-      ) : (
-        <motion.div
-          className="absolute inset-0 overflow-visible"
-          style={{
-            scaleY: entranceScaleY,
-            scaleX: entranceScaleX,
-            transformOrigin: "center top",
-          }}
+      <div className="absolute inset-0 overflow-visible">
+        <svg
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full overflow-visible"
+          preserveAspectRatio="none"
+          role="presentation"
+          viewBox={`0 0 ${fullW} ${segH}`}
         >
-          <svg
-            aria-hidden="true"
-            className="absolute inset-0 h-full w-full overflow-visible"
-            preserveAspectRatio="none"
-            role="presentation"
-            viewBox={`0 0 ${fullW} ${segH}`}
-          >
-            <defs>
-              {gradientStops && (
-                <linearGradient id={gradientId} x1="0" x2="0" y1="0" y2="1">
-                  {gradientStops.map((stop) => (
-                    <stop
-                      key={`${stop.offset}-${stop.color}`}
-                      offset={
-                        typeof stop.offset === "number"
-                          ? `${stop.offset * 100}%`
-                          : stop.offset
-                      }
-                      stopColor={stop.color}
-                    />
-                  ))}
-                </linearGradient>
-              )}
-              {renderPattern?.(patternId, color)}
-            </defs>
-            {rings.map((r, i) => {
+          <defs>
+            {gradientStops && (
+              <linearGradient id={gradientId} x1="0" x2="0" y1="0" y2="1">
+                {gradientStops.map((stop) => (
+                  <stop
+                    key={`${stop.offset}-${stop.color}`}
+                    offset={
+                      typeof stop.offset === "number"
+                        ? `${stop.offset * 100}%`
+                        : stop.offset
+                    }
+                    stopColor={stop.color}
+                  />
+                ))}
+              </linearGradient>
+            )}
+            {renderPattern?.(patternId, color)}
+          </defs>
+
+          {!hasValue ? (
+            <g>
+              <path
+                d={conduitD}
+                fill="var(--color-surface-subtle)"
+                opacity={hovered ? 0.9 : 0.5}
+              />
+              <path
+                d={conduitD}
+                fill="none"
+                stroke={color}
+                strokeWidth={hovered ? 1.5 : 1}
+                strokeDasharray="4 3"
+                opacity={hovered ? 0.85 : 0.35}
+              />
+            </g>
+          ) : (
+            rings.map((r, i) => {
               const isInnermost = i === rings.length - 1;
               let ringFill: string | undefined;
               if (isInnermost && renderPattern) {
@@ -582,10 +539,10 @@ function VSegment({
                   totalRings={layers}
                 />
               );
-            })}
-          </svg>
-        </motion.div>
-      )}
+            })
+          )}
+        </svg>
+      </div>
     </motion.div>
   );
 }
@@ -622,21 +579,45 @@ function SegmentLabel({
   align?: "center" | "start" | "end";
 }) {
   const display = stage.displayValue ?? formatValue(stage.value);
+  const hasValue = stage.value > 0;
 
   const valueEl = showValues && (
-    <span className="whitespace-nowrap font-semibold text-foreground text-sm">
+    <span
+      className={cn(
+        "whitespace-nowrap font-mono font-black text-xs sm:text-sm tabular-nums tracking-tight",
+        hasValue ? "text-content" : "text-content-muted"
+      )}
+    >
       {display}
     </span>
   );
   const pctEl = showPercentage && (
-    <span className="rounded-full bg-foreground px-3 py-1 font-bold text-background text-xs shadow-sm">
+    <span
+      className={cn(
+        "rounded-full px-2.5 py-0.5 font-mono font-bold text-[10px] sm:text-xs shadow-2xs border tracking-tight transition-all",
+        hasValue
+          ? "bg-surface text-content border-border font-black shadow-xs"
+          : "bg-surface/80 text-content-muted border-border/50 font-semibold"
+      )}
+    >
       {formatPercentage(pct)}
     </span>
   );
   const labelEl = showLabels && (
-    <span className="whitespace-nowrap font-medium text-muted-foreground text-xs">
-      {stage.label}
-    </span>
+    <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+      <span
+        className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full shrink-0 shadow-2xs"
+        style={{ backgroundColor: stage.color || "#3B82F6" }}
+      />
+      <span
+        className={cn(
+          "whitespace-nowrap font-bold text-xs sm:text-sm tracking-tight truncate",
+          hasValue ? "text-content" : "text-content-secondary"
+        )}
+      >
+        {stage.label}
+      </span>
+    </div>
   );
 
   // ── Spread layout (default): items pushed to edges with center element ──
@@ -645,8 +626,8 @@ function SegmentLabel({
       <motion.div
         animate={{ opacity: 1 }}
         className={cn(
-          "absolute inset-0 flex",
-          isHorizontal ? "flex-col items-center" : "flex-row items-center"
+          "absolute inset-0 flex items-center",
+          isHorizontal ? "flex-col items-center" : "flex-row px-2.5 sm:px-4"
         )}
         initial={{ opacity: 0 }}
         transition={{
@@ -668,17 +649,17 @@ function SegmentLabel({
             </div>
           </>
         ) : (
-          <>
-            <div className="flex w-[16%] items-center justify-end pr-2">
-              {valueEl}
-            </div>
-            <div className="flex flex-1 items-center justify-center">
-              {pctEl}
-            </div>
-            <div className="flex w-[16%] items-center justify-start pl-2">
+          <div className="w-full flex items-center justify-between pointer-events-auto">
+            <div className="w-[45%] sm:w-[42%] flex items-center justify-start min-w-0 pr-1">
               {labelEl}
             </div>
-          </>
+            <div className="w-[22%] sm:w-[24%] flex items-center justify-center shrink-0">
+              {pctEl}
+            </div>
+            <div className="w-[33%] sm:w-[34%] flex items-center justify-end shrink-0 pl-1">
+              {valueEl}
+            </div>
+          </div>
         )}
       </motion.div>
     );
@@ -749,6 +730,7 @@ export function FunnelChart({
   layers = 3,
   className,
   style,
+  aspectRatio,
   showPercentage = true,
   showValues = true,
   showLabels = true,
@@ -812,7 +794,7 @@ export function FunnelChart({
   if (!first) {
     return null;
   }
-  const max = first.value;
+  const max = Math.max(1, ...data.map((d) => d.value));
   const n = data.length;
   const norms = data.map((d) => d.value / max);
   const horiz = orientation === "horizontal";
@@ -826,9 +808,9 @@ export function FunnelChart({
   const gridEnabled = gridProp !== false;
   const gridCfg = typeof gridProp === "object" ? gridProp : {};
   const showBands = gridEnabled && (gridCfg.bands ?? true);
-  const bandColor = gridCfg.bandColor ?? "var(--color-muted)";
+  const bandColor = gridCfg.bandColor ?? "var(--color-surface-subtle)";
   const showGridLines = gridEnabled && (gridCfg.lines ?? true);
-  const gridLineColor = gridCfg.lineColor ?? "var(--chart-grid)";
+  const gridLineColor = gridCfg.lineColor ?? "var(--color-border)";
   const gridLineOpacity = gridCfg.lineOpacity ?? 1;
   const gridLineWidth = gridCfg.lineWidth ?? 1;
 
@@ -837,7 +819,7 @@ export function FunnelChart({
       className={cn("relative w-full select-none overflow-visible", className)}
       ref={ref}
       style={{
-        aspectRatio: horiz ? "2.2 / 1" : "1 / 1.8",
+        aspectRatio: aspectRatio ?? (horiz ? "2.2 / 1" : "1.1 / 1"),
         ...style,
       }}
     >
@@ -895,8 +877,24 @@ export function FunnelChart({
             style={{ gap }}
           >
             {data.map((stage, i) => {
-              const normStart = norms[i] ?? 0;
-              const normEnd = norms[Math.min(i + 1, n - 1)] ?? 0;
+              const hasVal = stage.value > 0;
+              // Smooth architectural conduit tapering:
+              // top starts at 1.0, bottom at 0.32
+              const conduitStart = 1.0 - (i / n) * 0.68;
+              const conduitEnd = 1.0 - ((i + 1) / n) * 0.68;
+
+              // If has value, scale with volume but guarantee baseline conduit shape
+              const normStart = hasVal
+                ? Math.max(conduitStart * 0.4, norms[i] ?? 0)
+                : conduitStart * 0.32;
+
+              const nextHasVal = (data[i + 1]?.value ?? 0) > 0;
+              const normEnd = nextHasVal
+                ? Math.max(conduitEnd * 0.4, norms[i + 1] ?? 0)
+                : hasVal
+                  ? conduitEnd * 0.36
+                  : conduitEnd * 0.28;
+
               const firstStop = stage.gradient?.[0];
               const segColor = firstStop
                 ? firstStop.color
@@ -913,8 +911,8 @@ export function FunnelChart({
                   index={i}
                   key={stage.label}
                   layers={layers}
-                  normEnd={normEnd}
-                  normStart={normStart}
+                  normEnd={norms[Math.min(i + 1, n - 1)] ?? 0}
+                  normStart={norms[i] ?? 0}
                   renderPattern={renderPattern}
                   segW={segW}
                   staggerDelay={staggerDelay}
@@ -937,6 +935,7 @@ export function FunnelChart({
                   segH={segH}
                   staggerDelay={staggerDelay}
                   straight={edges === "straight"}
+                  hasValue={hasVal}
                 />
               );
             })}
@@ -1008,11 +1007,12 @@ export function FunnelChart({
 
             return (
               <motion.div
-                animate={{ opacity: isDimmed ? 0.4 : 1 }}
+                animate={{ opacity: isDimmed ? 0.35 : 1 }}
                 className="absolute cursor-pointer"
                 key={`lbl-${stage.label}`}
                 onMouseEnter={() => setHoveredIndex(i)}
                 onMouseLeave={() => setHoveredIndex(null)}
+                onClick={() => setHoveredIndex(hoveredIndex === i ? null : i)}
                 style={{ ...posStyle, zIndex: 20 }}
                 transition={{ type: "spring", stiffness: 300, damping: 24 }}
               >

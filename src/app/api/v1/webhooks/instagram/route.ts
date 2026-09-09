@@ -237,6 +237,13 @@ export async function POST(req: Request) {
     }
 
     // Direct / Test JSON Payload
+    if (process.env.NODE_ENV === 'production' && process.env.ALLOW_INSECURE_WEBHOOKS !== '1') {
+      return NextResponse.json(
+        { error: 'Direct simulation payloads are disabled in production' },
+        { status: 403 }
+      );
+    }
+
     const {
       igUsername,
       customerName,

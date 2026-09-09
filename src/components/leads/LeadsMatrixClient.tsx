@@ -40,7 +40,8 @@ import {
   Table as TableIcon,
   FileText,
   Edit3,
-  Download
+  Download,
+  Trash2
 } from 'lucide-react';
 import { YoutubeIcon, InstagramIcon } from '@/components/icons/SocialIcons';
 import { toast } from '@/lib/client/toast';
@@ -126,8 +127,19 @@ const STAGE_OPTIONS: CustomSelectOption[] = [
   { value: 'closed_lost', label: 'Lost / Dropped', shortLabel: 'Lost', dotColor: 'bg-rose-700' },
 ];
 
-export function LeadsMatrixClient({ initialLeads = [] }: { initialLeads?: any[] }) {
+export function LeadsMatrixClient({
+  initialLeads = [],
+  canDeleteLeads = false,
+}: {
+  initialLeads?: any[];
+  canDeleteLeads?: boolean;
+}) {
   const [leads, setLeads] = useState<any[]>(initialLeads);
+  const [userCanDelete, setUserCanDelete] = useState(canDeleteLeads);
+  const [leadToDelete, setLeadToDelete] = useState<any | null>(null);
+  const [isDeletingLead, setIsDeletingLead] = useState(false);
+  const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
   const [loading, setLoading] = useState(false);
   const [syncingFallbacks, setSyncingFallbacks] = useState(false);
   const [viewMode, setViewMode] = useState<'table' | 'kanban' | 'console'>('kanban');
@@ -233,6 +245,88 @@ export function LeadsMatrixClient({ initialLeads = [] }: { initialLeads?: any[] 
       toast.error('Bulk Update Failed', { description: err.message });
     } finally {
       setBulkUpdating(false);
+    }
+  };
+
+  useEffect(() => {
+    setUserCanDelete(canDeleteLeads);
+  }, [canDeleteLeads]);
+
+  // Fallback check against auth session if not already enabled via prop
+  useEffect(() => {
+    if (!canDeleteLeads) {
+      fetch('/api/v1/auth/session')
+        .then((res) => res.json())
+        .then((data) => {
+          if (data?.authenticated && data?.user) {
+            const effective = data.user.effectivePermissions || [];
+            if (
+              effective.includes('leads:delete') ||
+              data.user.role === 'SUPER_ADMIN' ||
+              data.user.role === 'ADMIN'
+            ) {
+              setUserCanDelete(true);
+            }
+          }
+        })
+        .catch(() => {});
+    }
+  }, [canDeleteLeads]);
+
+  const handleDeleteSingleLead = async () => {
+    if (!leadToDelete) return;
+    setIsDeletingLead(true);
+    try {
+      const res = await fetch(`/api/v1/leads/${leadToDelete.id}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to delete lead.');
+      }
+      setLeads((prev) => prev.filter((l) => l.id !== leadToDelete.id));
+      setSelectedLeadIds((prev) => prev.filter((id) => id !== leadToDelete.id));
+      if (selectedLeadForDrawer?.id === leadToDelete.id) {
+        setSelectedLeadForDrawer(null);
+      }
+      toast.success('Lead Deleted', {
+        description: `Successfully removed lead "${leadToDelete.fullName || leadToDelete.phoneE164 || 'Lead'}".`,
+      });
+      setLeadToDelete(null);
+    } catch (err: any) {
+      toast.error('Deletion Failed', { description: err.message });
+    } finally {
+      setIsDeletingLead(false);
+    }
+  };
+
+  const handleBulkDeleteLeads = async () => {
+    if (selectedLeadIds.length === 0) return;
+    setIsBulkDeleting(true);
+    try {
+      const res = await fetch('/api/v1/leads/bulk-delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ leadIds: selectedLeadIds }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to delete selected leads.');
+      }
+      const count = data.deletedCount || selectedLeadIds.length;
+      setLeads((prev) => prev.filter((l) => !selectedLeadIds.includes(l.id)));
+      if (selectedLeadForDrawer && selectedLeadIds.includes(selectedLeadForDrawer.id)) {
+        setSelectedLeadForDrawer(null);
+      }
+      toast.success('Leads Deleted', {
+        description: `Permanently removed ${count} lead(s).`,
+      });
+      setSelectedLeadIds([]);
+      setShowBulkDeleteConfirm(false);
+    } catch (err: any) {
+      toast.error('Bulk Deletion Failed', { description: err.message });
+    } finally {
+      setIsBulkDeleting(false);
     }
   };
 
@@ -885,10 +979,10 @@ export function LeadsMatrixClient({ initialLeads = [] }: { initialLeads?: any[] 
         />
       ) : (
         /* Dense Table View */
-        <div className="relative rounded-2xl bg-surface border border-border overflow-hidden shadow-xs">
+        <div className="relative rounded-2xl bg-surface border border-border shadow-xs">
           {/* Floating Bulk Actions Bar */}
           {selectedLeadIds.length > 0 && (
-            <div className="sticky top-0 z-20 px-5 py-3 bg-accent text-white flex items-center justify-between flex-wrap gap-3 shadow-md animate-in slide-in-from-top duration-200">
+            <div className="sticky top-0 z-20 px-5 py-3 bg-accent text-white flex items-center justify-between flex-wrap gap-3 shadow-md rounded-t-2xl animate-in slide-in-from-top duration-200">
               <div className="flex items-center gap-3">
                 <span className="font-bold text-xs bg-white/20 px-2.5 py-1 rounded-lg">
                   {selectedLeadIds.length} Selected
@@ -901,7 +995,9 @@ export function LeadsMatrixClient({ initialLeads = [] }: { initialLeads?: any[] 
                 <div className="min-w-[200px]">
                   <CustomSelect
                     size="xs"
-                    disabled={bulkUpdating}
+                    direction="down"
+                    align="right"
+                    disabled={bulkUpdating || isBulkDeleting}
                     placeholder={bulkUpdating ? 'Updating Status…' : '⚡ Bulk Change Stage to…'}
                     value=""
                     onChange={(val) => {
@@ -915,7 +1011,22 @@ export function LeadsMatrixClient({ initialLeads = [] }: { initialLeads?: any[] 
                     }))}
                   />
                 </div>
+
+                {userCanDelete && (
+                  <button
+                    type="button"
+                    disabled={bulkUpdating || isBulkDeleting}
+                    onClick={() => setShowBulkDeleteConfirm(true)}
+                    className="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs transition-colors cursor-pointer flex items-center gap-1.5 shadow-xs disabled:opacity-50"
+                    title="Permanently remove selected leads"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Delete ({selectedLeadIds.length})</span>
+                  </button>
+                )}
+
                 <button
+                  type="button"
                   onClick={() => setSelectedLeadIds([])}
                   className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition-colors cursor-pointer"
                 >
@@ -925,11 +1036,11 @@ export function LeadsMatrixClient({ initialLeads = [] }: { initialLeads?: any[] 
             </div>
           )}
 
-          <div className="overflow-x-auto touch-scroll">
+          <div className="overflow-x-auto touch-scroll rounded-b-2xl">
             <table className="w-full text-left text-xs border-collapse min-w-[760px]">
               <thead>
                 <tr className="border-b border-border bg-surface-subtle text-content-secondary font-bold uppercase tracking-wider text-[11px]">
-                  <th className="py-4 px-4 w-10 text-center" onClick={(e) => e.stopPropagation()}>
+                  <th className={`py-4 px-4 w-10 text-center ${selectedLeadIds.length === 0 ? 'rounded-tl-2xl' : ''}`} onClick={(e) => e.stopPropagation()}>
                     <input
                       type="checkbox"
                       checked={
@@ -952,7 +1063,7 @@ export function LeadsMatrixClient({ initialLeads = [] }: { initialLeads?: any[] 
                   <th className="py-4 px-4">Scheduled Reminder / Action</th>
                   <th className="py-4 px-4">Attribution &amp; Source</th>
                   <th className="py-4 px-4">Pipeline Stage</th>
-                  <th className="py-4 px-4 text-right">Quick Actions</th>
+                  <th className={`py-4 px-4 text-right ${selectedLeadIds.length === 0 ? 'rounded-tr-2xl' : ''}`}>Quick Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -1192,6 +1303,17 @@ export function LeadsMatrixClient({ initialLeads = [] }: { initialLeads?: any[] 
                             >
                               <Eye className="w-3.5 h-3.5" />
                             </button>
+
+                            {userCanDelete && (
+                              <button
+                                type="button"
+                                onClick={() => setLeadToDelete(lead)}
+                                className="w-8 h-8 rounded-lg bg-surface hover:bg-rose-50 dark:hover:bg-rose-950/30 text-content-secondary hover:text-rose-600 border border-border hover:border-rose-300 dark:hover:border-rose-800 flex items-center justify-center transition-all shadow-2xs cursor-pointer"
+                                title="Delete Lead (Permanent)"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -1255,9 +1377,15 @@ export function LeadsMatrixClient({ initialLeads = [] }: { initialLeads?: any[] 
       {selectedLeadForDrawer && (
         <SourceEvidenceDrawer
           lead={selectedLeadForDrawer}
+          canDeleteLeads={userCanDelete}
           onClose={() => setSelectedLeadForDrawer(null)}
           onOpenMergeModal={(lead) => setMergeSourceLead(lead)}
           onLeadUpdated={fetchLeads}
+          onLeadDeleted={(deletedId) => {
+            setLeads((prev) => prev.filter((l) => l.id !== deletedId));
+            setSelectedLeadIds((prev) => prev.filter((id) => id !== deletedId));
+            setSelectedLeadForDrawer(null);
+          }}
         />
       )}
 
@@ -1295,6 +1423,120 @@ export function LeadsMatrixClient({ initialLeads = [] }: { initialLeads?: any[] 
           onSuccess={fetchLeads}
         />
       )}
+
+      {/* Delete Single Lead Confirmation Modal */}
+      <AccessibleDialog
+        open={Boolean(leadToDelete)}
+        onClose={() => !isDeletingLead && setLeadToDelete(null)}
+        titleId="delete-lead-modal-title"
+        descriptionId="delete-lead-modal-desc"
+        size="sm"
+      >
+        <div className="p-6">
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-900/30 text-rose-600 flex items-center justify-center shrink-0">
+              <AlertTriangle className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 id="delete-lead-modal-title" className="text-base font-bold text-content">
+                Delete Lead
+              </h3>
+              <p id="delete-lead-modal-desc" className="text-xs text-content-secondary mt-1 leading-relaxed">
+                Are you sure you want to permanently delete{' '}
+                <strong className="text-content font-semibold">
+                  {leadToDelete?.fullName || leadToDelete?.phoneE164 || 'this lead'}
+                </strong>
+                ? This will remove all associated communications, reminders, buyer requirements, and portals. This action cannot be undone.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-6 flex items-center justify-end gap-3">
+            <button
+              type="button"
+              disabled={isDeletingLead}
+              onClick={() => setLeadToDelete(null)}
+              className="px-4 py-2 rounded-xl text-xs font-semibold text-content-secondary hover:bg-surface-subtle border border-border transition-colors cursor-pointer disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              disabled={isDeletingLead}
+              onClick={handleDeleteSingleLead}
+              className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 transition-colors cursor-pointer flex items-center gap-2 shadow-xs disabled:opacity-50"
+            >
+              {isDeletingLead ? (
+                <>
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  <span>Deleting…</span>
+                </>
+              ) : (
+                <>
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Delete Permanently</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </AccessibleDialog>
+
+      {/* Bulk Delete Leads Confirmation Modal */}
+      <AccessibleDialog
+        open={showBulkDeleteConfirm}
+        onClose={() => !isBulkDeleting && setShowBulkDeleteConfirm(false)}
+        titleId="bulk-delete-modal-title"
+        descriptionId="bulk-delete-modal-desc"
+        size="sm"
+      >
+        <div className="p-6">
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-900/30 text-rose-600 flex items-center justify-center shrink-0">
+              <AlertTriangle className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 id="bulk-delete-modal-title" className="text-base font-bold text-content">
+                Delete {selectedLeadIds.length} Selected Leads
+              </h3>
+              <p id="bulk-delete-modal-desc" className="text-xs text-content-secondary mt-1 leading-relaxed">
+                Are you sure you want to permanently delete{' '}
+                <strong className="text-content font-semibold">{selectedLeadIds.length} lead(s)</strong>?
+                All associated communications, notes, reminders, and portal links will be purged immediately. This action cannot be undone.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-6 flex items-center justify-end gap-3">
+            <button
+              type="button"
+              disabled={isBulkDeleting}
+              onClick={() => setShowBulkDeleteConfirm(false)}
+              className="px-4 py-2 rounded-xl text-xs font-semibold text-content-secondary hover:bg-surface-subtle border border-border transition-colors cursor-pointer disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              disabled={isBulkDeleting}
+              onClick={handleBulkDeleteLeads}
+              className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 transition-colors cursor-pointer flex items-center gap-2 shadow-xs disabled:opacity-50"
+            >
+              {isBulkDeleting ? (
+                <>
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  <span>Deleting…</span>
+                </>
+              ) : (
+                <>
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Delete All Selected</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </AccessibleDialog>
     </div>
   );
 }

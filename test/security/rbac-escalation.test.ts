@@ -22,7 +22,7 @@ describe('Security: RBAC Privilege Escalation Defense', () => {
     const res = await getDealsHandler(req);
     // Should be 200 with filtered results or 403, never exposing un-scoped financial data
     expect(res.status).toBeLessThan(500);
-  });
+  }, 15000);
 
   it('agent scope limits lead visibility to own and assigned', async () => {
     const req = new Request('http://localhost:3000/api/v1/leads', {

@@ -317,10 +317,71 @@ export function extractTextFromPdfBuffer(buffer: Buffer): string {
 }
 
 /**
+ * Broker Shield: Sanitizes text by erasing any telephone numbers, mobile contacts,
+ * or booking phone strings while strictly preserving MahaRERA IDs (P517..., P520...),
+ * carpet areas (e.g. 450 sqft), dimensions, and calendar years.
+ */
+export function erasePhoneNumbersFromText(text: string): string {
+  if (!text || typeof text !== 'string') return text || '';
+  
+  let cleaned = text;
+
+  // Protect MahaRERA registration IDs (e.g. P51700077818, P52000028714, A517...)
+  const reraPlaceholders: string[] = [];
+  cleaned = cleaned.replace(/\b[PA]\d{8,11}\b/gi, (m) => {
+    const placeholder = `__RERA_ID_${reraPlaceholders.length}__`;
+    reraPlaceholders.push(m);
+    return placeholder;
+  });
+
+  // Protect URLs / emails
+  const urlPlaceholders: string[] = [];
+  cleaned = cleaned.replace(/https?:\/\/[^\s]+|[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/gi, (m) => {
+    const placeholder = `__URL_ID_${urlPlaceholders.length}__`;
+    urlPlaceholders.push(m);
+    return placeholder;
+  });
+
+  // 1. Remove labeled phone entries e.g. "Call: +91 98201 23456", "Mob: 9920540484", "Contact Sales: 98201 23456"
+  cleaned = cleaned.replace(/(?:contact|booking|call|mob|tel|phone)[:\s]+(?:sales[:\s]+)?(?:office[:\s]+)?(?:for\s*booking[:\s]*)?(?:[A-Za-z\s]+[-:\s]*)?(?:\+?91[\s-]?)?[6-9]\d{4}[\s-]?\d{4,5}\b/gi, '');
+  cleaned = cleaned.replace(/(?:contact|booking|call|mob|tel|phone)[:\s]+(?:sales[:\s]+)?(?:office[:\s]+)?(?:for\s*booking[:\s]*)?(?:[A-Za-z\s]+[-:\s]*)?\b0\d{2,4}[\s-]?\d{6,8}\b/gi, '');
+  cleaned = cleaned.replace(/(?:contact|booking|call|mob|tel|phone)[:\s]+(?:sales[:\s]+)?(?:office[:\s]+)?(?:for\s*booking[:\s]*)?(?:[A-Za-z\s]+[-:\s]*)?\b[6-9]\d{9}\b/gi, '');
+
+  // 2. Remove broker stamps like "MOHD SAQLAIN-9920540484" or "Name - 98..."
+  cleaned = cleaned.replace(/[A-Za-z\s]{3,30}\s*[-–—]\s*(?:\+?91[\s-]?)?[6-9]\d{9}\b/g, '');
+
+  // 3. Remove standalone phone numbers (preserving 4-digit years like 2024, 2025, 2026, 2027)
+  cleaned = cleaned.replace(/(?:\+?91[\s-]?)?[6-9]\d{4}[\s-]?\d{4,5}\b/g, '');
+  cleaned = cleaned.replace(/\b0\d{2,4}[\s-]?\d{6,8}\b/g, '');
+  cleaned = cleaned.replace(/\b[6-9]\d{9}\b/g, '');
+
+  // 4. Remove dangling empty contact prefixes e.g. "Contact Sales:" or "Call:"
+  cleaned = cleaned.replace(/(?:contact|booking|call|mob|tel|phone)[:\s]+(?:sales[:\s]+)?(?:office[:\s]+)?(?:for\s*booking[:\s]*)?/gi, '');
+
+  // Restore protected MahaRERA IDs
+  reraPlaceholders.forEach((val, idx) => {
+    cleaned = cleaned.replace(`__RERA_ID_${idx}__`, val);
+  });
+
+  // Restore protected URLs / emails
+  urlPlaceholders.forEach((val, idx) => {
+    cleaned = cleaned.replace(`__URL_ID_${idx}__`, val);
+  });
+
+  // Clean up remaining dangling double spaces or empty parentheses
+  return cleaned
+    .replace(/\s{2,}/g, ' ')
+    .replace(/\(\s*\)/g, '')
+    .replace(/\[\s*\]/g, '')
+    .trim();
+}
+
+/**
  * Deterministic Semantic Parsing Engine for Real Estate Brochures
  */
 export function parseBrochureText(rawText: string, filename: string = 'brochure.pdf'): ExtractedBrochureData {
-  const cleanedRawText = rawText.replace(/---\s*PAGE\s*\d+\s*---/gi, ' ');
+  const sanitizedInputText = erasePhoneNumbersFromText(rawText);
+  const cleanedRawText = sanitizedInputText.replace(/---\s*PAGE\s*\d+\s*---/gi, ' ');
   const normalizedText = cleanedRawText.replace(/\r?\n/g, ' ').replace(/\s+/g, ' ').trim();
 
   // 1. PROJECT NAME & DEVELOPER
@@ -471,17 +532,18 @@ export function parseBrochureText(rawText: string, filename: string = 'brochure.
 
   // 7. DEVELOPER POC & CONSULTANTS
   let developerSalesPocName: string | undefined;
-  let developerSalesPocPhone: string | undefined;
+  let developerSalesPocPhone: string | undefined = undefined; // Broker Shield: Erased to prevent client bypass
   let developerEmail: string | undefined;
   let architects: string | undefined;
   let rccConsultants: string | undefined;
 
-  const phoneMatch = normalizedText.match(/(?:contact|booking|call|mob|ph)[:\s]+(?:for\s*booking[:\s]*)?([A-Za-z\s]+)?[-:\s]*(\+?91[\s-]?[6-9]\d{9}|[6-9]\d{9})/i);
+  const phoneMatch = rawText.match(/(?:contact|booking|call|mob|ph)[:\s]+(?:for\s*booking[:\s]*)?([A-Za-z\s]+)?[-:\s]*(\+?91[\s-]?[6-9]\d{9}|[6-9]\d{9})/i);
   if (phoneMatch) {
     if (phoneMatch[1] && phoneMatch[1].trim().length > 2) {
       developerSalesPocName = phoneMatch[1].trim();
     }
-    developerSalesPocPhone = phoneMatch[2].replace(/\s+/g, '');
+    // Broker Shield Phone Erasure: Erased
+    developerSalesPocPhone = undefined;
   }
 
   const emailMatch = normalizedText.match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/);
@@ -644,8 +706,8 @@ export function parseBrochureText(rawText: string, filename: string = 'brochure.
     plotDetails: undefined,
     structureType: undefined,
     floorPlateSummary: undefined,
-    shortDescription,
-    description,
+    shortDescription: erasePhoneNumbersFromText(shortDescription),
+    description: erasePhoneNumbersFromText(description),
     amenities: Array.from(new Set(extractedAmenities)),
     specifications: {},
     transitConnectivity: [],
@@ -654,16 +716,16 @@ export function parseBrochureText(rawText: string, filename: string = 'brochure.
       ...(elevation ? [`Elevation: ${elevation}`] : []),
       ...(subLocality ? [`Location: ${subLocality}`] : []),
       ...(detectedBhks.size > 0 ? [`Typologies: ${Array.from(detectedBhks).map(b => `${b} BHK`).join(' & ')}`] : []),
-    ],
+    ].map(erasePhoneNumbersFromText).filter(Boolean),
     developerSalesPocName,
-    developerSalesPocPhone,
+    developerSalesPocPhone: undefined,
     developerEmail,
     architects,
     rccConsultants,
     standardCommissionPercent: 2.5,
     confidentialBrokerData: {
       developerSalesPocName,
-      developerSalesPocPhone,
+      developerSalesPocPhone: undefined,
       developerEmail,
       siteAddress: subLocality ? `Site Address: ${subLocality}, ${microMarket}` : undefined,
       officeAddress: undefined,
@@ -671,7 +733,7 @@ export function parseBrochureText(rawText: string, filename: string = 'brochure.
       rccConsultants,
       standardCommissionPercent: 2.5,
       brokerShieldActive: true,
-      notes: 'Direct builder booking contacts and site office address are secured for internal CRM broker use only.',
+      notes: 'Direct builder booking phone numbers auto-erased to prevent client bypass.',
     },
     classifiedMedia: {
       elevationsCount: 0,
@@ -681,7 +743,7 @@ export function parseBrochureText(rawText: string, filename: string = 'brochure.
       floorPlans: [],
     },
     units,
-    rawTextPreview: normalizedText.slice(0, 500) + '...',
+    rawTextPreview: erasePhoneNumbersFromText(normalizedText).slice(0, 500) + '...',
   };
 }
 

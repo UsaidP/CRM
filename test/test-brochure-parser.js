@@ -123,7 +123,8 @@ assert(result3.reraNumber === 'P52000079818', `City Avenue MahaRERA parsed: "${r
 assert(result3.microMarket.includes('Taloja'), `Micro-market identified: "${result3.microMarket}"`);
 assert(result3.totalFloors === 7, `G+7 storeys identified: ${result3.totalFloors} storeys`);
 assert(result3.elevation.includes('G+7'), `Elevation string populated: "${result3.elevation}"`);
-assert(result3.developerSalesPocName.includes('Mohd Saqlain') || result3.developerSalesPocPhone.includes('9920540484'), `Sales contact identified: ${result3.developerSalesPocName} (${result3.developerSalesPocPhone})`);
+assert(result3.developerSalesPocName && result3.developerSalesPocName.toLowerCase().includes('mohd saqlain'), `Sales contact name identified: ${result3.developerSalesPocName}`);
+assert(result3.developerSalesPocPhone === undefined, 'Developer phone number automatically erased (Broker Shield)');
 assert(result3.units.length >= 2, `1 BHK & 2 BHK units generated: ${result3.units.length} units`);
 assert(result3.amenities.some(a => a.includes('Vitrified') || a.includes('Granite') || a.includes('Elevators')), 'Amenities cataloged from City Avenue specs');
 

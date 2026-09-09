@@ -36,6 +36,8 @@ export interface ElevationMediaAsset {
   title?: string;
   viewAngle?: 'FRONT_FACADE' | 'PODIUM_VIEW' | 'NIGHT_AERIAL' | 'CLUBHOUSE' | string;
   description?: string;
+  pageNumber?: number;
+  /** @deprecated Use canonical pageNumber */
   page_number?: number;
 }
 
@@ -45,8 +47,11 @@ export interface FloorPlanMediaAsset {
   title?: string;
   bhk?: number;
   carpetAreaSqft?: number;
+  /** @deprecated Use canonical carpetAreaSqft */
   carpet_area_sqft?: number;
   description?: string;
+  pageNumber?: number;
+  /** @deprecated Use canonical pageNumber */
   page_number?: number;
 }
 
@@ -66,6 +71,62 @@ export interface VideoMediaAsset {
   bytes?: number;
   durationSeconds?: number;
   posterUrl?: string;
+}
+
+export type ProjectMediaKind =
+  | 'elevation'
+  | 'floorplan'
+  | 'brochure_photo'
+  | 'walkthrough'
+  | 'masterplan'
+  | 'amenity';
+
+export interface ProjectMediaGalleryAsset {
+  id: string;
+  url: string;
+  kind: ProjectMediaKind;
+  title?: string;
+  description?: string;
+  category?: string;
+  bhk?: number;
+  carpetAreaSqft?: number;
+  pageNumber?: number;
+  durationSeconds?: number;
+  posterUrl?: string;
+}
+
+/**
+ * Normalizes any floor plan asset representation into canonical camelCase,
+ * while preserving legacy snake_case properties for backward compatibility.
+ */
+export function normalizeFloorPlanAsset(asset: any): FloorPlanMediaAsset {
+  if (!asset) return { url: '' };
+  const carpet = asset.carpetAreaSqft ?? asset.carpet_area_sqft ?? undefined;
+  const pageNum = asset.pageNumber ?? asset.page_number ?? undefined;
+  const url = resolveAssetUrl(asset);
+  return {
+    ...asset,
+    url,
+    carpetAreaSqft: carpet !== undefined ? Number(carpet) : undefined,
+    carpet_area_sqft: carpet !== undefined ? Number(carpet) : undefined,
+    pageNumber: pageNum !== undefined ? Number(pageNum) : undefined,
+    page_number: pageNum !== undefined ? Number(pageNum) : undefined,
+  };
+}
+
+/**
+ * Normalizes elevation asset into canonical camelCase while preserving legacy page_number.
+ */
+export function normalizeElevationAsset(asset: any): ElevationMediaAsset {
+  if (!asset) return { url: '' };
+  const pageNum = asset.pageNumber ?? asset.page_number ?? undefined;
+  const url = resolveAssetUrl(asset);
+  return {
+    ...asset,
+    url,
+    pageNumber: pageNum !== undefined ? Number(pageNum) : undefined,
+    page_number: pageNum !== undefined ? Number(pageNum) : undefined,
+  };
 }
 
 export function normalizeMediaGallery(
@@ -128,8 +189,8 @@ export function parseInventoryContent<T extends {
     keyHighlights: record.keyHighlights ?? parseJsonArray<string>(record.keyHighlightsJson),
     featureHighlights: record.featureHighlights ?? parseJsonArray<string>(record.featureHighlightsJson),
     mediaGallery: record.mediaGallery ?? normalizeMediaGallery(record.mediaGalleryJson, record.photoGalleryJson),
-    elevationImages: record.elevationImages ?? parseJsonArray<ElevationMediaAsset>(record.elevationImagesJson),
-    floorPlanImages: record.floorPlanImages ?? parseJsonArray<FloorPlanMediaAsset>(record.floorPlanImagesJson),
+    elevationImages: record.elevationImages ?? parseJsonArray<any>(record.elevationImagesJson).map(normalizeElevationAsset).filter((a) => Boolean(a.url)),
+    floorPlanImages: record.floorPlanImages ?? parseJsonArray<any>(record.floorPlanImagesJson).map(normalizeFloorPlanAsset).filter((a) => Boolean(a.url)),
     brochurePhotos: record.brochurePhotos ?? parseJsonArray<BrochurePhotoMediaAsset>(record.brochurePhotosJson),
     videos: record.videos ?? parsedVideos,
     photoGallery: record.photoGallery ?? parseGalleryUrls(record.photoGalleryJson),
