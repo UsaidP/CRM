@@ -44,15 +44,29 @@ export async function POST(req: Request) {
       },
     });
 
-    const org = await prisma.organization.findFirst();
+    const org = await prisma.organization.findUnique({
+      where: { id: auth.session.organizationId },
+    }) || await prisma.organization.findFirst();
     if (!org) {
       return NextResponse.json({ error: 'Organization not found' }, { status: 500 });
     }
 
-    // 1. Resolve Broker Ownership strictly from contacted line
-    const brokerRes = await resolveBrokerByInboundIdentifier(contactedBrokerNumber, org.id);
-    const assignedBrokerId = brokerRes.brokerId;
-    const inboundNumber = brokerRes.brokerPhoneE164 || contactedBrokerNumber;
+    // 1. Resolve Broker Ownership:
+    // If logged in as TELECALLER or AGENT, assign the logged call to themselves!
+    let assignedBrokerId: string | undefined = undefined;
+    let inboundNumber = contactedBrokerNumber;
+    let assignedBrokerName = 'Assigned Agent';
+
+    if (auth.session.role === 'TELECALLER' || auth.session.role === 'AGENT') {
+      assignedBrokerId = auth.session.userId;
+      inboundNumber = auth.session.email || contactedBrokerNumber;
+      assignedBrokerName = auth.session.email || 'Telecaller';
+    } else {
+      const brokerRes = await resolveBrokerByInboundIdentifier(contactedBrokerNumber, org.id);
+      assignedBrokerId = brokerRes.brokerId;
+      inboundNumber = brokerRes.brokerPhoneE164 || contactedBrokerNumber;
+      assignedBrokerName = brokerRes.brokerName || 'Assigned Broker';
+    }
 
     // 2. Normalize Caller Phone Number
     const phoneResult = normalizeIndianPhone(callerNumber);
@@ -101,7 +115,7 @@ export async function POST(req: Request) {
 
     const callSummary = direction === 'MISSED'
       ? `Missed call on ${new Date(startTime).toLocaleTimeString()}`
-      : `Phone call (${durationSeconds}s) with ${brokerRes.brokerName}`;
+      : `Phone call (${durationSeconds}s) with ${assignedBrokerName}`;
 
     if (lead) {
       lead = await prisma.lead.update({
@@ -144,6 +158,22 @@ export async function POST(req: Request) {
           data: { totalLeadsGenerated: { increment: 1 } },
         });
       }
+
+      if (assignedBrokerId) {
+        try {
+          await prisma.leadAssignment.create({
+            data: {
+              leadId: lead.id,
+              userId: assignedBrokerId,
+              assignedById: auth.session.userId || null,
+              assignmentType: 'DIRECT',
+              notes: 'Initial assignment on call logger lead creation',
+            },
+          });
+        } catch {
+          // Non-blocking
+        }
+      }
     }
 
     // 6. Log Communication
@@ -153,13 +183,13 @@ export async function POST(req: Request) {
         channel: 'PHONE_CALL',
         direction: direction === 'OUTGOING' ? 'OUTBOUND' : 'INBOUND',
         callDurationSeconds: durationSeconds,
-        messageContent: `${direction} Call to ${inboundNumber} (${brokerRes.brokerName}). ${notes}`,
+        messageContent: `${direction} Call to ${inboundNumber} (${assignedBrokerName}). ${notes}`,
         metadataJson: JSON.stringify({
           callId,
           direction,
           startTime,
           contactedBrokerNumber: inboundNumber,
-          brokerAssigned: brokerRes.brokerName,
+          brokerAssigned: assignedBrokerName,
           sourceCode,
         }),
       },
@@ -171,7 +201,7 @@ export async function POST(req: Request) {
       data: {
         lead,
         contact,
-        brokerAssigned: brokerRes.brokerName,
+        brokerAssigned: assignedBrokerName,
         sourceConfidence,
       },
     }, { status: 201 });

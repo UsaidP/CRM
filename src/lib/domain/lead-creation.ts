@@ -29,6 +29,11 @@ export interface CreateLeadInput {
   campaignId?: string | null;
   notes?: string;
   currentStage?: string;
+  city?: string;
+  budgetMin?: number | null;
+  budgetMax?: number | null;
+  bhkPreferences?: number[];
+  targetLocations?: string[];
 }
 
 export interface LeadActorContext {
@@ -91,6 +96,26 @@ export async function createLead(
   // 2. Resolve broker assignment
   let assignedBrokerId = requestedBrokerId ?? undefined;
   let inboundNumber = contactedBrokerNumber;
+
+  // Auto-assign to creator if the creator is a TELECALLER or AGENT and no broker was explicitly requested
+  if (!assignedBrokerId && ctx.userId) {
+    try {
+      const creator = await prisma.user.findUnique({
+        where: { id: ctx.userId },
+        select: { id: true, role: true, phoneE164: true },
+      });
+      if (creator && (creator.role === 'TELECALLER' || creator.role === 'AGENT')) {
+        assignedBrokerId = creator.id;
+        if (creator.phoneE164) {
+          inboundNumber = creator.phoneE164;
+        }
+      }
+    } catch {
+      // Fallback gracefully
+    }
+  }
+
+  // Fallback to contacted broker line if still unassigned and contactedBrokerNumber is provided
   if (!assignedBrokerId && contactedBrokerNumber) {
     const brokerRes = await resolveBrokerByInboundIdentifier(contactedBrokerNumber, org.id);
     assignedBrokerId = brokerRes.brokerId;
@@ -136,6 +161,23 @@ export async function createLead(
     },
   });
 
+  // Optional: create buyer requirement profile if preferences provided
+  if (input.budgetMax || (input.bhkPreferences && input.bhkPreferences.length > 0)) {
+    try {
+      await prisma.buyerRequirement.create({
+        data: {
+          leadId: lead.id,
+          budgetMin: input.budgetMin ?? null,
+          budgetMax: input.budgetMax ?? 7500000,
+          bhkPreferencesJson: JSON.stringify(input.bhkPreferences || [2]),
+          targetLocationsJson: JSON.stringify(input.targetLocations || ['Kharghar Sector 35']),
+        },
+      });
+    } catch {
+      // Non-blocking
+    }
+  }
+
   // 6. Zero-Orphan Inbound Rule: speed-to-lead reminder
   await ensureLeadFallbackReminder(lead.id, { organizationId: org.id });
 
@@ -148,7 +190,7 @@ export async function createLead(
           userId: assignedBrokerId,
           assignedById: ctx.userId || null,
           assignmentType: 'DIRECT',
-          notes: 'Initial assignment on lead creation',
+          notes: ctx.userId === assignedBrokerId ? 'Self-created lead by rep' : 'Initial assignment on lead creation',
         },
       });
     } catch {

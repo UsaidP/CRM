@@ -210,7 +210,9 @@ export async function scopedLeadFilter(
       };
     }
 
-    case 'OWN_AND_ASSIGNED': {
+    case 'OWN_AND_ASSIGNED':
+    case 'OWN':
+    default:
       return {
         ...base,
         OR: [
@@ -224,14 +226,6 @@ export async function scopedLeadFilter(
             },
           },
         ],
-      };
-    }
-
-    case 'OWN':
-    default:
-      return {
-        ...base,
-        assignedBrokerId: session.userId,
       };
   }
 }

@@ -152,9 +152,17 @@ export async function POST(req: Request) {
       );
     }
 
+    // For Telecallers / Agents, auto-assign the lead to themselves
+    let assignedBrokerId = parsed.data.assignedBrokerId;
+    if (auth.session.role === 'TELECALLER' || auth.session.role === 'AGENT' || !assignedBrokerId) {
+      if (auth.session.role === 'TELECALLER' || auth.session.role === 'AGENT') {
+        assignedBrokerId = auth.session.userId;
+      }
+    }
+
     const result = await createLead(
       { organizationId: auth.session.organizationId, userId: auth.session.userId },
-      parsed.data as CreateLeadInput
+      { ...parsed.data, assignedBrokerId } as CreateLeadInput
     );
 
     const lead = await prisma.lead.findFirst({
@@ -163,6 +171,14 @@ export async function POST(req: Request) {
         contact: { include: { identities: true } },
         assignedBroker: true,
         campaign: true,
+        requirements: true,
+        assignments: {
+          where: { unassignedAt: null },
+          include: {
+            user: { select: { id: true, fullName: true, role: true } },
+          },
+          take: 1,
+        },
       },
     });
 

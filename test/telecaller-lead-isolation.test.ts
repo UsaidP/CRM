@@ -3,6 +3,7 @@ import { prisma } from '../src/lib/db/prisma';
 import { scopedLeadFilter } from '../src/lib/services/api-auth';
 import { getPermissionScope } from '../src/lib/domain/rbac-engine';
 import { reassignLead, bulkReassignLeads } from '../src/lib/services/lead-assignment-service';
+import { createLead } from '../src/lib/domain/lead-creation';
 
 describe('Telecaller Lead Assignment & Data Isolation Suite', () => {
   const testPrefix = `[ISO-${Date.now()}]`;
@@ -313,5 +314,77 @@ describe('Telecaller Lead Assignment & Data Isolation Suite', () => {
     // Currently leads 1, 2, 4 are assigned to Telecaller B, and lead 3 is assigned to adminUser.
     // Telecaller A has OWN scope and owns 0 of these right now.
     expect(authorizedLeads.length).toBe(0);
+  }, 20000);
+
+  test('Telecaller self-created lead is automatically assigned to that Telecaller and isolated from other Telecallers', async () => {
+    // Telecaller A creates a new lead through the creation pipeline
+    const selfCreated = await createLead(
+      { organizationId: orgId, userId: telecallerA.id },
+      {
+        fullName: `${testPrefix} Aisha Self Created Inbound`,
+        phone: '9892112233',
+        leadSource: 'direct_call',
+        notes: 'Walk-in direct client captured by Telecaller Aisha',
+        budgetMin: 8000000,
+        budgetMax: 12000000,
+        bhkPreferences: [2, 3],
+        targetLocations: ['Bandra West'],
+      }
+    );
+
+    expect(selfCreated.leadId).toBeDefined();
+    expect(selfCreated.assignedBrokerId).toBe(telecallerA.id);
+
+    // Verify lead was stored with assignedBrokerId = telecallerA.id
+    const dbLead = await prisma.lead.findUnique({
+      where: { id: selfCreated.leadId },
+      include: { assignments: true, requirements: true },
+    });
+    expect(dbLead?.assignedBrokerId).toBe(telecallerA.id);
+    expect(dbLead?.assignments.length).toBeGreaterThanOrEqual(1);
+    expect(dbLead?.assignments.some((a) => a.userId === telecallerA.id && a.unassignedAt === null)).toBe(true);
+    expect(dbLead?.requirements.length).toBe(1);
+    expect(dbLead?.requirements[0].budgetMax).toBe(12000000);
+
+    // 1. Verify Telecaller A sees their self-created lead
+    const filterA = await scopedLeadFilter(
+      { userId: telecallerA.id, organizationId: orgId, role: 'TELECALLER', isSuperAdmin: false, email: telecallerA.email },
+      'OWN'
+    );
+    const leadsForA = await prisma.lead.findMany({
+      where: {
+        id: selfCreated.leadId,
+        ...filterA,
+      },
+    });
+    expect(leadsForA.length).toBe(1);
+    expect(leadsForA[0].id).toBe(selfCreated.leadId);
+
+    // 2. Verify Telecaller B CANNOT see Telecaller A's self-created lead
+    const filterB = await scopedLeadFilter(
+      { userId: telecallerB.id, organizationId: orgId, role: 'TELECALLER', isSuperAdmin: false, email: telecallerB.email },
+      'OWN'
+    );
+    const leadsForB = await prisma.lead.findMany({
+      where: {
+        id: selfCreated.leadId,
+        ...filterB,
+      },
+    });
+    expect(leadsForB.length).toBe(0);
+
+    // 3. Verify Admin CAN see Telecaller A's self-created lead
+    const filterAdmin = await scopedLeadFilter(
+      { userId: adminUser.id, organizationId: orgId, role: 'ADMIN', isSuperAdmin: false, email: adminUser.email },
+      'ORGANIZATION'
+    );
+    const leadsForAdmin = await prisma.lead.findMany({
+      where: {
+        id: selfCreated.leadId,
+        ...filterAdmin,
+      },
+    });
+    expect(leadsForAdmin.length).toBe(1);
+    expect(leadsForAdmin[0].id).toBe(selfCreated.leadId);
   }, 20000);
 });

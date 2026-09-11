@@ -745,19 +745,20 @@ export function RbacManagementClient() {
                   )}
                 </div>
 
-              <div>
-                <label className="text-[11px] font-bold text-content-muted block mb-1">
-                  Team Desk Assignment:
-                </label>
-                <CustomSelect
-                  options={[
-                    { value: '', label: 'No Team Desk (Floating / Admin)' },
-                    ...teams.map((t) => ({ value: t.id, label: `🏢 ${t.name}` })),
-                  ]}
-                  value={selectedTeamId}
-                  onChange={(val) => setSelectedTeamId(val)}
-                  className="w-full"
-                />
+                <div>
+                  <label className="text-[11px] font-bold text-content-muted block mb-1">
+                    Team Desk Assignment:
+                  </label>
+                  <CustomSelect
+                    options={[
+                      { value: '', label: 'No Team Desk (Floating / Admin)' },
+                      ...teams.map((t) => ({ value: t.id, label: `🏢 ${t.name}` })),
+                    ]}
+                    value={selectedTeamId}
+                    onChange={(val) => setSelectedTeamId(val)}
+                    className="w-full"
+                  />
+                </div>
               </div>
             </div>
 

@@ -41,11 +41,13 @@ import {
   FileText,
   Edit3,
   Download,
-  Trash2
+  Trash2,
+  UserPlus
 } from 'lucide-react';
 import { YoutubeIcon, InstagramIcon } from '@/components/icons/SocialIcons';
 import { toast } from '@/lib/client/toast';
 import { HallmarkStamp } from '@/components/ui/HallmarkStamp';
+import { AddLeadModal } from '@/components/leads/AddLeadModal';
 import { CallLogModal } from '@/components/leads/CallLogModal';
 import { SourceEvidenceDrawer } from '@/components/leads/SourceEvidenceDrawer';
 import { ContactMergeModal } from '@/components/leads/ContactMergeModal';
@@ -182,15 +184,35 @@ export function LeadsMatrixClient({
     })),
   ], [assignableUsers]);
 
-  // Sync search query from URL parameter if navigated from global search
+  // Sync initialLeads prop to local state on server revalidation or navigation
+  useEffect(() => {
+    if (initialLeads) {
+      setLeads(initialLeads);
+    }
+  }, [initialLeads]);
+
+  // Sync search query and action/view from URL parameters
   useEffect(() => {
     const s = searchParams?.get('search');
     if (s) {
       setSearchQuery(s);
     }
+    const action = searchParams?.get('action');
+    if (action === 'new') {
+      setShowAddLeadModal(true);
+    }
+    const v = searchParams?.get('view');
+    if (v === 'telecaller') {
+      setViewMode('console');
+    } else if (v === 'table') {
+      setViewMode('table');
+    } else if (v === 'kanban') {
+      setViewMode('kanban');
+    }
   }, [searchParams]);
 
   // Modals & Drawers
+  const [showAddLeadModal, setShowAddLeadModal] = useState(false);
   const [showCallLogModal, setShowCallLogModal] = useState(false);
   const [showLeadImportModal, setShowLeadImportModal] = useState(false);
   const [droppedImportFile, setDroppedImportFile] = useState<File | null>(null);
@@ -826,13 +848,25 @@ export function LeadsMatrixClient({
 
           <div className="w-px h-6 bg-border mx-0.5 hidden lg:block" />
 
-          {/* Primary Action Button */}
+          {/* Action Buttons: Log Call & Add Lead */}
           <button
+            type="button"
             onClick={() => setShowCallLogModal(true)}
-            className="h-9 px-3.5 sm:px-4 bg-accent hover:bg-accent-hover text-white font-bold text-xs rounded-xl shadow-xs hover:shadow-sm transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
+            className="h-9 px-3 bg-surface hover:bg-surface-subtle border border-border hover:border-border-hover text-content font-semibold text-xs rounded-xl shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
+            title="Log quick phone call details"
           >
-            <PhoneCall className="w-4 h-4" />
-            <span>+ Log Call</span>
+            <PhoneCall className="w-3.5 h-3.5 text-accent" />
+            <span className="hidden sm:inline">Log Call</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setShowAddLeadModal(true)}
+            className="h-9 px-3.5 sm:px-4 bg-accent hover:bg-accent-hover text-white font-bold text-xs rounded-xl shadow-xs hover:shadow-sm transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
+            title="Add a new buyer prospect to your pipeline"
+          >
+            <UserPlus className="w-4 h-4" />
+            <span>+ Add Lead</span>
           </button>
         </div>
       </div>
@@ -1578,6 +1612,18 @@ export function LeadsMatrixClient({
             setSelectedLeadIds((prev) => prev.filter((id) => id !== deletedId));
             setSelectedLeadForDrawer(null);
           }}
+        />
+      )}
+
+      {/* Add Lead Modal */}
+      {showAddLeadModal && (
+        <AddLeadModal
+          isOpen={true}
+          onClose={() => setShowAddLeadModal(false)}
+          onSuccess={fetchLeads}
+          currentUserId={currentUserId}
+          currentUserRole={currentUserRole}
+          assignableUsers={assignableUsers}
         />
       )}
 

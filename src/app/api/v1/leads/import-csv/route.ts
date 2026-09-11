@@ -81,7 +81,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const org = await prisma.organization.findFirst();
+    const org = await prisma.organization.findUnique({
+      where: { id: auth.session.organizationId },
+    }) || await prisma.organization.findFirst();
     if (!org) {
       return NextResponse.json(
         { success: false, error: 'No active CRM organization found.' },

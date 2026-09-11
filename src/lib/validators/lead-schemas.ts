@@ -4,19 +4,10 @@ export const createLeadSchema = z.object({
   fullName: z.string().min(2, 'Full name must be at least 2 characters').optional().nullable(),
   phone: z.string().min(10, 'Valid phone number is required'),
   email: z.string().email('Invalid email address').optional().nullable().or(z.literal('')),
-  leadSource: z.enum([
-    'instagram_reel',
-    'youtube_short',
-    'youtube_video',
-    'whatsapp_group',
-    'fb_group',
-    'direct_call',
-    'referral',
-    'web_form',
-  ]).default('whatsapp_group'),
-  campaignId: z.string().uuid().optional().nullable(),
+  leadSource: z.string().default('direct_call'),
+  campaignId: z.string().optional().nullable(),
   sourceRefUrl: z.string().url().optional().nullable().or(z.literal('')),
-  assignedBrokerId: z.string().uuid().optional().nullable(),
+  assignedBrokerId: z.string().optional().nullable(),
   currentStage: z.enum([
     'new_uncontacted',
     'discovery_call',
@@ -32,6 +23,10 @@ export const createLeadSchema = z.object({
   ]).default('new_uncontacted'),
   notes: z.string().optional().nullable(),
   city: z.string().default('Navi Mumbai'),
+  budgetMin: z.number().optional().nullable(),
+  budgetMax: z.number().optional().nullable(),
+  bhkPreferences: z.array(z.number()).optional().nullable(),
+  targetLocations: z.array(z.string()).optional().nullable(),
 });
 
 export const updateLeadStageSchema = z.object({
