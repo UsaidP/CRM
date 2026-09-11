@@ -34,6 +34,9 @@ export interface CreateLeadInput {
   budgetMax?: number | null;
   bhkPreferences?: number[];
   targetLocations?: string[];
+  possessionPreference?: string | null;
+  purpose?: string | null;
+  loanPreApproved?: boolean | null;
 }
 
 export interface LeadActorContext {
@@ -171,6 +174,9 @@ export async function createLead(
           budgetMax: input.budgetMax ?? 7500000,
           bhkPreferencesJson: JSON.stringify(input.bhkPreferences || [2]),
           targetLocationsJson: JSON.stringify(input.targetLocations || ['Kharghar Sector 35']),
+          possessionPreference: input.possessionPreference || 'ANY',
+          purpose: input.purpose || 'self_use',
+          loanPreApproved: Boolean(input.loanPreApproved),
         },
       });
     } catch {

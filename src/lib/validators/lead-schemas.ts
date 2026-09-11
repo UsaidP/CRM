@@ -36,6 +36,9 @@ export const createLeadSchema = z.object({
   budgetMax: z.number().optional().nullable(),
   bhkPreferences: z.array(z.number()).optional().nullable(),
   targetLocations: z.array(z.string()).optional().nullable(),
+  possessionPreference: z.string().optional().nullable(),
+  purpose: z.string().optional().nullable(),
+  loanPreApproved: z.boolean().optional().nullable(),
 });
 
 export const updateLeadStageSchema = z.object({
