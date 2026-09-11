@@ -51,6 +51,7 @@ export async function POST(req: Request) {
     }
 
     // 1. Purge records in reverse dependency order
+    await prisma.brochureUploadChunk.deleteMany({}).catch(() => {});
     await prisma.leadReminder.deleteMany({});
     await prisma.portalTelemetryLog.deleteMany({});
     await prisma.clientPortalUnit.deleteMany({});

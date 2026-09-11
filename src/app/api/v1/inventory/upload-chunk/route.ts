@@ -43,26 +43,78 @@ export async function POST(req: NextRequest) {
 
     const chunkBuffer = Buffer.from(await chunkFile.arrayBuffer());
 
-    // Save or update chunk in DB
-    await prisma.brochureUploadChunk.upsert({
-      where: {
-        uploadId_chunkIndex: {
+    // Save or update chunk in DB with auto-healing fallback if table was not yet migrated
+    try {
+      await prisma.brochureUploadChunk.upsert({
+        where: {
+          uploadId_chunkIndex: {
+            uploadId,
+            chunkIndex,
+          },
+        },
+        create: {
           uploadId,
           chunkIndex,
+          totalChunks,
+          filename,
+          mimeType,
+          chunkData: chunkBuffer,
         },
-      },
-      create: {
-        uploadId,
-        chunkIndex,
-        totalChunks,
-        filename,
-        mimeType,
-        chunkData: chunkBuffer,
-      },
-      update: {
-        chunkData: chunkBuffer,
-      },
-    });
+        update: {
+          chunkData: chunkBuffer,
+        },
+      });
+    } catch (upsertErr: any) {
+      const msg = String(upsertErr?.message || upsertErr);
+      if (
+        msg.includes('BrochureUploadChunk') &&
+        (msg.includes('does not exist') || msg.includes('42P01') || msg.includes('P2021') || msg.includes('table'))
+      ) {
+        console.warn('[CHUNK-UPLOAD] BrochureUploadChunk table missing in database. Auto-creating schema...');
+        try {
+          await prisma.$executeRawUnsafe(`
+            CREATE TABLE IF NOT EXISTS "BrochureUploadChunk" (
+              "id" TEXT NOT NULL PRIMARY KEY,
+              "uploadId" TEXT NOT NULL,
+              "chunkIndex" INTEGER NOT NULL,
+              "totalChunks" INTEGER NOT NULL,
+              "filename" TEXT NOT NULL,
+              "mimeType" TEXT NOT NULL,
+              "chunkData" BYTEA NOT NULL,
+              "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+            CREATE UNIQUE INDEX IF NOT EXISTS "BrochureUploadChunk_uploadId_chunkIndex_key" ON "BrochureUploadChunk"("uploadId", "chunkIndex");
+            CREATE INDEX IF NOT EXISTS "BrochureUploadChunk_uploadId_idx" ON "BrochureUploadChunk"("uploadId");
+            CREATE INDEX IF NOT EXISTS "BrochureUploadChunk_createdAt_idx" ON "BrochureUploadChunk"("createdAt");
+          `);
+        } catch (ddlErr: any) {
+          console.warn('[CHUNK-UPLOAD] Schema auto-creation notice:', ddlErr.message);
+        }
+
+        // Retry chunk upsert after auto-creating table
+        await prisma.brochureUploadChunk.upsert({
+          where: {
+            uploadId_chunkIndex: {
+              uploadId,
+              chunkIndex,
+            },
+          },
+          create: {
+            uploadId,
+            chunkIndex,
+            totalChunks,
+            filename,
+            mimeType,
+            chunkData: chunkBuffer,
+          },
+          update: {
+            chunkData: chunkBuffer,
+          },
+        });
+      } else {
+        throw upsertErr;
+      }
+    }
 
     const receivedCount = await prisma.brochureUploadChunk.count({
       where: { uploadId },

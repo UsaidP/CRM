@@ -179,6 +179,8 @@ export const TestFactories = {
   },
 };
 
+import { cleanupCollector } from '@/lib/qa/cleanup-collector';
+
 /**
  * Cleanup Registry to track created database records for deterministic teardown.
  */
@@ -195,6 +197,8 @@ class CleanupRegistry {
     if (type === 'project') this.projectIds.add(id);
     if (type === 'deal') this.dealIds.add(id);
     if (type === 'portal') this.portalIds.add(id);
+
+    cleanupCollector.register(type, id);
   }
 
   getRegistered(type: 'lead' | 'contact' | 'project' | 'deal' | 'portal'): string[] {

@@ -87,9 +87,10 @@ const ERROR_PATTERNS: Array<{
       };
     },
   },
-  // 5. MahaRERA Verification
+  // 5. MahaRERA Verification (precise service-emitted phrases — avoids intercepting
+  //    DB errors that merely mention field names like `reraNumber` / `reraCertDataJson`)
   {
-    pattern: /rera|maharera|registration\s*number/i,
+    pattern: /maha\s*rera|invalid\s*rera|rera\s*registration\s*number|rera\s*verification/i,
     resolve: () => ({
       title: 'MahaRERA Validation Notice',
       description: 'Unable to verify MahaRERA registration. Please ensure the RERA registration number follows the official format (e.g., P520000xxxxx).',
@@ -140,12 +141,12 @@ const ERROR_PATTERNS: Array<{
       actionType: 'dismiss',
     }),
   },
-  // 8b. Database Schema / Migration (e.g. column or table does not exist)
+  // 8b. Database Schema / Migration (Prisma drift codes P2021/P2022/P2023, SQL drift phrases, stale generated client)
   {
-    pattern: /column\s+.*does\s*not\s*exist|relation\s+.*does\s*not\s*exist|table\s+.*does\s*not\s*exist|prisma/i,
+    pattern: /column\s+.*does\s*not\s*exist|relation\s+.*does\s*not\s*exist|table\s+.*does\s*not\s*exist|P2021|P2022|P2023|unknown\s*(?:argument|field)/i,
     resolve: (_str) => ({
       title: 'Database Schema Synchronization',
-      description: 'The database schema is pending a schema update or synchronization. Please retry after sync.',
+      description: 'The application database is out of sync with its schema. If the schema was just updated, restart the server (or run the database push command) and try again.',
       actionLabel: 'Retry',
       actionType: 'retry',
     }),

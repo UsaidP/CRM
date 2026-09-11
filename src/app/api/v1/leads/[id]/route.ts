@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requirePermission, requirePermissionWithScope, scopedLeadFilter, orgScope } from '@/lib/services/api-auth';
 import { prisma } from '@/lib/db/prisma';
+import { reassignLead } from '@/lib/services/lead-assignment-service';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,6 +24,13 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
         requirements: true,
         communications: {
           orderBy: { createdAt: 'desc' },
+        },
+        assignments: {
+          where: { unassignedAt: null },
+          include: {
+            user: { select: { id: true, fullName: true, role: true } },
+          },
+          take: 1,
         },
       },
     });
@@ -62,13 +70,25 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     if (assignedBrokerId !== undefined && assignedBrokerId !== existing.assignedBrokerId) {
       const reassignAuth = await requirePermission(req, 'leads:reassign');
       if (!reassignAuth.ok) return reassignAuth.response;
+
+      if (assignedBrokerId) {
+        await reassignLead(id, assignedBrokerId, session.userId, notes || 'Reassigned by admin');
+      } else {
+        await prisma.leadAssignment.updateMany({
+          where: { leadId: id, unassignedAt: null },
+          data: { unassignedAt: new Date() },
+        });
+        await prisma.lead.update({
+          where: { id },
+          data: { assignedBrokerId: null },
+        });
+      }
     }
 
     const lead = await prisma.lead.update({
       where: { id },
       data: {
         currentStage: currentStage || undefined,
-        assignedBrokerId: assignedBrokerId !== undefined ? (assignedBrokerId || null) : undefined,
         notes: notes || undefined,
         fullName: fullName || undefined,
         email: email || undefined,
@@ -77,6 +97,13 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         campaign: true,
         assignedBroker: true,
         requirements: true,
+        assignments: {
+          where: { unassignedAt: null },
+          include: {
+            user: { select: { id: true, fullName: true, role: true } },
+          },
+          take: 1,
+        },
       },
     });
 

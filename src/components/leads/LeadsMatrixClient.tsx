@@ -130,9 +130,17 @@ const STAGE_OPTIONS: CustomSelectOption[] = [
 export function LeadsMatrixClient({
   initialLeads = [],
   canDeleteLeads = false,
+  canReassignLeads = false,
+  assignableUsers = [],
+  currentUserId,
+  currentUserRole,
 }: {
   initialLeads?: any[];
   canDeleteLeads?: boolean;
+  canReassignLeads?: boolean;
+  assignableUsers?: Array<{ id: string; fullName: string; role: string; email: string }>;
+  currentUserId?: string;
+  currentUserRole?: string;
 }) {
   const [leads, setLeads] = useState<any[]>(initialLeads);
   const [userCanDelete, setUserCanDelete] = useState(canDeleteLeads);
@@ -146,9 +154,33 @@ export function LeadsMatrixClient({
   const [selectedConfidence, setSelectedConfidence] = useState<string>('ALL');
   const [selectedSource, setSelectedSource] = useState('ALL');
   const [selectedStage, setSelectedStage] = useState('ALL');
+  const [selectedAssignee, setSelectedAssignee] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'SMART_PRIORITY' | 'DUE_DATE' | 'RECENT'>('SMART_PRIORITY');
   const searchParams = useSearchParams();
+
+  const userSelectOptions: CustomSelectOption[] = useMemo(() => [
+    { value: 'UNASSIGN', label: 'Unassigned', shortLabel: 'Unassigned' },
+    ...assignableUsers.map((u) => ({
+      value: u.id,
+      label: `${u.fullName} (${u.role})`,
+      shortLabel: u.fullName,
+      badge: u.role,
+      group: u.role === 'TELECALLER' ? 'Telecallers' : 'Brokers & Admins',
+    })),
+  ], [assignableUsers]);
+
+  const assigneeFilterOptions: CustomSelectOption[] = useMemo(() => [
+    { value: 'ALL', label: 'All Assignees / Team', shortLabel: 'All Assignees' },
+    { value: 'UNASSIGNED', label: 'Unassigned Pool Only', shortLabel: 'Unassigned' },
+    ...assignableUsers.map((u) => ({
+      value: u.id,
+      label: `${u.fullName} (${u.role})`,
+      shortLabel: u.fullName,
+      badge: u.role,
+      group: u.role === 'TELECALLER' ? 'Telecallers' : 'Brokers & Admins',
+    })),
+  ], [assignableUsers]);
 
   // Sync search query from URL parameter if navigated from global search
   useEffect(() => {
@@ -243,6 +275,102 @@ export function LeadsMatrixClient({
     } catch (err: any) {
       setUiError(err.message || 'Error updating leads in bulk.');
       toast.error('Bulk Update Failed', { description: err.message });
+    } finally {
+      setBulkUpdating(false);
+    }
+  };
+
+  const handleAssigneeChange = async (leadId: string, newUserId: string | null) => {
+    try {
+      const res = await fetch(`/api/v1/leads/${leadId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ assignedBrokerId: newUserId }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to reassign lead');
+      }
+      const targetUser = assignableUsers.find((u) => u.id === newUserId);
+      setLeads((prev) =>
+        prev.map((l) => {
+          if (l.id === leadId) {
+            return {
+              ...l,
+              assignedBrokerId: newUserId,
+              assignedBroker: targetUser
+                ? { id: targetUser.id, fullName: targetUser.fullName, email: targetUser.email, role: targetUser.role }
+                : null,
+            };
+          }
+          return l;
+        })
+      );
+      if (selectedLeadForDrawer && selectedLeadForDrawer.id === leadId) {
+        setSelectedLeadForDrawer((prev: any) =>
+          prev
+            ? {
+                ...prev,
+                assignedBrokerId: newUserId,
+                assignedBroker: targetUser
+                  ? { id: targetUser.id, fullName: targetUser.fullName, email: targetUser.email, role: targetUser.role }
+                  : null,
+              }
+            : null
+        );
+      }
+      toast.success(
+        targetUser
+          ? `Lead assigned to ${targetUser.fullName} (${targetUser.role})`
+          : 'Lead unassigned'
+      );
+    } catch (err: any) {
+      setUiError(err.message || 'Failed to reassign lead');
+      toast.error(err.message || 'Failed to reassign lead');
+    }
+  };
+
+  const handleBulkAssign = async (targetUserId: string) => {
+    if (selectedLeadIds.length === 0 || !targetUserId) return;
+    setBulkUpdating(true);
+    try {
+      const newAssigneeId = targetUserId === 'UNASSIGN' ? null : targetUserId;
+      const res = await fetch('/api/v1/leads/bulk-update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          leadIds: selectedLeadIds,
+          assignedBrokerId: newAssigneeId,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to bulk assign leads');
+      }
+      const targetUser = assignableUsers.find((u) => u.id === newAssigneeId);
+      setLeads((prev) =>
+        prev.map((l) => {
+          if (selectedLeadIds.includes(l.id)) {
+            return {
+              ...l,
+              assignedBrokerId: newAssigneeId,
+              assignedBroker: targetUser
+                ? { id: targetUser.id, fullName: targetUser.fullName, email: targetUser.email, role: targetUser.role }
+                : null,
+            };
+          }
+          return l;
+        })
+      );
+      toast.success(
+        targetUser
+          ? `Assigned ${selectedLeadIds.length} lead(s) to ${targetUser.fullName}`
+          : `Unassigned ${selectedLeadIds.length} lead(s)`
+      );
+      setSelectedLeadIds([]);
+    } catch (err: any) {
+      setUiError(err.message || 'Failed to bulk assign leads');
+      toast.error(err.message || 'Failed to bulk assign leads');
     } finally {
       setBulkUpdating(false);
     }
@@ -489,6 +617,11 @@ export function LeadsMatrixClient({
       // Stage Filter
       const matchesStage = selectedStage === 'ALL' || l.currentStage === selectedStage;
 
+      // Assignee Filter
+      const matchesAssignee =
+        selectedAssignee === 'ALL' ||
+        (selectedAssignee === 'UNASSIGNED' ? !l.assignedBrokerId : l.assignedBrokerId === selectedAssignee);
+
       // Search Query
       const matchesSearch =
         !searchQuery ||
@@ -497,7 +630,7 @@ export function LeadsMatrixClient({
         (l.sourceCode || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
         (l.notes || '').toLowerCase().includes(searchQuery.toLowerCase());
 
-      return matchesConfidence && matchesSource && matchesStage && matchesSearch;
+      return matchesConfidence && matchesSource && matchesStage && matchesAssignee && matchesSearch;
     });
 
     // Sorting
@@ -518,7 +651,7 @@ export function LeadsMatrixClient({
       // RECENT
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
-  }, [leads, selectedConfidence, selectedSource, selectedStage, searchQuery, sortBy, scoredLeadsMap]);
+  }, [leads, selectedConfidence, selectedSource, selectedStage, selectedAssignee, searchQuery, sortBy, scoredLeadsMap]);
 
   // Overall firm metrics
   const totalFirmLeads = leads.length;
@@ -913,7 +1046,7 @@ export function LeadsMatrixClient({
 
       {/* Filter Toolbar & Sort Options */}
       <div className="p-3 sm:p-4 rounded-2xl bg-surface border border-border shadow-2xs space-y-3">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-3">
+        <div className={`grid grid-cols-1 sm:grid-cols-2 ${canReassignLeads && assignableUsers.length > 0 ? 'lg:grid-cols-6' : 'lg:grid-cols-5'} gap-2.5 sm:gap-3`}>
           {/* Search Box */}
           <div className="sm:col-span-2 lg:col-span-2 relative flex items-center">
             <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-content-muted pointer-events-none" />
@@ -955,13 +1088,26 @@ export function LeadsMatrixClient({
               className="w-full"
             />
           </div>
+
+          {/* Assignee Filter (Admins & Managers) */}
+          {canReassignLeads && assignableUsers.length > 0 && (
+            <div>
+              <CustomSelect
+                options={assigneeFilterOptions}
+                value={selectedAssignee}
+                onChange={(val) => setSelectedAssignee(val)}
+                className="w-full"
+                placeholder="Filter by Assignee..."
+              />
+            </div>
+          )}
         </div>
       </div>
 
       {/* Main Content Area: Console vs Kanban Board vs Table View */}
       {viewMode === 'console' ? (
         <TelecallerConsoleView
-          leads={leads}
+          leads={filteredAndSortedLeads}
           onStageChange={handleStageChange}
           onRefresh={fetchLeads}
           onLogCall={(lead) => setQuickLogLead(lead)}
@@ -1012,6 +1158,24 @@ export function LeadsMatrixClient({
                   />
                 </div>
 
+                {canReassignLeads && assignableUsers.length > 0 && (
+                  <div className="min-w-[210px]">
+                    <CustomSelect
+                      size="xs"
+                      direction="down"
+                      align="right"
+                      disabled={bulkUpdating || isBulkDeleting}
+                      placeholder={bulkUpdating ? 'Assigning…' : '👤 Bulk Assign to Rep…'}
+                      value=""
+                      onChange={(val) => {
+                        if (val) handleBulkAssign(val);
+                      }}
+                      triggerClassName="bg-white text-slate-900 border-white text-xs font-bold py-1 px-2.5 rounded-xl shadow-xs"
+                      options={userSelectOptions}
+                    />
+                  </div>
+                )}
+
                 {userCanDelete && (
                   <button
                     type="button"
@@ -1059,6 +1223,7 @@ export function LeadsMatrixClient({
                     />
                   </th>
                   <th className="py-4 px-4">Priority &amp; Buyer</th>
+                  <th className="py-4 px-4">Assigned Rep</th>
                   <th className="py-4 px-4">Latest Remark &amp; Audit Trail</th>
                   <th className="py-4 px-4">Scheduled Reminder / Action</th>
                   <th className="py-4 px-4">Attribution &amp; Source</th>
@@ -1149,6 +1314,29 @@ export function LeadsMatrixClient({
                               </p>
                             </div>
                           </div>
+                        </td>
+
+                        {/* Assigned Telecaller / Rep */}
+                        <td className="py-4 px-4" onClick={(e) => e.stopPropagation()}>
+                          {canReassignLeads && assignableUsers.length > 0 ? (
+                            <CustomSelect
+                              size="xs"
+                              className="w-48"
+                              value={lead.assignedBrokerId || 'UNASSIGN'}
+                              onChange={(val) => handleAssigneeChange(lead.id, val === 'UNASSIGN' ? null : val)}
+                              options={userSelectOptions}
+                            />
+                          ) : (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-surface-subtle border border-border text-content font-medium text-xs">
+                              <UserCheck className="w-3.5 h-3.5 text-accent shrink-0" />
+                              <span className="truncate">{lead.assignedBroker?.fullName || 'Unassigned'}</span>
+                              {lead.assignedBroker?.role && (
+                                <span className="text-[9px] px-1 py-0.5 rounded bg-surface border border-border text-content-muted font-mono uppercase">
+                                  {lead.assignedBroker.role}
+                                </span>
+                              )}
+                            </span>
+                          )}
                         </td>
 
                         {/* 📝 VISIBLE REMARK & AUDIT TRAIL CELL (Directly visible on table list) */}
@@ -1321,7 +1509,7 @@ export function LeadsMatrixClient({
                   })
                 ) : (
                   <tr>
-                    <td colSpan={6} className="p-8">
+                    <td colSpan={8} className="p-8">
                       <EmptyState
                         type="filter"
                         title="No Matching Leads Found"
@@ -1332,6 +1520,7 @@ export function LeadsMatrixClient({
                           setSelectedSource('ALL');
                           setSelectedStage('ALL');
                           setSelectedConfidence('ALL');
+                          setSelectedAssignee('ALL');
                         }}
                       />
                     </td>
@@ -1378,6 +1567,9 @@ export function LeadsMatrixClient({
         <SourceEvidenceDrawer
           lead={selectedLeadForDrawer}
           canDeleteLeads={userCanDelete}
+          canReassignLeads={canReassignLeads}
+          assignableUsers={assignableUsers}
+          onReassign={handleAssigneeChange}
           onClose={() => setSelectedLeadForDrawer(null)}
           onOpenMergeModal={(lead) => setMergeSourceLead(lead)}
           onLeadUpdated={fetchLeads}

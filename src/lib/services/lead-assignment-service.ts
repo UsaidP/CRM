@@ -87,6 +87,57 @@ export async function reassignLead(
 }
 
 /**
+ * Bulk reassign multiple leads to a new user (or unassign if newUserId is null).
+ * Closes previous active assignments and records new audit trail entries with MANUAL_REASSIGN.
+ * Updates the denormalized Lead.assignedBrokerId for all affected leads transactionally.
+ */
+export async function bulkReassignLeads(
+  leadIds: string[],
+  newUserId: string | null,
+  assignedById: string,
+  notes?: string
+): Promise<number> {
+  if (!leadIds || leadIds.length === 0) return 0;
+
+  const now = new Date();
+
+  return await prisma.$transaction(async (tx) => {
+    // 1. Close active assignments for all these leads
+    await tx.leadAssignment.updateMany({
+      where: {
+        leadId: { in: leadIds },
+        unassignedAt: null,
+      },
+      data: {
+        unassignedAt: now,
+      },
+    });
+
+    // 2. If assigning to a user, create new assignment records for each lead
+    if (newUserId) {
+      await tx.leadAssignment.createMany({
+        data: leadIds.map((leadId) => ({
+          leadId,
+          userId: newUserId,
+          assignedById,
+          assignedAt: now,
+          assignmentType: 'MANUAL_REASSIGN' as AssignmentType,
+          notes: notes || 'Bulk reassigned by admin',
+        })),
+      });
+    }
+
+    // 3. Update denormalized assignedBrokerId on Lead records
+    const updateResult = await tx.lead.updateMany({
+      where: { id: { in: leadIds } },
+      data: { assignedBrokerId: newUserId },
+    });
+
+    return updateResult.count;
+  });
+}
+
+/**
  * Get the full assignment history for a lead, newest first.
  */
 export async function getAssignmentHistory(leadId: string) {

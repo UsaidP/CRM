@@ -69,8 +69,19 @@ export async function ensureTestOrganization(): Promise<{ orgAId: string; orgBId
   return { orgAId: TEST_ORG_ID, orgBId: TEST_ORG_B_ID };
 }
 
+import { cleanupCollector } from '@/lib/qa/cleanup-collector';
+
 export async function cleanupTestEntities(): Promise<void> {
   try {
+    // In Overnight QA mode, structural guardrail suppresses live deletes.
+    // Cleanup is written to a human-reviewed SQL script instead.
+    if (process.env.OVERNIGHT_QA === 'true') {
+      const cleanupPath = cleanupCollector.saveCleanupScript();
+      console.log(`[test-db] Overnight QA mode: live deletes suppressed. Reviewed cleanup script written to: ${cleanupPath}`);
+      testCleanup.clear();
+      return;
+    }
+
     const leadIds = testCleanup.getRegistered('lead');
     const contactIds = testCleanup.getRegistered('contact');
     const projectIds = testCleanup.getRegistered('project');

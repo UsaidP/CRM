@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireSession, orgScope } from '@/lib/services/api-auth';
+import { requireSession, orgScope, scopedLeadFilter } from '@/lib/services/api-auth';
+import { getPermissionScope } from '@/lib/domain/rbac-engine';
 import { prisma } from '@/lib/db/prisma';
 
 export const dynamic = 'force-dynamic';
@@ -10,14 +11,24 @@ export async function GET(req: Request) {
     if (!auth.ok) return auth.response;
     const { session } = auth;
 
+    const user = await prisma.user.findUnique({
+      where: { id: session.userId },
+      select: { role: true, customPermissionsJson: true, teamId: true },
+    });
+    const scope = getPermissionScope(user, 'leads:view_all');
+    const scopeWhere = await scopedLeadFilter({ ...session, teamId: user?.teamId }, scope);
+
     const { searchParams } = new URL(req.url);
     const leadId = searchParams.get('leadId');
     const status = searchParams.get('status'); // PENDING, COMPLETED, SNOOZED, ALL
     const timeframe = searchParams.get('timeframe'); // today, overdue, upcoming, all
     const reminderType = searchParams.get('reminderType');
 
-    // Multi-tenant: restrict to caller's organization
-    const where: any = orgScope(session);
+    // Multi-tenant & role-scoped: restrict to caller's permissible leads
+    const where: any = {
+      ...orgScope(session),
+      lead: scopeWhere,
+    };
 
     if (leadId) {
       where.leadId = leadId;

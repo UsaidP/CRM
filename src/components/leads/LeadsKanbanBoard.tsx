@@ -20,6 +20,7 @@ import {
   FileText,
   Edit3,
   PlusCircle,
+  UserCheck,
 } from 'lucide-react';
 import { PrioritizedLeadScore } from '@/lib/domain/prioritization-engine';
 import { formatDateShort } from '@/lib/date-utils';
@@ -387,6 +388,17 @@ export function LeadsKanbanBoard({
                           ) : (
                             <p className="text-[10px] text-content-muted italic">Social Lead (No phone)</p>
                           )}
+                          <div className="flex items-center gap-1 text-[10px] text-content-muted mt-1">
+                            <UserCheck className="w-3 h-3 text-accent shrink-0" />
+                            <span className="truncate font-medium text-content-secondary">
+                              {lead.assignedBroker?.fullName || 'Unassigned'}
+                            </span>
+                            {lead.assignedBroker?.role && (
+                              <span className="text-[8px] px-1 py-0.2 rounded bg-surface border border-border text-content-muted font-mono uppercase">
+                                {lead.assignedBroker.role}
+                              </span>
+                            )}
+                          </div>
                         </div>
 
                         {/* 📝 VISIBLE REMARK & COMMUNICATION AUDIT TRAIL BOX (Visible directly on card) */}

@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
-import { requirePermission, requirePermissionWithScope, scopedLeadFilter, orgScope } from '@/lib/services/api-auth';
+import { requirePermission, requirePermissionWithScope, scopedLeadFilter } from '@/lib/services/api-auth';
 import { prisma } from '@/lib/db/prisma';
 import { ensureLeadFallbackReminder } from '@/lib/services/lead-reminder-service';
+import { bulkReassignLeads } from '@/lib/services/lead-assignment-service';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,21 +27,7 @@ export async function POST(req: Request) {
       if (!reassignAuth.ok) return reassignAuth.response;
     }
 
-    const updateData: any = {};
-    if (currentStage) {
-      updateData.currentStage = currentStage;
-      if (currentStage !== 'new_uncontacted') {
-        updateData.firstResponseAt = new Date();
-      }
-    }
-    if (assignedBrokerId !== undefined) {
-      updateData.assignedBrokerId = assignedBrokerId || null;
-    }
-    if (notes) {
-      updateData.notes = notes;
-    }
-
-    if (Object.keys(updateData).length === 0) {
+    if (!currentStage && assignedBrokerId === undefined && !notes) {
       return NextResponse.json(
         { success: false, error: 'No update fields provided.' },
         { status: 400 }
@@ -49,17 +36,55 @@ export async function POST(req: Request) {
 
     // Ensure we only update leads within the user's permissible data scope
     const scopeWhere = await scopedLeadFilter(session, scope);
-    const updateResult = await prisma.lead.updateMany({
+    const authorizedLeads = await prisma.lead.findMany({
       where: {
         id: { in: leadIds },
         ...scopeWhere,
       },
-      data: updateData,
+      select: { id: true },
     });
+    const authorizedIds = authorizedLeads.map((l) => l.id);
 
-    // If stage was updated, sync fallback reminders for affected leads
+    if (authorizedIds.length === 0) {
+      return NextResponse.json({
+        success: true,
+        message: 'No leads matched your accessible data scope.',
+        updatedCount: 0,
+      });
+    }
+
+    // 1. Handle reassignment with atomic audit trail
+    if (assignedBrokerId !== undefined) {
+      await bulkReassignLeads(
+        authorizedIds,
+        assignedBrokerId || null,
+        session.userId,
+        notes
+      );
+    }
+
+    // 2. Handle other field updates (stage, notes)
+    const otherUpdates: any = {};
     if (currentStage) {
-      for (const id of leadIds) {
+      otherUpdates.currentStage = currentStage;
+      if (currentStage !== 'new_uncontacted') {
+        otherUpdates.firstResponseAt = new Date();
+      }
+    }
+    if (notes && assignedBrokerId === undefined) {
+      otherUpdates.notes = notes;
+    }
+
+    if (Object.keys(otherUpdates).length > 0) {
+      await prisma.lead.updateMany({
+        where: { id: { in: authorizedIds } },
+        data: otherUpdates,
+      });
+    }
+
+    // 3. If stage was updated, sync fallback reminders for affected leads
+    if (currentStage) {
+      for (const id of authorizedIds) {
         try {
           await ensureLeadFallbackReminder(id, { organizationId: session.organizationId });
         } catch {
@@ -70,8 +95,8 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: true,
-      message: `Successfully updated ${updateResult.count} leads.`,
-      updatedCount: updateResult.count,
+      message: `Successfully updated ${authorizedIds.length} leads.`,
+      updatedCount: authorizedIds.length,
     });
   } catch (error: any) {
     console.error('Error during bulk leads update:', error);

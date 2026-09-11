@@ -79,7 +79,14 @@ export async function GET(req: Request) {
             },
           },
           assignedBroker: {
-            select: { id: true, fullName: true, email: true, phoneE164: true },
+            select: { id: true, fullName: true, email: true, phoneE164: true, role: true },
+          },
+          assignments: {
+            where: { unassignedAt: null },
+            include: {
+              user: { select: { id: true, fullName: true, role: true } },
+            },
+            take: 1,
           },
           requirements: true,
           communications: {

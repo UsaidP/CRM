@@ -174,11 +174,11 @@ export async function requirePermissionWithScope(
 /**
  * Build a Prisma where clause for leads based on scope.
  *
- * GLOBAL       → {} (no additional filter beyond org)
- * ORGANIZATION → { organizationId } (existing behavior)
- * TEAM         → assignedBrokerId IN [team member IDs]
- * OWN_AND_ASSIGNED → assignedBrokerId = userId OR has active LeadAssignment
- * OWN          → assignedBrokerId = userId
+ * GLOBAL           → {} (no additional filter beyond org)
+ * ORGANIZATION     → { organizationId } (firm-wide access)
+ * TEAM             → assignedBrokerId IN [team member IDs] OR active team LeadAssignment
+ * OWN_AND_ASSIGNED → assignedBrokerId = userId OR active LeadAssignment
+ * OWN              → assignedBrokerId = userId
  */
 export async function scopedLeadFilter(
   session: SessionPayload,
@@ -196,7 +196,17 @@ export async function scopedLeadFilter(
       const teamMemberIds = await getTeamMemberIds(session.userId);
       return {
         ...base,
-        assignedBrokerId: { in: teamMemberIds },
+        OR: [
+          { assignedBrokerId: { in: teamMemberIds } },
+          {
+            assignments: {
+              some: {
+                userId: { in: teamMemberIds },
+                unassignedAt: null,
+              },
+            },
+          },
+        ],
       };
     }
 

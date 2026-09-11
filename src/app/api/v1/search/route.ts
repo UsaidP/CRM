@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { requireSession } from '@/lib/services/api-auth';
+import { requireSession, scopedLeadFilter } from '@/lib/services/api-auth';
+import { getPermissionScope } from '@/lib/domain/rbac-engine';
 import { prisma } from '@/lib/db/prisma';
 
 export const dynamic = 'force-dynamic';
@@ -27,6 +28,14 @@ export async function GET(req: Request) {
 
     const queryDigits = q.replace(/\D/g, '');
 
+    // Resolve scope for leads
+    const user = await prisma.user.findUnique({
+      where: { id: auth.session.userId },
+      select: { role: true, customPermissionsJson: true, teamId: true },
+    });
+    const scope = getPermissionScope(user, 'leads:view_all');
+    const scopeWhere = await scopedLeadFilter({ ...auth.session, teamId: user?.teamId }, scope);
+
     // 1. Search Leads
     const leadOrConditions: any[] = [
       { fullName: { contains: q } },
@@ -41,7 +50,7 @@ export async function GET(req: Request) {
 
     const rawLeads = await prisma.lead.findMany({
       where: {
-        organizationId: auth.session.organizationId,
+        ...scopeWhere,
         OR: leadOrConditions,
       },
       take: 6,

@@ -73,19 +73,25 @@ const DRAWER_STAGE_OPTIONS: CustomSelectOption[] = [
 interface SourceEvidenceDrawerProps {
   lead: any | null;
   canDeleteLeads?: boolean;
+  canReassignLeads?: boolean;
+  assignableUsers?: Array<{ id: string; fullName: string; role: string; email: string }>;
   onClose: () => void;
   onOpenMergeModal: (lead: any) => void;
   onLeadUpdated?: () => void;
   onLeadDeleted?: (deletedLeadId: string) => void;
+  onReassign?: (leadId: string, newUserId: string | null) => Promise<void>;
 }
 
 export function SourceEvidenceDrawer({
   lead,
   canDeleteLeads = false,
+  canReassignLeads = false,
+  assignableUsers = [],
   onClose,
   onOpenMergeModal,
   onLeadUpdated,
   onLeadDeleted,
+  onReassign,
 }: SourceEvidenceDrawerProps) {
   // Hooks must run unconditionally — guard values with `lead?.` instead of
   // returning early before them (react-hooks/rules-of-hooks).
@@ -407,12 +413,43 @@ export function SourceEvidenceDrawer({
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-content-muted">Assigned Broker Lead:</span>
-                  <span className="text-accent-text font-semibold flex items-center gap-1.5">
-                    <UserCheck className="w-3.5 h-3.5" />
-                    {lead.assignedBroker?.fullName || 'Safwan Diwan'}
-                  </span>
+                <div className="flex items-center justify-between text-xs gap-2">
+                  <span className="text-content-muted shrink-0">Assigned Telecaller / Rep:</span>
+                  {canReassignLeads && assignableUsers && assignableUsers.length > 0 ? (
+                    <div className="w-56">
+                      <CustomSelect
+                        size="xs"
+                        align="right"
+                        value={lead.assignedBrokerId || 'UNASSIGN'}
+                        onChange={async (val) => {
+                          const newUserId = val === 'UNASSIGN' ? null : val;
+                          if (onReassign) {
+                            await onReassign(lead.id, newUserId);
+                          }
+                        }}
+                        options={[
+                          { value: 'UNASSIGN', label: 'Unassigned', shortLabel: 'Unassigned' },
+                          ...assignableUsers.map((u) => ({
+                            value: u.id,
+                            label: `${u.fullName} (${u.role})`,
+                            shortLabel: u.fullName,
+                            badge: u.role,
+                            group: u.role === 'TELECALLER' ? 'Telecallers' : 'Brokers & Admins',
+                          })),
+                        ]}
+                      />
+                    </div>
+                  ) : (
+                    <span className="text-accent-text font-semibold flex items-center gap-1.5">
+                      <UserCheck className="w-3.5 h-3.5" />
+                      {lead.assignedBroker?.fullName || 'Unassigned'}
+                      {lead.assignedBroker?.role && (
+                        <span className="text-[9px] px-1 py-0.5 rounded bg-surface border border-border text-content-muted font-mono uppercase">
+                          {lead.assignedBroker.role}
+                        </span>
+                      )}
+                    </span>
+                  )}
                 </div>
 
                 {lead.campaign && (
