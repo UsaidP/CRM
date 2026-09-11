@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Firm Calendar & Lead Reminders | ZamZam CRM',
+  title: 'Firm Calendar & Lead Reminders',
   description: 'Unified brokerage calendar, scheduled follow-ups, and site visit tours for ZamZam Properties',
 };
 

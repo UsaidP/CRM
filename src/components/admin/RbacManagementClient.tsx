@@ -96,6 +96,7 @@ export function RbacManagementClient() {
   const [selectedTeamId, setSelectedTeamId] = useState<string>('');
   const [customPermissions, setCustomPermissions] = useState<PermissionKey[]>([]);
   const [isSaving, setIsSaving] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   // New User Modal State
   const [showAddUserModal, setShowAddUserModal] = useState(false);
@@ -224,6 +225,12 @@ export function RbacManagementClient() {
   useEffect(() => {
     fetchUsers();
     fetchTeams();
+    fetch('/api/v1/auth/session')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.user?.id) setCurrentUserId(data.user.id);
+      })
+      .catch(() => {});
   }, []);
 
   const handleOpenEdit = (user: any) => {
@@ -272,6 +279,13 @@ export function RbacManagementClient() {
 
   const handleSavePermissions = async () => {
     if (!editingUser) return;
+
+    // Safeguard: prevent modifying own administrative role
+    if (editingUser.id === currentUserId && selectedRole !== editingUser.role) {
+      setErrorMsg('You cannot change your own administrative role. Another administrator must modify your role to prevent accidental lockout.');
+      return;
+    }
+
     setIsSaving(true);
     setErrorMsg(null);
 
@@ -699,18 +713,37 @@ export function RbacManagementClient() {
             </div>
 
             {/* Role & Team Switcher Toolbar */}
-            <div className="p-5 border-b border-border bg-surface grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
-              <div>
-                <label className="text-[11px] font-bold text-content-muted block mb-1">
-                  Primary Base Role:
-                </label>
-                <CustomSelect
-                  options={ROLE_OPTIONS}
-                  value={selectedRole}
-                  onChange={(val) => setSelectedRole(val as CrmRole)}
-                  className="w-full"
-                />
-              </div>
+            <div className="p-5 border-b border-border bg-surface flex flex-col gap-4">
+              {editingUser?.id === currentUserId && (
+                <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-start gap-2.5 text-[12px] text-amber-500">
+                  <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-semibold block">Self-Lockout Safeguard Active</span>
+                    <span className="text-content-muted text-[11px] block mt-0.5">
+                      You are editing your own user profile. Modifying your own administrative role is locked to prevent accidental lockout from the admin panel.
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                <div>
+                  <label className="text-[11px] font-bold text-content-muted block mb-1">
+                    Primary Base Role:
+                  </label>
+                  <CustomSelect
+                    options={ROLE_OPTIONS}
+                    value={selectedRole}
+                    onChange={(val) => setSelectedRole(val as CrmRole)}
+                    disabled={editingUser?.id === currentUserId}
+                    className="w-full"
+                  />
+                  {editingUser?.id === currentUserId && (
+                    <span className="text-[10px] text-content-muted block mt-1">
+                      🔒 Locked: Base role modifications must be performed by another administrator.
+                    </span>
+                  )}
+                </div>
 
               <div>
                 <label className="text-[11px] font-bold text-content-muted block mb-1">

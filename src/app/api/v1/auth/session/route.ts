@@ -99,9 +99,13 @@ export async function GET(req: Request) {
       },
     });
 
-    // Refresh the cookie only for an already-valid session whose org binding
-    // changed (e.g. user moved organizations). User identity never changes here.
-    if (user.organizationId !== payload.organizationId || user.teamId !== payload.teamId) {
+    // Refresh the cookie for an already-valid session whose org binding, team,
+    // or assigned role changed in the database. User identity never changes here.
+    if (
+      user.organizationId !== payload.organizationId ||
+      user.teamId !== payload.teamId ||
+      user.role !== payload.role
+    ) {
       const newToken = await createSessionToken({
         userId: user.id,
         email: user.email,

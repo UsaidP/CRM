@@ -65,71 +65,75 @@ export async function DELETE(
       }
     }
 
-    await prisma.$transaction(async (tx) => {
-      // 1. Delete broker phone numbers (also covered by cascade)
-      await tx.brokerPhoneNumber.deleteMany({
-        where: { brokerId: target.id },
-      });
+    await prisma.$transaction(
+      async (tx) => {
+        // 1. Delete dependent child records in parallel
+        await Promise.all([
+          tx.brokerPhoneNumber.deleteMany({
+            where: { brokerId: target.id },
+          }),
+          tx.leadAssignment.deleteMany({
+            where: { userId: target.id },
+          }),
+          tx.inventoryAuditLog.deleteMany({
+            where: { auditorUserId: target.id },
+          }),
+        ]);
 
-      // 2. Clean up lead assignments
-      await tx.leadAssignment.deleteMany({
-        where: { userId: target.id },
-      });
-      await tx.leadAssignment.updateMany({
-        where: { assignedById: target.id },
-        data: { assignedById: null },
-      });
+        // 2. Unassign relations across foreign keys in parallel
+        await Promise.all([
+          tx.leadAssignment.updateMany({
+            where: { assignedById: target.id },
+            data: { assignedById: null },
+          }),
+          tx.contact.updateMany({
+            where: { assignedBrokerId: target.id },
+            data: { assignedBrokerId: null },
+          }),
+          tx.lead.updateMany({
+            where: { assignedBrokerId: target.id },
+            data: { assignedBrokerId: null },
+          }),
+          tx.siteVisit.updateMany({
+            where: { assignedBrokerId: target.id },
+            data: { assignedBrokerId: null },
+          }),
+          tx.dealTransaction.updateMany({
+            where: { closingBrokerId: target.id },
+            data: { closingBrokerId: null },
+          }),
+          tx.inboundCampaign.updateMany({
+            where: { assignedBrokerId: target.id },
+            data: { assignedBrokerId: null },
+          }),
+          tx.clientPortal.updateMany({
+            where: { createdById: target.id },
+            data: { createdById: null },
+          }),
+          tx.contactMergeAudit.updateMany({
+            where: { mergedByUserId: target.id },
+            data: { mergedByUserId: null },
+          }),
+          tx.propertyUnit.updateMany({
+            where: { verifiedByUserId: target.id },
+            data: { verifiedByUserId: null },
+          }),
+          tx.team.updateMany({
+            where: { managerId: target.id },
+            data: { managerId: null },
+          }),
+        ]);
 
-      // 3. Unassign contacts & leads
-      await tx.contact.updateMany({
-        where: { assignedBrokerId: target.id },
-        data: { assignedBrokerId: null },
-      });
-      await tx.lead.updateMany({
-        where: { assignedBrokerId: target.id },
-        data: { assignedBrokerId: null },
-      });
-
-      // 4. Unassign site visits & deal transactions
-      await tx.siteVisit.updateMany({
-        where: { assignedBrokerId: target.id },
-        data: { assignedBrokerId: null },
-      });
-      await tx.dealTransaction.updateMany({
-        where: { closingBrokerId: target.id },
-        data: { closingBrokerId: null },
-      });
-
-      // 5. Unassign campaigns, portals, merges, units, and teams
-      await tx.inboundCampaign.updateMany({
-        where: { assignedBrokerId: target.id },
-        data: { assignedBrokerId: null },
-      });
-      await tx.clientPortal.updateMany({
-        where: { createdById: target.id },
-        data: { createdById: null },
-      });
-      await tx.contactMergeAudit.updateMany({
-        where: { mergedByUserId: target.id },
-        data: { mergedByUserId: null },
-      });
-      await tx.propertyUnit.updateMany({
-        where: { verifiedByUserId: target.id },
-        data: { verifiedByUserId: null },
-      });
-      await tx.inventoryAuditLog.deleteMany({
-        where: { auditorUserId: target.id },
-      });
-      await tx.team.updateMany({
-        where: { managerId: target.id },
-        data: { managerId: null },
-      });
-
-      // 6. Delete the user record
-      await tx.user.delete({
-        where: { id: target.id },
-      });
-    });
+        // 3. Delete the user record
+        await tx.user.delete({
+          where: { id: target.id },
+        });
+      },
+      {
+        maxWait: 10000, // 10s wait for pool connection
+        timeout: 30000, // 30s timeout for all operations
+      }
+    );
 
     return NextResponse.json({
       success: true,
