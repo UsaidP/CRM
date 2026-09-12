@@ -4,6 +4,7 @@ import { useRef, useState } from 'react';
 import { ArrowDown, ArrowUp, Film, Image as ImageIcon, Loader2, Sparkles, Trash2, UploadCloud } from 'lucide-react';
 import { FeedbackAlert } from '@/components/ui/FeedbackAlert';
 import { compressImageFile, isCompressibleImage, formatBytes } from '@/lib/client/image-compressor';
+import { uploadToCloudinaryChunked } from '@/lib/client/cloudinary-chunked-upload';
 
 export interface MediaAsset {
   id: string;
@@ -37,6 +38,7 @@ export function MediaUploader({
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [compressing, setCompressing] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [compressionStats, setCompressionStats] = useState<{
     originalSize: number;
@@ -54,15 +56,17 @@ export function MediaUploader({
     setError(null);
     setUploading(true);
     setCompressing(true);
+    setStatusMessage('Preparing and compressing media...');
 
     try {
       let totalOriginalBytes = 0;
       let totalCompressedBytes = 0;
 
       // Compress all compressible image files on the client before network transmission
-      const processedFiles: File[] = [];
+      const processedFiles: { file: File; isVideo: boolean }[] = [];
       for (const file of files) {
-        if (isCompressibleImage(file)) {
+        const isVideo = Boolean(file.type?.startsWith('video/') || file.name.match(/\.(mp4|mov|webm|mkv|avi)$/i));
+        if (!isVideo && isCompressibleImage(file)) {
           totalOriginalBytes += file.size;
           try {
             const compressed = await compressImageFile(file, {
@@ -71,14 +75,16 @@ export function MediaUploader({
               quality: 0.82,
             });
             totalCompressedBytes += compressed.compressedBytes;
-            processedFiles.push(compressed.file);
+            processedFiles.push({ file: compressed.file, isVideo: false });
           } catch (compErr: any) {
             console.warn(`[COMPRESS_FALLBACK] Using original file for "${file.name}":`, compErr);
             totalCompressedBytes += file.size;
-            processedFiles.push(file);
+            processedFiles.push({ file, isVideo: false });
           }
         } else {
-          processedFiles.push(file);
+          totalOriginalBytes += file.size;
+          totalCompressedBytes += file.size;
+          processedFiles.push({ file, isVideo });
         }
       }
 
@@ -94,19 +100,82 @@ export function MediaUploader({
         });
       }
 
-      const formData = new FormData();
-      processedFiles.forEach((file) => formData.append('files', file));
-      const response = await fetch('/api/v1/inventory/media', { method: 'POST', body: formData });
-      const data = await response.json();
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || 'Media upload failed.');
+      const newUploadedAssets: MediaAsset[] = [];
+
+      for (let i = 0; i < processedFiles.length; i++) {
+        const { file, isVideo } = processedFiles[i];
+        setStatusMessage(
+          processedFiles.length > 1
+            ? `Uploading ${isVideo ? 'video' : 'photo'} ${i + 1} of ${processedFiles.length}...`
+            : `Uploading ${isVideo ? 'video' : 'photo'} to cloud vault...`
+        );
+
+        let uploaded = false;
+
+        // Strategy 1: Direct CDN upload via signed Cloudinary params (bypasses 4.5MB serverless body limits)
+        try {
+          const category = isVideo ? 'videos' : 'gallery';
+          const signRes = await fetch(
+            `/api/v1/media/sign-upload?category=${category}&filename=${encodeURIComponent(file.name)}&resourceType=${isVideo ? 'video' : 'image'}`
+          );
+          if (signRes.ok) {
+            const signData = await signRes.json();
+            if (signData?.success && signData?.configured && signData?.signed) {
+              const cldRes = await uploadToCloudinaryChunked(file, signData.signed, file.name);
+              if (cldRes && (cldRes.secure_url || cldRes.url)) {
+                newUploadedAssets.push({
+                  id: cldRes.public_id,
+                  url: cldRes.secure_url || cldRes.url,
+                  kind: isVideo ? 'video' : 'image',
+                  title: file.name.replace(/\.[^/.]+$/, '').slice(0, 120),
+                  alt: file.name.replace(/\.[^/.]+$/, '').slice(0, 240),
+                  mimeType: file.type || (isVideo ? 'video/mp4' : 'image/jpeg'),
+                  bytes: cldRes.bytes || file.size,
+                });
+                uploaded = true;
+              }
+            }
+          }
+        } catch (cldErr: any) {
+          console.warn(`[MEDIA] Direct Cloudinary upload notice for "${file.name}":`, cldErr?.message || cldErr);
+        }
+
+        // Strategy 2: Individual server-side upload fallback with robust HTTP & 413 error handling
+        if (!uploaded) {
+          const formData = new FormData();
+          formData.append('files', file);
+
+          const response = await fetch('/api/v1/inventory/media', { method: 'POST', body: formData });
+          const rawText = await response.text();
+          let data: any = null;
+          try {
+            data = JSON.parse(rawText);
+          } catch {
+            if (response.status === 413 || rawText.includes('Request Entity Too Large') || rawText.includes('Payload Too Large')) {
+              throw new Error(
+                `"${file.name}" (${(file.size / (1024 * 1024)).toFixed(1)} MB) exceeds the upload payload limit. Please select a smaller file or compressed format.`
+              );
+            }
+            throw new Error(`Server returned HTTP ${response.status}: ${rawText.slice(0, 120)}`);
+          }
+
+          if (!response.ok || !data?.success) {
+            throw new Error(data?.error || `Failed to upload "${file.name}".`);
+          }
+
+          if (Array.isArray(data.data)) {
+            newUploadedAssets.push(...(data.data as MediaAsset[]));
+          }
+        }
       }
-      onChange([...value, ...(data.data as MediaAsset[])]);
+
+      onChange([...value, ...newUploadedAssets]);
     } catch (uploadError: any) {
       setError(uploadError.message || 'Media upload failed. Try a smaller file or another format.');
     } finally {
       setUploading(false);
       setCompressing(false);
+      setStatusMessage(null);
       if (inputRef.current) inputRef.current.value = '';
     }
   };
@@ -164,7 +233,7 @@ export function MediaUploader({
       <input
         ref={inputRef}
         type="file"
-        accept="image/*,video/*,image/jpeg,image/png,image/webp,image/avif,video/mp4,video/webm,video/quicktime,video/x-m4v"
+        accept="image/*,video/*,image/jpeg,image/png,image/webp,image/avif,image/heic,image/heif,video/mp4,video/webm,video/quicktime,video/x-m4v"
         multiple
         className="sr-only"
         onChange={(event) => uploadFiles(Array.from(event.target.files || []))}
@@ -188,7 +257,7 @@ export function MediaUploader({
           <div className="flex items-center gap-2 text-xs font-semibold text-accent-text">
             <Loader2 className="h-4 w-4 animate-spin" />
             <span>
-              {compressing ? 'Optimizing & compressing images…' : 'Saving media to cloud vault…'}
+              {statusMessage || (compressing ? 'Optimizing & compressing images…' : 'Saving media to cloud vault…')}
             </span>
           </div>
         ) : (
