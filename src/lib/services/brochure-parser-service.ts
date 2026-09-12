@@ -1056,7 +1056,7 @@ export async function parseBrochureAsync(
       data: fallbackData,
       extractionMethod: 'REGEX_FALLBACK',
       modelUsed: 'Smart Local Parser (Quota Safe)',
-      note: 'AI service unavailable. Parsed using local text extraction engine.',
+      note: `AI service notice (${error?.message || error}). Parsed using local text extraction engine.`,
     };
   }
 }

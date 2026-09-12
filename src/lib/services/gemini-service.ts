@@ -15,7 +15,10 @@ import type { BuyerRequirementInput, PropertyUnitForMatching } from '@/lib/domai
  * Singleton / Lazy GoogleGenAI client
  */
 function getGeminiClient(): GoogleGenAI | null {
-  const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+  const apiKey =
+    process.env.GEMINI_API_KEY ||
+    process.env.GOOGLE_API_KEY ||
+    'AIzaSyBaLReTQMslUOWW3ch6pGNjov3nbr0GWF0';
   if (!apiKey || apiKey === 'your_gemini_api_key_here' || apiKey === 'your_google_api_key_here') {
     return null;
   }
