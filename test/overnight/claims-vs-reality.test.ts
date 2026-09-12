@@ -3,8 +3,11 @@ import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 describe('Overnight QA: Claims vs. Reality Architectural Audit', () => {
-  it('Middleware public API allow-list matches documented auth coverage list', () => {
-    const middlewareSrc = readFileSync(join(process.cwd(), 'src', 'middleware.ts'), 'utf8');
+  it('Middleware/Proxy public API allow-list matches documented auth coverage list', () => {
+    const proxyPath = existsSync(join(process.cwd(), 'src', 'proxy.ts'))
+      ? join(process.cwd(), 'src', 'proxy.ts')
+      : join(process.cwd(), 'src', 'middleware.ts');
+    const middlewareSrc = readFileSync(proxyPath, 'utf8');
     const authCoverageSrc = readFileSync(join(process.cwd(), 'test', 'api-auth-coverage.test.ts'), 'utf8');
 
     // Extract prefixes
@@ -39,10 +42,14 @@ describe('Overnight QA: Claims vs. Reality Architectural Audit', () => {
       /secret:\s*['"]password123['"]/i,
     ];
 
+    const proxyRelPath = existsSync(join(process.cwd(), 'src', 'proxy.ts'))
+      ? 'src/proxy.ts'
+      : 'src/middleware.ts';
+
     const filesToCheck = [
       'src/lib/services/auth-service.ts',
       'src/lib/services/api-auth.ts',
-      'src/middleware.ts',
+      proxyRelPath,
     ];
 
     for (const file of filesToCheck) {

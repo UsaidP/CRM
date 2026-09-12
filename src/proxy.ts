@@ -24,7 +24,7 @@ const PUBLIC_API_PREFIXES = [
   '/api/v1/inventory/rera/certificate-view',
 ];
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // 1. Allow Next.js internals, static assets, images, icons, and metadata files

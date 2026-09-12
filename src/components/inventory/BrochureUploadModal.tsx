@@ -443,9 +443,9 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
           throw new Error(`File size (${(file.size / (1024 * 1024)).toFixed(1)} MB) exceeds the 50 MB upload limit.`);
         }
 
-        if (file.size > 4 * 1024 * 1024) {
-          // Large files (> 4MB up to 50MB): Stream via self-contained chunked uploader
-          // Bypasses Vercel 4.5MB serverless payload limit and Cloudinary 10MB free-tier limits seamlessly
+        if (file.size > 2 * 1024 * 1024) {
+          // Files > 2MB (up to 50MB): Stream via self-contained chunked uploader
+          // Bypasses Vercel/Next.js 4.5MB serverless payload limit and Base64 size inflation
           json = await uploadBrochureChunked({
             file,
             signal: controller.signal,
@@ -456,7 +456,7 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
             },
           });
         } else {
-          // Smaller files (<= 4MB): base64 JSON payload is quick and reliable
+          // Smaller files (<= 2MB): base64 JSON payload is quick and reliable
           let base64Data: string | null = null;
           try {
             base64Data = await new Promise<string>((resolve, reject) => {
@@ -484,12 +484,20 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
           try {
             json = JSON.parse(rawText);
           } catch {
-            if (res.status === 413 || rawText.includes('Request Entity Too Large')) {
-              throw new Error(
-                `File size (${(file ? (file.size / (1024 * 1024)).toFixed(1) : '')} MB) exceeds maximum upload payload limit.`
-              );
+            if (res.status === 413 || rawText.includes('Request Entity Too Large') || rawText.includes('Payload Too Large')) {
+              // Resilient auto-fallback: Stream via chunked uploader if server rejected payload size
+              json = await uploadBrochureChunked({
+                file,
+                signal: controller.signal,
+                onProgress: (prog) => {
+                  const step = Math.min(5, Math.max(1, Math.ceil((prog.percent / 100) * 5)));
+                  setParseProgressStep(step);
+                  setCustomProgressText(prog.statusText);
+                },
+              });
+            } else {
+              throw new Error(`Server returned HTTP ${res.status}: ${rawText.slice(0, 150)}`);
             }
-            throw new Error(`Server returned HTTP ${res.status}: ${rawText.slice(0, 150)}`);
           }
         }
       } else if (uploadMode === 'text' && pastedText.trim()) {

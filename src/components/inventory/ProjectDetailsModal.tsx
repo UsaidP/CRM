@@ -441,8 +441,8 @@ export function ProjectDetailsModal({
     try {
       let json: any;
 
-      if (file.size > 4 * 1024 * 1024) {
-        // Large files (> 4MB up to 50MB): Stream via chunked uploader to bypass Vercel 4.5MB limit
+      if (file.size > 2 * 1024 * 1024) {
+        // Large files (> 2MB up to 50MB): Stream via chunked uploader to bypass Vercel/Next.js 4.5MB limit and base64 inflation
         json = await uploadBrochureChunked({
           file,
           projectId: currentProject.id,
@@ -470,7 +470,14 @@ export function ProjectDetailsModal({
         try {
           json = JSON.parse(rawText);
         } catch {
-          throw new Error(`Server response error: ${rawText.slice(0, 100)}`);
+          if (res.status === 413 || rawText.includes('Request Entity Too Large') || rawText.includes('Payload Too Large')) {
+            json = await uploadBrochureChunked({
+              file,
+              projectId: currentProject.id,
+            });
+          } else {
+            throw new Error(`Server response error: ${rawText.slice(0, 100)}`);
+          }
         }
       }
 

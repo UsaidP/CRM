@@ -17,6 +17,7 @@ async function resetToSuperAdmin() {
     // 1. Purge all records in reverse dependency order
     console.log('🗑️  Purging all CRM data, leads, deals, contacts, inventory, portals, and logs...');
     
+    await prisma.brochureUploadChunk.deleteMany({}).catch(() => {});
     await prisma.leadReminder.deleteMany({});
     await prisma.portalTelemetryLog.deleteMany({});
     await prisma.clientPortalUnit.deleteMany({});

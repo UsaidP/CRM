@@ -9,6 +9,7 @@ async function cleanDatabase() {
     // 1. Clear tables in reverse dependency order
     console.log('🗑️  Deleting all table records...');
     
+    await prisma.brochureUploadChunk.deleteMany({}).catch(() => {});
     await prisma.leadReminder.deleteMany({});
     await prisma.portalTelemetryLog.deleteMany({});
     await prisma.clientPortalUnit.deleteMany({});
