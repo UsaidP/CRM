@@ -71,6 +71,7 @@ export async function POST(req: Request) {
         officialPortalUrl: projectRecord.officialPortalUrl,
         directSearchUrl: projectRecord.directSearchUrl,
       },
+      error: isAuthentic ? undefined : (certError || 'Authentic MahaRERA certificate could not be downloaded at this time.'),
       message: isAuthentic
         ? `Official MahaRERA Certificate for ${projectRecord.projectName} (${projectRecord.reraNumber}) downloaded authentically from portal.`
         : certError || 'Authentic MahaRERA certificate could not be downloaded at this time.',

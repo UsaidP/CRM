@@ -244,15 +244,18 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
       });
 
       const json = await res.json();
-      if (!res.ok || !json.success) {
-        throw new Error(json.error || 'Failed to download MahaRERA certificate.');
+      if (json?.data?.projectRecord) {
+        setProjectData((prev: any) => ({
+          ...prev,
+          reraVerification: json.data.projectRecord,
+          ...(json.data.certificateUrl ? { reraCertificateUrl: json.data.certificateUrl } : {}),
+        }));
       }
 
-      setProjectData((prev: any) => ({
-        ...prev,
-        reraCertificateUrl: json.data.certificateUrl,
-        reraVerification: json.data.projectRecord,
-      }));
+      if (!res.ok || !json.success) {
+        throw new Error(json.error || json.message || 'Failed to download MahaRERA certificate.');
+      }
+
       setCertificateSuccessMsg(`MahaRERA Certificate for ${json.data.projectRecord.projectName} verified & synchronized!`);
       setTimeout(() => setCertificateSuccessMsg(null), 5000);
     } catch (err: any) {

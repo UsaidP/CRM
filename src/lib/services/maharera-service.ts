@@ -319,6 +319,33 @@ export interface AuthenticMahaReraExtractionResult {
 }
 
 /**
+ * Resilient fetch helper with exponential backoff for slow/flaky government endpoints
+ */
+async function fetchWithRetry(
+  url: string,
+  options: RequestInit = {},
+  retries = 2,
+  delayMs = 1200
+): Promise<Response> {
+  let lastErr: any;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(url, options);
+      if (res.ok || (res.status >= 400 && res.status < 500 && res.status !== 408 && res.status !== 429)) {
+        return res;
+      }
+      lastErr = new Error(`HTTP ${res.status}: ${res.statusText}`);
+    } catch (err: any) {
+      lastErr = err;
+    }
+    if (attempt < retries) {
+      await new Promise((r) => setTimeout(r, delayMs * Math.pow(1.5, attempt)));
+    }
+  }
+  throw lastErr;
+}
+
+/**
  * Live MahaRERA Web Extraction Scraper
  * Executes the authentic "original sign direct" extraction pipeline:
  * 1. Queries https://maharera.maharashtra.gov.in/projects-search-result
@@ -330,7 +357,7 @@ export interface AuthenticMahaReraExtractionResult {
  */
 export async function fetchAuthenticMahaReraCertificate(
   reraNumber: string,
-  timeoutMs = 15000
+  timeoutMs = 35000
 ): Promise<AuthenticMahaReraExtractionResult> {
   const cleanRera = (reraNumber || '').trim().toUpperCase();
   if (!cleanRera) {
@@ -352,13 +379,21 @@ export async function fetchAuthenticMahaReraCertificate(
 
   try {
     const headers = {
-      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-      'Accept-Language': 'en-US,en;q=0.9',
+      'User-Agent':
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+      'Accept-Language': 'en-US,en;q=0.9,mr;q=0.8,hi;q=0.7',
+      'Sec-Ch-Ua': '"Chromium";v="123", "Not:A-Brand";v="8"',
+      'Sec-Ch-Ua-Mobile': '?0',
+      'Sec-Ch-Ua-Platform': '"macOS"',
+      'Sec-Fetch-Dest': 'document',
+      'Sec-Fetch-Mode': 'navigate',
+      'Sec-Fetch-Site': 'same-origin',
+      'Connection': 'keep-alive',
     };
 
     // Step 1: Obtain search page CSRF form_build_id and session cookie
-    const getRes = await fetch('https://maharera.maharashtra.gov.in/projects-search-result', {
+    const getRes = await fetchWithRetry('https://maharera.maharashtra.gov.in/projects-search-result', {
       headers,
       signal: controller.signal,
     });
@@ -384,7 +419,7 @@ export async function fetchAuthenticMahaReraCertificate(
     params.append('form_id', 'projects_search_page_form');
     params.append('op', 'Search');
 
-    const searchRes = await fetch('https://maharera.maharashtra.gov.in/projects-search-result', {
+    const searchRes = await fetchWithRetry('https://maharera.maharashtra.gov.in/projects-search-result', {
       method: 'POST',
       headers: {
         ...headers,
@@ -443,7 +478,7 @@ export async function fetchAuthenticMahaReraCertificate(
     const qstrId = qstrMatch[1];
 
     // Step 4: Download authentic certificate PDF via AJAX document endpoint
-    const docRes = await fetch(`https://maharera.maharashtra.gov.in/project-document?id=${qstrId}&type=DocProjectCert`, {
+    const docRes = await fetchWithRetry(`https://maharera.maharashtra.gov.in/project-document?id=${qstrId}&type=DocProjectCert`, {
       headers: {
         ...headers,
         'X-Requested-With': 'XMLHttpRequest',
@@ -500,11 +535,28 @@ export async function fetchAuthenticMahaReraCertificate(
       completionDate,
     };
   } catch (err: any) {
+    const msg = String(err?.message || err || '');
+    const isTimeout =
+      err.name === 'AbortError' ||
+      err.name === 'TimeoutError' ||
+      err.cause?.name === 'AbortError' ||
+      err.cause?.name === 'TimeoutError' ||
+      msg.toLowerCase().includes('aborted') ||
+      msg.toLowerCase().includes('timeout');
+
+    const isNetworkError =
+      msg.toLowerCase().includes('fetch failed') ||
+      msg.toLowerCase().includes('econnreset') ||
+      msg.toLowerCase().includes('etimedout') ||
+      msg.toLowerCase().includes('network');
+
     return {
       success: false,
-      error: err.name === 'AbortError'
-        ? 'MahaRERA government portal timed out while retrieving official certificate.'
-        : `MahaRERA certificate extraction error: ${err.message}`,
+      error: isTimeout
+        ? 'MahaRERA government portal timed out while retrieving official certificate. You can retry in a moment.'
+        : isNetworkError
+        ? 'MahaRERA government portal is currently slow or unreachable (maharera.maharashtra.gov.in). Statutory verification record saved as pending.'
+        : `MahaRERA certificate extraction notice: ${msg}`,
     };
   } finally {
     clearTimeout(timeoutId);
