@@ -64,6 +64,7 @@ export async function extractAndProcessBrochure(
     floorPlansList?: ExtractedFloorPlanDetail[];
     pages?: Array<{ page_number: number; page_type: string; title?: string }>;
     brochureUrl?: string;
+    brochureAsset?: UploadedMediaAsset;
     alreadySanitized?: boolean;
   }
 ): Promise<BrochureExtractionResult> {
@@ -77,6 +78,7 @@ export async function extractAndProcessBrochure(
     floorPlansList,
     pages,
     brochureUrl: existingBrochureUrl,
+    brochureAsset: providedBrochureAsset,
     alreadySanitized,
   } = projectInfo;
 
@@ -101,12 +103,19 @@ export async function extractAndProcessBrochure(
   }
 
   // 1. Upload original brochure/spec document if not already uploaded
-  let brochureAsset: UploadedMediaAsset | undefined;
-  if (existingBrochureUrl) {
+  let brochureAsset: UploadedMediaAsset | undefined = providedBrochureAsset;
+  if (!brochureAsset && existingBrochureUrl) {
+    let extractedPublicId = `brochure_${projectName}`;
+    if (existingBrochureUrl.includes('res.cloudinary.com')) {
+      const match = existingBrochureUrl.match(/\/upload\/(?:v\d+\/)?(.+?)(?:\.[^/.]+$|$)/);
+      if (match && match[1]) {
+        extractedPublicId = match[1];
+      }
+    }
     brochureAsset = {
       url: existingBrochureUrl,
       secureUrl: existingBrochureUrl,
-      publicId: `brochure_${projectName}`,
+      publicId: extractedPublicId,
       storageProvider: existingBrochureUrl.includes('cloudinary') ? 'CLOUDINARY' : 'LOCAL',
       fileName,
       fileSizeBytes: bBuffer.length,
@@ -115,7 +124,7 @@ export async function extractAndProcessBrochure(
       format: ext,
       createdAt: new Date().toISOString(),
     };
-  } else {
+  } else if (!brochureAsset) {
     brochureAsset = await uploadMediaAsset(
       bBuffer,
       fileName,
@@ -277,9 +286,20 @@ export async function extractAndProcessBrochure(
         }
       }
     }
+    const rawPagesList = projectInfo.pages || [];
+    if (rawPagesList.length > 0) {
+      for (const p of rawPagesList) {
+        const pageNum = Number(p.page_number || (p as any).pageNumber) || 1;
+        if (!pageItems.some((item) => item.pageNum === pageNum)) {
+          pageItems.push({ pageNum, hint: p });
+        }
+      }
+    }
     if (!pageItems.some((p) => p.pageNum === 1)) {
       pageItems.unshift({ pageNum: 1 });
     }
+
+    const cleanPublicId = brochureAsset.publicId.replace(/\.pdf$/i, '');
 
     for (const item of pageItems) {
       const pageNum = item.pageNum;
@@ -292,7 +312,7 @@ export async function extractAndProcessBrochure(
       let bhk = matchingHint?.bhk || matchingFp?.units?.[0]?.bhk;
       let carpetAreaSqft = matchingHint?.carpetAreaSqft || matchingFp?.units?.[0]?.carpetAreaSqft;
 
-      const rawType = String(matchingHint?.asset_type || matchingHint?.assetType || '').toLowerCase();
+      const rawType = String(matchingHint?.asset_type || matchingHint?.assetType || matchingHint?.page_type || '').toLowerCase();
       if (pageNum === 1 || rawType.includes('elevation') || rawType.includes('cover')) {
         assetType = 'ELEVATION';
         title = matchingHint?.title || (pageNum === 1 ? `${projectName} Main Elevation Facade` : `${projectName} Architectural Render`);
@@ -313,12 +333,12 @@ export async function extractAndProcessBrochure(
         title = matchingHint?.title || `${projectName} Page ${pageNum}`;
       }
 
-      const pageImgUrl = `https://res.cloudinary.com/${cloudName}/image/upload/pg_${pageNum}/${brochureAsset.publicId}.jpg`;
+      const pageImgUrl = `https://res.cloudinary.com/${cloudName}/image/upload/pg_${pageNum}/${cleanPublicId}.jpg`;
 
       const pageMediaAsset: UploadedMediaAsset = {
         url: pageImgUrl,
         secureUrl: pageImgUrl,
-        publicId: `${brochureAsset.publicId}_pg_${pageNum}`,
+        publicId: `${cleanPublicId}_pg_${pageNum}`,
         storageProvider: 'CLOUDINARY',
         fileName: `${cleanProjSlug}_page_${pageNum}.jpg`,
         fileSizeBytes: 250000,

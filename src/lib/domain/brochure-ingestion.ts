@@ -134,35 +134,40 @@ export async function ingestBrochure(
     const targetProjectName = extracted?.projectName || filename.replace(/\.[^/.]+$/, '');
 
     // 3. Upload original brochure document into cloud vault
+    let uploadedBrochureAsset: any = null;
     if (!brochureUrl) {
       try {
-        const brochureAsset = await uploadMediaAsset(
+        uploadedBrochureAsset = await uploadMediaAsset(
           buffer,
           filename,
           'brochures',
           mimeType,
           targetProjectName
         );
-        brochureUrl = resolveAssetUrl(brochureAsset);
+        brochureUrl = resolveAssetUrl(uploadedBrochureAsset);
       } catch (uploadErr: any) {
         console.warn('[BROCHURE-INGESTION] Cloud media vault upload warning:', uploadErr.message);
       }
     }
 
-    // 4. MahaRERA certificate resolution
+    // 4. MahaRERA certificate resolution (capped at 6s so government portal latency never blocks extraction)
     let reraCertificateUrl: string | undefined;
     let reraVerification: any = null;
 
     if (extracted?.reraNumber) {
       try {
-        const certResult = await downloadAndSaveMahaReraCertificate(
+        const certPromise = downloadAndSaveMahaReraCertificate(
           extracted.reraNumber,
           extracted.projectName,
           extracted.developerName,
           targetProjectName
         );
-        reraCertificateUrl = certResult.certificateUrl;
-        reraVerification = certResult.projectRecord;
+        const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 6000));
+        const certResult = await Promise.race([certPromise, timeoutPromise]);
+        if (certResult) {
+          reraCertificateUrl = certResult.certificateUrl;
+          reraVerification = certResult.projectRecord;
+        }
       } catch (reraErr: any) {
         console.warn('[BROCHURE-INGESTION] MahaRERA certificate auto-fetch warning:', reraErr.message);
       }
@@ -189,6 +194,7 @@ export async function ingestBrochure(
         floorPlansList: extracted.floorPlansList,
         pages: extracted.pages,
         brochureUrl: brochureUrl || undefined,
+        brochureAsset: uploadedBrochureAsset || undefined,
         alreadySanitized: phoneNumbersErased,
       }
     );

@@ -120,11 +120,10 @@ export function generateCloudinaryUploadSignature(
   const baseName = path.basename(fileName, ext).replace(/[^a-zA-Z0-9_-]/g, '_');
   const publicId = `${baseName}_${Date.now()}`;
 
-  // Signature string: folder=...&public_id=...&timestamp=...<api_secret>
-  // Ensure large PDF brochures default to 'raw' to avoid Cloudinary image payload size limits
+  // PDFs default to 'image' so Cloudinary can rasterize pages into images
   const resolvedResourceType =
     resourceType === 'auto' && (category === 'brochures' || fileName.toLowerCase().endsWith('.pdf'))
-      ? 'raw'
+      ? 'image'
       : resourceType;
 
   const paramsToSign = `folder=${folder}&public_id=${publicId}&timestamp=${timestamp}${config.apiSecret}`;
@@ -164,9 +163,9 @@ export async function uploadToCloudinary(
 
   const isVideo = mimeType.startsWith('video/') || fileName.match(/\.(mp4|mov|webm)$/i);
   const isPdf = mimeType.includes('pdf') || fileName.match(/\.pdf$/i) || category === 'brochures';
-  const isRaw = !isPdf && fileName.match(/\.(doc|docx|zip|xls|xlsx|csv)$/i);
-  // PDFs and non-image media must always use 'raw' resource type in Cloudinary
-  const resourceType = isVideo ? 'video' : (isPdf || isRaw) ? 'raw' : 'image';
+  const isRaw = fileName.match(/\.(doc|docx|zip|xls|xlsx|csv)$/i) || (isPdf && nodeBuffer.length > 25 * 1024 * 1024);
+  // PDFs uploaded as 'image' allow Cloudinary to dynamically rasterize every page (pg_1, pg_2, etc.) as high-res JPEGs
+  const resourceType = isVideo ? 'video' : isRaw ? 'raw' : 'image';
 
   const timestamp = Math.floor(Date.now() / 1000);
   const paramsToSign = `folder=${folder}&public_id=${publicId}&timestamp=${timestamp}${config.apiSecret}`;

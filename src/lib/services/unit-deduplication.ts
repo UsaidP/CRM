@@ -56,10 +56,17 @@ export function deduplicateUnitsByConfiguration(
   const clusters: ConfigCluster[] = [];
 
   for (const u of rawUnits) {
-    const rawCarpet = Number(u.carpet_area_sqft || u.carpetAreaSqft) || 0;
-    if (rawCarpet <= 0) continue;
-
+    let rawCarpet = Number(u.carpet_area_sqft || u.carpetAreaSqft) || 0;
     const bhk = Number(u.bhk) || (u.bhkLabel?.match(/(\d+)\s*BHK/i)?.[1] ? parseInt(u.bhkLabel.match(/(\d+)\s*BHK/i)[1], 10) : 1);
+
+    // If no carpet area was explicitly printed on the floor plan drawing, default to standard realistic carpet for this typology
+    if (rawCarpet <= 0) {
+      if (bhk === 1) rawCarpet = 420;
+      else if (bhk === 2) rawCarpet = 650;
+      else if (bhk === 3) rawCarpet = 950;
+      else if (bhk >= 4) rawCarpet = 1350;
+      else rawCarpet = 400;
+    }
     const normalizedCarpet = Math.round(rawCarpet);
     const flatNo = String(u.unit_number || u.unitNumber || u.flatNumber || u.flat_number || '').trim();
     const facing = (u.orientation || u.facing || 'EAST').trim();

@@ -240,6 +240,34 @@ export interface ClassifiedPageResult {
 }
 
 /**
+ * Asynchronously extracts plain text and per-page text chunks using pure JS pdf-parse first,
+ * then falls back to local PyMuPDF / Apple Vision / pdftotext CLI.
+ */
+export async function extractTextAndPagesFromPdfBufferAsync(buffer: Buffer): Promise<ExtractedPdfTextResult> {
+  // 1. Pure JavaScript PDF parser (works in Vercel Serverless / AWS Lambda / Docker)
+  try {
+    const { PDFParse } = require('pdf-parse');
+    const parser = new PDFParse({ data: buffer });
+    const parsed = await parser.getText();
+    if (parsed && parsed.text && parsed.text.trim().length > 50) {
+      const pages = (parsed.pages || []).map((p: any) => ({
+        page_number: p.num || 1,
+        text: (p.text || '').trim(),
+      }));
+      return {
+        fullText: parsed.text.trim(),
+        pages,
+      };
+    }
+  } catch (pdfErr: any) {
+    console.warn('[PDF-TEXT] JS pdf-parse notice:', pdfErr.message);
+  }
+
+  // 2. Local OS / process fallback
+  return extractTextAndPagesFromPdfBuffer(buffer);
+}
+
+/**
  * Extracts plain text and per-page text chunks from PDF buffer using local Python PyMuPDF + Apple Vision OCR
  */
 export function extractTextAndPagesFromPdfBuffer(buffer: Buffer): ExtractedPdfTextResult {
@@ -1020,15 +1048,15 @@ export async function parseBrochureAsync(
       modelUsed: aiData.modelUsed || 'Gemini Vision AI',
     };
   } catch (error: any) {
-    console.warn('Gemini AI brochure extraction encountered rate limits or network issue, using smart local parser:', error.message || error);
-    const { fullText, pages } = extractTextAndPagesFromPdfBuffer(buffer);
+    console.warn('Gemini AI brochure extraction encountered an issue, using smart local parser:', error.message || error);
+    const { fullText, pages } = await extractTextAndPagesFromPdfBufferAsync(buffer);
     const rawText = fullText || `Project: ${filename.replace(/\.pdf$/i, '').replace(/[-_]/g, ' ')}`;
     const fallbackData = parseBrochureText(rawText, filename, pages);
     return {
       data: fallbackData,
       extractionMethod: 'REGEX_FALLBACK',
       modelUsed: 'Smart Local Parser (Quota Safe)',
-      note: 'AI rate limit or network issue. Parsed using local text extraction engine.',
+      note: 'AI service unavailable. Parsed using local text extraction engine.',
     };
   }
 }

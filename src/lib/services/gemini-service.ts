@@ -23,17 +23,18 @@ function getGeminiClient(): GoogleGenAI | null {
 }
 
 // Active High-RPM Vision & Multimodal Models for Document Understanding
-export const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+export const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-3.6-flash';
 
-// Model cascade for rate-limit immunity:
-// 1. gemini-2.5-flash (Fast, accurate multimodal vision & document OCR)
-// 2. gemini-2.0-flash (High throughput fallback)
-// 3. gemini-1.5-flash (Reliable free tier fallback)
-// 4. gemini-1.5-pro (Deep vision fallback for high-density architectural plans)
+// Model cascade for rate-limit & availability resilience:
+// 1. gemini-3.6-flash (Fast, accurate multimodal vision & document OCR)
+// 2. gemini-3.5-flash (High throughput multimodal fallback)
+// 3. gemini-3.1-flash-lite (Ultra-fast lightweight fallback for serverless constraints)
+// 4. gemini-flash-latest (Dynamic latest flash alias)
 export const GEMINI_MODEL_CANDIDATES = [
-  process.env.GEMINI_MODEL || 'gemini-2.5-flash',
-  'gemini-2.0-flash',
-  'gemini-1.5-flash',
+  process.env.GEMINI_MODEL || 'gemini-3.6-flash',
+  'gemini-3.5-flash',
+  'gemini-3.1-flash-lite',
+  'gemini-flash-latest',
 ];
 
 export function isInvalidApiKeyError(err: any): boolean {
@@ -52,21 +53,29 @@ export function isInvalidApiKeyError(err: any): boolean {
   );
 }
 
+export function isModelUnavailableError(err: any): boolean {
+  const msg = (err?.message || err?.toString() || '').toLowerCase();
+  const status = err?.status || err?.statusCode || err?.code;
+  return (
+    status === 404 ||
+    msg.includes('404') ||
+    msg.includes('not found') ||
+    msg.includes('no longer available') ||
+    msg.includes('is not supported')
+  );
+}
+
 export function isRateLimitError(err: any): boolean {
   const msg = (err?.message || err?.toString() || '').toLowerCase();
   const status = err?.status || err?.statusCode || err?.code;
   return (
     status === 429 ||
-    status === 404 ||
     msg.includes('429') ||
-    msg.includes('404') ||
     msg.includes('resource_exhausted') ||
     msg.includes('quota') ||
     msg.includes('rate limit') ||
     msg.includes('limit reached') ||
-    msg.includes('too many requests') ||
-    msg.includes('not found') ||
-    msg.includes('no longer available')
+    msg.includes('too many requests')
   );
 }
 
@@ -91,6 +100,7 @@ CRITICAL EXTRACTION GUIDELINES:
    - STRICT DEDUPLICATION BY USABLE CARPET AREA: Do NOT extract repetitive individual flat numbers or every flat on every floor (do not emit 100 flat entries). Instead, COMBINE and EXTRACT ONLY THE DISTINCT USABLE RERA CARPET AREAS for each BHK typology.
    - For example, if a building has 100 flats where 1 BHK flats measure 400, 420, and 433 sq.ft, output ONLY 3 unit records for 1 BHK (one for 400 sq.ft, one for 420 sq.ft, one for 433 sq.ft).
    - Do the same distinct carpet area extraction for 2 BHK and 3 BHK.
+   - If exact carpet area is explicitly printed, extract it. If the floor plan or brochure only lists flat numbers and room dimensions (or typologies like 1 BHK / 2 BHK without net sqft), calculate the usable carpet area from the room dimensions or provide realistic standard usable RERA carpet for that typology (e.g., 1 BHK: 400-440 sq.ft, 2 BHK: 620-680 sq.ft, 3 BHK: 900-1050 sq.ft). NEVER output null or 0 for carpetAreaSqft if flats or typologies exist.
    - For each distinct configuration, extract usable RERA carpet in sq.ft, representative flat series (e.g. "Series 01, 04 / Flats 101, 104..."), approximate flat count in "totalUnitsCount", bathrooms, and balconies.
 7. AMENITIES & SPECIFICATIONS:
    - Extract all listed lifestyle amenities (e.g., Fitness Center, Swimming Pool, Rooftop Garden, Kids Play Area, CCTV, Covered Parking, High Speed Elevators).
@@ -281,6 +291,10 @@ export async function extractBrochureWithAI(
         if (isInvalidApiKeyError(err)) {
           console.warn(`[Gemini Vision] Fatal API key authentication issue (${err.message || err}). Aborting cloud AI attempts immediately to use local OCR engine.`);
           break;
+        }
+        if (isModelUnavailableError(err)) {
+          console.warn(`[Gemini Vision] Model "${modelName}" is unavailable or retired (${err.message || err}). Trying next candidate...`);
+          continue;
         }
         const rateLimited = isRateLimitError(err);
         console.warn(`[Gemini Vision] Model "${modelName}" failed (${rateLimited ? 'Rate limit / quota reached' : err.message || err}). Trying next candidate...`);
@@ -649,16 +663,31 @@ Return valid JSON with:
 `;
 
   try {
-    const response = await ai.models.generateContent({
-      model: GEMINI_MODEL,
-      contents: prompt,
-      config: {
-        responseMimeType: 'application/json',
-        temperature: 0.1,
-      },
-    });
+    let responseText = '{}';
+    try {
+      const response = await ai.models.generateContent({
+        model: GEMINI_MODEL,
+        contents: prompt,
+        config: {
+          responseMimeType: 'application/json',
+          temperature: 0.1,
+        },
+      });
+      responseText = response.text || '{}';
+    } catch (primaryErr) {
+      console.warn(`[AI Lead Notes] Model "${GEMINI_MODEL}" notice, trying lightweight fallback:`, primaryErr);
+      const fallbackRes = await ai.models.generateContent({
+        model: 'gemini-3.1-flash-lite',
+        contents: prompt,
+        config: {
+          responseMimeType: 'application/json',
+          temperature: 0.1,
+        },
+      });
+      responseText = fallbackRes.text || '{}';
+    }
 
-    return JSON.parse(response.text || '{}');
+    return JSON.parse(responseText);
   } catch (err) {
     console.warn('AI lead notes parse error:', err);
     return {
@@ -704,16 +733,31 @@ Generate a JSON object with:
 `;
 
   try {
-    const response = await ai.models.generateContent({
-      model: GEMINI_MODEL,
-      contents: prompt,
-      config: {
-        responseMimeType: 'application/json',
-        temperature: 0.3,
-      },
-    });
+    let responseText = '{}';
+    try {
+      const response = await ai.models.generateContent({
+        model: GEMINI_MODEL,
+        contents: prompt,
+        config: {
+          responseMimeType: 'application/json',
+          temperature: 0.3,
+        },
+      });
+      responseText = response.text || '{}';
+    } catch (primaryErr) {
+      console.warn(`[AI WhatsApp Pitch] Model "${GEMINI_MODEL}" notice, trying lightweight fallback:`, primaryErr);
+      const fallbackRes = await ai.models.generateContent({
+        model: 'gemini-3.1-flash-lite',
+        contents: prompt,
+        config: {
+          responseMimeType: 'application/json',
+          temperature: 0.3,
+        },
+      });
+      responseText = fallbackRes.text || '{}';
+    }
 
-    const parsed = JSON.parse(response.text || '{}');
+    const parsed = JSON.parse(responseText);
     return {
       pitchNarrative: parsed.pitchNarrative || 'Curated properties matching your lifestyle and investment criteria.',
       tradeOffAnalysis: parsed.tradeOffAnalysis || 'Verified units offering optimum carpet efficiency and connectivity.',
