@@ -173,8 +173,12 @@ export function deduplicateUnitsByConfiguration(
       seriesOrFlatNumbers = `Config ${configLetter} Series (${cluster.count} unit${cluster.count > 1 ? 's' : ''})`;
     }
 
-    const bhkLabel = `${bhk} BHK • ${carpetAreaSqft} sq.ft (Config ${configLetter})`;
-    const unitNumber = `${bhk}BHK-${configLetter} (${carpetAreaSqft} sqft)`;
+    const is1RK = cluster.rawUnits.some((ru) => /1\s*RK/i.test(ru.unitNumber || ru.typology || ru.bhkLabel || '')) || /1\s*RK/i.test(cluster.flatNumbers.join(' '));
+    const typologyPrefix = is1RK ? '1RK' : `${bhk}BHK`;
+    const bhkLabel = is1RK
+      ? `1 RK • ${carpetAreaSqft} sq.ft (Config ${configLetter})`
+      : `${bhk} BHK • ${carpetAreaSqft} sq.ft (Config ${configLetter})`;
+    const unitNumber = `${typologyPrefix}-${configLetter} (${carpetAreaSqft} sqft)`;
 
     const highlights: string[] = [
       `${carpetAreaSqft} sq.ft Usable RERA Carpet Area`,
@@ -188,6 +192,7 @@ export function deduplicateUnitsByConfiguration(
     return {
       unitNumber,
       bhk,
+      typology: is1RK ? '1RK' : `${bhk}BHK`,
       bhkLabel,
       carpetAreaSqft,
       saleableAreaSqft: costBreakdown.saleableAreaSqft,

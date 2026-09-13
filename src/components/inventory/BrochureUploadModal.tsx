@@ -1391,6 +1391,7 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
                                 <option value="3">3 BHK</option>
                                 <option value="4">4 BHK</option>
                                 <option value="5">5 BHK</option>
+                                <option value="6">6 BHK</option>
                               </select>
                             </div>
 
@@ -1585,7 +1586,7 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
                       >
                         All ({allUnits.length})
                       </button>
-                      {[1, 2, 3, 4].map((bhk) => {
+                      {[1, 2, 3, 4, 5, 6].map((bhk) => {
                         const count = bhkCounts[bhk] || 0;
                         if (count === 0 && unitTypologyFilter !== String(bhk)) return null;
                         const areas = (bhkCarpetMap[bhk] || []).sort((a: number, b: number) => a - b);
@@ -1689,9 +1690,30 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
                                 <td className="p-2 min-w-[95px]">
                                   <CustomSelect
                                     size="xs"
-                                    value={String(u.bhk || 2)}
-                                    onChange={(val) => handleUpdateUnit(idx, { bhk: Number(val) })}
+                                    usePortal
+                                    value={u.typology === '1RK' || (u.bhk === 1 && /1\s*RK/i.test(u.unitNumber || '')) ? '1RK' : String(u.bhk || 2)}
+                                    onChange={(val) => {
+                                      if (val === '1RK') {
+                                        const carpetVal = Number(u.carpetAreaSqft) || 182;
+                                        handleUpdateUnit(idx, {
+                                          bhk: 1,
+                                          typology: '1RK',
+                                          bhkLabel: `1 RK • ${carpetVal} sq.ft Configuration`,
+                                          unitNumber: u.unitNumber ? u.unitNumber.replace(/^(\d+BHK|1RK)/i, '1RK') : `1RK-${String.fromCharCode(65 + idx)} (${carpetVal} sqft)`
+                                        });
+                                      } else {
+                                        const newBhk = Number(val);
+                                        const carpetVal = Number(u.carpetAreaSqft) || (newBhk === 1 ? 420 : newBhk === 2 ? 650 : 950);
+                                        handleUpdateUnit(idx, {
+                                          bhk: newBhk,
+                                          typology: `${newBhk}BHK`,
+                                          bhkLabel: `${newBhk} BHK • ${carpetVal} sq.ft Configuration`,
+                                          unitNumber: u.unitNumber ? u.unitNumber.replace(/^(\d+BHK|1RK)/i, `${newBhk}BHK`) : `${newBhk}BHK-${String.fromCharCode(65 + idx)} (${carpetVal} sqft)`
+                                        });
+                                      }
+                                    }}
                                     options={[
+                                      { value: '1RK', label: '1 RK' },
                                       { value: '1', label: '1 BHK' },
                                       { value: '2', label: '2 BHK' },
                                       { value: '3', label: '3 BHK' },
@@ -1736,6 +1758,7 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
                                 <td className="p-2 font-sans min-w-[120px]">
                                   <CustomSelect
                                     size="xs"
+                                    usePortal
                                     value={u.facing || 'EAST'}
                                     onChange={(val) => handleUpdateUnit(idx, { facing: val })}
                                     options={[
@@ -1766,6 +1789,7 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
                                 <td className="p-2 font-sans min-w-[160px]">
                                   <CustomSelect
                                     size="xs"
+                                    usePortal
                                     placeholder="Auto-matched Layout"
                                     value={u.floorPlanUrl || ''}
                                     onChange={(val) => handleUpdateUnit(idx, { floorPlanUrl: val })}

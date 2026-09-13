@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronDown, Check, Search, X } from 'lucide-react';
 
 export interface CustomSelectOption {
@@ -34,6 +35,7 @@ export interface CustomSelectProps {
   searchPlaceholder?: string;
   id?: string;
   'aria-label'?: string;
+  usePortal?: boolean;
 }
 
 export function CustomSelect({
@@ -54,17 +56,26 @@ export function CustomSelect({
   searchPlaceholder = 'Search...',
   id,
   'aria-label': ariaLabel,
+  usePortal = false,
 }: CustomSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [openUpward, setOpenUpward] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState<number>(-1);
+  const [maxMenuHeight, setMaxMenuHeight] = useState<number>(280);
+  const [portalCoords, setPortalCoords] = useState<{
+    top?: number;
+    bottom?: number;
+    left: number;
+    width: number;
+  }>({ left: 0, width: 0 });
 
   const containerRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
+  const isKeyboardNavRef = useRef(false);
 
   const isSearchEnabled = searchable ?? options.length > 8;
 
@@ -145,39 +156,57 @@ export function CustomSelect({
     );
   }, [options, searchQuery]);
 
-  // Determine open direction based on viewport clearance
-  const calculateDirection = useCallback(() => {
+  // Determine open direction and dimensions based on viewport clearance
+  const updatePosition = useCallback(() => {
     if (!triggerRef.current) return;
-    if (direction === 'up') {
-      setOpenUpward(true);
-      return;
-    }
-    if (direction === 'down') {
-      setOpenUpward(false);
-      return;
-    }
-
     const rect = triggerRef.current.getBoundingClientRect();
     const spaceBelow = window.innerHeight - rect.bottom;
     const spaceAbove = rect.top;
 
-    // If less than 240px below and more room above, open upwards
-    if (spaceBelow < 240 && spaceAbove > spaceBelow) {
-      setOpenUpward(true);
+    let shouldOpenUpward = false;
+    if (direction === 'up') {
+      shouldOpenUpward = true;
+    } else if (direction === 'down') {
+      shouldOpenUpward = false;
     } else {
-      setOpenUpward(false);
+      // Auto: prefer opening downward. Only flip upward if space below is cramped (< 180px) and space above has substantially more room
+      if (spaceBelow < 180 && spaceAbove > spaceBelow + 40) {
+        shouldOpenUpward = true;
+      } else {
+        shouldOpenUpward = false;
+      }
     }
-  }, [direction]);
+
+    setOpenUpward(shouldOpenUpward);
+
+    // Dynamic max-height bounded to viewport space with padding
+    const availableSpace = shouldOpenUpward ? spaceAbove - 16 : spaceBelow - 16;
+    const calculatedMaxHeight = Math.min(Math.max(availableSpace, 120), 320);
+    setMaxMenuHeight(calculatedMaxHeight);
+
+    if (usePortal) {
+      const minW = size === 'xs' ? Math.max(rect.width, 120) : Math.max(rect.width, 160);
+      const computedLeft = align === 'right' ? Math.max(8, rect.right - minW) : Math.min(rect.left, window.innerWidth - minW - 8);
+
+      setPortalCoords({
+        top: shouldOpenUpward ? undefined : rect.bottom + 4,
+        bottom: shouldOpenUpward ? window.innerHeight - rect.top + 4 : undefined,
+        left: Math.max(8, computedLeft),
+        width: Math.max(rect.width, minW),
+      });
+    }
+  }, [direction, align, size, usePortal]);
 
   // Open/Close effect & auto-focus
   useEffect(() => {
     if (!isOpen) {
       setSearchQuery('');
       setFocusedIndex(-1);
+      isKeyboardNavRef.current = false;
       return;
     }
 
-    calculateDirection();
+    updatePosition();
 
     if (isSearchEnabled) {
       const timer = setTimeout(() => {
@@ -188,15 +217,33 @@ export function CustomSelect({
       const activeIdx = filteredOptions.findIndex((opt) => opt.value === value);
       setFocusedIndex(activeIdx >= 0 ? activeIdx : 0);
     }
-  }, [isOpen, calculateDirection, isSearchEnabled, filteredOptions, value]);
 
-  // Close on outside click / touch
+    if (listRef.current) {
+      listRef.current.scrollTop = 0;
+    }
+
+    const handleScrollOrResize = () => {
+      updatePosition();
+    };
+
+    window.addEventListener('resize', handleScrollOrResize);
+    window.addEventListener('scroll', handleScrollOrResize, true);
+
+    return () => {
+      window.removeEventListener('resize', handleScrollOrResize);
+      window.removeEventListener('scroll', handleScrollOrResize, true);
+    };
+  }, [isOpen, updatePosition, isSearchEnabled, filteredOptions, value]);
+
+  // Close on outside click / touch (supports both local and portaled menu)
   useEffect(() => {
     if (!isOpen) return;
 
     function handleOutsideClick(event: MouseEvent | TouchEvent) {
       const target = event.target as Node;
-      if (containerRef.current && !containerRef.current.contains(target)) {
+      const clickedTrigger = containerRef.current && containerRef.current.contains(target);
+      const clickedMenu = menuRef.current && menuRef.current.contains(target);
+      if (!clickedTrigger && !clickedMenu) {
         setIsOpen(false);
       }
     }
@@ -209,9 +256,10 @@ export function CustomSelect({
     };
   }, [isOpen]);
 
-  // Scroll focused option into view during keyboard navigation
+  // Scroll focused option into view ONLY during keyboard navigation
   useEffect(() => {
     if (!isOpen || focusedIndex < 0 || !listRef.current) return;
+    if (!isKeyboardNavRef.current) return; // Prevent unexpected scroll jumps when hovering with mouse!
     const items = listRef.current.querySelectorAll<HTMLButtonElement>('[role="option"]');
     if (items[focusedIndex]) {
       items[focusedIndex].scrollIntoView({ block: 'nearest' });
@@ -241,6 +289,7 @@ export function CustomSelect({
       triggerRef.current?.focus();
     } else if (e.key === 'ArrowDown') {
       e.preventDefault();
+      isKeyboardNavRef.current = true;
       if (!isOpen) {
         setIsOpen(true);
       } else {
@@ -248,6 +297,7 @@ export function CustomSelect({
       }
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
+      isKeyboardNavRef.current = true;
       if (!isOpen) {
         setIsOpen(true);
       } else {
@@ -285,6 +335,20 @@ export function CustomSelect({
     lg: 'px-4 py-3 text-sm font-semibold rounded-2xl gap-3 min-h-[46px]',
   }[size];
 
+  const itemSizeClasses = {
+    xs: 'px-2 py-1.5 text-[11px] rounded-lg min-h-[28px] gap-1.5',
+    sm: 'px-3 py-2 text-xs rounded-xl min-h-[34px] gap-2.5',
+    md: 'px-3.5 py-2 text-xs rounded-xl min-h-[36px] gap-2.5',
+    lg: 'px-4 py-2.5 text-sm rounded-xl min-h-[40px] gap-3',
+  }[size];
+
+  const menuMinWidthClasses = {
+    xs: 'min-w-[120px]',
+    sm: 'min-w-[160px]',
+    md: 'min-w-[190px]',
+    lg: 'min-w-[220px]',
+  }[size];
+
   function renderOptionItem(opt: CustomSelectOption, index: number) {
     const isSelected = selectedOption?.value === opt.value || opt.value === value;
     const isFocused = index === focusedIndex;
@@ -302,18 +366,21 @@ export function CustomSelect({
           setIsOpen(false);
           triggerRef.current?.focus();
         }}
-        onMouseEnter={() => setFocusedIndex(index)}
-        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all text-left cursor-pointer group select-none min-h-[36px] ${
+        onMouseEnter={() => {
+          isKeyboardNavRef.current = false;
+          setFocusedIndex(index);
+        }}
+        className={`w-full flex items-center justify-between transition-all text-left cursor-pointer group select-none ${itemSizeClasses} ${
           opt.disabled
             ? 'opacity-40 cursor-not-allowed'
             : isSelected
             ? 'bg-accent text-white font-bold shadow-xs'
             : isFocused
             ? 'bg-accent-soft/80 text-accent-text font-semibold'
-            : 'text-content hover:bg-surface-subtle hover:text-content'
+            : 'text-content hover:bg-surface-subtle hover:text-content font-medium'
         }`}
       >
-        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+        <div className="flex items-center gap-2 min-w-0 flex-1">
           {opt.dotColor && (
             <span
               className={`w-2 h-2 rounded-full ${opt.dotColor} shrink-0 transition-transform ${
@@ -336,7 +403,7 @@ export function CustomSelect({
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 shrink-0 ml-2">
+        <div className="flex items-center gap-1.5 shrink-0 ml-1.5">
           {opt.badge && (
             <span
               className={`text-[9px] px-1.5 py-0.5 rounded font-mono font-bold uppercase tracking-wider ${
@@ -350,11 +417,95 @@ export function CustomSelect({
               {opt.badge}
             </span>
           )}
-          {isSelected && <Check className="w-4 h-4 text-white shrink-0" />}
+          {isSelected && <Check className="w-3.5 h-3.5 text-white shrink-0" />}
         </div>
       </button>
     );
   }
+
+  const menuContent = (
+    <div
+      ref={menuRef}
+      role="listbox"
+      tabIndex={-1}
+      className={`${
+        usePortal
+          ? 'fixed'
+          : `absolute ${align === 'right' ? 'right-0' : 'left-0'} ${
+              openUpward ? 'bottom-full mb-1.5 origin-bottom' : 'top-full mt-1.5 origin-top'
+            }`
+      } w-full ${menuMinWidthClasses} z-[9999] flex flex-col rounded-2xl bg-surface border border-border shadow-2xl p-1.5 animate-in fade-in-0 zoom-in-95 duration-150 backdrop-blur-md overflow-hidden ${menuClassName}`}
+      style={{
+        maxHeight: `${maxMenuHeight}px`,
+        ...(usePortal
+          ? {
+              top: portalCoords.top !== undefined ? `${portalCoords.top}px` : undefined,
+              bottom: portalCoords.bottom !== undefined ? `${portalCoords.bottom}px` : undefined,
+              left: `${portalCoords.left}px`,
+              width: `${portalCoords.width}px`,
+            }
+          : {}),
+      }}
+    >
+      {/* Optional Search Bar */}
+      {isSearchEnabled && (
+        <div className="p-1.5 border-b border-border/60 pb-2 mb-1 shrink-0">
+          <div className="relative flex items-center">
+            <Search className="w-3.5 h-3.5 text-content-muted absolute left-2.5 pointer-events-none" />
+            <input
+              ref={searchInputRef}
+              type="text"
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setFocusedIndex(0);
+              }}
+              onKeyDown={handleKeyDown}
+              placeholder={searchPlaceholder}
+              className="w-full bg-surface-subtle border border-border rounded-xl pl-8 pr-7 py-1.5 text-xs text-content placeholder-content-muted focus:outline-hidden focus:border-accent font-medium"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchQuery('');
+                  searchInputRef.current?.focus();
+                }}
+                className="p-1 text-content-muted hover:text-content absolute right-1.5"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Options List */}
+      <div ref={listRef} className="overflow-y-auto space-y-0.5 custom-scrollbar flex-1">
+        {filteredOptions.length === 0 ? (
+          <div className="p-4 text-center text-xs text-content-muted">
+            No matching options found
+          </div>
+        ) : groupedOptions.hasGroups ? (
+          <>
+            {groupedOptions.ungrouped.map((opt, i) => renderOptionItem(opt, i))}
+            {Object.entries(groupedOptions.groups).map(([groupName, groupOpts]) => (
+              <div key={groupName} className="mt-1 first:mt-0">
+                <div className="px-2.5 py-1 text-[10px] font-bold font-mono text-content-muted uppercase tracking-wider border-b border-border/40 mb-1">
+                  {groupName}
+                </div>
+                {groupOpts.map((opt, i) =>
+                  renderOptionItem(opt, groupedOptions.ungrouped.length + i)
+                )}
+              </div>
+            ))}
+          </>
+        ) : (
+          filteredOptions.map((opt, i) => renderOptionItem(opt, i))
+        )}
+      </div>
+    </div>
+  );
 
   return (
     <div ref={containerRef} className={`relative inline-block w-full ${className}`}>
@@ -424,73 +575,9 @@ export function CustomSelect({
 
       {/* Floating Dropdown Menu */}
       {isOpen && (
-        <div
-          ref={menuRef}
-          role="listbox"
-          tabIndex={-1}
-          className={`absolute ${align === 'right' ? 'right-0' : 'left-0'} ${
-            openUpward ? 'bottom-full mb-1.5 origin-bottom' : 'top-full mt-1.5 origin-top'
-          } w-full min-w-[200px] z-[100] flex flex-col rounded-2xl bg-surface border border-border shadow-2xl p-1.5 animate-in fade-in-0 zoom-in-95 duration-150 backdrop-blur-md overflow-hidden ${menuClassName}`}
-          style={{ maxHeight: '280px' }}
-        >
-          {/* Optional Search Bar */}
-          {isSearchEnabled && (
-            <div className="p-1.5 border-b border-border/60 pb-2 mb-1 shrink-0">
-              <div className="relative flex items-center">
-                <Search className="w-3.5 h-3.5 text-content-muted absolute left-2.5 pointer-events-none" />
-                <input
-                  ref={searchInputRef}
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    setFocusedIndex(0);
-                  }}
-                  onKeyDown={handleKeyDown}
-                  placeholder={searchPlaceholder}
-                  className="w-full bg-surface-subtle border border-border rounded-xl pl-8 pr-7 py-1.5 text-xs text-content placeholder-content-muted focus:outline-hidden focus:border-accent font-medium"
-                />
-                {searchQuery && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSearchQuery('');
-                      searchInputRef.current?.focus();
-                    }}
-                    className="p-1 text-content-muted hover:text-content absolute right-1.5"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Options List */}
-          <div ref={listRef} className="overflow-y-auto space-y-0.5 custom-scrollbar flex-1 max-h-[220px]">
-            {filteredOptions.length === 0 ? (
-              <div className="p-4 text-center text-xs text-content-muted">
-                No matching options found
-              </div>
-            ) : groupedOptions.hasGroups ? (
-              <>
-                {groupedOptions.ungrouped.map((opt, i) => renderOptionItem(opt, i))}
-                {Object.entries(groupedOptions.groups).map(([groupName, groupOpts]) => (
-                  <div key={groupName} className="mt-1 first:mt-0">
-                    <div className="px-2.5 py-1 text-[10px] font-bold font-mono text-content-muted uppercase tracking-wider border-b border-border/40 mb-1">
-                      {groupName}
-                    </div>
-                    {groupOpts.map((opt, i) =>
-                      renderOptionItem(opt, groupedOptions.ungrouped.length + i)
-                    )}
-                  </div>
-                ))}
-              </>
-            ) : (
-              filteredOptions.map((opt, i) => renderOptionItem(opt, i))
-            )}
-          </div>
-        </div>
+        usePortal && typeof document !== 'undefined'
+          ? createPortal(menuContent, document.body)
+          : menuContent
       )}
     </div>
   );

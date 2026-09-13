@@ -117,4 +117,40 @@ describe('Unit Differentiation & Per-Unit Media Management', () => {
     expect(differentiateUnitTitle(sampleUnits[1])).toBe('Unit 102 • 2 BHK (685 sq.ft.)');
     expect(differentiateUnitTitle({ bhk: 3, carpetAreaSqft: 1050 })).toBe('3 BHK (1050 sq.ft.)');
   });
+
+  it('preserves 1RK typology and prefix in deduplicateUnitsByConfiguration', async () => {
+    const { deduplicateUnitsByConfiguration } = await import('@/lib/services/unit-deduplication');
+    const raw = [
+      {
+        unitNumber: '1RK-B (182 sqft)',
+        bhk: 1,
+        carpetAreaSqft: 182,
+        facing: 'WEST',
+      },
+      {
+        unitNumber: '1BHK-A (162 sqft)',
+        bhk: 1,
+        carpetAreaSqft: 162,
+        facing: 'EAST',
+      },
+    ];
+
+    const deduplicated = deduplicateUnitsByConfiguration(raw, {
+      totalFloors: 7,
+      basePricePerSqft: 6000,
+    });
+
+    expect(deduplicated).toHaveLength(2);
+    const rkUnit = deduplicated.find((u) => u.carpetAreaSqft === 182);
+    expect(rkUnit).toBeDefined();
+    expect(rkUnit?.unitNumber).toContain('1RK-');
+    expect(rkUnit?.typology).toBe('1RK');
+    expect(rkUnit?.bhkLabel).toContain('1 RK');
+
+    const bhkUnit = deduplicated.find((u) => u.carpetAreaSqft === 162);
+    expect(bhkUnit).toBeDefined();
+    expect(bhkUnit?.unitNumber).toContain('1BHK-');
+    expect(bhkUnit?.typology).toBe('1BHK');
+    expect(bhkUnit?.bhkLabel).toContain('1 BHK');
+  });
 });
