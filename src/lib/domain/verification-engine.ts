@@ -238,15 +238,127 @@ export function validateReraNumber(reraNumber: string): ReraValidationResult {
   };
 }
 
+export const RERA_STATUTORY_PLOT_THRESHOLD_SQM = 500;
+export const RERA_STATUTORY_PLOT_THRESHOLD_SQFT = 5381.96; // 500 * 10.7639
+
+export type ReraComplianceStatus =
+  | 'VERIFIED'
+  | 'EXEMPT_PLOT_UNDER_500'
+  | 'MANDATORY_MISSING'
+  | 'NOT_UPDATED';
+
+export interface ReraComplianceAssessment {
+  status: ReraComplianceStatus;
+  isCompliant: boolean;
+  isMandatory: boolean;
+  isExempt: boolean;
+  badgeLabel: string;
+  badgeTone: 'emerald' | 'amber' | 'rose' | 'slate';
+  description: string;
+  legalBasis?: string;
+  validation?: ReraValidationResult;
+  plotSizeSqMeters?: number | null;
+  plotSizeSqFt?: number | null;
+}
+
+/**
+ * Evaluates MahaRERA statutory registration compliance under Section 3(2)(a).
+ * - Plot size > 500 sq.m: Registration is COMPULSORY.
+ * - Plot size <= 500 sq.m: Statutory EXEMPTION (registration not required).
+ * - Plot size unspecified & no RERA: Permitted with "RERA Not Updated" advisory flag.
+ */
+export function checkReraCompliance(params: {
+  reraNumber?: string | null;
+  plotSizeSqMeters?: number | null;
+  plotSizeSqFt?: number | null;
+}): ReraComplianceAssessment {
+  const { reraNumber, plotSizeSqMeters, plotSizeSqFt } = params;
+  const cleanRera = (reraNumber || '').trim();
+
+  let effectiveSqm = typeof plotSizeSqMeters === 'number' && plotSizeSqMeters > 0 ? plotSizeSqMeters : null;
+  let effectiveSqft = typeof plotSizeSqFt === 'number' && plotSizeSqFt > 0 ? plotSizeSqFt : null;
+
+  if (effectiveSqm && !effectiveSqft) {
+    effectiveSqft = Math.round(effectiveSqm * 10.7639 * 100) / 100;
+  } else if (effectiveSqft && !effectiveSqm) {
+    effectiveSqm = Math.round((effectiveSqft / 10.7639) * 100) / 100;
+  }
+
+  const isMandatory = effectiveSqm !== null && effectiveSqm > RERA_STATUTORY_PLOT_THRESHOLD_SQM;
+  const isExempt = effectiveSqm !== null && effectiveSqm <= RERA_STATUTORY_PLOT_THRESHOLD_SQM;
+
+  if (cleanRera.length > 0) {
+    const validation = validateReraNumber(cleanRera);
+    if (validation.isValid) {
+      return {
+        status: 'VERIFIED',
+        isCompliant: true,
+        isMandatory,
+        isExempt: false,
+        badgeLabel: 'MahaRERA Verified',
+        badgeTone: 'emerald',
+        description: `Officially registered under MahaRERA (${validation.normalized}).`,
+        validation,
+        plotSizeSqMeters: effectiveSqm,
+        plotSizeSqFt: effectiveSqft,
+      };
+    }
+  }
+
+  if (isMandatory) {
+    return {
+      status: 'MANDATORY_MISSING',
+      isCompliant: false,
+      isMandatory: true,
+      isExempt: false,
+      badgeLabel: 'RERA Compulsory • Missing',
+      badgeTone: 'rose',
+      description: `Plot size (${effectiveSqm} sq.m / ${effectiveSqft} sq.ft) exceeds 500 sq.m. MahaRERA registration is legally mandatory under Section 3(2)(a).`,
+      legalBasis: 'RERA Act 2016, Section 3(2)(a)',
+      plotSizeSqMeters: effectiveSqm,
+      plotSizeSqFt: effectiveSqft,
+    };
+  }
+
+  if (isExempt) {
+    return {
+      status: 'EXEMPT_PLOT_UNDER_500',
+      isCompliant: true,
+      isMandatory: false,
+      isExempt: true,
+      badgeLabel: 'RERA Exempt (Plot ≤ 500 sq.m)',
+      badgeTone: 'emerald',
+      description: `Plot size (${effectiveSqm} sq.m / ${effectiveSqft} sq.ft) is within the statutory 500 sq.m threshold. RERA registration is optional.`,
+      legalBasis: 'RERA Act 2016, Section 3(2)(a)',
+      plotSizeSqMeters: effectiveSqm,
+      plotSizeSqFt: effectiveSqft,
+    };
+  }
+
+  return {
+    status: 'NOT_UPDATED',
+    isCompliant: true,
+    isMandatory: false,
+    isExempt: false,
+    badgeLabel: 'RERA Not Updated',
+    badgeTone: 'amber',
+    description: 'MahaRERA registration number has not been recorded yet. Permitted for preliminary marketing.',
+    plotSizeSqMeters: effectiveSqm,
+    plotSizeSqFt: effectiveSqft,
+  };
+}
+
 export function canTransitionStatus(
   currentStatus: VerificationStatus,
   targetStatus: VerificationStatus,
-  hasValidRera: boolean
+  hasValidRera: boolean,
+  isReraExempt: boolean = false,
+  isMandatoryViolation: boolean = false
 ): { allowed: boolean; reason?: string } {
-  if (targetStatus === 'ACTIVE_MARKETABLE' && !hasValidRera) {
+  if (targetStatus === 'ACTIVE_MARKETABLE' && isMandatoryViolation) {
     return {
       allowed: false,
-      reason: 'Cannot activate listing without a validated MahaRERA registration number.',
+      reason: 'Cannot activate listing: Plot size exceeds 500 sq.m where MahaRERA registration is legally compulsory.',
     };
   }
 
@@ -256,7 +368,7 @@ export function canTransitionStatus(
 
   // Allowed transitions
   const allowedMap: Record<VerificationStatus, VerificationStatus[]> = {
-    DRAFT: ['RERA_VERIFIED', 'PHYSICALLY_AUDITED', 'ARCHIVED_SOLD'],
+    DRAFT: ['RERA_VERIFIED', 'PHYSICALLY_AUDITED', 'ACTIVE_MARKETABLE', 'ARCHIVED_SOLD'],
     RERA_VERIFIED: ['PHYSICALLY_AUDITED', 'ACTIVE_MARKETABLE', 'DRAFT', 'ARCHIVED_SOLD'],
     PHYSICALLY_AUDITED: ['ACTIVE_MARKETABLE', 'RERA_VERIFIED', 'ARCHIVED_SOLD'],
     ACTIVE_MARKETABLE: ['STALE_EXPIRED', 'ARCHIVED_SOLD', 'ACTIVE_MARKETABLE'],

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { verifyUnitSchema } from '@/lib/validators/inventory-schemas';
-import { canTransitionStatus, validateReraNumber, VerificationStatus } from '@/lib/domain/verification-engine';
+import { canTransitionStatus, validateReraNumber, checkReraCompliance, VerificationStatus } from '@/lib/domain/verification-engine';
 import { calculateAllInCost } from '@/lib/domain/cost-calculator';
 import { requireSession } from '@/lib/services/api-auth';
 
@@ -25,12 +25,18 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       return NextResponse.json({ success: false, error: 'Property unit not found' }, { status: 404 });
     }
 
-    // Check RERA Validity
-    const reraValidation = validateReraNumber(unit.project.reraNumber);
+    // Check RERA Compliance (Plot threshold & statutory exemption)
+    const compliance = checkReraCompliance({
+      reraNumber: unit.project.reraNumber,
+      plotSizeSqMeters: unit.project.plotSizeSqMeters,
+      plotSizeSqFt: unit.project.plotSizeSqFt,
+    });
     const transitionCheck = canTransitionStatus(
       unit.verificationStatus as VerificationStatus,
       validated.targetStatus as VerificationStatus,
-      reraValidation.isValid
+      compliance.status === 'VERIFIED',
+      compliance.isExempt,
+      compliance.status === 'MANDATORY_MISSING'
     );
 
     if (!transitionCheck.allowed) {

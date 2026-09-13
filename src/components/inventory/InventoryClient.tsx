@@ -224,8 +224,30 @@ export function InventoryClient({
     developerSalesPocName: '',
     developerSalesPocPhone: '',
     standardCommissionPercent: 2.0,
+    plotSizeSqMeters: '' as string | number,
+    plotSizeSqFt: '' as string | number,
   });
   const [creatingProject, setCreatingProject] = useState(false);
+
+  const handlePlotSizeChange = (val: string, unit: 'sqm' | 'sqft') => {
+    if (!val || val.trim() === '') {
+      setProjectForm((prev) => ({ ...prev, plotSizeSqMeters: '', plotSizeSqFt: '' }));
+      return;
+    }
+    const num = parseFloat(val);
+    if (isNaN(num)) {
+      if (unit === 'sqm') setProjectForm((prev) => ({ ...prev, plotSizeSqMeters: val }));
+      else setProjectForm((prev) => ({ ...prev, plotSizeSqFt: val }));
+      return;
+    }
+    if (unit === 'sqm') {
+      const sqft = Math.round(num * 10.7639 * 100) / 100;
+      setProjectForm((prev) => ({ ...prev, plotSizeSqMeters: num, plotSizeSqFt: sqft }));
+    } else {
+      const sqm = Math.round((num / 10.7639) * 100) / 100;
+      setProjectForm((prev) => ({ ...prev, plotSizeSqMeters: sqm, plotSizeSqFt: num }));
+    }
+  };
 
   const fetchInventory = async () => {
     setLoading(true);
@@ -370,6 +392,13 @@ export function InventoryClient({
   const handleCreateProject = async (e: React.FormEvent) => {
     e.preventDefault();
     setActionError(null);
+
+    const plotSizeNum = projectForm.plotSizeSqMeters ? Number(projectForm.plotSizeSqMeters) : null;
+    if (plotSizeNum !== null && plotSizeNum > 500 && !projectForm.reraNumber.trim()) {
+      setActionError('MahaRERA registration is mandatory because the plot size exceeds 500 sq.m (Section 3(2)(a)). Please enter a valid MahaRERA registration number.');
+      return;
+    }
+
     setCreatingProject(true);
 
     const videoAssets = projectForm.mediaGallery.filter((asset) => asset.kind === 'video');
@@ -383,6 +412,8 @@ export function InventoryClient({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...projectForm,
+          plotSizeSqMeters: projectForm.plotSizeSqMeters ? Number(projectForm.plotSizeSqMeters) : null,
+          plotSizeSqFt: projectForm.plotSizeSqFt ? Number(projectForm.plotSizeSqFt) : null,
           distanceToMetroKm: Number(projectForm.distanceToMetroKm),
           totalTowers: Number(projectForm.totalTowers),
           totalFloors: Number(projectForm.totalFloors),
@@ -454,6 +485,8 @@ export function InventoryClient({
       developerName: data.developerName || '',
       projectName: data.projectName || '',
       reraNumber: data.reraNumber || '',
+      plotSizeSqMeters: data.plotSizeSqMeters ? Number(data.plotSizeSqMeters) : (data.plotAreaSqM ? Number(data.plotAreaSqM) : ''),
+      plotSizeSqFt: data.plotSizeSqFt ? Number(data.plotSizeSqFt) : (data.plotAreaSqFt ? Number(data.plotAreaSqFt) : ''),
       microMarket: data.microMarket || '',
       subLocality: data.subLocality || '',
       shortDescription: data.shortDescription || (data.projectName ? `${data.projectName} by ${data.developerName || 'Developer'} in ${data.microMarket || 'Navi Mumbai'}` : ''),
@@ -551,6 +584,8 @@ export function InventoryClient({
       developerName: '',
       projectName: '',
       reraNumber: '',
+      plotSizeSqMeters: '',
+      plotSizeSqFt: '',
       microMarket: '',
       subLocality: '',
       shortDescription: '',
@@ -583,6 +618,8 @@ export function InventoryClient({
     setProjectForm((prev) => ({
       ...prev,
       ...project,
+      plotSizeSqMeters: project.plotSizeSqMeters ?? '',
+      plotSizeSqFt: project.plotSizeSqFt ?? '',
       subLocality: project.subLocality || '',
       shortDescription: project.shortDescription || '',
       description: project.description || '',
@@ -1271,13 +1308,77 @@ export function InventoryClient({
             <MediaUploader value={projectForm.mediaGallery} onChange={(mediaGallery) => setProjectForm({ ...projectForm, mediaGallery })} label="Project gallery" />
           </div>
 
+          {/* Plot Size & Statutory RERA Compliance Threshold */}
+          <div className="p-3.5 rounded-xl border border-border bg-surface-subtle/50 space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+              <div>
+                <span className="text-xs font-bold text-content flex items-center gap-1.5">
+                  <Calculator className="w-3.5 h-3.5 text-accent" /> Plot Area &amp; MahaRERA Threshold
+                </span>
+                <p className="text-[11px] text-content-muted">
+                  Section 3(2)(a): RERA registration is legally compulsory for plot sizes exceeding 500 sq.m (5,382 sq.ft).
+                </p>
+              </div>
+              {projectForm.plotSizeSqMeters ? (
+                <span
+                  className={`self-start sm:self-auto text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border ${
+                    Number(projectForm.plotSizeSqMeters) > 500
+                      ? 'bg-rose-500/10 text-rose-400 border-rose-500/30'
+                      : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                  }`}
+                >
+                  {Number(projectForm.plotSizeSqMeters) > 500 ? 'RERA Compulsory (>500m²)' : 'RERA Exempt (≤500m²)'}
+                </span>
+              ) : null}
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-medium text-content-muted block mb-1">
+                  Plot Size (Square Metres - sq.m)
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="e.g. 450 or 1200"
+                    value={projectForm.plotSizeSqMeters}
+                    onChange={(e) => handlePlotSizeChange(e.target.value, 'sqm')}
+                    className="w-full bg-surface border border-border rounded-xl p-2.5 text-xs text-content font-mono font-medium focus:outline-hidden focus:border-accent"
+                  />
+                  <span className="absolute right-3 top-2.5 text-[11px] font-mono text-content-muted">sq.m</span>
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-content-muted block mb-1">
+                  Plot Size (Square Feet - sq.ft)
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="e.g. 4843.76"
+                    value={projectForm.plotSizeSqFt}
+                    onChange={(e) => handlePlotSizeChange(e.target.value, 'sqft')}
+                    className="w-full bg-surface border border-border rounded-xl p-2.5 text-xs text-content font-mono font-medium focus:outline-hidden focus:border-accent"
+                  />
+                  <span className="absolute right-3 top-2.5 text-[11px] font-mono text-content-muted">sq.ft</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-bold text-content block mb-1">MahaRERA Registration Number *</label>
+              <label className="text-xs font-bold text-content block mb-1">
+                MahaRERA Registration Number {projectForm.plotSizeSqMeters && Number(projectForm.plotSizeSqMeters) > 500 ? '*' : '(Optional)'}
+              </label>
               <input
                 type="text"
                 aria-label="RERA registration number"
-                required
+                required={Boolean(projectForm.plotSizeSqMeters && Number(projectForm.plotSizeSqMeters) > 500)}
                 placeholder="e.g. P52000018920"
                 value={projectForm.reraNumber}
                 onChange={(e) => setProjectForm({ ...projectForm, reraNumber: e.target.value.toUpperCase() })}
@@ -1301,29 +1402,39 @@ export function InventoryClient({
               />
             </div>
 
-            {/* Full-width RERA Verification Badge */}
-            {projectForm.reraNumber && (
-              <div className="col-span-1 sm:col-span-2 space-y-2">
-                <ReraVerificationBadge
-                  reraNumber={projectForm.reraNumber}
-                  projectId={editingProjectId || undefined}
-                  showDuplicateCheck={true}
-                  showPortalLink={true}
-                  showCopyButton={true}
-                />
-                {duplicateProjectInModal && (
-                  <div className="p-3 bg-status-warning-surface border border-status-warning/40 rounded-xl text-status-warning text-xs flex items-start gap-2.5">
-                    <AlertTriangle className="w-4 h-4 shrink-0 text-status-warning mt-0.5" />
-                    <div>
-                      <span className="font-bold">Duplicate MahaRERA ID Detected: </span>
-                      <span>
-                        This registration is already recorded in CRM under <strong>{duplicateProjectInModal.projectName}</strong> ({duplicateProjectInModal.microMarket}). Submitting this form will update specifications and synchronize child units with the existing project record.
-                      </span>
-                    </div>
+            {/* RERA Status / Compliance Banner */}
+            <div className="col-span-1 sm:col-span-2 space-y-2">
+              <ReraVerificationBadge
+                reraNumber={projectForm.reraNumber}
+                plotSizeSqMeters={projectForm.plotSizeSqMeters ? Number(projectForm.plotSizeSqMeters) : undefined}
+                plotSizeSqFt={projectForm.plotSizeSqFt ? Number(projectForm.plotSizeSqFt) : undefined}
+                isReraExempt={Boolean(projectForm.plotSizeSqMeters && Number(projectForm.plotSizeSqMeters) <= 500)}
+                reraStatus={
+                  projectForm.reraNumber
+                    ? 'VERIFIED'
+                    : projectForm.plotSizeSqMeters && Number(projectForm.plotSizeSqMeters) <= 500
+                    ? 'EXEMPT_PLOT_UNDER_500'
+                    : projectForm.plotSizeSqMeters && Number(projectForm.plotSizeSqMeters) > 500
+                    ? 'MANDATORY_MISSING'
+                    : 'NOT_UPDATED'
+                }
+                projectId={editingProjectId || undefined}
+                showDuplicateCheck={Boolean(projectForm.reraNumber)}
+                showPortalLink={Boolean(projectForm.reraNumber)}
+                showCopyButton={Boolean(projectForm.reraNumber)}
+              />
+              {duplicateProjectInModal && (
+                <div className="p-3 bg-status-warning-surface border border-status-warning/40 rounded-xl text-status-warning text-xs flex items-start gap-2.5">
+                  <AlertTriangle className="w-4 h-4 shrink-0 text-status-warning mt-0.5" />
+                  <div>
+                    <span className="font-bold">Duplicate MahaRERA ID Detected: </span>
+                    <span>
+                      This registration is already recorded in CRM under <strong>{duplicateProjectInModal.projectName}</strong> ({duplicateProjectInModal.microMarket}). Submitting this form will update specifications and synchronize child units with the existing project record.
+                    </span>
                   </div>
-                )}
-              </div>
-            )}
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">

@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server';
 import { requireSession, orgScope } from '@/lib/services/api-auth';
 import { prisma } from '@/lib/db/prisma';
-import { assessUnitFreshness } from '@/lib/domain/verification-engine';
+import { assessUnitFreshness, validateReraNumber, checkReraCompliance } from '@/lib/domain/verification-engine';
 import { updateUnitSchema } from '@/lib/validators/inventory-schemas';
 import { calculateAllInCost } from '@/lib/domain/cost-calculator';
-import { validateReraNumber } from '@/lib/domain/verification-engine';
 import { parseInventoryContent } from '@/lib/inventory-media';
 import { parseSafeDate } from '@/lib/date-utils';
 
@@ -74,8 +73,15 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       return NextResponse.json({ success: false, error: 'Target project does not exist' }, { status: 404 });
     }
     const nextStatus = validated.verificationStatus ?? existing.verificationStatus;
-    if (nextStatus === 'ACTIVE_MARKETABLE' && !validateReraNumber(project.reraNumber).isValid) {
-      return NextResponse.json({ success: false, error: 'Cannot mark unit ACTIVE_MARKETABLE: parent project has invalid RERA number.' }, { status: 422 });
+    if (nextStatus === 'ACTIVE_MARKETABLE') {
+      const compliance = checkReraCompliance({
+        reraNumber: project.reraNumber,
+        plotSizeSqMeters: project.plotSizeSqMeters,
+        plotSizeSqFt: project.plotSizeSqFt,
+      });
+      if (compliance.status === 'MANDATORY_MISSING') {
+        return NextResponse.json({ success: false, error: compliance.description }, { status: 422 });
+      }
     }
 
     const agreementValue = validated.agreementValue ?? existing.agreementValue;

@@ -35,7 +35,7 @@ import {
 } from 'lucide-react';
 import { AccessibleDialog } from '@/components/ui/AccessibleDialog';
 import { HallmarkStamp } from '@/components/ui/HallmarkStamp';
-import { validateReraNumber } from '@/lib/domain/verification-engine';
+import { validateReraNumber, checkReraCompliance } from '@/lib/domain/verification-engine';
 import { ReraVerificationBadge } from '@/components/inventory/ReraVerificationBadge';
 import { FeedbackAlert } from '@/components/ui/FeedbackAlert';
 import { CustomSelect } from '@/components/ui/CustomSelect';
@@ -564,9 +564,13 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
     setParseError(null);
 
     try {
-      const reraCheck = validateReraNumber(projectData.reraNumber);
-      if (!reraCheck.isValid) {
-        throw new Error(reraCheck.error || 'Please enter a valid MahaRERA registration number.');
+      const compliance = checkReraCompliance({
+        reraNumber: projectData.reraNumber,
+        plotSizeSqMeters: projectData.plotSizeSqMeters ? Number(projectData.plotSizeSqMeters) : null,
+        plotSizeSqFt: projectData.plotSizeSqFt ? Number(projectData.plotSizeSqFt) : null,
+      });
+      if (!compliance.isCompliant) {
+        throw new Error(compliance.description);
       }
 
       const extractedElevations = projectData.elevations || projectData.classifiedMedia?.elevations || [];
@@ -608,7 +612,11 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
       const payload = {
         developerName: projectData.developerName,
         projectName: projectData.projectName,
-        reraNumber: reraCheck.normalized || projectData.reraNumber,
+        reraNumber: compliance.validation?.normalized || (projectData.reraNumber || '').trim(),
+        plotSizeSqMeters: compliance.plotSizeSqMeters,
+        plotSizeSqFt: compliance.plotSizeSqFt,
+        isReraExempt: compliance.isExempt,
+        reraStatus: compliance.status,
         microMarket: projectData.microMarket,
         subLocality: projectData.subLocality || null,
         shortDescription: projectData.shortDescription || null,

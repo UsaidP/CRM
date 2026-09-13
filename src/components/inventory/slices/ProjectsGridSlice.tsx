@@ -12,6 +12,7 @@ import {
   MapPin,
   Star,
   Plus,
+  AlertTriangle,
 } from 'lucide-react';
 import type { MediaAsset } from '@/components/inventory/MediaUploader';
 
@@ -114,12 +115,24 @@ export function ProjectsGridSlice({
                     {/* Top Overlay Badge Bar */}
                     <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2 pointer-events-auto">
                       <div className="flex items-center gap-1.5">
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-md border border-white/15 text-white text-[10px] font-mono font-bold tracking-tight shadow-xs">
-                          <ShieldCheck className="w-3 h-3 text-status-success" />
-                          <span className="truncate max-w-[120px]">
-                            {project.reraNumber || 'RERA VERIFIED'}
+                        {project.reraNumber ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-md border border-white/15 text-white text-[10px] font-mono font-bold tracking-tight shadow-xs">
+                            <ShieldCheck className="w-3 h-3 text-status-success" />
+                            <span className="truncate max-w-[120px]">
+                              {project.reraNumber}
+                            </span>
                           </span>
-                        </span>
+                        ) : project.isReraExempt || (project.plotSizeSqMeters && project.plotSizeSqMeters <= 500) ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-950/70 backdrop-blur-md border border-emerald-500/30 text-emerald-300 text-[10px] font-medium tracking-tight shadow-xs" title="Statutory exemption: Plot size ≤ 500 sq.m">
+                            <ShieldCheck className="w-3 h-3 text-emerald-400" />
+                            <span>Exempt (≤500m²)</span>
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-950/70 backdrop-blur-md border border-amber-500/30 text-amber-300 text-[10px] font-medium tracking-tight shadow-xs" title="MahaRERA registration number not recorded">
+                            <AlertTriangle className="w-3 h-3 text-amber-400" />
+                            <span>RERA Not Updated</span>
+                          </span>
+                        )}
                         {project.hasOccupancyCertificate && (
                           <span className="inline-flex items-center px-2 py-1 rounded-lg bg-status-success/80 backdrop-blur-md text-white text-[9px] font-bold tracking-wider uppercase shadow-xs">
                             OC Ready

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { requireSession } from '@/lib/services/api-auth';
 import { prisma } from '@/lib/db/prisma';
 import { createProjectSchema } from '@/lib/validators/inventory-schemas';
-import { validateReraNumber } from '@/lib/domain/verification-engine';
+import { validateReraNumber, checkReraCompliance } from '@/lib/domain/verification-engine';
 import { parseInventoryContent, resolveAssetUrl } from '@/lib/inventory-media';
 import { parseSafeDate } from '@/lib/date-utils';
 import { deduplicateUnitsByConfiguration } from '@/lib/services/unit-deduplication';
@@ -96,11 +96,16 @@ export async function POST(req: Request) {
     const body = await req.json();
     const validated = createProjectSchema.parse(body);
 
-    // Verify RERA Format
-    const reraValidation = validateReraNumber(validated.reraNumber);
-    if (!reraValidation.isValid) {
+    // Evaluate MahaRERA statutory registration compliance (Sec 3(2)(a))
+    const compliance = checkReraCompliance({
+      reraNumber: validated.reraNumber,
+      plotSizeSqMeters: validated.plotSizeSqMeters,
+      plotSizeSqFt: validated.plotSizeSqFt,
+    });
+
+    if (!compliance.isCompliant) {
       return NextResponse.json(
-        { success: false, error: reraValidation.error },
+        { success: false, error: compliance.description },
         { status: 422 }
       );
     }
@@ -123,27 +128,32 @@ export async function POST(req: Request) {
 
     // Check if initial units were provided (e.g. from brochure auto-extractor)
     const initialUnits: any[] = Array.isArray(body.units) ? body.units : [];
-    const normalizedRera = reraValidation.normalized || validated.reraNumber;
+    const cleanRera = (validated.reraNumber || '').trim();
+    const normalizedRera = compliance.validation?.normalized || cleanRera;
 
     const result = await prisma.$transaction(async (tx) => {
       // 1. Check for existing duplicate project by RERA number or Project Name + Location in this organization
-      const existingProject = await tx.developerProject.findFirst({
-        where: {
-          organizationId: effectiveOrgId,
-          OR: [
-            { reraNumber: normalizedRera },
+      const duplicateOrConditions: any[] = [
+        {
+          AND: [
+            { projectName: { equals: validated.projectName } },
             {
-              AND: [
-                { projectName: { equals: validated.projectName } },
-                {
-                  OR: [
-                    { developerName: { equals: validated.developerName } },
-                    { microMarket: { equals: validated.microMarket } },
-                  ],
-                },
+              OR: [
+                { developerName: { equals: validated.developerName } },
+                { microMarket: { equals: validated.microMarket } },
               ],
             },
           ],
+        },
+      ];
+      if (normalizedRera.length > 0) {
+        duplicateOrConditions.unshift({ reraNumber: normalizedRera });
+      }
+
+      const existingProject = await tx.developerProject.findFirst({
+        where: {
+          organizationId: effectiveOrgId,
+          OR: duplicateOrConditions,
         },
         include: {
           units: true,
@@ -185,8 +195,11 @@ export async function POST(req: Request) {
               ? JSON.stringify([...validated.brochurePhotos, ...(validated.elevationImages?.slice(2) || []), ...(validated.floorPlanImages?.slice(3) || [])])
               : existingProject.brochurePhotosJson,
             amenitiesJson: JSON.stringify(mergedAmenities),
-            developerSalesPocName: validated.developerSalesPocName || existingProject.developerSalesPocName,
-            developerSalesPocPhone: validated.developerSalesPocPhone || existingProject.developerSalesPocPhone,
+            plotSizeSqMeters: compliance.plotSizeSqMeters ?? existingProject.plotSizeSqMeters,
+            plotSizeSqFt: compliance.plotSizeSqFt ?? existingProject.plotSizeSqFt,
+            isReraExempt: compliance.isExempt,
+            reraStatus: compliance.status,
+            reraNumber: normalizedRera || existingProject.reraNumber,
             commencementCertificateDate: parseSafeDate(validated.commencementCertificateDate) ?? existingProject.commencementCertificateDate,
             expectedPossessionDate: parseSafeDate(validated.expectedPossessionDate) ?? existingProject.expectedPossessionDate,
             reraCertificateUrl: validated.reraCertificateUrl || existingProject.reraCertificateUrl,
@@ -213,6 +226,10 @@ export async function POST(req: Request) {
             developerName: validated.developerName,
             projectName: validated.projectName,
             reraNumber: normalizedRera,
+            plotSizeSqMeters: compliance.plotSizeSqMeters,
+            plotSizeSqFt: compliance.plotSizeSqFt,
+            isReraExempt: compliance.isExempt,
+            reraStatus: compliance.status,
             microMarket: validated.microMarket,
             subLocality: validated.subLocality,
             shortDescription: validated.shortDescription,

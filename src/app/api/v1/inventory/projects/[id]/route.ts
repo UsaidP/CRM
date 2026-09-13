@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { requireSession, orgScope } from '@/lib/services/api-auth';
 import { prisma } from '@/lib/db/prisma';
 import { updateProjectSchema } from '@/lib/validators/inventory-schemas';
-import { validateReraNumber } from '@/lib/domain/verification-engine';
+import { validateReraNumber, checkReraCompliance } from '@/lib/domain/verification-engine';
 import { parseInventoryContent } from '@/lib/inventory-media';
 import { parseSafeDate } from '@/lib/date-utils';
 
@@ -51,13 +51,26 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       return NextResponse.json({ success: false, error: 'Project not found' }, { status: 404 });
     }
 
-    const nextRera = validated.reraNumber ?? existing.reraNumber;
-    const reraValidation = validateReraNumber(nextRera);
-    if (!reraValidation.isValid) {
-      return NextResponse.json({ success: false, error: reraValidation.error }, { status: 422 });
+    const nextRera = validated.reraNumber !== undefined ? validated.reraNumber : existing.reraNumber;
+    const nextSqm = validated.plotSizeSqMeters !== undefined ? validated.plotSizeSqMeters : existing.plotSizeSqMeters;
+    const nextSqft = validated.plotSizeSqFt !== undefined ? validated.plotSizeSqFt : existing.plotSizeSqFt;
+
+    const compliance = checkReraCompliance({
+      reraNumber: nextRera,
+      plotSizeSqMeters: nextSqm,
+      plotSizeSqFt: nextSqft,
+    });
+
+    if (!compliance.isCompliant) {
+      return NextResponse.json({ success: false, error: compliance.description }, { status: 422 });
     }
 
-    const data: Record<string, unknown> = {};
+    const data: Record<string, unknown> = {
+      plotSizeSqMeters: compliance.plotSizeSqMeters,
+      plotSizeSqFt: compliance.plotSizeSqFt,
+      isReraExempt: compliance.isExempt,
+      reraStatus: compliance.status,
+    };
     const scalarFields = [
       'organizationId', 'developerName', 'projectName', 'microMarket', 'subLocality',
       'shortDescription', 'description', 'locationDescription', 'latitude', 'longitude',
@@ -69,7 +82,9 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     for (const field of scalarFields) {
       if (field in validated) data[field] = validated[field];
     }
-    if ('reraNumber' in validated) data.reraNumber = reraValidation.normalized || nextRera;
+    if ('reraNumber' in validated) {
+      data.reraNumber = compliance.validation?.normalized || (validated.reraNumber || '').trim();
+    }
     if ('commencementCertificateDate' in validated) {
       data.commencementCertificateDate = parseSafeDate(validated.commencementCertificateDate);
     }

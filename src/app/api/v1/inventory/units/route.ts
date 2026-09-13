@@ -3,7 +3,7 @@ import { requireSession, orgScope } from '@/lib/services/api-auth';
 import { prisma } from '@/lib/db/prisma';
 import { createUnitSchema } from '@/lib/validators/inventory-schemas';
 import { calculateAllInCost } from '@/lib/domain/cost-calculator';
-import { assessUnitFreshness, validateReraNumber } from '@/lib/domain/verification-engine';
+import { assessUnitFreshness, validateReraNumber, checkReraCompliance } from '@/lib/domain/verification-engine';
 import { parseInventoryContent, resolveAssetUrl } from '@/lib/inventory-media';
 import { parseSafeDate } from '@/lib/date-utils';
 import { handleApiError } from '@/lib/services/api-handler';
@@ -119,10 +119,14 @@ export async function POST(req: Request) {
 
     // Verify RERA rule if attempting ACTIVE_MARKETABLE
     if (validated.verificationStatus === 'ACTIVE_MARKETABLE') {
-      const reraCheck = validateReraNumber(project.reraNumber);
-      if (!reraCheck.isValid) {
+      const compliance = checkReraCompliance({
+        reraNumber: project.reraNumber,
+        plotSizeSqMeters: project.plotSizeSqMeters,
+        plotSizeSqFt: project.plotSizeSqFt,
+      });
+      if (compliance.status === 'MANDATORY_MISSING') {
         return NextResponse.json(
-          { success: false, error: 'Cannot create unit as ACTIVE_MARKETABLE: Parent project has invalid RERA number.' },
+          { success: false, error: compliance.description },
           { status: 422 }
         );
       }

@@ -13,10 +13,14 @@ import {
   Loader2,
   Search,
 } from 'lucide-react';
-import { validateReraNumber, ReraValidationResult, MAHARERA_PORTAL_SEARCH_URL } from '@/lib/domain/verification-engine';
+import { validateReraNumber, checkReraCompliance, ReraValidationResult, MAHARERA_PORTAL_SEARCH_URL } from '@/lib/domain/verification-engine';
 
 interface ReraVerificationBadgeProps {
-  reraNumber: string;
+  reraNumber?: string | null;
+  plotSizeSqMeters?: number | null;
+  plotSizeSqFt?: number | null;
+  isReraExempt?: boolean;
+  reraStatus?: string;
   projectId?: string;
   showDuplicateCheck?: boolean;
   showPortalLink?: boolean;
@@ -28,6 +32,10 @@ interface ReraVerificationBadgeProps {
 
 export function ReraVerificationBadge({
   reraNumber,
+  plotSizeSqMeters,
+  plotSizeSqFt,
+  isReraExempt,
+  reraStatus,
   projectId,
   showDuplicateCheck = true,
   showPortalLink = true,
@@ -112,10 +120,93 @@ export function ReraVerificationBadge({
   };
 
   if (!reraNumber || reraNumber.trim() === '') {
+    const compliance = checkReraCompliance({
+      reraNumber: '',
+      plotSizeSqMeters,
+      plotSizeSqFt,
+    });
+
+    if (compact) {
+      if (compliance.status === 'EXEMPT_PLOT_UNDER_500' || isReraExempt) {
+        return (
+          <span
+            title={compliance.description}
+            className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 ${className}`}
+          >
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span>RERA Exempt (≤500m²)</span>
+          </span>
+        );
+      }
+      if (compliance.status === 'MANDATORY_MISSING') {
+        return (
+          <span
+            title={compliance.description}
+            className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-medium bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30 ${className}`}
+          >
+            <ShieldAlert className="w-3.5 h-3.5" />
+            <span>RERA Compulsory (&gt;500m²)</span>
+          </span>
+        );
+      }
+      return (
+        <span
+          title={compliance.description}
+          className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-medium bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 ${className}`}
+        >
+          <AlertTriangle className="w-3.5 h-3.5" />
+          <span>RERA Not Updated</span>
+        </span>
+      );
+    }
+
+    if (compliance.status === 'EXEMPT_PLOT_UNDER_500' || isReraExempt) {
+      return (
+        <div className={`p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-800 dark:text-emerald-200 text-xs flex items-start gap-2.5 ${className}`}>
+          <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+          <div>
+            <div className="font-bold flex items-center gap-1.5">
+              <span>Statutory RERA Exemption (Section 3(2)(a))</span>
+              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-700 dark:text-emerald-300">
+                Plot ≤ 500 sq.m
+              </span>
+            </div>
+            <p className="mt-0.5 text-content-muted leading-relaxed">
+              {compliance.description} Real estate projects on land plots not exceeding 500 square meters are legally exempt from compulsory MahaRERA registration.
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    if (compliance.status === 'MANDATORY_MISSING') {
+      return (
+        <div className={`p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-800 dark:text-rose-200 text-xs flex items-start gap-2.5 ${className}`}>
+          <ShieldAlert className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+          <div>
+            <div className="font-bold flex items-center gap-1.5">
+              <span>MahaRERA Registration Compulsory</span>
+              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-700 dark:text-rose-300">
+                Plot &gt; 500 sq.m
+              </span>
+            </div>
+            <p className="mt-0.5 text-content-muted leading-relaxed">
+              {compliance.description} Please provide the official registration number (e.g. P52000018920).
+            </p>
+          </div>
+        </div>
+      );
+    }
+
     return (
-      <div className={`text-xs text-content-muted flex items-center gap-1.5 ${className}`}>
-        <span className="w-2 h-2 rounded-full bg-border" />
-        <span>Enter official MahaRERA registration number (e.g. P52000028714)</span>
+      <div className={`p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-200 text-xs flex items-start gap-2 ${className}`}>
+        <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+        <div>
+          <span className="font-bold">RERA Not Updated: </span>
+          <span className="text-content-muted">
+            Registration number is not recorded. Property can be saved and marketed; remember to sync once MahaRERA details are finalized.
+          </span>
+        </div>
       </div>
     );
   }

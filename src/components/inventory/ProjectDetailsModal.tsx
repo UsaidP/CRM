@@ -1022,6 +1022,10 @@ export function ProjectDetailsModal({
             <div className="space-y-6">
               <ReraVerificationBadge
                 reraNumber={currentProject.reraNumber}
+                plotSizeSqMeters={currentProject.plotSizeSqMeters}
+                plotSizeSqFt={currentProject.plotSizeSqFt}
+                isReraExempt={currentProject.isReraExempt}
+                reraStatus={currentProject.reraStatus}
                 projectId={currentProject.id}
                 showDuplicateCheck={false}
                 showPortalLink={true}
@@ -1177,8 +1181,18 @@ export function ProjectDetailsModal({
                     </div>
                     <div className="flex justify-between py-1 border-b border-border-subtle">
                       <span className="text-content-muted">RERA Registration ID:</span>
-                      <span className="font-mono font-medium text-accent-text">{project.reraNumber}</span>
+                      <span className="font-mono font-medium text-accent-text">
+                        {project.reraNumber || (project.isReraExempt || (project.plotSizeSqMeters && project.plotSizeSqMeters <= 500) ? 'Exempt (Sec 3(2)(a))' : 'Not Updated')}
+                      </span>
                     </div>
+                    {project.plotSizeSqMeters ? (
+                      <div className="flex justify-between py-1 border-b border-border-subtle">
+                        <span className="text-content-muted">Plot Area / Land Size:</span>
+                        <span className="font-mono font-medium text-content">
+                          {project.plotSizeSqMeters} sq.m ({project.plotSizeSqFt ? Math.round(project.plotSizeSqFt).toLocaleString() : Math.round(project.plotSizeSqMeters * 10.7639).toLocaleString()} sq.ft)
+                        </span>
+                      </div>
+                    ) : null}
                     <div className="flex justify-between py-1 border-b border-border-subtle">
                       <span className="text-content-muted">CIDCO Micro-Market Node:</span>
                       <span className="font-medium text-content font-sans">{project.microMarket}</span>

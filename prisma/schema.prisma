@@ -147,7 +147,11 @@ model DeveloperProject {
   organization                Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   developerName               String
   projectName                 String
-  reraNumber                  String
+  reraNumber                  String             @default("")
+  plotSizeSqMeters            Float?             // Land area in square meters (RERA Sec 3(2)(a) threshold: 500 sqm)
+  plotSizeSqFt                Float?             // Land area in square feet (converted: sqm * 10.7639)
+  isReraExempt                Boolean            @default(false) // True if plot <= 500 sqm or statutory exemption
+  reraStatus                  String             @default("NOT_UPDATED") // VERIFIED, NOT_UPDATED, EXEMPT_PLOT_UNDER_500, MANDATORY_MISSING
   microMarket                 String             // e.g. "Kharghar Sector 35", "Taloja Phase 1", "Kharghar Sector 20"
   subLocality                 String?
   shortDescription             String?

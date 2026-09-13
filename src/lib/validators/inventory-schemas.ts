@@ -44,11 +44,22 @@ const brochurePhotos = z.array(flexibleMediaAssetSchema).max(100).default([]);
 const videos = z.array(flexibleMediaAssetSchema).max(20).default([]);
 const highlights = z.array(z.string().trim().min(2).max(240)).max(20).default([]);
 
-export const createProjectSchema = z.object({
+export const createProjectBaseSchema = z.object({
   organizationId: z.string().uuid().optional().nullable(),
   developerName: z.string().min(2, 'Developer name must be at least 2 characters'),
   projectName: z.string().min(2, 'Project name must be at least 2 characters'),
-  reraNumber: z.string().min(8, 'Valid MahaRERA registration number is required'),
+  reraNumber: z
+    .string()
+    .trim()
+    .refine((val) => !val || val.length >= 8, {
+      message: 'RERA registration number must be at least 8 characters if provided',
+    })
+    .optional()
+    .nullable(),
+  plotSizeSqMeters: z.number().positive('Plot size in sq.m must be positive').optional().nullable(),
+  plotSizeSqFt: z.number().positive('Plot size in sq.ft must be positive').optional().nullable(),
+  isReraExempt: z.boolean().optional().default(false),
+  reraStatus: z.string().optional().default('NOT_UPDATED'),
   microMarket: z.string().min(2, 'Micro market locality is required'),
   subLocality: z.string().optional().nullable(),
   shortDescription: z.string().trim().max(1000).optional().nullable(),
@@ -83,6 +94,23 @@ export const createProjectSchema = z.object({
   reraVerificationDate: z.string().optional().nullable(),
   reraCertDataJson: z.string().optional().nullable(),
 });
+
+export const createProjectSchema = createProjectBaseSchema.refine(
+  (data) => {
+    const isLargePlot =
+      (typeof data.plotSizeSqMeters === 'number' && data.plotSizeSqMeters > 500) ||
+      (typeof data.plotSizeSqFt === 'number' && data.plotSizeSqFt > 5381.96);
+    if (isLargePlot) {
+      const cleanRera = (data.reraNumber || '').trim();
+      return cleanRera.length >= 8;
+    }
+    return true;
+  },
+  {
+    message: 'MahaRERA registration is legally compulsory for projects with plot size exceeding 500 sq.m (5,382 sq.ft).',
+    path: ['reraNumber'],
+  }
+);
 
 export const createUnitSchema = z.object({
   projectId: z.string().uuid('Project ID must be a valid UUID'),
@@ -121,7 +149,22 @@ export const createUnitSchema = z.object({
   isExclusive: z.boolean().default(false),
 });
 
-export const updateProjectSchema = createProjectSchema.partial();
+export const updateProjectSchema = createProjectBaseSchema.partial().refine(
+  (data) => {
+    const isLargePlot =
+      (typeof data.plotSizeSqMeters === 'number' && data.plotSizeSqMeters > 500) ||
+      (typeof data.plotSizeSqFt === 'number' && data.plotSizeSqFt > 5381.96);
+    if (isLargePlot && data.reraNumber !== undefined) {
+      const cleanRera = (data.reraNumber || '').trim();
+      return cleanRera.length >= 8;
+    }
+    return true;
+  },
+  {
+    message: 'MahaRERA registration is legally compulsory for projects with plot size exceeding 500 sq.m (5,382 sq.ft).',
+    path: ['reraNumber'],
+  }
+);
 export const updateUnitSchema = createUnitSchema.partial();
 
 export const verifyUnitSchema = z.object({
