@@ -17,8 +17,7 @@ import type { BuyerRequirementInput, PropertyUnitForMatching } from '@/lib/domai
 function getGeminiClient(): GoogleGenAI | null {
   const apiKey =
     process.env.GEMINI_API_KEY ||
-    process.env.GOOGLE_API_KEY ||
-    'AIzaSyBaLReTQMslUOWW3ch6pGNjov3nbr0GWF0';
+    process.env.GOOGLE_API_KEY;
   if (!apiKey || apiKey === 'your_gemini_api_key_here' || apiKey === 'your_google_api_key_here') {
     return null;
   }
@@ -26,18 +25,14 @@ function getGeminiClient(): GoogleGenAI | null {
 }
 
 // Active High-RPM Vision & Multimodal Models for Document Understanding
-export const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-3.6-flash';
+export const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 
 // Model cascade for rate-limit & availability resilience:
-// 1. gemini-3.6-flash (Fast, accurate multimodal vision & document OCR)
-// 2. gemini-3.5-flash (High throughput multimodal fallback)
-// 3. gemini-3.1-flash-lite (Ultra-fast lightweight fallback for serverless constraints)
-// 4. gemini-flash-latest (Dynamic latest flash alias)
+// 1. gemini-2.5-flash (Fast, accurate multimodal vision & document OCR)
+// 2. gemini-3.6-flash (High throughput multimodal fallback)
 export const GEMINI_MODEL_CANDIDATES = [
-  process.env.GEMINI_MODEL || 'gemini-3.6-flash',
-  'gemini-3.5-flash',
-  'gemini-3.1-flash-lite',
-  'gemini-flash-latest',
+  process.env.GEMINI_MODEL || 'gemini-2.5-flash',
+  'gemini-3.6-flash',
 ];
 
 export function isInvalidApiKeyError(err: any): boolean {

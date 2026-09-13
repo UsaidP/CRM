@@ -537,10 +537,15 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
       setExtractionMethod(json.extractionMethod || 'GEMINI_AI');
       setModelUsed(json.modelUsed || (json.extractionMethod === 'GEMINI_AI' ? 'Gemini 2.5 Flash' : 'Smart Local Parser'));
       setExtractionNote(json.note || null);
+      setParseError(null);
       setStep('review');
     } catch (err: any) {
-      if (err?.name === 'AbortError' || controller.signal.aborted) {
-        console.log('[BROCHURE] Brochure extraction cancelled by user.');
+      const isAbort =
+        err?.name === 'AbortError' ||
+        controller.signal.aborted ||
+        String(err?.message || '').toLowerCase().includes('aborted');
+      if (isAbort) {
+        console.log('[BROCHURE] Brochure extraction cancelled or superseded.');
         return;
       }
       if (progressTimerRef.current) {

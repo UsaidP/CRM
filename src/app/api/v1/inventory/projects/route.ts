@@ -418,6 +418,9 @@ export async function POST(req: Request) {
       }
 
       return { project: projectRecord, units: syncedUnits, isDuplicate };
+    }, {
+      maxWait: 15000,
+      timeout: 60000,
     });
 
     const responseMsg = result.isDuplicate
