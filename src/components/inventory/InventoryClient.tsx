@@ -1589,7 +1589,7 @@ export function InventoryClient({
               <input
                 aria-label="Base price per square foot"
                 type="number"
-                step="50"
+                step="any"
                 min="1"
                 required
                 placeholder="e.g. 8500"
