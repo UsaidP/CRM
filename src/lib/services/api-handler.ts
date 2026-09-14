@@ -61,7 +61,21 @@ export function handleApiError(
     );
   }
 
-  // 4. Prisma known errors
+  // 4. Cross-tenant isolation violation (403 Forbidden)
+  if (
+    (error as Error)?.message === 'FORBIDDEN_CROSS_TENANT' ||
+    anyErr?.message?.includes('FORBIDDEN_CROSS_TENANT')
+  ) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Access denied: Cannot access or associate data with another organization.',
+      },
+      { status: 403 }
+    );
+  }
+
+  // 5. Prisma known errors
   if (anyErr?.code === 'P2002') {
     return NextResponse.json(
       {
@@ -69,6 +83,15 @@ export function handleApiError(
         error: 'A record with these unique details already exists.',
       },
       { status: 409 }
+    );
+  }
+  if (anyErr?.code === 'P2003') {
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Referenced record (such as organization or project) does not exist.',
+      },
+      { status: 400 }
     );
   }
   if (anyErr?.code === 'P2025') {
@@ -80,12 +103,34 @@ export function handleApiError(
       { status: 404 }
     );
   }
+  if (anyErr?.code === 'P2034') {
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'A concurrent database transaction conflict occurred. Please retry.',
+      },
+      { status: 409 }
+    );
+  }
 
-  // 5. Unhandled 500 Server Errors
+  // 6. Unhandled 500 Server Errors
   const isProduction = process.env.NODE_ENV === 'production';
+  const rawMsg = (error as Error)?.message || '';
+  const isSafeMessage =
+    rawMsg.length > 0 &&
+    rawMsg.length < 200 &&
+    !rawMsg.includes('node_modules') &&
+    !rawMsg.includes('prisma') &&
+    !rawMsg.includes('Prisma') &&
+    !rawMsg.includes('SELECT') &&
+    !rawMsg.includes('INSERT') &&
+    !rawMsg.includes('UPDATE') &&
+    !rawMsg.includes('at ') &&
+    !rawMsg.includes('ECONN');
+
   const errorMessage = isProduction
-    ? fallbackMessage
-    : (error as Error)?.message || fallbackMessage;
+    ? (isSafeMessage ? rawMsg : fallbackMessage)
+    : rawMsg || fallbackMessage;
 
   return NextResponse.json(
     {

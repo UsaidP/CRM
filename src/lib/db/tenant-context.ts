@@ -113,7 +113,8 @@ export function nestedOrgFilter(
 }
 
 export interface TenantContext {
-  organizationId: string;
+  organizationId?: string;
+  txClient?: any;
 }
 
 const globalForTenant = globalThis as unknown as {
@@ -128,15 +129,30 @@ const storage = tenantStorage;
 
 /** Run `fn` with a tenant bound (useful for tests and scripts). */
 export function runWithTenant<T>(organizationId: string, fn: () => Promise<T>): Promise<T> {
-  return storage.run({ organizationId }, fn);
+  const current = currentTenant();
+  return storage.run({ ...current, organizationId }, fn);
+}
+
+/** Run `fn` with a transaction client bound in tenant context. */
+export function runWithTxClient<T>(txClient: any, fn: () => Promise<T>): Promise<T> {
+  const current = currentTenant();
+  return storage.run({ ...current, txClient }, fn);
+}
+
+/** The transaction client bound to this async context, if any. */
+export function currentTxClient(): any | null {
+  return storage.getStore()?.txClient ?? null;
 }
 
 /** Bind a tenant to the remainder of the current async execution context. */
 export function bindTenant(organizationId: string): void {
-  storage.enterWith({ organizationId });
+  const current = currentTenant();
+  storage.enterWith({ ...current, organizationId });
 }
 
 /** The tenant bound to this async context, if any. */
 export function currentTenant(): TenantContext | null {
   return storage.getStore() ?? null;
 }
+
+

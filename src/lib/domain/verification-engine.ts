@@ -302,6 +302,19 @@ export function checkReraCompliance(params: {
         plotSizeSqMeters: effectiveSqm,
         plotSizeSqFt: effectiveSqft,
       };
+    } else {
+      return {
+        status: 'MANDATORY_MISSING',
+        isCompliant: false,
+        isMandatory,
+        isExempt: false,
+        badgeLabel: 'Invalid MahaRERA Number',
+        badgeTone: 'rose',
+        description: validation.error || 'The provided MahaRERA registration number is invalid.',
+        validation,
+        plotSizeSqMeters: effectiveSqm,
+        plotSizeSqFt: effectiveSqft,
+      };
     }
   }
 

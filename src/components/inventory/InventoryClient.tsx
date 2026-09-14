@@ -221,7 +221,7 @@ export function InventoryClient({
     expectedPossessionDate: '',
     totalTowers: 1,
     totalFloors: 7,
-    basePricePerSqft: 0,
+    basePricePerSqft: 8500,
     brochureUrl: '',
     youtubeWalkthroughUrl: '',
     masterPlanUrl: '',
@@ -415,6 +415,24 @@ export function InventoryClient({
     const plotSizeNum = projectForm.plotSizeSqMeters ? Number(projectForm.plotSizeSqMeters) : null;
     if (plotSizeNum !== null && plotSizeNum > 500 && !projectForm.reraNumber.trim()) {
       setActionError('MahaRERA registration is mandatory because the plot size exceeds 500 sq.m (Section 3(2)(a)). Please enter a valid MahaRERA registration number.');
+      return;
+    }
+
+    if (!projectForm.developerName.trim() || projectForm.developerName.trim().length < 2) {
+      setActionError('Developer name is required and must be at least 2 characters.');
+      return;
+    }
+    if (!projectForm.projectName.trim() || projectForm.projectName.trim().length < 2) {
+      setActionError('Project name is required and must be at least 2 characters.');
+      return;
+    }
+    if (!projectForm.microMarket.trim() || projectForm.microMarket.trim().length < 2) {
+      setActionError('Micro market locality is required.');
+      return;
+    }
+    const basePriceNum = Number(projectForm.basePricePerSqft);
+    if (!basePriceNum || isNaN(basePriceNum) || basePriceNum <= 0) {
+      setActionError('Base Price per sq.ft is required and must be greater than ₹0.');
       return;
     }
 
@@ -619,7 +637,7 @@ export function InventoryClient({
       expectedPossessionDate: '',
       totalTowers: 1,
       totalFloors: 7,
-      basePricePerSqft: 0,
+      basePricePerSqft: 8500,
       brochureUrl: '',
       youtubeWalkthroughUrl: '',
       masterPlanUrl: '',
@@ -1565,12 +1583,17 @@ export function InventoryClient({
               />
             </div>
             <div>
-              <label className="text-xs font-bold text-content block mb-1">Base Price / Sqft (₹)</label>
+              <label className="text-xs font-bold text-content block mb-1">
+                Base Price / Sqft (₹) <span className="text-rose-500">*</span>
+              </label>
               <input
                 aria-label="Base price per square foot"
                 type="number"
                 step="50"
-                value={projectForm.basePricePerSqft}
+                min="1"
+                required
+                placeholder="e.g. 8500"
+                value={projectForm.basePricePerSqft || ''}
                 onChange={(e) => setProjectForm({ ...projectForm, basePricePerSqft: Number(e.target.value) })}
                 className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content font-mono focus:outline-hidden focus:border-accent font-medium"
               />

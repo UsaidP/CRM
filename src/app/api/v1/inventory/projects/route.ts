@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { currentTenant, bindTenant } from '@/lib/db/tenant-context';
 import { requireSession } from '@/lib/services/api-auth';
 import { prisma } from '@/lib/db/prisma';
 import { createProjectSchema } from '@/lib/validators/inventory-schemas';
@@ -93,6 +94,7 @@ export async function POST(req: Request) {
   try {
     const auth = await requireSession(req);
     if (!auth.ok) return auth.response;
+    bindTenant(auth.session.organizationId);
     const body = await req.json();
     const validated = createProjectSchema.parse(body);
 
@@ -110,8 +112,11 @@ export async function POST(req: Request) {
       );
     }
 
-    // Default or retrieve organization: prioritize validated.organizationId, then active auth session org, then fallback
-    let effectiveOrgId = validated.organizationId || auth.session.organizationId;
+    // Default or retrieve organization: enforce auth session org first for tenant isolation
+    let effectiveOrgId = auth.session.organizationId;
+    if (!effectiveOrgId && auth.session.isSuperAdmin && validated.organizationId) {
+      effectiveOrgId = validated.organizationId;
+    }
     if (!effectiveOrgId) {
       let org = await prisma.organization.findFirst();
       if (!org) {

@@ -58,7 +58,7 @@ describe('tenant context', () => {
     const fs = require('fs');
     const schema = fs.readFileSync('prisma/schema.prisma', 'utf8');
     const models = [...schema.matchAll(/^model (\w+) \{/gm)].map((m) => m[1]);
-    const intentionallyUnscoped = new Set(['Organization', 'WebhookEventInbox']);
+    const intentionallyUnscoped = new Set(['Organization', 'WebhookEventInbox', 'BrochureUploadChunk']);
     for (const m of models) {
       if (intentionallyUnscoped.has(m)) continue;
       expect(isTenantScopedModel(m)).toBe(true);

@@ -1,6 +1,8 @@
 import { PrismaClient } from '@prisma/client';
 import {
   currentTenant,
+  currentTxClient,
+  runWithTxClient,
   ORG_SCOPED_MODELS,
   PARENT_SCOPED_MODELS,
   nestedOrgFilter,
@@ -23,12 +25,12 @@ import {
  * explicitly.
  */
 export function withTenantGuard<T extends PrismaClient>(client: T): T {
-  return client.$extends({
+  const extended = client.$extends({
     query: {
       $allModels: {
         async $allOperations({ model, operation, args, query }: any) {
           const tenant = currentTenant();
-          if (!tenant || !model) {
+          if (!tenant || !tenant.organizationId || !model) {
             return query(args);
           }
 
@@ -39,6 +41,8 @@ export function withTenantGuard<T extends PrismaClient>(client: T): T {
           }
 
           const orgId = tenant.organizationId;
+          const activeClient = currentTxClient() ?? client;
+
           // Where fragment restricting this model to the caller's org.
           const orgFilter = isDirect
             ? { organizationId: orgId }
@@ -50,7 +54,7 @@ export function withTenantGuard<T extends PrismaClient>(client: T): T {
               if (!isDirect) throw new Error('FORBIDDEN_CROSS_TENANT');
               return;
             }
-            const delegate = (client as any)[parentScope.verifyDelegate];
+            const delegate = (activeClient as any)[parentScope.verifyDelegate];
             const owned = await delegate.findFirst({
               where: {
                 id: parentValue,
@@ -71,7 +75,7 @@ export function withTenantGuard<T extends PrismaClient>(client: T): T {
             case 'findUnique':
             case 'findUniqueOrThrow': {
               const delegateName = model.charAt(0).toLowerCase() + model.slice(1);
-              const delegate = (client as any)[delegateName];
+              const delegate = (activeClient as any)[delegateName];
               if (!delegate) {
                 return query(a);
               }
@@ -130,7 +134,7 @@ export function withTenantGuard<T extends PrismaClient>(client: T): T {
               const targetId = a.where?.id;
               if (isDirect) {
                 if (targetId) {
-                  const delegate = (client as any)[
+                  const delegate = (activeClient as any)[
                     model.charAt(0).toLowerCase() + model.slice(1)
                   ];
                   const owned = await delegate.findFirst({
@@ -143,7 +147,7 @@ export function withTenantGuard<T extends PrismaClient>(client: T): T {
               } else {
                 // Resolve the parent id by fetching the record itself.
                 if (targetId) {
-                  const delegate = (client as any)[
+                  const delegate = (activeClient as any)[
                     model.charAt(0).toLowerCase() + model.slice(1)
                   ];
                   const row = await delegate.findFirst({
@@ -160,7 +164,7 @@ export function withTenantGuard<T extends PrismaClient>(client: T): T {
             // before executing the mutation to prevent cross-tenant tampering.
             case 'update':
             case 'delete': {
-              const delegate = (client as any)[
+              const delegate = (activeClient as any)[
                 model.charAt(0).toLowerCase() + model.slice(1)
               ];
               if (isDirect) {
@@ -192,6 +196,20 @@ export function withTenantGuard<T extends PrismaClient>(client: T): T {
         },
       },
     },
-  }) as unknown as T;
+  });
+
+  const originalTx = (extended as any).$transaction.bind(extended);
+  (extended as any).$transaction = async function (...args: any[]) {
+    const [arg1, arg2] = args;
+    if (typeof arg1 === 'function') {
+      return originalTx(async (tx: any) => {
+        return runWithTxClient(tx, () => arg1(tx));
+      }, arg2);
+    }
+    return originalTx(arg1, arg2);
+  };
+
+  return extended as unknown as T;
 }
+
 

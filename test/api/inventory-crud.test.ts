@@ -86,5 +86,51 @@ describe('API Integration: Inventory Projects (/api/v1/inventory/projects)', () 
       const res = await createProjectHandler(req);
       expect(res.status).toBe(422);
     });
+
+    it('creates a project with initial units synchronized inside transaction', async () => {
+      const timestamp = Date.now();
+      const payload = {
+        developerName: 'Hiranandani Communities',
+        projectName: `Fortune City Bridge ${timestamp}`,
+        reraNumber: 'P52000001511',
+        microMarket: 'Panvel',
+        basePricePerSqft: 9500,
+        totalTowers: 3,
+        totalFloors: 30,
+        units: [
+          {
+            unitNumber: 'Tower1-101',
+            bhk: 2,
+            carpetAreaSqft: 720,
+            floorNumber: 5,
+          },
+          {
+            unitNumber: 'Tower1-102',
+            bhk: 3,
+            carpetAreaSqft: 1100,
+            floorNumber: 8,
+          },
+        ],
+      };
+
+      const req = new Request('http://localhost:3000/api/v1/inventory/projects', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: adminCookie,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const res = await createProjectHandler(req);
+      expect([200, 201]).toContain(res.status);
+
+      const body = await res.json();
+      expect(body.success).toBe(true);
+      expect(body.data.projectName).toBe(payload.projectName);
+      expect(body.data.unitsCount).toBe(2);
+
+      testCleanup.register('project', body.data.id);
+    });
   });
 });
