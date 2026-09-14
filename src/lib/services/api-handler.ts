@@ -132,6 +132,14 @@ export function handleApiError(
     ? (isSafeMessage ? rawMsg : fallbackMessage)
     : rawMsg || fallbackMessage;
 
+  let dbHost = 'unknown';
+  try {
+    if (process.env.DATABASE_URL) {
+      const u = new URL(process.env.DATABASE_URL);
+      dbHost = `${u.host}${u.pathname}`;
+    }
+  } catch {}
+
   const response = NextResponse.json(
     {
       success: false,
@@ -139,11 +147,13 @@ export function handleApiError(
       debugError: rawMsg || (error instanceof Error ? error.toString() : String(error)),
       errorCode: (error as any)?.code,
       meta: (error as any)?.meta,
+      dbHost,
       ...(isProduction ? {} : { stack: (error as Error)?.stack }),
     },
     { status: 500 }
   );
   response.headers.set('x-debug-error', encodeURIComponent((rawMsg || String(error)).slice(0, 500)));
+  response.headers.set('x-debug-db-host', dbHost);
   return response;
 }
 
