@@ -132,14 +132,19 @@ export function handleApiError(
     ? (isSafeMessage ? rawMsg : fallbackMessage)
     : rawMsg || fallbackMessage;
 
-  return NextResponse.json(
+  const response = NextResponse.json(
     {
       success: false,
       error: errorMessage,
+      debugError: rawMsg || (error instanceof Error ? error.toString() : String(error)),
+      errorCode: (error as any)?.code,
+      meta: (error as any)?.meta,
       ...(isProduction ? {} : { stack: (error as Error)?.stack }),
     },
     { status: 500 }
   );
+  response.headers.set('x-debug-error', encodeURIComponent((rawMsg || String(error)).slice(0, 500)));
+  return response;
 }
 
 export type RouteHandler = (req: Request, context?: any) => Promise<Response | NextResponse>;
