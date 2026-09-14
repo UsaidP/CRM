@@ -127,7 +127,13 @@ export function evaluatePropertyMatch(
     ? requirement.bhkPreferences 
     : [1, 2, 3];
 
-  if (!acceptableBhks.includes(property.bhk)) {
+  const isUnit1Rk = (property as any).typology === '1RK' || /1\s*RK/i.test(property.unitNumber || '');
+  const matchesBhk = isUnit1Rk
+    ? acceptableBhks.includes(0) || acceptableBhks.includes(1)
+    : acceptableBhks.includes(property.bhk);
+
+  if (!matchesBhk) {
+    const bhkLabels = acceptableBhks.map((b) => b === 0 ? '1 RK' : `${b} BHK`).join(', ');
     return {
       budgetScore: 0,
       carpetScore: 0,
@@ -136,7 +142,7 @@ export function evaluatePropertyMatch(
       amenitiesScore: 0,
       totalScore: 0,
       tier: 'DISQUALIFIED',
-      disqualificationReason: `Unit is ${property.bhk} BHK, but buyer strictly requested ${acceptableBhks.join(', ')} BHK.`,
+      disqualificationReason: `Unit is ${isUnit1Rk ? '1 RK' : `${property.bhk} BHK`}, but buyer strictly requested ${bhkLabels}.`,
       matchingHighlights: [],
       tradeOffs: ['BHK mismatch'],
     };

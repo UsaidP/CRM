@@ -9,12 +9,91 @@ export interface UnitConfigurationGroup {
   units: any[];
 }
 
+export interface ConcentricAreaOverrides {
+  traditionalCarpetSqft?: number;
+  reraCarpetAreaSqft?: number;
+  internalWallsSqft?: number;
+  balconyTerraceSqft?: number;
+  externalWallsSqft?: number;
+  builtUpSqft?: number;
+  proportionateCommonSqft?: number;
+}
+
 export interface UnitAreaMatrix {
+  // 1. Usable / Salable Carpet Area
+  traditionalCarpetSqft: number;
+  internalWallsSqft: number;
+
+  // 2. RERA Carpet Area (Optional / Not Compulsory)
+  reraCarpetAreaSqft?: number;
   carpetAreaSqft: number;
+
+  // 3. Built-Up Area
+  balconyTerraceSqft: number;
+  externalWallsSqft: number;
   builtUpSqft: number;
+
+  // 4. Super Built-Up Area (Saleable Area)
+  proportionateCommonSqft: number;
   superBuiltUpSqft: number;
+
+  // Internal loading percentage for calculation
   loadingPercentage: number;
 }
+
+export interface AreaDefinitionItem {
+  id: 'carpet' | 'rera' | 'builtup' | 'superbuiltup';
+  name: string;
+  shortName: string;
+  badge: string;
+  definition: string;
+  included: string[];
+  excluded: string[];
+  formula: string;
+}
+
+export const CORE_AREA_DEFINITIONS: AreaDefinitionItem[] = [
+  {
+    id: 'carpet',
+    name: 'Carpet Area',
+    shortName: 'Carpet Area',
+    badge: 'Net Usable Area',
+    definition: 'The net usable floor space within the apartment walls where you can literally lay a carpet.',
+    included: ['Bedrooms', 'Living room', 'Kitchen', 'Bathrooms', 'Internal staircases'],
+    excluded: ['External walls', 'Balconies', 'Terraces', 'Common corridors', 'Lobby'],
+    formula: 'Net usable floor space within partition walls',
+  },
+  {
+    id: 'rera',
+    name: 'RERA Carpet Area',
+    shortName: 'RERA Carpet',
+    badge: 'Optional (Not Compulsory)',
+    definition: 'Section 2(k) legal standard (usable floor area plus internal walls). Optional to specify for this property.',
+    included: ['Net usable floor area', 'Thickness of internal partition walls'],
+    excluded: ['External walls', 'Balconies', 'Verandahs', 'Open/exclusive terraces', 'Flower beds'],
+    formula: 'Carpet Area + Internal Wall Thickness (Optional)',
+  },
+  {
+    id: 'builtup',
+    name: 'Built-Up Area',
+    shortName: 'Built-Up Area',
+    badge: 'Flat Boundaries',
+    definition: 'Total space enclosed by the outer boundaries of your individual flat including private balconies.',
+    included: ['Carpet Area', 'Thickness of outer walls', 'Private balconies/terraces'],
+    excluded: ['Common corridors', 'Lifts', 'Staircases', 'Clubhouse', 'Parking space'],
+    formula: 'Carpet Area + External Wall Thickness + Balconies & Terraces',
+  },
+  {
+    id: 'superbuiltup',
+    name: 'Super Built-Up Area',
+    shortName: 'Super Built-Up (Saleable)',
+    badge: 'Total Salable Area',
+    definition: "Total salable area including the flat's built-up space plus proportionate share of common facilities.",
+    included: ['Built-up area', 'Lobbies', 'Lifts', 'Stairwells', 'Clubhouse', 'Security rooms', 'Generator space'],
+    excluded: ['Open play areas', 'Driveways', 'Unbuilt garden space'],
+    formula: 'Built-Up Area + Proportionate Common Facilities Area',
+  },
+];
 
 export interface UnitResolvedMedia {
   floorPlanUrl: string | null;
@@ -88,19 +167,129 @@ export function groupUnitsByConfiguration(units: any[]): UnitConfigurationGroup[
 }
 
 /**
- * Computes exact usable RERA carpet, built-up (15% load), and super built-up (40% load)
+ * Computes exact usable RERA carpet, built-up (15% load), and super built-up (40% load),
+ * along with the complete 4-layer concentric measurement system.
  */
-export function calculateUnitAreaMatrix(carpetAreaSqft: number, loadingPercentage = 40): UnitAreaMatrix {
+export function calculateUnitAreaMatrix(
+  carpetAreaSqft: number,
+  loadingPercentage = 40,
+  customSaleableSqft?: number,
+  overrides?: ConcentricAreaOverrides
+): UnitAreaMatrix {
   const carpet = Math.max(0, Number(carpetAreaSqft) || 0);
-  const builtUpSqft = Math.round(carpet * 1.15);
-  const superBuiltUpSqft = Math.round(carpet * (1 + loadingPercentage / 100));
+
+  // 1. Layer 1: Traditional Carpet & Internal Walls (RERA Carpet = Traditional Carpet + Internal Wall Thickness)
+  let internalWallsSqft = overrides?.internalWallsSqft;
+  let traditionalCarpetSqft = overrides?.traditionalCarpetSqft;
+
+  if (internalWallsSqft !== undefined && traditionalCarpetSqft === undefined) {
+    traditionalCarpetSqft = Math.max(0, carpet - internalWallsSqft);
+  } else if (traditionalCarpetSqft !== undefined && internalWallsSqft === undefined) {
+    internalWallsSqft = Math.max(0, carpet - traditionalCarpetSqft);
+  } else if (internalWallsSqft === undefined && traditionalCarpetSqft === undefined) {
+    // Typical standard internal walls are ~3.5% of RERA carpet area
+    internalWallsSqft = carpet > 0 ? Math.max(1, Math.round(carpet * 0.035)) : 0;
+    traditionalCarpetSqft = Math.max(0, carpet - internalWallsSqft);
+  } else {
+    // Both provided
+    traditionalCarpetSqft = Number(traditionalCarpetSqft) || 0;
+    internalWallsSqft = Number(internalWallsSqft) || 0;
+  }
+
+  // 2. Layer 3: Built-Up Area (RERA Carpet + External Wall Thickness + Balconies & Terraces)
+  let builtUpSqft = overrides?.builtUpSqft !== undefined
+    ? Number(overrides.builtUpSqft)
+    : Math.round(carpet * 1.15);
+
+  let externalWallsSqft = overrides?.externalWallsSqft;
+  let balconyTerraceSqft = overrides?.balconyTerraceSqft;
+
+  const totalBuiltUpDiff = Math.max(0, builtUpSqft - carpet);
+
+  if (externalWallsSqft !== undefined && balconyTerraceSqft === undefined) {
+    balconyTerraceSqft = Math.max(0, totalBuiltUpDiff - externalWallsSqft);
+  } else if (balconyTerraceSqft !== undefined && externalWallsSqft === undefined) {
+    externalWallsSqft = Math.max(0, totalBuiltUpDiff - balconyTerraceSqft);
+  } else if (externalWallsSqft === undefined && balconyTerraceSqft === undefined) {
+    // Typically external walls are ~6.5% and balconies/terraces ~8.5%
+    externalWallsSqft = carpet > 0 ? Math.round(carpet * 0.065) : 0;
+    balconyTerraceSqft = Math.max(0, totalBuiltUpDiff - externalWallsSqft);
+  } else {
+    externalWallsSqft = Number(externalWallsSqft) || 0;
+    balconyTerraceSqft = Number(balconyTerraceSqft) || 0;
+    // If both specified and no explicit builtUpSqft override, sum them up
+    if (overrides?.builtUpSqft === undefined) {
+      builtUpSqft = carpet + externalWallsSqft + balconyTerraceSqft;
+    }
+  }
+
+  // 3. Layer 4: Super Built-Up Area (Built-Up Area + Proportionate Common Area OR Carpet * (1 + Loading))
+  const superBuiltUpSqft = customSaleableSqft && customSaleableSqft > 0
+    ? customSaleableSqft
+    : Math.round(carpet * (1 + loadingPercentage / 100));
+
+  const effectiveLoading = customSaleableSqft && carpet > 0
+    ? Math.round(((customSaleableSqft - carpet) / carpet) * 100)
+    : loadingPercentage;
+
+  const proportionateCommonSqft = overrides?.proportionateCommonSqft !== undefined
+    ? Number(overrides.proportionateCommonSqft)
+    : Math.max(0, superBuiltUpSqft - builtUpSqft);
 
   return {
+    traditionalCarpetSqft,
+    internalWallsSqft,
+    reraCarpetAreaSqft: overrides?.reraCarpetAreaSqft,
     carpetAreaSqft: carpet,
+    balconyTerraceSqft,
+    externalWallsSqft,
     builtUpSqft,
+    proportionateCommonSqft,
     superBuiltUpSqft,
-    loadingPercentage,
+    loadingPercentage: effectiveLoading,
   };
+}
+
+/**
+ * Formats concentric area matrix into highlight strings for featureHighlightsJson persistence
+ */
+export function formatConcentricHighlights(matrix: UnitAreaMatrix, existingHighlights: string[] = []): string[] {
+  const cleanExisting = existingHighlights.filter((h) => {
+    if (typeof h !== 'string') return false;
+    return (
+      !h.includes('sq.ft Carpet Area') &&
+      !h.includes('sq.ft Usable RERA Carpet') &&
+      !h.includes('sq.ft RERA Carpet Area') &&
+      !h.includes('sq.ft Traditional Carpet') &&
+      !h.includes('sq.ft Built-Up Area') &&
+      !h.includes('sq.ft Saleable Area') &&
+      !h.includes('sq.ft Super Built-Up') &&
+      !h.startsWith('CONCENTRIC_MATRIX:')
+    );
+  });
+
+  const matrixPayload = JSON.stringify({
+    traditionalCarpetSqft: matrix.traditionalCarpetSqft,
+    reraCarpetAreaSqft: matrix.reraCarpetAreaSqft,
+    internalWallsSqft: matrix.internalWallsSqft,
+    balconyTerraceSqft: matrix.balconyTerraceSqft,
+    externalWallsSqft: matrix.externalWallsSqft,
+    builtUpSqft: matrix.builtUpSqft,
+    proportionateCommonSqft: matrix.proportionateCommonSqft,
+    superBuiltUpSqft: matrix.superBuiltUpSqft,
+    loadingPercentage: matrix.loadingPercentage,
+  });
+
+  const items = [
+    `${matrix.carpetAreaSqft} sq.ft Carpet Area`,
+    matrix.reraCarpetAreaSqft ? `${matrix.reraCarpetAreaSqft} sq.ft RERA Carpet Area (Optional)` : null,
+    `${matrix.builtUpSqft} sq.ft Built-Up Area`,
+    `${matrix.superBuiltUpSqft} sq.ft Super Built-Up Area (Saleable)`,
+    `CONCENTRIC_MATRIX:${matrixPayload}`,
+    ...cleanExisting,
+  ].filter(Boolean) as string[];
+
+  return items;
 }
 
 /**

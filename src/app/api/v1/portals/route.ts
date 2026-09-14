@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { requirePermissionWithScope } from '@/lib/services/api-auth';
+import { requirePermissionWithScope, forbidden } from '@/lib/services/api-auth';
 import { getTeamMemberIds } from '@/lib/services/team-service';
 import { prisma } from '@/lib/db/prisma';
 import { evaluateEngagementTier } from '@/lib/domain/portal-generator';
@@ -118,3 +118,103 @@ export async function GET(req: Request) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
+
+export async function DELETE(req: Request) {
+  try {
+    const auth = await requirePermissionWithScope(req, 'portals:delete');
+    if (!auth.ok) return auth.response;
+
+    const { searchParams } = new URL(req.url);
+    let id = searchParams.get('id') || searchParams.get('portalId');
+    let token = searchParams.get('token');
+
+    // Also check JSON body if not provided in searchParams
+    if (!id && !token) {
+      try {
+        const body = await req.json();
+        id = body.id || body.portalId;
+        token = body.token;
+      } catch {}
+    }
+
+    if (!id && !token) {
+      return NextResponse.json(
+        { success: false, error: 'Portal id or token is required for deletion' },
+        { status: 400 }
+      );
+    }
+
+    // Find the portal scoped to current organization
+    const where: any = {
+      organizationId: auth.session.organizationId,
+      ...(id ? { id } : { token }),
+    };
+
+    const portal = await prisma.clientPortal.findFirst({
+      where,
+      include: {
+        lead: {
+          select: {
+            id: true,
+            fullName: true,
+            assignedBrokerId: true,
+          },
+        },
+      },
+    });
+
+    if (!portal) {
+      return NextResponse.json(
+        { success: false, error: 'Client portal not found or already deleted' },
+        { status: 404 }
+      );
+    }
+
+    // Enforce data visibility scope
+    if (auth.scope === 'OWN') {
+      const isCreator = portal.createdById === auth.session.userId;
+      const isAssigned = portal.lead?.assignedBrokerId === auth.session.userId;
+      if (!isCreator && !isAssigned) {
+        return forbidden('You can only delete portals created by or assigned to you');
+      }
+    } else if (auth.scope === 'OWN_AND_ASSIGNED') {
+      const isCreator = portal.createdById === auth.session.userId;
+      const isAssigned = portal.lead?.assignedBrokerId === auth.session.userId;
+      if (!isCreator && !isAssigned) {
+        const hasAssignment = await prisma.leadAssignment.findFirst({
+          where: {
+            leadId: portal.leadId,
+            userId: auth.session.userId,
+            unassignedAt: null,
+          },
+        });
+        if (!hasAssignment) {
+          return forbidden('You do not have permission to delete this portal');
+        }
+      }
+    } else if (auth.scope === 'TEAM') {
+      const teamMemberIds = await getTeamMemberIds(auth.session.userId);
+      const isCreatorInTeam = portal.createdById && teamMemberIds.includes(portal.createdById);
+      const isAssignedInTeam = portal.lead?.assignedBrokerId && teamMemberIds.includes(portal.lead.assignedBrokerId);
+      if (!isCreatorInTeam && !isAssignedInTeam) {
+        return forbidden('You can only delete portals within your team scope');
+      }
+    }
+
+    // Permanently delete portal (cascades to ClientPortalUnit and PortalTelemetryLog)
+    await prisma.clientPortal.delete({
+      where: { id: portal.id },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: `Client portal for ${portal.lead?.fullName || 'buyer'} deleted successfully`,
+      deletedId: portal.id,
+      token: portal.token,
+      leadId: portal.leadId,
+    });
+  } catch (error: any) {
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  }
+}
+

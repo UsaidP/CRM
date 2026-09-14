@@ -62,7 +62,7 @@ export const updateLeadStageSchema = z.object({
 export const buyerRequirementSchema = z.object({
   budgetMin: z.number().min(0).optional().nullable(),
   budgetMax: z.number().positive('Budget max must be greater than 0'),
-  bhkPreferences: z.array(z.number().int().min(1).max(6)).min(1, 'Select at least one BHK preference'),
+  bhkPreferences: z.array(z.number().int().min(0).max(6)).min(1, 'Select at least one BHK preference'),
   targetLocations: z.array(z.string()).default(['Kharghar Sector 35']),
   possessionPreference: z.enum(['READY_TO_MOVE', 'UNDER_CONSTRUCTION', 'ANY']).default('ANY'),
   minCarpetSqft: z.number().int().positive().optional().nullable(),

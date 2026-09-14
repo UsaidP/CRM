@@ -105,6 +105,7 @@ const NAVI_MUMBAI_LOCALITIES = [
 ];
 
 const BHK_OPTIONS = [
+  { value: 0, label: '1 RK' },
   { value: 1, label: '1 BHK' },
   { value: 2, label: '2 BHK' },
   { value: 3, label: '3 BHK' },
@@ -245,6 +246,9 @@ export function SourceEvidenceDrawer({
   // Deletion State
   const [isDeletingLead, setIsDeletingLead] = useState(false);
   const [showDeleteLeadConfirm, setShowDeleteLeadConfirm] = useState(false);
+  const [portalToRemove, setPortalToRemove] = useState<any | null>(null);
+  const [isRemovingPortal, setIsRemovingPortal] = useState(false);
+  const [localPortals, setLocalPortals] = useState<any[]>(lead?.portals || []);
 
   // Sync state when lead prop changes
   useEffect(() => {
@@ -254,6 +258,7 @@ export function SourceEvidenceDrawer({
     setProfileName(lead.fullName || '');
     setProfileEmail(lead.email || '');
     setQuickNotes(lead.notes || '');
+    setLocalPortals(lead.portals || []);
 
     const req = lead.requirements?.[0] || {};
     try {
@@ -278,7 +283,7 @@ export function SourceEvidenceDrawer({
   if (!lead) return null;
 
   const identities = lead.contact?.identities || [];
-  const portals = lead.portals || [];
+  const portals = localPortals;
   const messagingWindow = evaluate24HourMessagingWindow(lead.lastInboundMessageAt || lead.createdAt);
 
   // Copy phone handler
@@ -591,6 +596,33 @@ export function SourceEvidenceDrawer({
     } finally {
       setIsDeletingLead(false);
       setShowDeleteLeadConfirm(false);
+    }
+  };
+
+  // Client Portal Removal Handler
+  const handleRemoveClientPortal = async () => {
+    if (!portalToRemove?.id) return;
+    setIsRemovingPortal(true);
+    try {
+      const res = await fetch(`/api/v1/portals?id=${encodeURIComponent(portalToRemove.id)}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to remove presentation portal.');
+      }
+      setLocalPortals((prev) => prev.filter((p) => p.id !== portalToRemove.id));
+      toast.success('Presentation Portal Removed', {
+        description: `Portal /p/${portalToRemove.token} has been successfully removed.`,
+      });
+      if (onLeadUpdated) {
+        onLeadUpdated();
+      }
+      setPortalToRemove(null);
+    } catch (err: any) {
+      toast.error('Portal Removal Failed', { description: err.message });
+    } finally {
+      setIsRemovingPortal(false);
     }
   };
 
@@ -1019,7 +1051,7 @@ export function SourceEvidenceDrawer({
                       <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
                         activeTab === 'requirements' ? 'bg-white/20 text-white' : 'bg-surface-subtle text-accent font-black border border-accent/20'
                       }`}>
-                        {bhkPreferences.join(', ')} BHK
+                        {bhkPreferences.map((b) => b === 0 ? '1 RK' : `${b} BHK`).join(', ')}
                       </span>
                     )}
                   </button>
@@ -1419,7 +1451,7 @@ export function SourceEvidenceDrawer({
                       <label className="text-xs font-bold text-content-muted uppercase tracking-wider block font-display">
                         Configuration (BHK Preferences)
                       </label>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
                         {BHK_OPTIONS.map((bhk) => {
                           const isSelected = bhkPreferences.includes(bhk.value);
                           return (
@@ -1439,7 +1471,7 @@ export function SourceEvidenceDrawer({
                             >
                               <span className="text-sm block">{bhk.label}</span>
                               <span className={`text-[10px] block mt-0.5 ${isSelected ? 'text-white/80' : 'text-content-muted'}`}>
-                                {bhk.value === 1 ? 'Compact' : bhk.value === 2 ? 'Family' : bhk.value === 3 ? 'Luxury' : 'Palatial'}
+                                {bhk.value === 0 ? 'Studio' : bhk.value === 1 ? 'Compact' : bhk.value === 2 ? 'Family' : bhk.value === 3 ? 'Luxury' : 'Palatial'}
                               </span>
                             </button>
                           );
@@ -1650,6 +1682,15 @@ export function SourceEvidenceDrawer({
                                     <Copy className="w-3.5 h-3.5" />
                                     Copy Link
                                   </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => setPortalToRemove(p)}
+                                    className="p-2 rounded-xl bg-surface-subtle hover:bg-rose-500/10 border border-border hover:border-rose-500/30 text-content-muted hover:text-rose-600 transition-colors cursor-pointer"
+                                    title="Remove Portal for Client"
+                                    aria-label={`Remove presentation portal ${p.token}`}
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
                                 </div>
                               </div>
 
@@ -1855,6 +1896,72 @@ export function SourceEvidenceDrawer({
                 <>
                   <Trash2 className="w-3.5 h-3.5" />
                   <span>Delete Permanently</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </AccessibleDialog>
+
+      {/* Remove Client Portal Confirmation Modal */}
+      <AccessibleDialog
+        open={Boolean(portalToRemove)}
+        onClose={() => !isRemovingPortal && setPortalToRemove(null)}
+        titleId="drawer-remove-portal-title"
+        descriptionId="drawer-remove-portal-desc"
+        size="sm"
+      >
+        <div className="p-6">
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-900/30 text-rose-600 flex items-center justify-center shrink-0">
+              <Trash2 className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 id="drawer-remove-portal-title" className="text-base font-bold text-content">
+                Remove Client Portal
+              </h3>
+              <p id="drawer-remove-portal-desc" className="text-xs text-content-secondary mt-1 leading-relaxed">
+                Are you sure you want to remove the presentation portal{' '}
+                <strong className="text-content font-mono font-semibold">
+                  /p/{portalToRemove?.token}
+                </strong>
+                {portalToRemove?.title ? ` (${portalToRemove.title})` : ''} created for{' '}
+                <strong className="text-content font-semibold">
+                  {lead?.fullName || lead?.phoneE164 || 'this client'}
+                </strong>
+                ?
+              </p>
+              <p className="text-[11px] text-rose-600 dark:text-rose-400 mt-2">
+                This will immediately invalidate the portal URL for the buyer and purge all recorded telemetry logs. This action cannot be undone.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-6 flex items-center justify-end gap-3">
+            <button
+              type="button"
+              disabled={isRemovingPortal}
+              onClick={() => setPortalToRemove(null)}
+              className="px-4 py-2 rounded-xl text-xs font-semibold text-content-secondary hover:bg-surface-subtle border border-border transition-colors cursor-pointer disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              data-dialog-autofocus
+              disabled={isRemovingPortal}
+              onClick={handleRemoveClientPortal}
+              className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 transition-colors cursor-pointer flex items-center gap-2 shadow-xs disabled:opacity-50"
+            >
+              {isRemovingPortal ? (
+                <>
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  <span>Removing…</span>
+                </>
+              ) : (
+                <>
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Remove Portal</span>
                 </>
               )}
             </button>

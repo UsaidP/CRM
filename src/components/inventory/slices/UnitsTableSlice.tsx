@@ -6,6 +6,12 @@ import { HallmarkStamp } from '@/components/ui/HallmarkStamp';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { formatINR } from '@/lib/formatters';
 
+export function formatUnitTypology(unit: { bhk?: number; typology?: string; unitNumber?: string; bhkLabel?: string }): string {
+  if (unit.bhkLabel && /1\s*RK/i.test(unit.bhkLabel)) return '1 RK';
+  if (unit.typology === '1RK' || (unit.unitNumber && /1\s*RK/i.test(unit.unitNumber))) return '1 RK';
+  return `${unit.bhk || 1} BHK`;
+}
+
 export interface UnitsTableSliceProps {
   viewMode: 'table' | 'cards';
   filteredUnits: any[];
@@ -112,10 +118,13 @@ export function UnitsTableSlice({
 
                       <td className="p-3.5">
                         <div className="text-accent-text font-bold">
-                          {unit.bhk} BHK • {unit.facing}
+                          {formatUnitTypology(unit)} • {unit.facing}
                         </div>
                         <div className="text-[11px] text-content-muted mt-0.5 font-mono">
                           {unit.carpetAreaSqft} sq.ft carpet
+                          {unit.saleableAreaSqft ? (
+                            <span className="ml-1 text-accent font-medium">({unit.saleableAreaSqft} saleable)</span>
+                          ) : null}
                         </div>
                       </td>
 
@@ -244,7 +253,7 @@ export function UnitsTableSlice({
                         {unit.project?.projectName}
                       </h3>
                       <p className="text-xs text-content-muted mt-0.5">
-                        Unit {unit.unitNumber} ({unit.bhk} BHK • {unit.carpetAreaSqft} sqft)
+                        Unit {unit.unitNumber} ({formatUnitTypology(unit)} • {unit.carpetAreaSqft} sqft{unit.saleableAreaSqft ? ` • ${unit.saleableAreaSqft} saleable` : ''})
                       </p>
                     </div>
                     <HallmarkStamp type="rera" code={unit.project?.reraNumber} size="sm" />

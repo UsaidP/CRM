@@ -232,5 +232,51 @@ describe('Domain: Multi-Factor AI Matching Engine', () => {
       expect(ranked[1].unit.id).toBe('alt-1');
       expect(ranked[0].score.totalScore).toBeGreaterThan(ranked[1].score.totalScore);
     });
+
+    it('accurately matches 1 RK requirement against 1RK units', () => {
+      const req1Rk: BuyerRequirementInput = {
+        budgetMin: 1500000,
+        budgetMax: 2500000,
+        bhkPreferences: [0], // 1 RK studio
+        targetLocations: ['Taloja Phase 1'],
+        possessionPreference: 'ANY',
+      };
+
+      const unit1Rk = createMockProperty({
+        id: 'unit-1rk-1',
+        unitNumber: '1RK-B (182 sqft)',
+        bhk: 1,
+        carpetAreaSqft: 182,
+        agreementValue: 1800000,
+        allInTotalCost: 2050000,
+      });
+
+      const result = evaluatePropertyMatch(req1Rk, unit1Rk);
+      expect(result.tier).not.toBe('DISQUALIFIED');
+      expect(result.disqualificationReason).toBeUndefined();
+    });
+
+    it('disqualifies standard 2 BHK unit when buyer explicitly requested 1 RK', () => {
+      const req1Rk: BuyerRequirementInput = {
+        budgetMin: 1500000,
+        budgetMax: 2500000,
+        bhkPreferences: [0],
+        targetLocations: ['Taloja Phase 1'],
+        possessionPreference: 'ANY',
+      };
+
+      const unit2Bhk = createMockProperty({
+        id: 'unit-2bhk-1',
+        unitNumber: '204',
+        bhk: 2,
+        carpetAreaSqft: 650,
+        agreementValue: 2000000,
+        allInTotalCost: 2200000,
+      });
+
+      const result = evaluatePropertyMatch(req1Rk, unit2Bhk);
+      expect(result.tier).toBe('DISQUALIFIED');
+      expect(result.disqualificationReason).toContain('buyer strictly requested 1 RK');
+    });
   });
 });

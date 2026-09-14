@@ -1790,3 +1790,42 @@ html:not(.dark) [class*="via-[#171d2e]"] {
     --chart-scale-pattern-color: oklch(0.145 0 0);
   }
 }
+
+/* ============================================================================
+   SHADCN / RADIX DROPDOWN MOTION & TRANSITIONS
+   Ultra-smooth GPU-accelerated dropdown animations without positional jitter
+   ============================================================================ */
+@keyframes shadcn-dropdown-enter-down {
+  0% {
+    opacity: 0;
+    transform: scale(0.96) translateY(-4px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes shadcn-dropdown-enter-up {
+  0% {
+    opacity: 0;
+    transform: scale(0.96) translateY(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.shadcn-dropdown-down {
+  transform-origin: top center !important;
+  animation: shadcn-dropdown-enter-down 140ms cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+  transition: none !important;
+}
+
+.shadcn-dropdown-up {
+  transform-origin: bottom center !important;
+  animation: shadcn-dropdown-enter-up 140ms cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+  transition: none !important;
+}
+

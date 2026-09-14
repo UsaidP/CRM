@@ -6,6 +6,7 @@ import { updateUnitSchema } from '@/lib/validators/inventory-schemas';
 import { calculateAllInCost } from '@/lib/domain/cost-calculator';
 import { parseInventoryContent } from '@/lib/inventory-media';
 import { parseSafeDate } from '@/lib/date-utils';
+import { calculateUnitAreaMatrix, formatConcentricHighlights } from '@/lib/domain/unit-differentiation';
 
 export const dynamic = 'force-dynamic';
 
@@ -93,6 +94,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       project.hasOccupancyCertificate ||
       (validated.possessionStatus ? validated.possessionStatus === 'READY_TO_MOVE' : existing.possessionStatus === 'READY_TO_MOVE')
     );
+    const loadingPct = validated.loadingPercentage ?? (validated.saleableAreaSqft && carpetAreaSqft ? Math.round(((validated.saleableAreaSqft - carpetAreaSqft) / carpetAreaSqft) * 100) : 40);
     const costResult = calculateAllInCost({
       agreementValue,
       hasOccupancyCertificate: isOcReady,
@@ -101,6 +103,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       parkingCharges,
       societyDevCharges: societyDevelopmentCharges,
       customFloorRiseCharges: validated.floorRiseCharges ?? existing.floorRiseCharges,
+      builderLoadingPercentage: loadingPct,
     });
 
     const data: Record<string, unknown> = {};
@@ -114,7 +117,36 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     }
     if ('projectId' in validated) data.projectId = nextProjectId;
     if ('possessionDate' in validated) data.possessionDate = parseSafeDate(validated.possessionDate);
-    if ('featureHighlights' in validated) data.featureHighlightsJson = JSON.stringify(validated.featureHighlights || []);
+    const hasAreaUpdates =
+      'featureHighlights' in validated ||
+      'carpetAreaSqft' in validated ||
+      'reraCarpetAreaSqft' in validated ||
+      'saleableAreaSqft' in validated ||
+      'loadingPercentage' in validated ||
+      'traditionalCarpetSqft' in validated ||
+      'builtUpSqft' in validated ||
+      'balconyTerraceSqft' in validated ||
+      'internalWallsSqft' in validated ||
+      'externalWallsSqft' in validated ||
+      'proportionateCommonSqft' in validated;
+
+    if (hasAreaUpdates) {
+      let highlights = validated.featureHighlights || (existing.featureHighlightsJson ? JSON.parse(existing.featureHighlightsJson) : []);
+      const finalSaleable = validated.saleableAreaSqft || costResult.saleableAreaSqft;
+      
+      const matrix = calculateUnitAreaMatrix(carpetAreaSqft, loadingPct, finalSaleable, {
+        traditionalCarpetSqft: validated.traditionalCarpetSqft ?? undefined,
+        reraCarpetAreaSqft: validated.reraCarpetAreaSqft ?? undefined,
+        builtUpSqft: validated.builtUpSqft ?? undefined,
+        balconyTerraceSqft: validated.balconyTerraceSqft ?? undefined,
+        internalWallsSqft: validated.internalWallsSqft ?? undefined,
+        externalWallsSqft: validated.externalWallsSqft ?? undefined,
+        proportionateCommonSqft: validated.proportionateCommonSqft ?? undefined,
+      });
+
+      highlights = formatConcentricHighlights(matrix, highlights);
+      data.featureHighlightsJson = JSON.stringify(highlights);
+    }
     if ('floorPlanUrl' in validated) data.floorPlanUrl = validated.floorPlanUrl || null;
     if ('mediaGallery' in validated) {
       data.mediaGalleryJson = JSON.stringify(validated.mediaGallery || []);

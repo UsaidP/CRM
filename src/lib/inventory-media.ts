@@ -183,11 +183,92 @@ export function parseInventoryContent<T extends {
     parsedVideos.push({ id: 'video-reel-legacy', url: record.videoReelUrl, title: 'Video Walkthrough' });
   }
 
+  const featureHighlights = record.featureHighlights ?? parseJsonArray<string>(record.featureHighlightsJson);
+  let saleableAreaSqft: number | undefined = (record as any).saleableAreaSqft;
+  let loadingPercentage: number | undefined = (record as any).loadingPercentage;
+  let traditionalCarpetSqft: number | undefined = (record as any).traditionalCarpetSqft;
+  let reraCarpetAreaSqft: number | undefined = (record as any).reraCarpetAreaSqft;
+  let builtUpSqft: number | undefined = (record as any).builtUpSqft;
+  let balconyTerraceSqft: number | undefined = (record as any).balconyTerraceSqft;
+  let internalWallsSqft: number | undefined = (record as any).internalWallsSqft;
+  let externalWallsSqft: number | undefined = (record as any).externalWallsSqft;
+  let proportionateCommonSqft: number | undefined = (record as any).proportionateCommonSqft;
+
+  if (Array.isArray(featureHighlights)) {
+    for (const h of featureHighlights) {
+      if (typeof h === 'string') {
+        if (h.startsWith('CONCENTRIC_MATRIX:')) {
+          try {
+            const parsed = JSON.parse(h.slice('CONCENTRIC_MATRIX:'.length));
+            if (parsed.traditionalCarpetSqft) traditionalCarpetSqft = parsed.traditionalCarpetSqft;
+            if (parsed.reraCarpetAreaSqft !== undefined) reraCarpetAreaSqft = parsed.reraCarpetAreaSqft;
+            if (parsed.builtUpSqft) builtUpSqft = parsed.builtUpSqft;
+            if (parsed.balconyTerraceSqft !== undefined) balconyTerraceSqft = parsed.balconyTerraceSqft;
+            if (parsed.internalWallsSqft !== undefined) internalWallsSqft = parsed.internalWallsSqft;
+            if (parsed.externalWallsSqft !== undefined) externalWallsSqft = parsed.externalWallsSqft;
+            if (parsed.proportionateCommonSqft !== undefined) proportionateCommonSqft = parsed.proportionateCommonSqft;
+            if (parsed.superBuiltUpSqft && !saleableAreaSqft) saleableAreaSqft = parsed.superBuiltUpSqft;
+            if (parsed.loadingPercentage !== undefined && loadingPercentage === undefined) loadingPercentage = parsed.loadingPercentage;
+          } catch {}
+        } else {
+          const reraMatch = h.match(/(\d+)\s*sq\.?ft\s*RERA Carpet/i);
+          if (reraMatch && !reraCarpetAreaSqft) reraCarpetAreaSqft = Number(reraMatch[1]);
+
+          const match = h.match(/(\d+)\s*sq\.?ft\s*(?:Super Built-Up|Saleable Area)/i);
+          if (match && !saleableAreaSqft) {
+            saleableAreaSqft = Number(match[1]);
+          }
+
+          const loadingMatch = h.match(/(\d+)\s*%\s*Loading/i);
+          if (loadingMatch && loadingPercentage === undefined) {
+            loadingPercentage = Number(loadingMatch[1]);
+          }
+
+          const tradMatch = h.match(/(\d+)\s*sq\.?ft\s*(?:Traditional )?Carpet/i);
+          if (tradMatch && !traditionalCarpetSqft && !h.includes('RERA')) traditionalCarpetSqft = Number(tradMatch[1]);
+
+          const builtMatch = h.match(/(\d+)\s*sq\.?ft\s*Built-Up Area(?:\s*\((\d+)\s*sq\.?ft\s*Balconies)?/i);
+          if (builtMatch) {
+            if (!builtUpSqft) builtUpSqft = Number(builtMatch[1]);
+            if (builtMatch[2] && balconyTerraceSqft === undefined) balconyTerraceSqft = Number(builtMatch[2]);
+          }
+        }
+      }
+    }
+  }
+
+  if (saleableAreaSqft && (record as any).carpetAreaSqft && loadingPercentage === undefined) {
+    const carpet = Number((record as any).carpetAreaSqft);
+    if (carpet > 0) {
+      loadingPercentage = Math.round(((saleableAreaSqft - carpet) / carpet) * 100);
+    }
+  }
+
+  if (!saleableAreaSqft && (record as any).carpetAreaSqft) {
+    const carpet = Number((record as any).carpetAreaSqft);
+    if (carpet > 0) {
+      loadingPercentage = loadingPercentage ?? 40;
+      saleableAreaSqft = Math.round(carpet * (1 + loadingPercentage / 100));
+    }
+  }
+
   return {
     ...record,
     amenities: record.amenities ?? parseJsonArray<string>(record.amenitiesJson),
     keyHighlights: record.keyHighlights ?? parseJsonArray<string>(record.keyHighlightsJson),
-    featureHighlights: record.featureHighlights ?? parseJsonArray<string>(record.featureHighlightsJson),
+    featureHighlights,
+    displayHighlights: (Array.isArray(featureHighlights) ? featureHighlights : []).filter(
+      (h: any) => typeof h === 'string' && !h.startsWith('CONCENTRIC_MATRIX:')
+    ),
+    saleableAreaSqft,
+    loadingPercentage: loadingPercentage ?? 40,
+    traditionalCarpetSqft,
+    reraCarpetAreaSqft,
+    builtUpSqft,
+    balconyTerraceSqft,
+    internalWallsSqft,
+    externalWallsSqft,
+    proportionateCommonSqft,
     mediaGallery: record.mediaGallery ?? normalizeMediaGallery(record.mediaGalleryJson, record.photoGalleryJson),
     elevationImages: record.elevationImages ?? parseJsonArray<any>(record.elevationImagesJson).map(normalizeElevationAsset).filter((a) => Boolean(a.url)),
     floorPlanImages: record.floorPlanImages ?? parseJsonArray<any>(record.floorPlanImagesJson).map(normalizeFloorPlanAsset).filter((a) => Boolean(a.url)),

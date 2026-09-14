@@ -7,6 +7,7 @@ import { assessUnitFreshness, validateReraNumber, checkReraCompliance } from '@/
 import { parseInventoryContent, resolveAssetUrl } from '@/lib/inventory-media';
 import { parseSafeDate } from '@/lib/date-utils';
 import { handleApiError } from '@/lib/services/api-handler';
+import { calculateUnitAreaMatrix, formatConcentricHighlights } from '@/lib/domain/unit-differentiation';
 
 export const dynamic = 'force-dynamic';
 
@@ -134,6 +135,7 @@ export async function POST(req: Request) {
 
     // Compute exact statutory all-in cost synced with project OC and unit possession status
     const isOcReady = Boolean(project.hasOccupancyCertificate || validated.possessionStatus === 'READY_TO_MOVE');
+    const loadingPct = validated.loadingPercentage ?? (validated.saleableAreaSqft && validated.carpetAreaSqft ? Math.round(((validated.saleableAreaSqft - validated.carpetAreaSqft) / validated.carpetAreaSqft) * 100) : 40);
     const costResult = calculateAllInCost({
       agreementValue: validated.agreementValue,
       hasOccupancyCertificate: isOcReady,
@@ -142,7 +144,21 @@ export async function POST(req: Request) {
       parkingCharges: validated.parkingCharges,
       societyDevCharges: validated.societyDevelopmentCharges,
       customFloorRiseCharges: validated.floorRiseCharges,
+      builderLoadingPercentage: loadingPct,
     });
+
+    let highlights = validated.featureHighlights || [];
+    const finalSaleable = validated.saleableAreaSqft || costResult.saleableAreaSqft;
+    const matrix = calculateUnitAreaMatrix(validated.carpetAreaSqft, loadingPct, finalSaleable, {
+      traditionalCarpetSqft: validated.traditionalCarpetSqft ?? undefined,
+      reraCarpetAreaSqft: validated.reraCarpetAreaSqft ?? undefined,
+      builtUpSqft: validated.builtUpSqft ?? undefined,
+      balconyTerraceSqft: validated.balconyTerraceSqft ?? undefined,
+      internalWallsSqft: validated.internalWallsSqft ?? undefined,
+      externalWallsSqft: validated.externalWallsSqft ?? undefined,
+      proportionateCommonSqft: validated.proportionateCommonSqft ?? undefined,
+    });
+    highlights = formatConcentricHighlights(matrix, highlights);
 
     // Determine pre-filled media from project if not provided explicitly
     let elevationImages = validated.elevationImages || [];
@@ -200,7 +216,7 @@ export async function POST(req: Request) {
         possessionStatus: isOcReady ? 'READY_TO_MOVE' : validated.possessionStatus,
         possessionDate: parseSafeDate(validated.possessionDate),
         description: validated.description,
-        featureHighlightsJson: JSON.stringify(validated.featureHighlights || []),
+        featureHighlightsJson: JSON.stringify(highlights),
         floorPlanUrl,
         mediaGalleryJson: JSON.stringify(validated.mediaGallery || []),
         elevationImagesJson: JSON.stringify(elevationImages),

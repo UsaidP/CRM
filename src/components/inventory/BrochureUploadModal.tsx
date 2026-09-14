@@ -157,10 +157,35 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
       updated.stampDutyAmount = stampDuty;
       updated.gstRate = gstRate * 100;
       updated.gstAmount = gst;
-      updated.saleableAreaSqft = Math.round(carpet * 1.40);
+      const loading = updated.loadingPercentage !== undefined ? Number(updated.loadingPercentage) : 40;
+      updated.saleableAreaSqft = Math.round(carpet * (1 + loading / 100));
       updated.builtUpAreaSqft = Math.round(carpet * 1.15);
-      updated.loadingPercentage = 40;
+      updated.loadingPercentage = loading;
       updated.allInTotalCost = Math.round(updated.agreementValue + stampDuty + 30000 + gst + 250000 + 150000);
+      updated.featureHighlights = [
+        `${carpet} sq.ft Usable RERA Carpet`,
+        `${updated.saleableAreaSqft} sq.ft Saleable Area (${loading}% Loading)`,
+      ];
+    } else if ('saleableAreaSqft' in patch) {
+      const saleable = Number(patch.saleableAreaSqft) || 0;
+      const carpet = Number(updated.carpetAreaSqft) || 0;
+      const loading = carpet > 0 ? Math.round(((saleable - carpet) / carpet) * 100) : (updated.loadingPercentage || 40);
+      updated.saleableAreaSqft = saleable;
+      updated.loadingPercentage = loading;
+      updated.featureHighlights = [
+        `${carpet} sq.ft Usable RERA Carpet`,
+        `${saleable} sq.ft Saleable Area (${loading}% Loading)`,
+      ];
+    } else if ('loadingPercentage' in patch) {
+      const loading = Number(patch.loadingPercentage) || 40;
+      const carpet = Number(updated.carpetAreaSqft) || 0;
+      const saleable = Math.round(carpet * (1 + loading / 100));
+      updated.saleableAreaSqft = saleable;
+      updated.loadingPercentage = loading;
+      updated.featureHighlights = [
+        `${carpet} sq.ft Usable RERA Carpet`,
+        `${saleable} sq.ft Saleable Area (${loading}% Loading)`,
+      ];
     } else if ('agreementValue' in patch) {
       const agVal = Number(patch.agreementValue) || 0;
       const stampDuty = Math.round(agVal * 0.06);
@@ -351,7 +376,7 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
     });
   };
 
-  const handleUpdateFloorPlan = (idx: number, updates: { bhk?: number; carpetAreaSqft?: number; title?: string }) => {
+  const handleUpdateFloorPlan = (idx: number, updates: { bhk?: number; carpetAreaSqft?: number; saleableAreaSqft?: number; title?: string; typology?: string }) => {
     if (!projectData || !projectData.floorPlans) return;
     const nextFloorPlans = [...projectData.floorPlans];
     if (nextFloorPlans[idx]) {
@@ -679,6 +704,15 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
             || resolveAssetUrl(matchingPlan) 
             || null;
 
+          const carpetVal = u.carpetAreaSqft || 625;
+          const customSaleable = u.saleableAreaSqft || Math.round(carpetVal * 1.40);
+          const customLoading = u.loadingPercentage !== undefined ? u.loadingPercentage : (carpetVal > 0 ? Math.round(((customSaleable - carpetVal) / carpetVal) * 100) : 40);
+
+          let highlights = Array.isArray(u.featureHighlights) ? [...u.featureHighlights] : [];
+          highlights = highlights.filter((h: string) => !h.includes('sq.ft Usable RERA Carpet') && !h.includes('sq.ft Saleable Area'));
+          highlights.unshift(`${customSaleable} sq.ft Saleable Area (${customLoading}% Loading)`);
+          highlights.unshift(`${carpetVal} sq.ft Usable RERA Carpet`);
+
           return {
             unitNumber: u.unitNumber || `Flat-0${idx + 1}`,
             bhk: u.bhk || 2,
@@ -686,10 +720,12 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
             balconies: u.balconies || 1,
             floorNumber: u.floorNumber || 2,
             totalFloors: projectData.totalFloors || 7,
-            carpetAreaSqft: u.carpetAreaSqft || 625,
+            carpetAreaSqft: carpetVal,
+            saleableAreaSqft: customSaleable,
+            loadingPercentage: customLoading,
             facing: u.facing || 'EAST',
             possessionStatus: projectData.hasOccupancyCertificate ? 'READY_TO_MOVE' : (u.possessionStatus || 'UNDER_CONSTRUCTION'),
-            agreementValue: u.agreementValue || Math.round((u.carpetAreaSqft || 625) * projectData.basePricePerSqft),
+            agreementValue: u.agreementValue || Math.round(carpetVal * projectData.basePricePerSqft),
             stampDutyRate: u.stampDutyRate || 6.0,
             registrationFee: u.registrationFee || 30000.0,
             gstRate: projectData.hasOccupancyCertificate ? 0.0 : (u.gstRate || 5.0),
@@ -699,7 +735,7 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
             allInTotalCost: u.allInTotalCost || 0.0,
             floorPlanUrl,
             description: u.description || null,
-            featureHighlights: u.featureHighlights || [],
+            featureHighlights: highlights,
           };
         }),
       };
@@ -1381,11 +1417,19 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
                                 <option value="brochure_photo">Move to Gallery</option>
                               </select>
                               <select
-                                value={fp.bhk ? String(fp.bhk) : ''}
-                                onChange={(e) => handleUpdateFloorPlan(idx, { bhk: e.target.value ? Number(e.target.value) : undefined })}
-                                className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-mono border border-emerald-500/20 focus:outline-none"
+                                value={fp.typology === '1RK' || (fp.bhk === 1 && /1\s*RK/i.test(fp.title || '')) ? '1RK' : (fp.bhk ? String(fp.bhk) : '')}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  if (val === '1RK') {
+                                    handleUpdateFloorPlan(idx, { bhk: 1, typology: '1RK' });
+                                  } else {
+                                    handleUpdateFloorPlan(idx, { bhk: val ? Number(val) : undefined, typology: val ? `${val}BHK` : undefined });
+                                  }
+                                }}
+                                className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-mono border border-emerald-500/20 focus:outline-none shrink-0"
                               >
                                 <option value="">Typical Layout</option>
+                                <option value="1RK">1 RK</option>
                                 <option value="1">1 BHK</option>
                                 <option value="2">2 BHK</option>
                                 <option value="3">3 BHK</option>
@@ -1403,20 +1447,38 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
                                 className="w-full text-xs font-bold text-content bg-transparent border-b border-border/50 focus:border-accent focus:outline-none truncate font-display"
                                 placeholder="Floor Plan Title"
                               />
-                              <div className="flex items-center justify-between text-[10px] text-content-muted font-mono">
+                              <div className="grid grid-cols-2 gap-1.5 pt-1 text-[10px] text-content-muted font-mono">
                                 <div className="flex items-center gap-1">
-                                  <span>Carpet:</span>
+                                  <span className="text-content-secondary font-medium">Carpet:</span>
                                   <input
                                     type="number"
                                     value={fp.carpetAreaSqft || ''}
-                                    onChange={(e) => handleUpdateFloorPlan(idx, { carpetAreaSqft: Number(e.target.value) || undefined })}
+                                    onChange={(e) => {
+                                      const cVal = Number(e.target.value) || undefined;
+                                      const currentSaleable = fp.saleableAreaSqft;
+                                      const nextSaleable = cVal ? (currentSaleable || Math.round(cVal * 1.40)) : undefined;
+                                      handleUpdateFloorPlan(idx, { carpetAreaSqft: cVal, saleableAreaSqft: nextSaleable });
+                                    }}
                                     placeholder="Area"
-                                    className="w-14 bg-surface-inset border border-border rounded px-1 text-[10px] text-content text-right font-mono"
+                                    className="w-16 bg-surface-inset border border-border rounded px-1.5 py-0.5 text-[10px] text-content text-right font-mono focus:outline-none focus:border-accent"
                                   />
-                                  <span>sq.ft</span>
+                                  <span>sqft</span>
                                 </div>
-                                <span>{fp.page_number ? `Page ${fp.page_number}` : ''}</span>
+                                <div className="flex items-center gap-1 justify-end">
+                                  <span className="text-content-secondary font-medium">Saleable:</span>
+                                  <input
+                                    type="number"
+                                    value={fp.saleableAreaSqft || (fp.carpetAreaSqft ? Math.round(fp.carpetAreaSqft * 1.40) : '')}
+                                    onChange={(e) => handleUpdateFloorPlan(idx, { saleableAreaSqft: Number(e.target.value) || undefined })}
+                                    placeholder="Saleable"
+                                    className="w-16 bg-surface-inset border border-border rounded px-1.5 py-0.5 text-[10px] text-accent-text font-bold text-right font-mono focus:outline-none focus:border-accent"
+                                  />
+                                  <span>sqft</span>
+                                </div>
                               </div>
+                              {fp.page_number && (
+                                <div className="text-[9px] text-content-muted text-right font-mono pt-0.5">Page {fp.page_number}</div>
+                              )}
                             </div>
 
                             {fpUrl ? (
@@ -1650,7 +1712,7 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
                             <th className="p-2.5 pl-3">Config / Flat Series</th>
                             <th className="p-2.5">Typology</th>
                             <th className="p-2.5">Usable RERA Carpet</th>
-                            <th className="p-2.5">Saleable Area (40% Load)</th>
+                            <th className="p-2.5">Saleable Area</th>
                             <th className="p-2.5">GST Slab</th>
                             <th className="p-2.5">Facing</th>
                             <th className="p-2.5">Agreement Value</th>
@@ -1735,9 +1797,20 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
                                   </div>
                                 </td>
                                 <td className="p-2 font-mono">
-                                  <div className="flex flex-col">
-                                    <span className="font-bold text-accent-text">{saleable} sqft</span>
-                                    <span className="text-[9px] text-content-muted">40% loading</span>
+                                  <div className="flex flex-col gap-1">
+                                    <div className="flex items-center gap-1">
+                                      <input
+                                        type="number"
+                                        value={saleable || ''}
+                                        onChange={(e) => handleUpdateUnit(idx, { saleableAreaSqft: Number(e.target.value) || 0 })}
+                                        className="w-20 bg-surface-inset border border-border rounded-lg p-1.5 text-xs text-accent-text font-bold font-mono focus:outline-none focus:border-accent"
+                                        placeholder="Saleable"
+                                      />
+                                      <span className="text-[10px] text-content-muted">sqft</span>
+                                    </div>
+                                    <div className="text-[9px] text-content-muted flex items-center gap-1">
+                                      <span>{u.loadingPercentage !== undefined ? u.loadingPercentage : (carpet > 0 ? Math.round(((saleable - carpet) / carpet) * 100) : 40)}% load</span>
+                                    </div>
                                   </div>
                                 </td>
                                 <td className="p-2">

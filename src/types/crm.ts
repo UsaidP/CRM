@@ -42,6 +42,7 @@ export type PermissionKey =
   | 'visits:record_outcome'
   | 'portals:create'
   | 'portals:view_telemetry'
+  | 'portals:delete'
   | 'analytics:view_firm'
   | 'admin:manage_rbac'
   | 'admin:manage_teams';

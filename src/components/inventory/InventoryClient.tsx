@@ -133,11 +133,16 @@ export function InventoryClient({
     towerWing: '',
     flatNumber: '',
     bhk: 1,
+    typology: '1BHK',
     bathrooms: 1,
     balconies: 0,
     floorNumber: 1,
     totalFloors: 7,
     carpetAreaSqft: 0,
+    reraCarpetAreaSqft: undefined as number | undefined,
+    builtUpSqft: 0,
+    saleableAreaSqft: 0,
+    loadingPercentage: 40,
     facing: 'EAST',
     possessionStatus: 'UNDER_CONSTRUCTION',
     possessionDate: '',
@@ -329,8 +334,18 @@ export function InventoryClient({
         : unitForm.flatNumber.trim();
     }
 
-    // Auto-enrich feature highlights with parking info if not yet present
-    let updatedHighlights = [...unitForm.featureHighlights];
+    const carpet = Number(unitForm.carpetAreaSqft) || 0;
+    const customSaleable = Number((unitForm as any).saleableAreaSqft) || 0;
+    const loadingPct = (unitForm as any).loadingPercentage !== undefined ? Number((unitForm as any).loadingPercentage) : 40;
+    const finalSaleable = customSaleable > 0 ? customSaleable : Math.round(carpet * (1 + loadingPct / 100));
+
+    // Auto-enrich feature highlights with carpet, saleable, and parking
+    let updatedHighlights = unitForm.featureHighlights.filter(
+      (h) => !h.includes('sq.ft Usable RERA Carpet') && !h.includes('sq.ft Saleable Area')
+    );
+    updatedHighlights.unshift(`${finalSaleable} sq.ft Saleable Area (${loadingPct}% Loading)`);
+    updatedHighlights.unshift(`${carpet} sq.ft Usable RERA Carpet`);
+
     if (unitForm.parkingType && !unitForm.parkingType.toLowerCase().includes('no car')) {
       const parkingLabel = unitForm.parkingSlot.trim() 
         ? `${unitForm.parkingType} (${unitForm.parkingSlot.trim()})` 
@@ -352,7 +367,11 @@ export function InventoryClient({
           balconies: Number(unitForm.balconies),
           floorNumber: Number(unitForm.floorNumber),
           totalFloors: Number(unitForm.totalFloors),
-          carpetAreaSqft: Number(unitForm.carpetAreaSqft),
+          carpetAreaSqft: carpet,
+          reraCarpetAreaSqft: (unitForm as any).reraCarpetAreaSqft ? Number((unitForm as any).reraCarpetAreaSqft) : null,
+          builtUpSqft: (unitForm as any).builtUpSqft ? Number((unitForm as any).builtUpSqft) : null,
+          saleableAreaSqft: finalSaleable,
+          loadingPercentage: loadingPct,
           agreementValue: Number(unitForm.agreementValue),
           parkingCharges: Number(unitForm.parkingCharges || 0),
           floorRiseCharges: Number(unitForm.floorRiseCharges || 0),
@@ -660,11 +679,16 @@ export function InventoryClient({
       towerWing: '',
       flatNumber: '',
       bhk: 1,
+      typology: '1BHK',
       bathrooms: 1,
       balconies: 0,
       floorNumber: 1,
       totalFloors: 7,
       carpetAreaSqft: 0,
+      reraCarpetAreaSqft: undefined,
+      builtUpSqft: 0,
+      saleableAreaSqft: 0,
+      loadingPercentage: 40,
       facing: 'EAST',
       possessionStatus: 'UNDER_CONSTRUCTION',
       possessionDate: '',
@@ -702,13 +726,45 @@ export function InventoryClient({
       parsedFlat = parts.slice(1).join(' - ');
     }
 
+    const is1Rk = unit.typology === '1RK' || (unit.bhk === 1 && /1\s*RK/i.test(unit.unitNumber || ''));
+    const carpetVal = Number(unit.carpetAreaSqft) || 0;
+    let saleableVal = Number(unit.saleableAreaSqft) || 0;
+    let loadingVal = unit.loadingPercentage !== undefined ? Number(unit.loadingPercentage) : undefined;
+
+    if (!saleableVal && Array.isArray(unit.featureHighlights)) {
+      for (const h of unit.featureHighlights) {
+        if (typeof h === 'string') {
+          const m = h.match(/(\d+)\s*sq\.?ft\s*Saleable Area(?:\s*\((\d+)%\s*Loading\))?/i);
+          if (m) {
+            saleableVal = Number(m[1]);
+            if (m[2] && loadingVal === undefined) loadingVal = Number(m[2]);
+            break;
+          }
+        }
+      }
+    }
+
+    if (!saleableVal && carpetVal > 0) {
+      saleableVal = Math.round(carpetVal * 1.40);
+      if (loadingVal === undefined) loadingVal = 40;
+    } else if (saleableVal && carpetVal > 0 && loadingVal === undefined) {
+      loadingVal = Math.round(((saleableVal - carpetVal) / carpetVal) * 100);
+    }
+
     setUnitForm((prev) => ({
       ...prev,
       ...unit,
+      bhk: unit.bhk || 1,
+      typology: is1Rk ? '1RK' : `${unit.bhk || 1}BHK`,
       projectId: unit.projectId || unit.project?.id || prev.projectId,
       unitNumber: unit.unitNumber || '',
       towerWing: parsedWing,
       flatNumber: parsedFlat,
+      carpetAreaSqft: carpetVal,
+      reraCarpetAreaSqft: unit.reraCarpetAreaSqft,
+      builtUpSqft: unit.builtUpSqft || (carpetVal ? Math.round(carpetVal * 1.15) : 0),
+      saleableAreaSqft: saleableVal,
+      loadingPercentage: loadingVal ?? 40,
       parkingCharges: unit.parkingCharges !== undefined ? Number(unit.parkingCharges) : 250000,
       parkingType: unit.parkingCharges === 0 ? 'No Car Parking (2-Wheeler Only)' : '1 Covered Stilt Parking',
       parkingSlot: '',
@@ -754,7 +810,10 @@ export function InventoryClient({
     const ratePerSqft = carpet > 0 ? Math.round(av / carpet) : 0;
     const allInRatePerSqft = carpet > 0 ? Math.round(totalAllIn / carpet) : 0;
     const estBuiltUpSqft = Math.round(carpet * 1.15);
-    const estSuperBuiltUpSqft = Math.round(carpet * 1.40);
+    const loadingPct = (unitForm as any).loadingPercentage !== undefined ? Number((unitForm as any).loadingPercentage) : 40;
+    const customSaleable = Number((unitForm as any).saleableAreaSqft) || 0;
+    const estSuperBuiltUpSqft = customSaleable > 0 ? customSaleable : Math.round(carpet * (1 + loadingPct / 100));
+    const effectiveLoading = carpet > 0 ? Math.round(((estSuperBuiltUpSqft - carpet) / carpet) * 100) : loadingPct;
 
     return {
       agreementValue: av,
@@ -770,6 +829,7 @@ export function InventoryClient({
       allInRatePerSqft,
       estBuiltUpSqft,
       estSuperBuiltUpSqft,
+      effectiveLoading,
       isOcReady,
     };
   }, [
@@ -779,6 +839,8 @@ export function InventoryClient({
     unitForm.floorRiseCharges,
     unitForm.societyDevelopmentCharges,
     unitForm.carpetAreaSqft,
+    (unitForm as any).saleableAreaSqft,
+    (unitForm as any).loadingPercentage,
   ]);
 
   // Helper for flexible micro-market matching (handles Taloja Phase 1/2 vs Phase I/II, sublocalities, sectors)
@@ -845,6 +907,29 @@ export function InventoryClient({
     return opts;
   }, [projects]);
 
+  // Dynamic list of micro-markets from existing projects + standard regional presets
+  const availableLocalities = useMemo(() => {
+    const existing = projects.map((p) => p.microMarket).filter(Boolean);
+    const defaults = [
+      'Kharghar Sector 35',
+      'Kharghar Sector 36',
+      'Kharghar Sector 20',
+      'Kharghar Sector 12',
+      'Taloja Phase 1',
+      'Taloja Phase 2',
+      'Upper Kharghar',
+      'Roadpali',
+      'Panvel',
+      'Ulwe',
+      'Kamothe',
+      'Seawoods',
+      'Vashi',
+      'Belapur',
+      'Dronagiri',
+    ];
+    return Array.from(new Set([...existing, ...defaults])).sort();
+  }, [projects]);
+
   // Filtered Projects for Project Catalogue
   const filteredProjects = useMemo(() => {
     return projects.filter((p) => {
@@ -884,7 +969,14 @@ export function InventoryClient({
   const filteredUnits = useMemo(() => {
     return units.filter((u) => {
       const matchesMarket = matchesMarketHelper(u.project?.microMarket, u.project?.subLocality);
-      const matchesBhk = selectedBhk === 'ALL' || String(u.bhk) === selectedBhk;
+      const matchesBhk =
+        selectedBhk === 'ALL'
+          ? true
+          : selectedBhk === '1RK'
+          ? (u.typology === '1RK' || /1\s*RK/i.test(u.unitNumber || '') || (u.bhk === 1 && /1\s*RK/i.test(u.unitNumber || '')))
+          : selectedBhk === '1'
+          ? (u.bhk === 1 && u.typology !== '1RK' && !/1\s*RK/i.test(u.unitNumber || ''))
+          : String(u.bhk) === selectedBhk;
       const matchesStatus = selectedStatus === 'ALL' || u.freshness?.effectiveMarketableStatus === selectedStatus;
       
       if (!matchesMarket || !matchesBhk || !matchesStatus) return false;
@@ -1386,19 +1478,42 @@ export function InventoryClient({
               />
             </div>
             <div>
-              <CustomSelect
-                id="project-micromarket-select"
-                label="Micro-Market Locality *"
-                value={projectForm.microMarket}
-                onChange={(val) => setProjectForm({ ...projectForm, microMarket: val })}
-                options={[
-                  { value: 'Kharghar Sector 35', label: 'Kharghar Sector 35' },
-                  { value: 'Kharghar Sector 36', label: 'Kharghar Sector 36' },
-                  { value: 'Kharghar Sector 20', label: 'Kharghar Sector 20' },
-                  { value: 'Taloja Phase 1', label: 'Taloja Phase 1' },
-                  { value: 'Upper Kharghar', label: 'Upper Kharghar' },
-                  { value: 'Roadpali', label: 'Roadpali' },
-                ]}
+              <label className="text-xs font-bold text-content block mb-1 flex items-center justify-between">
+                <span>Micro-Market Locality *</span>
+                <span className="text-[10px] text-accent font-semibold">User Editable / Creatable</span>
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  id="project-micromarket-input"
+                  aria-label="Micro-Market Locality"
+                  required
+                  list="project-micromarket-suggestions"
+                  placeholder="e.g. Taloja Phase 1, Kharghar Sector 35, Ulwe..."
+                  value={projectForm.microMarket}
+                  onChange={(e) => setProjectForm({ ...projectForm, microMarket: e.target.value })}
+                  className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content font-medium focus:outline-hidden focus:border-accent focus:ring-1 focus:ring-accent"
+                />
+                <datalist id="project-micromarket-suggestions">
+                  {availableLocalities.map((loc) => (
+                    <option key={loc} value={loc} />
+                  ))}
+                </datalist>
+              </div>
+            </div>
+
+            {/* Sub-Locality / Landmark Field */}
+            <div className="col-span-1 sm:col-span-2">
+              <label className="text-xs font-bold text-content block mb-1">
+                Sub-Locality / Sector / Landmark <span className="text-content-muted font-normal">(Optional)</span>
+              </label>
+              <input
+                type="text"
+                aria-label="Sub-locality, sector, or landmark"
+                placeholder="e.g. Sector 34 Metro, Near CIDCO Garden, Plot 42"
+                value={projectForm.subLocality || ''}
+                onChange={(e) => setProjectForm({ ...projectForm, subLocality: e.target.value })}
+                className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content font-medium focus:outline-hidden focus:border-accent"
               />
             </div>
 
@@ -1708,15 +1823,17 @@ export function InventoryClient({
               </div>
             </div>
 
-            {/* 2. BHK, Carpet Area, Bathrooms & Balconies */}
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+            {/* 2. BHK, Carpet Area, Saleable Area, Bathrooms & Balconies */}
+            {/* 2. Typology, Rooms & Area Dimensions */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
                 <CustomSelect
                   id="unit-bhk-select"
                   label="BHK Config"
-                  value={String(unitForm.bhk)}
+                  value={unitForm.typology === '1RK' || (unitForm.bhk === 1 && /1\s*RK/i.test(unitForm.unitNumber)) ? '1RK' : String(unitForm.bhk)}
                   onChange={(val) => {
-                    const newBhk = Number(val);
+                    const is1Rk = val === '1RK';
+                    const newBhk = is1Rk ? 1 : Number(val);
                     const selectedProj = projects.find((p) => p.id === unitForm.projectId);
                     let matchedPlanUrl = unitForm.floorPlanUrl;
                     let matchedCarpet = unitForm.carpetAreaSqft;
@@ -1726,7 +1843,7 @@ export function InventoryClient({
                         ...(Array.isArray(selectedProj.floorPlanImages) ? selectedProj.floorPlanImages : JSON.parse(selectedProj.floorPlanImagesJson || '[]')),
                         ...(Array.isArray(selectedProj.mediaGallery) ? selectedProj.mediaGallery : JSON.parse(selectedProj.mediaGalleryJson || '[]')),
                       ];
-                      const matched = allPlans.find((p: any) => Number(p?.bhk) === newBhk);
+                      const matched = allPlans.find((p: any) => is1Rk ? (p?.typology === '1RK' || /1\s*RK/i.test(p?.title || '')) : Number(p?.bhk) === newBhk);
                       if (matched) {
                         matchedPlanUrl = resolveAssetUrl(matched) || matchedPlanUrl;
                         if (matched.carpetAreaSqft && (!matchedCarpet || matchedCarpet === 0)) {
@@ -1737,11 +1854,14 @@ export function InventoryClient({
                     setUnitForm((prev) => ({
                       ...prev,
                       bhk: newBhk,
+                      typology: is1Rk ? '1RK' : `${newBhk}BHK`,
                       floorPlanUrl: matchedPlanUrl,
-                      carpetAreaSqft: matchedCarpet,
+                      carpetAreaSqft: matchedCarpet || (is1Rk ? 250 : prev.carpetAreaSqft),
+                      unitNumber: is1Rk && (!prev.unitNumber || prev.unitNumber === '1BHK - ') ? '1RK - ' : prev.unitNumber,
                     }));
                   }}
                   options={[
+                    { value: '1RK', label: '1 RK', badge: 'Studio / 1RK' },
                     { value: '1', label: '1 BHK', badge: 'Compact' },
                     { value: '2', label: '2 BHK', badge: 'Standard' },
                     { value: '3', label: '3 BHK', badge: 'Premium' },
@@ -1751,18 +1871,7 @@ export function InventoryClient({
                   ]}
                 />
               </div>
-              <div>
-                <label className="text-xs font-bold text-content block mb-1">Carpet Area (Sq.Ft) *</label>
-                <input
-                  aria-label="Carpet area in square feet"
-                  type="number"
-                  required
-                  min={100}
-                  value={unitForm.carpetAreaSqft}
-                  onChange={(e) => setUnitForm({ ...unitForm, carpetAreaSqft: Number(e.target.value) })}
-                  className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content font-mono focus:outline-hidden focus:border-accent font-medium"
-                />
-              </div>
+
               <div>
                 <label className="text-xs font-bold text-content block mb-1">Bathrooms</label>
                 <input
@@ -1774,6 +1883,7 @@ export function InventoryClient({
                   className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content font-mono focus:outline-hidden focus:border-accent font-medium"
                 />
               </div>
+
               <div>
                 <label className="text-xs font-bold text-content block mb-1">Balconies</label>
                 <input
@@ -1787,23 +1897,118 @@ export function InventoryClient({
               </div>
             </div>
 
-            {/* Live Area Matrix Helper Bar */}
+            {/* 4 Clean Area Inputs: Carpet, Optional RERA, Built-Up, Super Built-Up */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <div>
+                <label className="text-xs font-bold text-content block mb-1">
+                  Carpet Area (Sq.Ft) *
+                </label>
+                <input
+                  aria-label="Carpet area in square feet"
+                  type="number"
+                  required
+                  min={100}
+                  value={unitForm.carpetAreaSqft || ''}
+                  onChange={(e) => {
+                    const carpet = Number(e.target.value);
+                    const currentSuper = (unitForm as any).saleableAreaSqft;
+                    setUnitForm({
+                      ...unitForm,
+                      carpetAreaSqft: carpet,
+                      builtUpSqft: (unitForm as any).builtUpSqft || (carpet > 0 ? Math.round(carpet * 1.15) : 0),
+                      saleableAreaSqft: currentSuper && currentSuper > 0 ? currentSuper : (carpet > 0 ? Math.round(carpet * 1.40) : 0),
+                    });
+                  }}
+                  className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content font-mono focus:outline-hidden focus:border-accent font-medium"
+                  placeholder="e.g. 650"
+                />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-bold text-content">RERA Carpet Area</label>
+                  <span className="text-[10px] text-content-muted font-sans font-medium bg-surface px-1.5 py-0.2 rounded border border-border">
+                    Optional
+                  </span>
+                </div>
+                <input
+                  aria-label="RERA Carpet area in square feet"
+                  type="number"
+                  value={(unitForm as any).reraCarpetAreaSqft || ''}
+                  onChange={(e) => {
+                    const val = e.target.value ? Number(e.target.value) : undefined;
+                    setUnitForm({
+                      ...unitForm,
+                      reraCarpetAreaSqft: val,
+                    });
+                  }}
+                  className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content font-mono focus:outline-hidden focus:border-accent font-medium"
+                  placeholder="Optional (e.g. 685)"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-content block mb-1">Built-Up Area (Sq.Ft)</label>
+                <input
+                  aria-label="Built-Up area in square feet"
+                  type="number"
+                  value={(unitForm as any).builtUpSqft || (unitForm.carpetAreaSqft ? Math.round(unitForm.carpetAreaSqft * 1.15) : '')}
+                  onChange={(e) => {
+                    const val = Number(e.target.value) || 0;
+                    setUnitForm({
+                      ...unitForm,
+                      builtUpSqft: val,
+                    });
+                  }}
+                  className="w-full bg-surface-subtle border border-border rounded-xl p-2.5 text-xs text-content font-mono focus:outline-hidden focus:border-accent font-medium"
+                  placeholder="e.g. 748"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-accent block mb-1">Super Built-Up Area (Sq.Ft)</label>
+                <input
+                  aria-label="Super built-up area in square feet"
+                  type="number"
+                  value={(unitForm as any).saleableAreaSqft || (unitForm.carpetAreaSqft ? Math.round(unitForm.carpetAreaSqft * 1.40) : '')}
+                  onChange={(e) => {
+                    const val = Number(e.target.value) || 0;
+                    setUnitForm({
+                      ...unitForm,
+                      saleableAreaSqft: val,
+                    });
+                  }}
+                  className="w-full bg-surface-subtle border border-accent/40 rounded-xl p-2.5 text-xs text-accent-text font-bold font-mono focus:outline-hidden focus:border-accent font-medium"
+                  placeholder="e.g. 910"
+                />
+              </div>
+            </div>
+
+            {/* Live Area Breakdown Bar (No Loading Factor) */}
             {Number(unitForm.carpetAreaSqft) > 0 && (
               <div className="p-3 bg-surface-subtle/80 border border-border rounded-xl flex flex-wrap items-center gap-x-4 gap-y-2 text-xs">
                 <span className="text-[11px] font-bold text-content-muted uppercase tracking-wider flex items-center gap-1">
                   <Layers className="w-3.5 h-3.5 text-accent" />
-                  <span>Area Matrix:</span>
+                  <span>Area Dimensions:</span>
                 </span>
                 <span className="text-content">
-                  RERA Usable Carpet: <strong className="font-mono font-bold text-accent">{unitForm.carpetAreaSqft} sq.ft</strong>
+                  Carpet: <strong className="font-mono font-bold text-content">{unitForm.carpetAreaSqft} sq.ft</strong>
+                </span>
+                {(unitForm as any).reraCarpetAreaSqft > 0 && (
+                  <>
+                    <span className="text-content-muted">•</span>
+                    <span className="text-content">
+                      RERA Carpet: <strong className="font-mono font-semibold text-accent">{(unitForm as any).reraCarpetAreaSqft} sq.ft</strong> <span className="text-[10px] text-content-muted">(Optional)</span>
+                    </span>
+                  </>
+                )}
+                <span className="text-content-muted">•</span>
+                <span className="text-content">
+                  Built-Up: <strong className="font-mono font-semibold text-content">{(unitForm as any).builtUpSqft || liveUnitCalc.estBuiltUpSqft} sq.ft</strong>
                 </span>
                 <span className="text-content-muted">•</span>
                 <span className="text-content">
-                  Est. Built-up (+15%): <strong className="font-mono font-semibold text-content">{liveUnitCalc.estBuiltUpSqft} sq.ft</strong>
-                </span>
-                <span className="text-content-muted">•</span>
-                <span className="text-content">
-                  Super Built-up (+40% Loading): <strong className="font-mono font-semibold text-content">{liveUnitCalc.estSuperBuiltUpSqft} sq.ft</strong>
+                  Super Built-Up: <strong className="font-mono font-semibold text-accent-text">{liveUnitCalc.estSuperBuiltUpSqft} sq.ft</strong>
                 </span>
                 {liveUnitCalc.ratePerSqft > 0 && (
                   <>

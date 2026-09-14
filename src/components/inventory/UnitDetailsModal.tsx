@@ -34,6 +34,7 @@ import {
   isDummyOrPlaceholderUrl,
 } from '@/lib/domain/unit-differentiation';
 import { resolveAssetUrl } from '@/lib/inventory-media';
+import { ConcentricAreaSuite } from './ConcentricAreaSuite';
 
 interface UnitDetailsModalProps {
   unit: any;
@@ -78,7 +79,10 @@ export function UnitDetailsModal({
 
   // Resolved Unit-Specific Media
   const resolvedMedia = resolveUnitMediaAssets(currentUnit);
-  const areaMatrix = calculateUnitAreaMatrix(currentUnit.carpetAreaSqft || 650);
+  const unitCarpet = currentUnit.carpetAreaSqft || 650;
+  const unitSaleable = currentUnit.saleableAreaSqft;
+  const unitLoading = currentUnit.loadingPercentage ?? (unitSaleable && unitCarpet ? Math.round(((unitSaleable - unitCarpet) / unitCarpet) * 100) : 40);
+  const areaMatrix = calculateUnitAreaMatrix(unitCarpet, unitLoading, unitSaleable);
 
   // Affordable housing detection (≤ 45 Lakhs agreement value)
   const isAffordable = currentUnit.agreementValue > 0 && currentUnit.agreementValue <= 4500000;
@@ -521,55 +525,49 @@ export function UnitDetailsModal({
           {/* TAB 1: Overview & Specifications */}
           {activeTab === 'overview' && (
             <div className="space-y-6">
-              {/* Area Matrix Breakdown */}
-              <div className="p-4 rounded-xl border border-border bg-surface-raised">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-xs font-bold text-content uppercase tracking-wider flex items-center gap-1.5">
-                    <Calculator className="w-4 h-4 text-accent" /> Area Measurements &amp; Loading Matrix
-                  </h3>
-                  <span className="text-[11px] text-content-muted bg-surface px-2.5 py-1 rounded border border-border font-mono">
-                    Carpet vs Built-Up vs Super Built-Up
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="p-3.5 rounded-lg bg-surface-inset border border-border">
-                    <div className="text-[10px] text-content-muted uppercase font-bold tracking-wider">
-                      Usable RERA Carpet
-                    </div>
-                    <div className="text-xl font-bold text-content font-mono mt-0.5">
-                      {areaMatrix.carpetAreaSqft} <span className="text-xs font-normal text-content-muted">sq.ft.</span>
-                    </div>
-                    <div className="text-[10px] text-content-muted mt-1">
-                      100% usable net internal area
-                    </div>
-                  </div>
-
-                  <div className="p-3.5 rounded-lg bg-surface-inset border border-border">
-                    <div className="text-[10px] text-content-muted uppercase font-bold tracking-wider">
-                      Estimated Built-Up
-                    </div>
-                    <div className="text-xl font-bold text-content font-mono mt-0.5">
-                      {areaMatrix.builtUpSqft} <span className="text-xs font-normal text-content-muted">sq.ft.</span>
-                    </div>
-                    <div className="text-[10px] text-content-muted mt-1">
-                      Includes walls &amp; balcony (+15%)
-                    </div>
-                  </div>
-
-                  <div className="p-3.5 rounded-lg bg-surface-inset border border-border">
-                    <div className="text-[10px] text-content-muted uppercase font-bold tracking-wider">
-                      Super Built-Up / Saleable
-                    </div>
-                    <div className="text-xl font-bold text-accent-text font-mono mt-0.5">
-                      {areaMatrix.superBuiltUpSqft} <span className="text-xs font-normal text-content-muted">sq.ft.</span>
-                    </div>
-                    <div className="text-[10px] text-content-muted mt-1">
-                      Common areas ({areaMatrix.loadingPercentage}% builder load)
-                    </div>
-                  </div>
-                </div>
-              </div>
+              {/* Concentric Real Estate Area Measurement Suite */}
+              <ConcentricAreaSuite
+                unit={currentUnit}
+                onSave={async (matrix) => {
+                  try {
+                    const res = await fetch(`/api/v1/inventory/units/${currentUnit.id}`, {
+                      method: 'PUT',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        carpetAreaSqft: matrix.carpetAreaSqft,
+                        saleableAreaSqft: matrix.superBuiltUpSqft,
+                        loadingPercentage: matrix.loadingPercentage,
+                        traditionalCarpetSqft: matrix.traditionalCarpetSqft,
+                        builtUpSqft: matrix.builtUpSqft,
+                        balconyTerraceSqft: matrix.balconyTerraceSqft,
+                        internalWallsSqft: matrix.internalWallsSqft,
+                        externalWallsSqft: matrix.externalWallsSqft,
+                        proportionateCommonSqft: matrix.proportionateCommonSqft,
+                      }),
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Failed to update unit area measurements');
+                    const updated = {
+                      ...currentUnit,
+                      carpetAreaSqft: matrix.carpetAreaSqft,
+                      saleableAreaSqft: matrix.superBuiltUpSqft,
+                      loadingPercentage: matrix.loadingPercentage,
+                      traditionalCarpetSqft: matrix.traditionalCarpetSqft,
+                      builtUpSqft: matrix.builtUpSqft,
+                      balconyTerraceSqft: matrix.balconyTerraceSqft,
+                      internalWallsSqft: matrix.internalWallsSqft,
+                      externalWallsSqft: matrix.externalWallsSqft,
+                      proportionateCommonSqft: matrix.proportionateCommonSqft,
+                      ...(data.data || {}),
+                    };
+                    setCurrentUnit(updated);
+                    if (onUnitUpdated) onUnitUpdated(updated);
+                  } catch (err: any) {
+                    setErrorMessage(err.message || 'Error saving area measurements');
+                    throw err;
+                  }
+                }}
+              />
 
               {/* Unit Specifications Grid */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">

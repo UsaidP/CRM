@@ -149,6 +149,12 @@ export const ALL_PERMISSIONS: PermissionDefinition[] = [
     description: 'Track buyer dwell time, video engagement, and high-intent alerts.',
   },
   {
+    key: 'portals:delete',
+    label: 'Delete Client Portals',
+    category: 'Portals & Analytics',
+    description: 'Permanently remove client property portals and associated links.',
+  },
+  {
     key: 'analytics:view_firm',
     label: 'View Firm-Wide Analytics & Leaderboards',
     category: 'Portals & Analytics',
@@ -210,6 +216,7 @@ export const DEFAULT_ROLE_SCOPED_PERMISSIONS: Record<CrmRole, ScopedPermission[]
     { permission: 'visits:record_outcome', scope: 'ORGANIZATION' },
     { permission: 'portals:create', scope: 'ORGANIZATION' },
     { permission: 'portals:view_telemetry', scope: 'ORGANIZATION' },
+    { permission: 'portals:delete', scope: 'ORGANIZATION' },
     { permission: 'analytics:view_firm', scope: 'ORGANIZATION' },
     { permission: 'admin:manage_rbac', scope: 'ORGANIZATION' },
     { permission: 'admin:manage_teams', scope: 'ORGANIZATION' },
@@ -234,6 +241,7 @@ export const DEFAULT_ROLE_SCOPED_PERMISSIONS: Record<CrmRole, ScopedPermission[]
     { permission: 'visits:record_outcome', scope: 'TEAM' },
     { permission: 'portals:create', scope: 'TEAM' },
     { permission: 'portals:view_telemetry', scope: 'TEAM' },
+    { permission: 'portals:delete', scope: 'TEAM' },
     { permission: 'analytics:view_firm', scope: 'TEAM' },
   ],
 
@@ -249,6 +257,7 @@ export const DEFAULT_ROLE_SCOPED_PERMISSIONS: Record<CrmRole, ScopedPermission[]
     { permission: 'visits:record_outcome', scope: 'OWN_AND_ASSIGNED' },
     { permission: 'portals:create', scope: 'OWN_AND_ASSIGNED' },
     { permission: 'portals:view_telemetry', scope: 'OWN_AND_ASSIGNED' },
+    { permission: 'portals:delete', scope: 'OWN_AND_ASSIGNED' },
   ],
 
   TELECALLER: [
@@ -258,6 +267,7 @@ export const DEFAULT_ROLE_SCOPED_PERMISSIONS: Record<CrmRole, ScopedPermission[]
     { permission: 'visits:schedule', scope: 'OWN' },
     { permission: 'portals:create', scope: 'OWN' },
     { permission: 'portals:view_telemetry', scope: 'OWN' },
+    { permission: 'portals:delete', scope: 'OWN' },
   ],
 };
 

@@ -72,6 +72,7 @@ const POPULAR_LOCATIONS = [
 ];
 
 const BHK_OPTIONS = [
+  { value: 0, label: '1 RK', subtitle: 'Studio / Budget' },
   { value: 1, label: '1 BHK', subtitle: 'Compact / Starter' },
   { value: 2, label: '2 BHK', subtitle: 'Standard Family' },
   { value: 3, label: '3 BHK', subtitle: 'Spacious Luxury' },
@@ -465,10 +466,10 @@ export function AddLeadModal({
                   BHK Preferences <span className="text-content-muted text-[11px]">(Multi-Select)</span>
                 </label>
                 <span className="text-[11px] font-mono text-content-muted">
-                  Selected: {selectedBhk.map((b) => `${b} BHK`).join(', ')}
+                  Selected: {selectedBhk.map((b) => b === 0 ? '1 RK' : `${b} BHK`).join(', ')}
                 </span>
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                 {BHK_OPTIONS.map((opt) => {
                   const isSelected = selectedBhk.includes(opt.value);
                   return (

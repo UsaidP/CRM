@@ -56,7 +56,7 @@ export function CustomSelect({
   searchPlaceholder = 'Search...',
   id,
   'aria-label': ariaLabel,
-  usePortal = false,
+  usePortal = true,
 }: CustomSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -68,7 +68,7 @@ export function CustomSelect({
     bottom?: number;
     left: number;
     width: number;
-  }>({ left: 0, width: 0 });
+  } | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -156,10 +156,16 @@ export function CustomSelect({
     );
   }, [options, searchQuery]);
 
-  // Determine open direction and dimensions based on viewport clearance
-  const updatePosition = useCallback(() => {
-    if (!triggerRef.current) return;
+  // Compute open direction and dimensions based on viewport clearance
+  const computePosition = useCallback(() => {
+    if (!triggerRef.current) return null;
     const rect = triggerRef.current.getBoundingClientRect();
+
+    // If trigger has scrolled out of the visible viewport or modal bounds, dismiss menu smoothly
+    if (rect.bottom < 40 || rect.top > window.innerHeight - 40) {
+      return null;
+    }
+
     const spaceBelow = window.innerHeight - rect.bottom;
     const spaceAbove = rect.top;
 
@@ -177,25 +183,61 @@ export function CustomSelect({
       }
     }
 
-    setOpenUpward(shouldOpenUpward);
-
     // Dynamic max-height bounded to viewport space with padding
     const availableSpace = shouldOpenUpward ? spaceAbove - 16 : spaceBelow - 16;
     const calculatedMaxHeight = Math.min(Math.max(availableSpace, 120), 320);
-    setMaxMenuHeight(calculatedMaxHeight);
 
-    if (usePortal) {
-      const minW = size === 'xs' ? Math.max(rect.width, 120) : Math.max(rect.width, 160);
-      const computedLeft = align === 'right' ? Math.max(8, rect.right - minW) : Math.min(rect.left, window.innerWidth - minW - 8);
+    const minW = size === 'xs' ? Math.max(rect.width, 130) : Math.max(rect.width, 160);
+    const computedWidth = Math.max(rect.width, minW);
+    const computedLeft = align === 'right' ? Math.max(8, rect.right - computedWidth) : Math.min(rect.left, window.innerWidth - computedWidth - 8);
 
-      setPortalCoords({
+    return {
+      shouldOpenUpward,
+      calculatedMaxHeight,
+      coords: {
         top: shouldOpenUpward ? undefined : rect.bottom + 4,
         bottom: shouldOpenUpward ? window.innerHeight - rect.top + 4 : undefined,
         left: Math.max(8, computedLeft),
-        width: Math.max(rect.width, minW),
-      });
+        width: computedWidth,
+      },
+    };
+  }, [direction, align, size]);
+
+  const updatePosition = useCallback(() => {
+    const pos = computePosition();
+    if (!pos) {
+      setIsOpen(false);
+      return;
     }
-  }, [direction, align, size, usePortal]);
+
+    setOpenUpward(pos.shouldOpenUpward);
+    setMaxMenuHeight(pos.calculatedMaxHeight);
+    if (usePortal) {
+      setPortalCoords(pos.coords);
+    }
+  }, [computePosition, usePortal]);
+
+  const openDropdown = useCallback(() => {
+    if (disabled) return;
+    const pos = computePosition();
+    if (pos) {
+      setOpenUpward(pos.shouldOpenUpward);
+      setMaxMenuHeight(pos.calculatedMaxHeight);
+      if (usePortal) {
+        setPortalCoords(pos.coords);
+      }
+    }
+    setIsOpen(true);
+  }, [disabled, computePosition, usePortal]);
+
+  const toggleDropdown = useCallback(() => {
+    if (disabled) return;
+    if (!isOpen) {
+      openDropdown();
+    } else {
+      setIsOpen(false);
+    }
+  }, [disabled, isOpen, openDropdown]);
 
   // Open/Close effect & auto-focus
   useEffect(() => {
@@ -273,7 +315,7 @@ export function CustomSelect({
     if (e.key === 'Enter' || e.key === ' ') {
       if (!isOpen) {
         e.preventDefault();
-        setIsOpen(true);
+        openDropdown();
       } else if (focusedIndex >= 0 && focusedIndex < filteredOptions.length) {
         e.preventDefault();
         const targetOpt = filteredOptions[focusedIndex];
@@ -291,7 +333,7 @@ export function CustomSelect({
       e.preventDefault();
       isKeyboardNavRef.current = true;
       if (!isOpen) {
-        setIsOpen(true);
+        openDropdown();
       } else {
         setFocusedIndex((prev) => (prev < filteredOptions.length - 1 ? prev + 1 : 0));
       }
@@ -299,7 +341,7 @@ export function CustomSelect({
       e.preventDefault();
       isKeyboardNavRef.current = true;
       if (!isOpen) {
-        setIsOpen(true);
+        openDropdown();
       } else {
         setFocusedIndex((prev) => (prev > 0 ? prev - 1 : filteredOptions.length - 1));
       }
@@ -432,12 +474,15 @@ export function CustomSelect({
         usePortal
           ? 'fixed'
           : `absolute ${align === 'right' ? 'right-0' : 'left-0'} ${
-              openUpward ? 'bottom-full mb-1.5 origin-bottom' : 'top-full mt-1.5 origin-top'
+              openUpward ? 'bottom-full mb-1.5' : 'top-full mt-1.5'
             }`
-      } w-full ${menuMinWidthClasses} z-[9999] flex flex-col rounded-2xl bg-surface border border-border shadow-2xl p-1.5 animate-in fade-in-0 zoom-in-95 duration-150 backdrop-blur-md overflow-hidden ${menuClassName}`}
+      } w-full ${menuMinWidthClasses} z-[9999] flex flex-col rounded-xl bg-surface/95 border border-border shadow-xl p-1.5 backdrop-blur-md overflow-hidden ${
+        openUpward ? 'shadcn-dropdown-up' : 'shadcn-dropdown-down'
+      } ${menuClassName}`}
       style={{
         maxHeight: `${maxMenuHeight}px`,
-        ...(usePortal
+        transition: 'none',
+        ...(usePortal && portalCoords
           ? {
               top: portalCoords.top !== undefined ? `${portalCoords.top}px` : undefined,
               bottom: portalCoords.bottom !== undefined ? `${portalCoords.bottom}px` : undefined,
@@ -524,11 +569,7 @@ export function CustomSelect({
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         disabled={disabled}
-        onClick={() => {
-          if (!disabled) {
-            setIsOpen((prev) => !prev);
-          }
-        }}
+        onClick={toggleDropdown}
         onKeyDown={handleKeyDown}
         className={`w-full flex items-center justify-between border font-semibold transition-all cursor-pointer select-none text-left ${
           isOpen
@@ -576,7 +617,12 @@ export function CustomSelect({
       {/* Floating Dropdown Menu */}
       {isOpen && (
         usePortal && typeof document !== 'undefined'
-          ? createPortal(menuContent, document.body)
+          ? (portalCoords
+              ? createPortal(
+                  menuContent,
+                  containerRef.current?.closest('dialog') || document.body
+                )
+              : null)
           : menuContent
       )}
     </div>

@@ -25,7 +25,8 @@ import {
   AlertCircle,
   MessageSquare,
   Activity,
-  Globe
+  Globe,
+  Trash2
 } from 'lucide-react';
 import { HallmarkStamp } from '@/components/ui/HallmarkStamp';
 import { formatTimeShort } from '@/lib/date-utils';
@@ -43,6 +44,10 @@ export default function ClientPortalsConsolePage() {
   const [inspectedPortal, setInspectedPortal] = useState<any | null>(null);
   const [requestError, setRequestError] = useState<string | null>(null);
   const [copyError, setCopyError] = useState<string | null>(null);
+  const [deletingPortal, setDeletingPortal] = useState<any | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const fetchPortals = async () => {
     setLoading(true);
@@ -76,6 +81,29 @@ export default function ClientPortalsConsolePage() {
     } catch {
       setCopiedToken(null);
       setCopyError('The portal link could not be copied. Open the portal and copy its address from the browser.');
+    }
+  };
+
+  const handleDeletePortal = async () => {
+    if (!deletingPortal) return;
+    setIsDeleting(true);
+    setDeleteError(null);
+    try {
+      const res = await fetch(`/api/v1/portals?id=${encodeURIComponent(deletingPortal.id)}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to delete client portal.');
+      }
+      setPortals((prev) => prev.filter((p) => p.id !== deletingPortal.id));
+      setSuccessMessage(data.message || 'Client presentation portal deleted successfully.');
+      setTimeout(() => setSuccessMessage(null), 4000);
+      setDeletingPortal(null);
+    } catch (err: any) {
+      setDeleteError(err.message || 'Failed to delete client portal. Please try again.');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -234,6 +262,14 @@ export default function ClientPortalsConsolePage() {
             onDismiss={() => setCopiedToken(null)}
           />
         )}
+        {successMessage && (
+          <FeedbackAlert
+            variant="success"
+            title="Portal Deleted"
+            description={successMessage}
+            onDismiss={() => setSuccessMessage(null)}
+          />
+        )}
       </div>
 
       {/* High-Density Portals & Telemetry Table */}
@@ -346,6 +382,18 @@ export default function ClientPortalsConsolePage() {
                         >
                           <MessageSquare className="w-4 h-4" />
                         </a>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setDeleteError(null);
+                            setDeletingPortal(portal);
+                          }}
+                          aria-label={`Delete presentation portal for ${portal.lead?.fullName || 'client'}`}
+                          title="Delete Client Portal"
+                          className="h-8 w-8 grid place-items-center rounded-xl bg-surface hover:bg-rose-500/10 text-content-muted hover:text-rose-600 border border-border hover:border-rose-500/30 shadow-2xs transition-all cursor-pointer"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -467,6 +515,89 @@ export default function ClientPortalsConsolePage() {
                 className="px-4 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-semibold shadow-2xs cursor-pointer"
               >
                 Close Inspector
+              </button>
+            </div>
+          </div>
+        )}
+      </AccessibleDialog>
+
+      {/* MODAL: Confirm Delete Portal */}
+      <AccessibleDialog
+        open={Boolean(deletingPortal)}
+        onClose={() => !isDeleting && setDeletingPortal(null)}
+        titleId="delete-portal-title"
+        descriptionId="delete-portal-description"
+        size="sm"
+      >
+        {deletingPortal && (
+          <div className="space-y-4 text-content font-sans">
+            <div className="flex items-center justify-between pb-3 border-b border-border">
+              <h2 id="delete-portal-title" className="font-bold text-content text-base font-display flex items-center gap-2 text-rose-600 dark:text-rose-400">
+                <Trash2 className="w-4 h-4 text-rose-600 dark:text-rose-400" />
+                Delete Client Portal
+              </h2>
+              <button
+                type="button"
+                data-dialog-close
+                disabled={isDeleting}
+                aria-label="Close dialog"
+                onClick={() => setDeletingPortal(null)}
+                className="p-1 rounded-lg text-content-muted hover:text-content disabled:opacity-50 cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div id="delete-portal-description" className="text-xs text-content-secondary space-y-3">
+              <p>
+                Are you sure you want to permanently delete the presentation portal for{' '}
+                <strong className="text-content font-semibold">{deletingPortal.lead?.fullName || 'this client'}</strong>?
+              </p>
+              <div className="p-3 rounded-xl bg-surface-subtle border border-border space-y-1 font-mono text-[11px]">
+                <div><span className="text-content-muted">Token:</span> <span className="text-accent font-semibold">{deletingPortal.token}</span></div>
+                <div><span className="text-content-muted">Curated Units:</span> <span className="text-content font-semibold">{deletingPortal.propertyCount || deletingPortal.portalUnits?.length || 0} units</span></div>
+                <div><span className="text-content-muted">Logged Views:</span> <span className="text-content font-semibold">{deletingPortal.totalViews || deletingPortal.telemetryLogs?.length || 0} views</span></div>
+              </div>
+              <p className="text-rose-600 dark:text-rose-400 text-[11px] leading-relaxed">
+                This will immediately invalidate the client link and permanently remove all associated telemetry logs. This action cannot be undone.
+              </p>
+            </div>
+
+            {deleteError && (
+              <FeedbackAlert
+                variant="error"
+                error={deleteError}
+                onDismiss={() => setDeleteError(null)}
+              />
+            )}
+
+            <div className="pt-2 flex justify-end gap-2">
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={() => setDeletingPortal(null)}
+                className="px-4 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-semibold shadow-2xs cursor-pointer disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                data-dialog-autofocus
+                disabled={isDeleting}
+                onClick={handleDeletePortal}
+                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-xs cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+              >
+                {isDeleting ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    Deleting…
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-3.5 h-3.5" />
+                    Delete Portal
+                  </>
+                )}
               </button>
             </div>
           </div>

@@ -89,8 +89,14 @@ describe('Zod Validators Suite', () => {
       }
     });
 
-    it('rejects out-of-range BHK preferences (0, 7, fractional)', () => {
-      for (const bhk of [[0], [7], [2.5]]) {
+    it('accepts 0 as 1 RK studio and rejects out-of-range BHK preferences (-1, 7, fractional)', () => {
+      const result1Rk = buyerRequirementSchema.safeParse({
+        budgetMax: 2500000,
+        bhkPreferences: [0],
+      });
+      expect(result1Rk.success).toBe(true);
+
+      for (const bhk of [[-1], [7], [2.5]]) {
         const result = buyerRequirementSchema.safeParse({
           budgetMax: 10000000,
           bhkPreferences: bhk,
