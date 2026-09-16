@@ -8,6 +8,7 @@ import {
   sanitizeBrochureFilename,
   normalizeBrochureMimeType,
 } from '@/lib/domain/brochure-ingestion';
+import { handleApiError } from '@/lib/services/api-handler';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -168,10 +169,6 @@ export async function POST(req: Request) {
         { status: error.statusCode }
       );
     }
-    console.error('[BROCHURE-ROUTE] Ingestion error:', error);
-    return NextResponse.json(
-      { success: false, error: error.message || 'Failed to process and parse developer brochure document.' },
-      { status: 500 }
-    );
+    return handleApiError(error, 'Failed to process and parse developer brochure document');
   }
 }

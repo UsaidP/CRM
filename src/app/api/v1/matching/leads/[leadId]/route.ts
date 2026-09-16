@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db/prisma';
 import { rankMatchingProperties, BuyerRequirementInput, PropertyUnitForMatching } from '@/lib/domain/matching-engine';
 import { generateWhatsAppPitchWithAI } from '@/lib/services/gemini-service';
 import { requireSession, orgScope } from '@/lib/services/api-auth';
+import { handleApiError } from '@/lib/services/api-handler';
 
 export const dynamic = 'force-dynamic';
 
@@ -92,8 +93,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ leadId: 
       aiPitch: aiPitchData,
       data: rankedMatches,
     });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error, 'Failed to match properties for lead');
   }
 }
 

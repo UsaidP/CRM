@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db/prisma';
 import { parseInventoryContent } from '@/lib/inventory-media';
 import { requirePermissionWithScope, forbidden } from '@/lib/services/api-auth';
 import { getTeamMemberIds } from '@/lib/services/team-service';
+import { handleApiError } from '@/lib/services/api-handler';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,23 +25,12 @@ export async function GET(req: Request, { params }: { params: Promise<{ token: s
           select: {
             id: true,
             fullName: true,
-            phoneE164: true,
-            assignedBroker: {
-              select: {
-                fullName: true,
-                phoneE164: true,
-                email: true,
-                role: true,
-              },
-            },
           },
         },
         createdBy: {
           select: {
             fullName: true,
             phoneE164: true,
-            email: true,
-            role: true,
           },
         },
         portalUnits: {
@@ -56,7 +46,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ token: s
       },
     });
 
-    if (!portal || !portal.isActive) {
+    if (!portal || !portal.isActive || (portal.expiresAt && portal.expiresAt < new Date())) {
       return NextResponse.json(
         { success: false, error: 'Portal not found or has expired' },
         { status: 404 }
@@ -94,8 +84,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ token: s
         portalUnits: formattedUnits,
       },
     });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error, 'Failed to retrieve client portal');
   }
 }
 
@@ -172,8 +162,8 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ token
       token: portal.token,
       leadId: portal.leadId,
     });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error, 'Failed to delete client portal');
   }
 }
 

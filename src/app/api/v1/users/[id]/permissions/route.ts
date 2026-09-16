@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { requireRole, orgScope } from '@/lib/services/api-auth';
 import { prisma } from '@/lib/db/prisma';
 import { getUserEffectivePermissions } from '@/lib/domain/rbac-engine';
+import { handleApiError } from '@/lib/services/api-handler';
 
 export const dynamic = 'force-dynamic';
 
@@ -106,10 +107,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         effectivePermissions: getUserEffectivePermissions(updatedUser),
       },
     });
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error?.message || 'Failed to update user permissions' },
-      { status: 500 }
-    );
+  } catch (error) {
+    return handleApiError(error, 'Failed to update user permissions');
   }
 }

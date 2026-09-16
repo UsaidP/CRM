@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requirePermissionWithScope, scopedLeadFilter } from '@/lib/services/api-auth';
+import { requireSession, requirePermissionWithScope, scopedLeadFilter } from '@/lib/services/api-auth';
 import { prisma } from '@/lib/db/prisma';
+import { handleApiError } from '@/lib/services/api-handler';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,11 +30,8 @@ export async function GET(
     });
 
     return NextResponse.json({ success: true, communications });
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error.message || 'Failed to fetch communication logs' },
-      { status: 500 }
-    );
+  } catch (error) {
+    return handleApiError(error, 'Failed to fetch communication logs');
   }
 }
 
@@ -42,18 +40,32 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const auth = await requirePermissionWithScope(req, 'leads:edit_all');
-    if (!auth.ok) return auth.response;
-    const { session, scope } = auth;
+    const sessionAuth = await requireSession(req);
+    if (!sessionAuth.ok) return sessionAuth.response;
+    const { session } = sessionAuth;
     const { id } = await params;
 
-    const scopeWhere = await scopedLeadFilter(session, scope);
+    const editAllAuth = await requirePermissionWithScope(req, 'leads:edit_all');
+    let scopeWhere: Record<string, unknown>;
+
+    if (editAllAuth.ok) {
+      scopeWhere = await scopedLeadFilter(session, editAllAuth.scope);
+    } else {
+      scopeWhere = {
+        organizationId: session.organizationId,
+        OR: [
+          { assignedBrokerId: session.userId },
+          { assignments: { some: { userId: session.userId, unassignedAt: null } } },
+        ],
+      };
+    }
+
     const lead = await prisma.lead.findFirst({
       where: { id, ...scopeWhere },
       select: { id: true, organizationId: true },
     });
     if (!lead) {
-      return NextResponse.json({ success: false, error: 'Lead not found' }, { status: 404 });
+      return NextResponse.json({ success: false, error: 'Lead not found or access restricted' }, { status: 404 });
     }
 
     const body = await req.json();
@@ -142,11 +154,7 @@ export async function POST(
       message: 'Communication log recorded successfully',
       communication: newLog,
     });
-  } catch (error: any) {
-    console.error('Error creating communication log:', error);
-    return NextResponse.json(
-      { success: false, error: error.message || 'Failed to create communication log' },
-      { status: 500 }
-    );
+  } catch (error) {
+    return handleApiError(error, 'Failed to create communication log');
   }
 }

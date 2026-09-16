@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { requireSession } from '@/lib/services/api-auth';
+import { handleApiError } from '@/lib/services/api-handler';
 
 export const dynamic = 'force-dynamic';
 
@@ -80,12 +81,8 @@ export async function PATCH(
       message: 'Communication log updated successfully',
       communication: updated,
     });
-  } catch (error: any) {
-    console.error('Error updating communication log:', error);
-    return NextResponse.json(
-      { success: false, error: error.message || 'Failed to update communication log' },
-      { status: 500 }
-    );
+  } catch (error) {
+    return handleApiError(error, 'Failed to update communication log');
   }
 }
 
@@ -120,10 +117,7 @@ export async function DELETE(
       success: true,
       message: 'Communication log deleted successfully',
     });
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error.message || 'Failed to delete communication log' },
-      { status: 500 }
-    );
+  } catch (error) {
+    return handleApiError(error, 'Failed to delete communication log');
   }
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireSession } from '@/lib/services/api-auth';
 import { syncAllLeadFallbacks, escalateOverdueReminders } from '@/lib/services/lead-reminder-service';
+import { handleApiError } from '@/lib/services/api-handler';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,11 +31,7 @@ export async function POST(req: Request) {
         escalation: escalateResult,
       },
     });
-  } catch (error: any) {
-    console.error('Error running fallback sync:', error);
-    return NextResponse.json(
-      { success: false, error: error.message || 'Failed to sync fallback reminders' },
-      { status: 500 }
-    );
+  } catch (error) {
+    return handleApiError(error, 'Failed to sync fallback reminders');
   }
 }

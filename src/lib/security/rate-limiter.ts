@@ -26,18 +26,30 @@ function cleanupExpiredRecords(windowMs: number) {
 }
 
 /**
+ * @serverless-limitation
+ * NOTE: This rate limiter uses an in-memory Map. On serverless/multi-instance deployments
+ * (e.g. Vercel), rate limit state is per-instance and resets on cold starts.
+ * For distributed production environments, replace with an external store such as Redis
+ * (@upstash/ratelimit).
+ */
+
+/**
  * Extracts a normalized client IP address from request headers.
+ * Prefers trusted edge headers (x-real-ip, cf-connecting-ip) over x-forwarded-for,
+ * and takes the last hop from x-forwarded-for to mitigate client-controlled spoofing.
  */
 export function getClientIp(req: Request): string {
-  const forwardedFor = req.headers.get('x-forwarded-for');
-  if (forwardedFor) {
-    const firstIp = forwardedFor.split(',')[0].trim();
-    if (firstIp) return firstIp;
-  }
+  // On Vercel / edge proxies, x-real-ip is set by the edge and cannot be spoofed by the client.
   const realIp = req.headers.get('x-real-ip');
   if (realIp) return realIp.trim();
   const cfConnectingIp = req.headers.get('cf-connecting-ip');
   if (cfConnectingIp) return cfConnectingIp.trim();
+  const forwardedFor = req.headers.get('x-forwarded-for');
+  if (forwardedFor) {
+    const parts = forwardedFor.split(',').map((s) => s.trim()).filter(Boolean);
+    const lastIp = parts.length > 0 ? parts[parts.length - 1] : null;
+    if (lastIp) return lastIp;
+  }
   return '127.0.0.1';
 }
 

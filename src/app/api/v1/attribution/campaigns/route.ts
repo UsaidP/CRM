@@ -3,6 +3,7 @@ import { requireSession } from '@/lib/services/api-auth';
 import { prisma } from '@/lib/db/prisma';
 import { generateCampaignDeepLink } from '@/lib/domain/campaign-attribution';
 import { OFFICIAL_BROKER_NUMBERS } from '@/lib/domain/broker-resolver';
+import { handleApiError } from '@/lib/services/api-handler';
 
 export const dynamic = 'force-dynamic';
 
@@ -49,8 +50,8 @@ export async function GET() {
       success: true,
       data: enriched,
     });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error, 'Failed to fetch campaigns');
   }
 }
 
@@ -103,7 +104,7 @@ export async function POST(req: Request) {
       success: true,
       data: campaign,
     }, { status: 201 });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error, 'Failed to create campaign');
   }
 }

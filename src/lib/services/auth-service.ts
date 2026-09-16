@@ -1,3 +1,4 @@
+import { createHash } from 'crypto';
 import { CrmRole } from '@/types/crm';
 export type { CrmRole };
 
@@ -263,4 +264,12 @@ export function generateSecureToken(): string {
   return Array.from(bytes)
     .map((b) => b.toString(16).padStart(2, '0'))
     .join('');
+}
+
+/**
+ * One-way SHA-256 hash for reset and invitation tokens.
+ * The raw token is only sent to the user in a link/email and is never stored in plaintext in the database.
+ */
+export function hashToken(token: string): string {
+  return createHash('sha256').update(token.trim()).digest('hex');
 }

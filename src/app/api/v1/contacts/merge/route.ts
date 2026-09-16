@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { requireSession } from '@/lib/services/api-auth';
 import { prisma } from '@/lib/db/prisma';
 import { mergeContacts } from '@/lib/domain/contact-manager';
+import { handleApiError } from '@/lib/services/api-handler';
 
 export const dynamic = 'force-dynamic';
 
@@ -48,7 +49,7 @@ export async function POST(req: Request) {
         mergedLeadsCount: result.mergedLeadsCount,
       },
     });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error, 'Failed to merge contacts');
   }
 }

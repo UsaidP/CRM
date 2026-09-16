@@ -184,8 +184,42 @@ export function SourceEvidenceDrawer({
   const [isUpdatingStage, setIsUpdatingStage] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [profileName, setProfileName] = useState(lead?.fullName || '');
+  const [profilePhone, setProfilePhone] = useState(lead?.phoneE164 || '');
   const [profileEmail, setProfileEmail] = useState(lead?.email || '');
   const [isSavingProfile, setIsSavingProfile] = useState(false);
+
+  // Group and sort assignable users by role hierarchy
+  const getRoleGroup = (role: string) => {
+    switch (role) {
+      case 'SUPER_ADMIN':
+      case 'ADMIN':
+        return 'Super Admins & Admins';
+      case 'MANAGER':
+        return 'Team Managers';
+      case 'AGENT':
+        return 'Property Advisors / Agents';
+      case 'TELECALLER':
+        return 'Telecallers';
+      default:
+        return 'Team Members';
+    }
+  };
+
+  const sortedAssignableUsers = useMemo(() => {
+    const roleWeight: Record<string, number> = {
+      SUPER_ADMIN: 4,
+      ADMIN: 3,
+      MANAGER: 2,
+      AGENT: 1,
+      TELECALLER: 0,
+    };
+    return [...assignableUsers].sort((a, b) => {
+      const weightA = roleWeight[a.role] ?? -1;
+      const weightB = roleWeight[b.role] ?? -1;
+      if (weightB !== weightA) return weightB - weightA;
+      return a.fullName.localeCompare(b.fullName);
+    });
+  }, [assignableUsers]);
 
   // Scratchpad Notes
   const [quickNotes, setQuickNotes] = useState(lead?.notes || '');
@@ -256,6 +290,7 @@ export function SourceEvidenceDrawer({
     setCommunications(lead.communications || []);
     setCurrentStage(lead.currentStage || 'new_uncontacted');
     setProfileName(lead.fullName || '');
+    setProfilePhone(lead.phoneE164 || '');
     setProfileEmail(lead.email || '');
     setQuickNotes(lead.notes || '');
     setLocalPortals(lead.portals || []);
@@ -387,6 +422,7 @@ export function SourceEvidenceDrawer({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           fullName: profileName.trim() || undefined,
+          phone: profilePhone.trim() || undefined,
           email: profileEmail.trim() || undefined,
         }),
       });
@@ -665,13 +701,20 @@ export function SourceEvidenceDrawer({
               <div className="min-w-0">
                 <div className="flex items-center gap-2.5 flex-wrap">
                   {isEditingProfile ? (
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <input
                         type="text"
                         value={profileName}
                         onChange={(e) => setProfileName(e.target.value)}
                         placeholder="Prospect full name"
                         className="bg-surface-inset border border-accent rounded-lg px-2.5 py-1 text-sm font-bold text-content focus:outline-none"
+                      />
+                      <input
+                        type="text"
+                        value={profilePhone}
+                        onChange={(e) => setProfilePhone(e.target.value)}
+                        placeholder="Phone (10 digits)"
+                        className="bg-surface-inset border border-border rounded-lg px-2.5 py-1 text-xs font-mono text-content focus:outline-none"
                       />
                       <input
                         type="email"
@@ -684,16 +727,19 @@ export function SourceEvidenceDrawer({
                         type="button"
                         onClick={handleSaveProfile}
                         disabled={isSavingProfile}
-                        className="p-1.5 rounded-lg bg-accent text-white hover:bg-accent-hover text-xs font-bold"
+                        className="p-1.5 rounded-lg bg-accent text-white hover:bg-accent-hover text-xs font-bold flex items-center gap-1 cursor-pointer"
+                        title="Save Changes"
                       >
                         <Check className="w-3.5 h-3.5" />
+                        <span className="text-[11px]">Save</span>
                       </button>
                       <button
                         type="button"
                         onClick={() => setIsEditingProfile(false)}
-                        className="p-1.5 rounded-lg bg-surface-subtle text-content-muted hover:text-content text-xs"
+                        className="p-1.5 rounded-lg bg-surface-subtle text-content-muted hover:text-content text-xs flex items-center gap-1 cursor-pointer"
                       >
                         <X className="w-3.5 h-3.5" />
+                        <span className="text-[11px]">Cancel</span>
                       </button>
                     </div>
                   ) : (
@@ -900,7 +946,7 @@ export function SourceEvidenceDrawer({
                         </span>
                       </div>
 
-                      {canReassignLeads && assignableUsers && assignableUsers.length > 0 ? (
+                      {canReassignLeads && sortedAssignableUsers.length > 0 ? (
                         <CustomSelect
                           size="xs"
                           value={lead.assignedBrokerId || 'UNASSIGN'}
@@ -911,13 +957,13 @@ export function SourceEvidenceDrawer({
                             }
                           }}
                           options={[
-                            { value: 'UNASSIGN', label: 'Unassigned', shortLabel: 'Unassigned' },
-                            ...assignableUsers.map((u) => ({
+                            { value: 'UNASSIGN', label: 'Unassigned (Pool)', shortLabel: 'Unassigned' },
+                            ...sortedAssignableUsers.map((u) => ({
                               value: u.id,
                               label: `${u.fullName} (${u.role})`,
                               shortLabel: u.fullName,
                               badge: u.role,
-                              group: u.role === 'TELECALLER' ? 'Telecallers' : 'Brokers & Admins',
+                              group: getRoleGroup(u.role),
                             })),
                           ]}
                           className="w-full"

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requirePermission, orgScope } from '@/lib/services/api-auth';
 import { prisma } from '@/lib/db/prisma';
+import { handleApiError } from '@/lib/services/api-handler';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,10 +34,7 @@ export async function POST(req: Request) {
       message: `Successfully deleted ${deleteResult.count} lead(s).`,
       deletedCount: deleteResult.count,
     });
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error.message || 'Failed to delete leads.' },
-      { status: 500 }
-    );
+  } catch (error) {
+    return handleApiError(error, 'Failed to delete leads');
   }
 }

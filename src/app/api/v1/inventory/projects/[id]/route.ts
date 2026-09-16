@@ -5,6 +5,7 @@ import { updateProjectSchema } from '@/lib/validators/inventory-schemas';
 import { validateReraNumber, checkReraCompliance } from '@/lib/domain/verification-engine';
 import { parseInventoryContent } from '@/lib/inventory-media';
 import { parseSafeDate } from '@/lib/date-utils';
+import { handleApiError } from '@/lib/services/api-handler';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,8 +34,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
         ...parseInventoryContent(project),
       },
     });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error, 'Failed to fetch project');
   }
 }
 
@@ -126,11 +127,8 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       message: 'Developer project updated successfully',
       data: { ...project, ...parseInventoryContent(project) },
     });
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error.errors || error.message || 'Failed to update project' },
-      { status: 400 },
-    );
+  } catch (error) {
+    return handleApiError(error, 'Failed to update project');
   }
 }
 
@@ -157,7 +155,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
       success: true,
       message: `Project "${existing.projectName}" and its associated units were deleted successfully`,
     });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error, 'Failed to delete project');
   }
 }

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { normalizeIndianPhone } from '@/lib/domain/phone-normalizer';
 import { ensureLeadFallbackReminder } from '@/lib/services/lead-reminder-service';
+import { handleApiError } from '@/lib/services/api-handler';
 
 export const dynamic = 'force-dynamic';
 
@@ -118,7 +119,7 @@ export async function POST(req: Request) {
       message: 'Telephony call logged successfully',
       data: lead,
     }, { status: 201 });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error, 'Failed to process telephony webhook');
   }
 }

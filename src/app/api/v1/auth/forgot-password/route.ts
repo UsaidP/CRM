@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
-import { generateSecureToken } from '@/lib/services/auth-service';
+import { generateSecureToken, hashToken } from '@/lib/services/auth-service';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/security/rate-limiter';
 
 export const dynamic = 'force-dynamic';
@@ -45,7 +45,7 @@ export async function POST(req: Request) {
     await prisma.user.update({
       where: { id: user.id },
       data: {
-        resetToken: token,
+        resetToken: hashToken(token),
         resetTokenExpiresAt: expiresAt,
       },
     });

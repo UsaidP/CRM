@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { uploadMediaAsset, type MediaCategory } from '@/lib/services/cloud-media-service';
 import { prisma } from '@/lib/db/prisma';
 import { requireSession, orgScope } from '@/lib/services/api-auth';
+import { handleApiError } from '@/lib/services/api-handler';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -172,11 +173,7 @@ export async function POST(req: NextRequest) {
       asset,
       message: `File uploaded successfully to ${asset.storageProvider} (${finalCategory})`,
     });
-  } catch (error: any) {
-    console.error('[MEDIA_UPLOAD_API_ERROR]', error);
-    return NextResponse.json(
-      { error: error.message || 'Failed to upload media asset.' },
-      { status: 500 }
-    );
+  } catch (error) {
+    return handleApiError(error, 'Failed to upload media asset');
   }
 }

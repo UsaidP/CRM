@@ -48,6 +48,85 @@ describe('API Integration: Client Portals (/api/v1/portals/*)', () => {
       const body = await res.json();
       expect(body.success).toBe(false);
     });
+
+    it('returns portal with creator phone for client card, but strips lead phoneE164', async () => {
+      const ts = Date.now();
+      const testLead = await prisma.lead.create({
+        data: {
+          organizationId: TEST_ORG_ID,
+          fullName: `Portal Public Lead ${ts}`,
+          phoneE164: `+9197200${String(ts).slice(-5)}`,
+          sourceCode: 'ORGANIC_PORTAL_TEST',
+          leadSource: 'direct_call',
+          assignedBrokerId: PRESET_TEST_USERS.admin.userId,
+        },
+      });
+      testCleanup.register('lead', testLead.id);
+
+      const token = `token-public-view-${ts}`;
+      const testPortal = await prisma.clientPortal.create({
+        data: {
+          organizationId: TEST_ORG_ID,
+          leadId: testLead.id,
+          token,
+          title: `Public Portal ${ts}`,
+          createdById: PRESET_TEST_USERS.admin.userId,
+        },
+      });
+      testCleanup.register('portal', testPortal.id);
+
+      const req = new Request(`http://localhost:3000/api/v1/portals/${token}`);
+      const res = await getPublicPortalHandler(req, {
+        params: Promise.resolve({ token }),
+      });
+      expect(res.status).toBe(200);
+
+      const body = await res.json();
+      expect(body.success).toBe(true);
+      expect(body.data.token).toBe(token);
+      // Lead phone must be stripped
+      expect(body.data.lead.phoneE164).toBeUndefined();
+      // Creator info must be exposed for contact card
+      expect(body.data.createdBy).toBeDefined();
+      expect(body.data.createdBy.fullName).toBeDefined();
+    });
+
+    it('rejects expired portals with 410 Gone', async () => {
+      const ts = Date.now();
+      const testLead = await prisma.lead.create({
+        data: {
+          organizationId: TEST_ORG_ID,
+          fullName: `Expired Lead ${ts}`,
+          phoneE164: `+9197300${String(ts).slice(-5)}`,
+          sourceCode: 'ORGANIC_PORTAL_TEST',
+          leadSource: 'direct_call',
+        },
+      });
+      testCleanup.register('lead', testLead.id);
+
+      const token = `token-expired-${ts}`;
+      const testPortal = await prisma.clientPortal.create({
+        data: {
+          organizationId: TEST_ORG_ID,
+          leadId: testLead.id,
+          token,
+          title: `Expired Portal ${ts}`,
+          createdById: PRESET_TEST_USERS.admin.userId,
+          expiresAt: new Date(Date.now() - 60000), // Expired 1 minute ago
+        },
+      });
+      testCleanup.register('portal', testPortal.id);
+
+      const req = new Request(`http://localhost:3000/api/v1/portals/${token}`);
+      const res = await getPublicPortalHandler(req, {
+        params: Promise.resolve({ token }),
+      });
+      expect(res.status).toBe(404);
+
+      const body = await res.json();
+      expect(body.success).toBe(false);
+      expect(body.error).toContain('expired');
+    });
   });
 
   describe('DELETE /api/v1/portals', () => {

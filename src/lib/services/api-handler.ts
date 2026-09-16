@@ -28,6 +28,14 @@ export function handleApiError(
 ): NextResponse {
   console.error('[API Handler]', error);
 
+  // 0. SyntaxError (e.g. malformed JSON in request body)
+  if (error instanceof SyntaxError || (error as any)?.name === 'SyntaxError') {
+    return NextResponse.json(
+      { success: false, error: 'Request body must be valid JSON' },
+      { status: 400 }
+    );
+  }
+
   // 1. Zod Validation Errors (400 Bad Request)
   if (error instanceof ZodError || (error && Array.isArray((error as any).issues))) {
     const issues = (error as any).issues || (error as any).errors || [];
@@ -116,21 +124,9 @@ export function handleApiError(
   // 6. Unhandled 500 Server Errors
   const isProduction = process.env.NODE_ENV === 'production';
   const rawMsg = (error as Error)?.message || '';
-  const isSafeMessage =
-    rawMsg.length > 0 &&
-    rawMsg.length < 200 &&
-    !rawMsg.includes('node_modules') &&
-    !rawMsg.includes('prisma') &&
-    !rawMsg.includes('Prisma') &&
-    !rawMsg.includes('SELECT') &&
-    !rawMsg.includes('INSERT') &&
-    !rawMsg.includes('UPDATE') &&
-    !rawMsg.includes('at ') &&
-    !rawMsg.includes('ECONN');
-
-  const errorMessage = isProduction
-    ? (isSafeMessage ? rawMsg : fallbackMessage)
-    : rawMsg || fallbackMessage;
+  // In production, NEVER expose raw error messages for unrecognized 500s.
+  // Zod/ApiError/Prisma-known errors are already handled above with safe messages.
+  const errorMessage = isProduction ? fallbackMessage : (rawMsg || fallbackMessage);
 
   return NextResponse.json(
     {

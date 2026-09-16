@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requirePermissionWithScope, scopedLeadFilter } from '@/lib/services/api-auth';
 import { prisma } from '@/lib/db/prisma';
+import { handleApiError } from '@/lib/services/api-handler';
 
 export const dynamic = 'force-dynamic';
 
@@ -73,7 +74,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       message: 'Buyer requirements saved successfully',
       data: requirement,
     });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error, 'Failed to save buyer requirements');
   }
 }

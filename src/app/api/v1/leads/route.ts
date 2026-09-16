@@ -8,6 +8,7 @@ import {
 } from '@/lib/domain/lead-creation';
 import { evaluate24HourMessagingWindow } from '@/lib/domain/contact-manager';
 import { requireSession, requirePermissionWithScope, scopedLeadFilter, orgScope } from '@/lib/services/api-auth';
+import { handleApiError } from '@/lib/services/api-handler';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -19,6 +20,7 @@ export async function GET(req: Request) {
     const { session, scope } = auth;
 
     const { searchParams } = new URL(req.url);
+    const view = searchParams.get('view');
     const leadSource = searchParams.get('leadSource');
     const sourceConfidence = searchParams.get('sourceConfidence');
     const brokerId = searchParams.get('brokerId');
@@ -34,6 +36,14 @@ export async function GET(req: Request) {
     // Scope-aware filter: respects GLOBAL, ORGANIZATION, TEAM, OWN_AND_ASSIGNED, OWN
     const baseScopeWhere = await scopedLeadFilter(session, scope);
     const where: Record<string, unknown> = { ...baseScopeWhere };
+
+    if (view === 'mine') {
+      where.OR = [
+        { assignedBrokerId: session.userId },
+        { assignments: { some: { userId: session.userId, unassignedAt: null } } },
+      ];
+    }
+
     if (leadSource && leadSource !== 'ALL') {
       where.leadSource = leadSource;
     }
@@ -122,11 +132,8 @@ export async function GET(req: Request) {
       totalPages: Math.ceil(total / limit),
       data: enriched,
     });
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error.message || 'Failed to fetch leads' },
-      { status: 500 }
-    );
+  } catch (error) {
+    return handleApiError(error, 'Failed to fetch leads');
   }
 }
 
@@ -194,16 +201,6 @@ export async function POST(req: Request) {
         { status: error.status }
       );
     }
-    // Malformed / non-JSON request body is a client error, not a server fault
-    if (error instanceof SyntaxError) {
-      return NextResponse.json(
-        { success: false, error: 'Request body must be valid JSON' },
-        { status: 400 }
-      );
-    }
-    return NextResponse.json(
-      { success: false, error: error.message || 'Failed to create lead' },
-      { status: 500 }
-    );
+    return handleApiError(error, 'Failed to create lead');
   }
 }

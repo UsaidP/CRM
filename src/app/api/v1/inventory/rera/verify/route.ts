@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { validateReraNumber } from '@/lib/domain/verification-engine';
 import { requireSession } from '@/lib/services/api-auth';
+import { handleApiError } from '@/lib/services/api-handler';
 
 export const dynamic = 'force-dynamic';
 
@@ -81,11 +82,8 @@ export async function GET(req: Request) {
 
     const result = await performVerification(reraNumber, excludeProjectId);
     return NextResponse.json(result);
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error.message || 'RERA verification could not be completed.' },
-      { status: 500 }
-    );
+  } catch (error) {
+    return handleApiError(error, 'RERA verification could not be completed');
   }
 }
 
@@ -111,10 +109,7 @@ export async function POST(req: Request) {
 
     const result = await performVerification(reraNumber, excludeProjectId);
     return NextResponse.json(result);
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error.message || 'RERA verification could not be completed.' },
-      { status: 500 }
-    );
+  } catch (error) {
+    return handleApiError(error, 'RERA verification could not be completed');
   }
 }

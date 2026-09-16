@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requireSession } from '@/lib/services/api-auth';
 import { parseLeadNotesWithAI } from '@/lib/services/gemini-service';
+import { handleApiError } from '@/lib/services/api-handler';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,11 +27,7 @@ export async function POST(req: Request) {
       data: structuredRequirements,
       notesLength: notes.length,
     });
-  } catch (error: any) {
-    console.error('Error in parse-notes API:', error);
-    return NextResponse.json(
-      { success: false, error: error.message || 'Failed to parse lead notes.' },
-      { status: 500 }
-    );
+  } catch (error) {
+    return handleApiError(error, 'Failed to parse lead notes');
   }
 }

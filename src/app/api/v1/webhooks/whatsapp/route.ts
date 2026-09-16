@@ -6,6 +6,7 @@ import { resolveBrokerByInboundIdentifier, OFFICIAL_BROKER_NUMBERS } from '@/lib
 import { analyzeInboundAttribution } from '@/lib/domain/campaign-attribution';
 import { findOrCreateContact } from '@/lib/domain/contact-manager';
 import { ensureLeadFallbackReminder } from '@/lib/services/lead-reminder-service';
+import { handleApiError } from '@/lib/services/api-handler';
 
 export const dynamic = 'force-dynamic';
 
@@ -370,10 +371,7 @@ export async function POST(req: Request) {
         attribution,
       },
     }, { status: 201 });
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error.message || 'Meta WhatsApp Webhook processing failed' },
-      { status: 500 }
-    );
+  } catch (error) {
+    return handleApiError(error, 'Meta WhatsApp webhook processing failed');
   }
 }

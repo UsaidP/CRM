@@ -5,6 +5,7 @@ import { resolveBrokerByInboundIdentifier, OFFICIAL_BROKER_NUMBERS } from '@/lib
 import { analyzeInboundAttribution } from '@/lib/domain/campaign-attribution';
 import { findOrCreateContact } from '@/lib/domain/contact-manager';
 import { requireSession } from '@/lib/services/api-auth';
+import { handleApiError } from '@/lib/services/api-handler';
 
 export const dynamic = 'force-dynamic';
 
@@ -205,10 +206,7 @@ export async function POST(req: Request) {
         sourceConfidence,
       },
     }, { status: 201 });
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error.message || 'Call event logging failed' },
-      { status: 500 }
-    );
+  } catch (error) {
+    return handleApiError(error, 'Call event logging failed');
   }
 }

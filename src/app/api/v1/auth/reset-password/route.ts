@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
-import { hashPassword } from '@/lib/services/auth-service';
+import { hashPassword, hashToken } from '@/lib/services/auth-service';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/security/rate-limiter';
 
 export const dynamic = 'force-dynamic';
@@ -43,7 +43,7 @@ export async function POST(req: Request) {
 
     const user = await prisma.user.findFirst({
       where: {
-        resetToken: token,
+        resetToken: hashToken(token),
         resetTokenExpiresAt: {
           gt: new Date(),
         },

@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
 import { requireSession, orgScope } from '@/lib/services/api-auth';
+import { getUserVisitWhere, type UserScopeView } from '@/lib/services/user-scope';
 import { prisma } from '@/lib/db/prisma';
 import { buildWhatsAppSiteVisitItinerary, ItineraryStopInput } from '@/lib/domain/visit-dispatcher';
+import { handleApiError } from '@/lib/services/api-handler';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,11 +13,12 @@ export async function GET(req: Request) {
     if (!auth.ok) return auth.response;
     const { searchParams } = new URL(req.url);
     const status = searchParams.get('status');
+    const viewParam = (searchParams.get('view') as UserScopeView) || 'mine';
     const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '50', 10)));
     const skip = (page - 1) * limit;
 
-    const where: any = orgScope(auth.session);
+    const where: any = getUserVisitWhere(auth.session, viewParam);
     if (status && status !== 'ALL') {
       where.status = status;
     }
@@ -56,8 +59,8 @@ export async function GET(req: Request) {
       totalPages: Math.ceil(total / limit),
       data: visits,
     });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error, 'Failed to fetch site visits');
   }
 }
 
@@ -180,7 +183,7 @@ export async function POST(req: Request) {
         waItineraryText,
       },
     }, { status: 201 });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error, 'Failed to schedule site visit');
   }
 }

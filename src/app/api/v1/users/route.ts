@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { getUserEffectivePermissions } from '@/lib/domain/rbac-engine';
 import { requireRole, orgScope } from '@/lib/services/api-auth';
+import { handleApiError } from '@/lib/services/api-handler';
 
 export const dynamic = 'force-dynamic';
 
@@ -37,20 +38,21 @@ export async function GET(req: Request) {
       },
     });
 
-    const enrichedUsers = users.map((u) => ({
-      ...u,
-      effectivePermissions: getUserEffectivePermissions(u),
-    }));
+    const enrichedUsers = users.map((u) => {
+      const { passwordHash, resetToken, ...safeUser } = u;
+      return {
+        ...safeUser,
+        inviteToken: safeUser.inviteToken ? 'pending' : null,
+        effectivePermissions: getUserEffectivePermissions(u),
+      };
+    });
 
     return NextResponse.json({
       success: true,
       users: enrichedUsers,
     });
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error?.message || 'Failed to fetch users' },
-      { status: 500 }
-    );
+  } catch (error) {
+    return handleApiError(error, 'Failed to fetch users');
   }
 }
 
@@ -142,7 +144,7 @@ export async function POST(req: Request) {
     if (!org) {
       return NextResponse.json({ success: false, error: 'Organization not found' }, { status: 404 });
     }
-    const { generateSecureToken } = await import('@/lib/services/auth-service');
+    const { generateSecureToken, hashToken } = await import('@/lib/services/auth-service');
     const inviteToken = generateSecureToken();
     const inviteTokenExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
@@ -156,7 +158,7 @@ export async function POST(req: Request) {
         teamId: validatedTeamId,
         customPermissionsJson: customPermissions ? JSON.stringify(customPermissions) : '[]',
         isActive: true,
-        inviteToken,
+        inviteToken: hashToken(inviteToken),
         inviteTokenExpiresAt,
       },
       include: {
@@ -166,10 +168,13 @@ export async function POST(req: Request) {
 
     const inviteUrl = `/set-password?token=${inviteToken}`;
 
+    const { passwordHash, resetToken, ...safeNewUser } = newUser;
+
     return NextResponse.json({
       success: true,
       user: {
-        ...newUser,
+        ...safeNewUser,
+        inviteToken: 'pending',
         effectivePermissions: getUserEffectivePermissions(newUser),
       },
       inviteToken,
@@ -182,9 +187,6 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
-    return NextResponse.json(
-      { success: false, error: error?.message || 'Failed to create user' },
-      { status: 500 }
-    );
+    return handleApiError(error, 'Failed to create user');
   }
 }

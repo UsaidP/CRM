@@ -7,6 +7,7 @@ import { calculateAllInCost } from '@/lib/domain/cost-calculator';
 import { parseInventoryContent } from '@/lib/inventory-media';
 import { parseSafeDate } from '@/lib/date-utils';
 import { calculateUnitAreaMatrix, formatConcentricHighlights } from '@/lib/domain/unit-differentiation';
+import { handleApiError } from '@/lib/services/api-handler';
 
 export const dynamic = 'force-dynamic';
 
@@ -46,8 +47,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
         freshness,
       },
     });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error, 'Failed to fetch property unit');
   }
 }
 
@@ -220,15 +221,8 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       message: 'Property unit updated successfully',
       data: { ...unit, ...parseInventoryContent(unit) },
     });
-  } catch (error: any) {
-    console.error('[INVENTORY_UNIT_UPDATE_ERROR]', error);
-    const errorMessage = error?.issues
-      ? error.issues.map((i: any) => `${i.path.join('.') || 'field'}: ${i.message}`).join('; ')
-      : error?.message || 'Failed to update property unit';
-    return NextResponse.json(
-      { success: false, error: errorMessage },
-      { status: 400 },
-    );
+  } catch (error) {
+    return handleApiError(error, 'Failed to update property unit');
   }
 }
 
@@ -247,7 +241,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
       where: { id },
     });
     return NextResponse.json({ success: true, message: 'Property unit deleted successfully' });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error, 'Failed to delete property unit');
   }
 }

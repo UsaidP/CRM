@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
-import { hashPassword } from '@/lib/services/auth-service';
+import { hashPassword, hashToken } from '@/lib/services/auth-service';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,7 +25,7 @@ export async function POST(req: Request) {
 
     const user = await prisma.user.findFirst({
       where: {
-        inviteToken: token,
+        inviteToken: hashToken(token),
         OR: [
           { inviteTokenExpiresAt: null },
           { inviteTokenExpiresAt: { gt: new Date() } },

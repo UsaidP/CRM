@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireSession, orgScope, scopedLeadFilter } from '@/lib/services/api-auth';
 import { getPermissionScope } from '@/lib/domain/rbac-engine';
 import { prisma } from '@/lib/db/prisma';
+import { handleApiError } from '@/lib/services/api-handler';
 
 export const dynamic = 'force-dynamic';
 
@@ -88,12 +89,8 @@ export async function GET(req: Request) {
       count: reminders.length,
       data: reminders,
     });
-  } catch (error: any) {
-    console.error('Error fetching reminders:', error);
-    return NextResponse.json(
-      { success: false, error: error.message || 'Failed to fetch reminders' },
-      { status: 500 }
-    );
+  } catch (error) {
+    return handleApiError(error, 'Failed to fetch reminders');
   }
 }
 
@@ -169,11 +166,7 @@ export async function POST(req: Request) {
       },
       { status: 201 }
     );
-  } catch (error: any) {
-    console.error('Error creating reminder:', error);
-    return NextResponse.json(
-      { success: false, error: error.message || 'Failed to create reminder' },
-      { status: 500 }
-    );
+  } catch (error) {
+    return handleApiError(error, 'Failed to create reminder');
   }
 }

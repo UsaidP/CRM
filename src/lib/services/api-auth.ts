@@ -69,17 +69,37 @@ export async function requireSession(req: Request): Promise<ApiAuthResult> {
     return { ok: false, response: unauthorized() };
   }
 
-  // Stale-session guard: if the session's organization no longer exists
-  // (e.g. DB was re-seeded), the session cannot be trusted — force re-login.
-  const org = await prisma.organization.findUnique({
-    where: { id: session.organizationId },
-  });
+  // Stale-session & deactivation guard:
+  // 1. If organization was deleted/re-seeded, reject stale session.
+  // 2. If user account was deactivated or removed, reject immediately without waiting for 7-day JWT expiry.
+  const [org, user] = await Promise.all([
+    prisma.organization.findUnique({
+      where: { id: session.organizationId },
+    }),
+    prisma.user.findUnique({
+      where: { id: session.userId },
+      select: { isActive: true, role: true },
+    }),
+  ]);
 
   if (!org) {
     return {
       ok: false,
       response: unauthorized('Session is stale — please sign in again'),
     };
+  }
+
+  if (!user || !user.isActive) {
+    return {
+      ok: false,
+      response: unauthorized('Your account has been deactivated — please contact your administrator'),
+    };
+  }
+
+  // If the user's role was changed in DB after JWT issuance, update the in-memory session object
+  // so downstream permission/role checks respect the current DB role.
+  if (user.role && user.role !== session.role) {
+    session.role = user.role as CrmRole;
   }
 
   // Bind the tenant for the remainder of this request's async context so the

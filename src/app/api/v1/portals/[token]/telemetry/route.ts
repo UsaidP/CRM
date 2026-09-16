@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { evaluateEngagementTier } from '@/lib/domain/portal-generator';
 import { triggerTelemetryIntentReminder } from '@/lib/services/lead-reminder-service';
+import { handleApiError } from '@/lib/services/api-handler';
 
 export const dynamic = 'force-dynamic';
 
@@ -65,8 +66,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ token: 
     });
 
     return NextResponse.json({ success: true, loggedId: telemetryLog.id }, { status: 201 });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error, 'Failed to log telemetry event');
   }
 }
 
@@ -81,7 +82,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ token: s
           orderBy: { createdAt: 'desc' },
         },
         lead: {
-          select: { fullName: true, phoneE164: true },
+          select: { fullName: true },
         },
       },
     });
@@ -104,7 +105,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ token: s
         recentLogs: portal.telemetryLogs.slice(0, 50),
       },
     });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error, 'Failed to fetch telemetry data');
   }
 }

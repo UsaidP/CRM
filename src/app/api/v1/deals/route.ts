@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
 import { requireSession, requirePermissionWithScope, orgScope } from '@/lib/services/api-auth';
+import { getUserDealWhere, type UserScopeView } from '@/lib/services/user-scope';
 import { prisma } from '@/lib/db/prisma';
 import { calculateDealCommission } from '@/lib/domain/commission-calculator';
 import { createDealSchema } from '@/lib/validators/deal-schemas';
+import { handleApiError } from '@/lib/services/api-handler';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,12 +16,13 @@ export async function GET(req: Request) {
 
     const { searchParams } = new URL(req.url);
     const status = searchParams.get('status');
+    const viewParam = (searchParams.get('view') as UserScopeView) || 'mine';
     const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '50', 10)));
     const skip = (page - 1) * limit;
 
-    // Multi-tenant: restrict to caller's organization
-    const where: any = orgScope(session);
+    // Multi-tenant & user-scoped: restrict deals per person (or firm if admin requested)
+    const where: any = getUserDealWhere(session, viewParam);
     if (status && status !== 'ALL') {
       where.dealStatus = status;
     }
@@ -67,8 +70,10 @@ export async function GET(req: Request) {
       }),
     ]);
 
+    // User-scoped summary: agents only see their own brokerage metrics,
+    // while admins requesting view=firm receive firm-wide aggregates.
     const allDeals = await prisma.dealTransaction.findMany({
-      where: orgScope(session),
+      where,
       select: { grossBrokerageAmount: true, dealStatus: true },
     });
 
@@ -91,8 +96,8 @@ export async function GET(req: Request) {
       },
       data: deals,
     });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error, 'Failed to fetch deals');
   }
 }
 
@@ -199,7 +204,7 @@ export async function POST(req: Request) {
       message: 'Deal recorded and commission ledger calculated successfully',
       data: deal,
     }, { status: 201 });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error, 'Failed to record deal');
   }
 }

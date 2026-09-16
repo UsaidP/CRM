@@ -6,11 +6,24 @@ import { rankFirmLeadsForNextConnect } from '@/lib/domain/prioritization-engine'
 import { DashboardCockpitClient } from '@/components/dashboard/DashboardCockpitClient';
 import { getServerSession } from '@/lib/services/server-auth';
 import { runWithTenant } from '@/lib/db/tenant-context';
+import {
+  getUserLeadWhere,
+  getUserVisitWhere,
+  getUserDealWhere,
+  getUserPortalWhere,
+  getUserReminderWhere,
+  type UserScopeView,
+} from '@/lib/services/user-scope';
 
 export const dynamic = 'force-dynamic';
 
-export default async function DashboardPage() {
+export default async function DashboardPage(props: {
+  searchParams?: Promise<{ view?: string }>;
+}) {
+  const searchParams = await props.searchParams;
   const session = await getServerSession();
+  const isAdmin = session.role === 'ADMIN' || session.role === 'SUPER_ADMIN' || session.isSuperAdmin;
+  const viewMode: UserScopeView = isAdmin && searchParams?.view === 'firm' ? 'firm' : 'mine';
 
   let projectCount = 0;
   let unitCount = 0;
@@ -30,6 +43,12 @@ export default async function DashboardPage() {
   let topConnectNext: any = null;
   let overdueRemindersCount = 0;
 
+  const leadWhere = getUserLeadWhere(session, viewMode);
+  const dealWhere = getUserDealWhere(session, viewMode);
+  const visitWhere = getUserVisitWhere(session, viewMode);
+  const portalWhere = getUserPortalWhere(session, viewMode);
+  const reminderWhere = getUserReminderWhere(session, viewMode);
+
   try {
     const [
       pCount,
@@ -47,14 +66,16 @@ export default async function DashboardPage() {
     ] = await withDbRetry(async () => {
       return runWithTenant(session.organizationId, async () => {
         return Promise.all([
+          // Properties & Units remain shared firm-wide for all brokers
           prisma.developerProject.count({ where: { organizationId: session.organizationId } }),
           prisma.propertyUnit.count({ where: { project: { organizationId: session.organizationId } } }),
-          prisma.lead.count({ where: { organizationId: session.organizationId } }),
+          // Leads, Deals, Portals, Visits, Reminders are scoped per person
+          prisma.lead.count({ where: leadWhere }),
           prisma.inboundCampaign.count({ where: { organizationId: session.organizationId } }),
-          prisma.clientPortal.count({ where: { organizationId: session.organizationId } }),
-          prisma.dealTransaction.count({ where: { organizationId: session.organizationId } }),
+          prisma.clientPortal.count({ where: portalWhere }),
+          prisma.dealTransaction.count({ where: dealWhere }),
           prisma.dealTransaction.findMany({
-            where: { organizationId: session.organizationId },
+            where: dealWhere,
             include: {
               lead: true,
               propertyUnit: { include: { project: true } },
@@ -62,13 +83,14 @@ export default async function DashboardPage() {
             },
             orderBy: { bookingDate: 'desc' },
           }),
+          // Units inventory is shared firm-wide for all brokers
           prisma.propertyUnit.findMany({
             where: { project: { organizationId: session.organizationId } },
             include: { project: true, verifiedBy: true },
             orderBy: { updatedAt: 'desc' },
           }),
           prisma.lead.findMany({
-            where: { organizationId: session.organizationId },
+            where: leadWhere,
             include: {
               campaign: true,
               assignedBroker: true,
@@ -86,17 +108,17 @@ export default async function DashboardPage() {
             orderBy: { createdAt: 'desc' },
           }),
           prisma.clientPortal.findMany({
-            where: { organizationId: session.organizationId },
+            where: portalWhere,
             include: { lead: true, telemetryLogs: true, portalUnits: { include: { propertyUnit: { include: { project: true } } } } },
             orderBy: { updatedAt: 'desc' },
           }),
           prisma.siteVisit.findMany({
-            where: { organizationId: session.organizationId },
+            where: visitWhere,
             include: { lead: true, assignedBroker: true },
             orderBy: { scheduledDate: 'asc' },
           }),
           prisma.leadReminder.findMany({
-            where: { organizationId: session.organizationId, status: { in: ['PENDING', 'SNOOZED'] } },
+            where: reminderWhere,
             include: {
               lead: true,
             },
@@ -175,6 +197,9 @@ export default async function DashboardPage() {
         units,
         leads,
         siteVisits,
+        viewMode,
+        canToggleView: isAdmin,
+        currentUserName: session.fullName,
       }}
     />
   );

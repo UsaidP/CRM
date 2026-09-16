@@ -3,6 +3,7 @@ import { requireSession } from '@/lib/services/api-auth';
 import { prisma } from '@/lib/db/prisma';
 import { downloadAndSaveMahaReraCertificate, searchMahaReraProject } from '@/lib/services/maharera-service';
 import { validateReraNumber } from '@/lib/domain/verification-engine';
+import { handleApiError } from '@/lib/services/api-handler';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -76,11 +77,7 @@ export async function POST(req: Request) {
         ? `Official MahaRERA Certificate for ${projectRecord.projectName} (${projectRecord.reraNumber}) downloaded authentically from portal.`
         : certError || 'Authentic MahaRERA certificate could not be downloaded at this time.',
     });
-  } catch (error: any) {
-    console.error('Fetch RERA Certificate error:', error);
-    return NextResponse.json(
-      { success: false, error: error.message || 'Failed to fetch and process MahaRERA certificate.' },
-      { status: 500 }
-    );
+  } catch (error) {
+    return handleApiError(error, 'Failed to fetch and process MahaRERA certificate');
   }
 }

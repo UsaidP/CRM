@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireSession } from '@/lib/services/api-auth';
 import fs from 'fs';
 import path from 'path';
+import { handleApiError } from '@/lib/services/api-handler';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -114,8 +115,7 @@ export async function GET(req: NextRequest) {
     }
 
     return NextResponse.json({ success: false, error: 'Invalid URL format' }, { status: 400 });
-  } catch (error: any) {
-    console.error('Certificate view proxy error:', error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error, 'Failed to fetch certificate');
   }
 }

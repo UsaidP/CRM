@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { requireSession, scopedLeadFilter } from '@/lib/services/api-auth';
 import { getPermissionScope } from '@/lib/domain/rbac-engine';
 import { prisma } from '@/lib/db/prisma';
+import { handleApiError } from '@/lib/services/api-handler';
 
 export const dynamic = 'force-dynamic';
 
@@ -264,10 +265,7 @@ export async function GET(req: Request) {
         deals,
       },
     });
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error.message || 'Search query failed' },
-      { status: 500 }
-    );
+  } catch (error) {
+    return handleApiError(error, 'Search query failed');
   }
 }

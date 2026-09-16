@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { requireRole, orgScope } from '@/lib/services/api-auth';
+import { handleApiError } from '@/lib/services/api-handler';
 
 export const dynamic = 'force-dynamic';
 
@@ -139,11 +140,8 @@ export async function DELETE(
       success: true,
       message: `Team member ${target.fullName} has been permanently deleted.`,
     });
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error?.message || 'Failed to delete user' },
-      { status: 500 }
-    );
+  } catch (error) {
+    return handleApiError(error, 'Failed to delete user');
   }
 }
 
@@ -226,10 +224,7 @@ export async function PATCH(
         ? `${updated.fullName}'s access has been restored.`
         : `${updated.fullName}'s access has been deactivated. Their history is preserved — restore access any time.`,
     });
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error?.message || 'Failed to update user status' },
-      { status: 500 }
-    );
+  } catch (error) {
+    return handleApiError(error, 'Failed to update user status');
   }
 }

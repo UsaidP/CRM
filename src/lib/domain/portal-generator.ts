@@ -24,7 +24,8 @@ export function generatePortalToken(leadName: string, bhkDescription: string = '
     .replace(/[^a-z0-9]/g, '-')
     .slice(0, 15);
 
-  const randomSuffix = Math.random().toString(36).substring(2, 6);
+  const randomBytes = globalThis.crypto.getRandomValues(new Uint8Array(8));
+  const randomSuffix = Array.from(randomBytes).map((b) => b.toString(16).padStart(2, '0')).join('');
   return `${cleanName}-${cleanBhk}-${randomSuffix}`;
 }
 

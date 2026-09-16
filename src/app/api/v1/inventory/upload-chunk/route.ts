@@ -7,6 +7,7 @@ import {
   normalizeBrochureMimeType,
   BrochureIngestionError,
 } from '@/lib/domain/brochure-ingestion';
+import { handleApiError } from '@/lib/services/api-handler';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -187,11 +188,7 @@ export async function POST(req: NextRequest) {
         { status: error.statusCode }
       );
     }
-    console.error('[CHUNK-UPLOAD] Ingestion error:', error);
-    return NextResponse.json(
-      { success: false, error: error.message || 'Failed to process chunked brochure document.' },
-      { status: 500 }
-    );
+    return handleApiError(error, 'Failed to process chunked brochure document');
   }
 }
 

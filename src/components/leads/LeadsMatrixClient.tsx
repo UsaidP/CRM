@@ -156,33 +156,70 @@ export function LeadsMatrixClient({
   const [selectedConfidence, setSelectedConfidence] = useState<string>('ALL');
   const [selectedSource, setSelectedSource] = useState('ALL');
   const [selectedStage, setSelectedStage] = useState('ALL');
-  const [selectedAssignee, setSelectedAssignee] = useState<string>('ALL');
+  const [selectedAssignee, setSelectedAssignee] = useState<string>(() => {
+    return currentUserId || 'ALL';
+  });
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'SMART_PRIORITY' | 'DUE_DATE' | 'RECENT'>('SMART_PRIORITY');
   const searchParams = useSearchParams();
 
+  const getRoleGroup = (role: string) => {
+    switch (role) {
+      case 'SUPER_ADMIN':
+      case 'ADMIN':
+        return 'Super Admins & Admins';
+      case 'MANAGER':
+        return 'Team Managers';
+      case 'AGENT':
+        return 'Property Advisors / Agents';
+      case 'TELECALLER':
+        return 'Telecallers';
+      default:
+        return 'Team Members';
+    }
+  };
+
+  const sortedAssignableUsers = useMemo(() => {
+    const roleWeight: Record<string, number> = {
+      SUPER_ADMIN: 4,
+      ADMIN: 3,
+      MANAGER: 2,
+      AGENT: 1,
+      TELECALLER: 0,
+    };
+    return [...assignableUsers].sort((a, b) => {
+      const weightA = roleWeight[a.role] ?? -1;
+      const weightB = roleWeight[b.role] ?? -1;
+      if (weightB !== weightA) return weightB - weightA;
+      return a.fullName.localeCompare(b.fullName);
+    });
+  }, [assignableUsers]);
+
   const userSelectOptions: CustomSelectOption[] = useMemo(() => [
-    { value: 'UNASSIGN', label: 'Unassigned', shortLabel: 'Unassigned' },
-    ...assignableUsers.map((u) => ({
+    { value: 'UNASSIGN', label: 'Unassigned (Pool)', shortLabel: 'Unassigned' },
+    ...sortedAssignableUsers.map((u) => ({
       value: u.id,
       label: `${u.fullName} (${u.role})`,
       shortLabel: u.fullName,
       badge: u.role,
-      group: u.role === 'TELECALLER' ? 'Telecallers' : 'Brokers & Admins',
+      group: getRoleGroup(u.role),
     })),
-  ], [assignableUsers]);
+  ], [sortedAssignableUsers]);
 
   const assigneeFilterOptions: CustomSelectOption[] = useMemo(() => [
-    { value: 'ALL', label: 'All Assignees / Team', shortLabel: 'All Assignees' },
+    ...(currentUserId ? [{ value: currentUserId, label: 'My Assigned Leads', shortLabel: 'My Leads', badge: 'Personal' }] : []),
+    { value: 'ALL', label: 'All Assignees / Entire Firm', shortLabel: 'All Firm' },
     { value: 'UNASSIGNED', label: 'Unassigned Pool Only', shortLabel: 'Unassigned' },
-    ...assignableUsers.map((u) => ({
-      value: u.id,
-      label: `${u.fullName} (${u.role})`,
-      shortLabel: u.fullName,
-      badge: u.role,
-      group: u.role === 'TELECALLER' ? 'Telecallers' : 'Brokers & Admins',
-    })),
-  ], [assignableUsers]);
+    ...sortedAssignableUsers
+      .filter((u) => u.id !== currentUserId)
+      .map((u) => ({
+        value: u.id,
+        label: `${u.fullName} (${u.role})`,
+        shortLabel: u.fullName,
+        badge: u.role,
+        group: getRoleGroup(u.role),
+      })),
+  ], [sortedAssignableUsers, currentUserId]);
 
   // Sync initialLeads prop to local state on server revalidation or navigation
   useEffect(() => {
@@ -642,7 +679,10 @@ export function LeadsMatrixClient({
       // Assignee Filter
       const matchesAssignee =
         selectedAssignee === 'ALL' ||
-        (selectedAssignee === 'UNASSIGNED' ? !l.assignedBrokerId : l.assignedBrokerId === selectedAssignee);
+        (selectedAssignee === 'UNASSIGNED'
+          ? !l.assignedBrokerId
+          : l.assignedBrokerId === selectedAssignee ||
+            l.assignments?.some((a: any) => a.userId === selectedAssignee && !a.unassignedAt));
 
       // Search Query
       const matchesSearch =

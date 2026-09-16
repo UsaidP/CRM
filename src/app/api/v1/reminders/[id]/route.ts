@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireSession, orgScope } from '@/lib/services/api-auth';
 import { prisma } from '@/lib/db/prisma';
 import { completeReminderAndScheduleNext } from '@/lib/services/lead-reminder-service';
+import { handleApiError } from '@/lib/services/api-handler';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,11 +31,8 @@ export async function GET(
     }
 
     return NextResponse.json({ success: true, data: reminder });
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error.message || 'Failed to fetch reminder' },
-      { status: 500 }
-    );
+  } catch (error) {
+    return handleApiError(error, 'Failed to fetch reminder');
   }
 }
 
@@ -130,12 +128,8 @@ export async function PATCH(
       message: 'Reminder updated successfully',
       data: updated,
     });
-  } catch (error: any) {
-    console.error('Error updating reminder:', error);
-    return NextResponse.json(
-      { success: false, error: error.message || 'Failed to update reminder' },
-      { status: 500 }
-    );
+  } catch (error) {
+    return handleApiError(error, 'Failed to update reminder');
   }
 }
 
@@ -161,11 +155,7 @@ export async function DELETE(
       success: true,
       message: 'Reminder deleted successfully',
     });
-  } catch (error: any) {
-    console.error('Error deleting reminder:', error);
-    return NextResponse.json(
-      { success: false, error: error.message || 'Failed to delete reminder' },
-      { status: 500 }
-    );
+  } catch (error) {
+    return handleApiError(error, 'Failed to delete reminder');
   }
 }

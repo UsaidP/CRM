@@ -50,31 +50,33 @@ export async function POST(req: Request) {
       );
     }
 
-    // 1. Purge records in reverse dependency order
-    await prisma.brochureUploadChunk.deleteMany({}).catch(() => {});
-    await prisma.leadReminder.deleteMany({});
-    await prisma.portalTelemetryLog.deleteMany({});
-    await prisma.clientPortalUnit.deleteMany({});
-    await prisma.clientPortal.deleteMany({});
-    await prisma.dealTransaction.deleteMany({});
-    await prisma.siteVisit.deleteMany({});
-    await prisma.communicationLog.deleteMany({});
-    await prisma.buyerRequirement.deleteMany({});
-    await prisma.leadAssignment.deleteMany({});
-    await prisma.lead.deleteMany({});
-    await prisma.contactMergeAudit.deleteMany({});
-    await prisma.contactIdentity.deleteMany({});
-    await prisma.contact.deleteMany({});
-    await prisma.brokerPhoneNumber.deleteMany({});
-    await prisma.inboundCampaign.deleteMany({});
-    await prisma.webhookEventInbox.deleteMany({});
-    await prisma.inventoryAuditLog.deleteMany({});
-    await prisma.propertyUnit.deleteMany({});
-    await prisma.developerProject.deleteMany({});
-    await prisma.rolePermission.deleteMany({});
-    await prisma.user.deleteMany({});
-    await prisma.team.deleteMany({});
-    await prisma.organization.deleteMany({});
+    // 1. Purge records in a single atomic transaction (all-or-nothing)
+    await prisma.$transaction([
+      prisma.brochureUploadChunk.deleteMany({}),
+      prisma.leadReminder.deleteMany({}),
+      prisma.portalTelemetryLog.deleteMany({}),
+      prisma.clientPortalUnit.deleteMany({}),
+      prisma.clientPortal.deleteMany({}),
+      prisma.dealTransaction.deleteMany({}),
+      prisma.siteVisit.deleteMany({}),
+      prisma.communicationLog.deleteMany({}),
+      prisma.buyerRequirement.deleteMany({}),
+      prisma.leadAssignment.deleteMany({}),
+      prisma.lead.deleteMany({}),
+      prisma.contactMergeAudit.deleteMany({}),
+      prisma.contactIdentity.deleteMany({}),
+      prisma.contact.deleteMany({}),
+      prisma.brokerPhoneNumber.deleteMany({}),
+      prisma.inboundCampaign.deleteMany({}),
+      prisma.webhookEventInbox.deleteMany({}),
+      prisma.inventoryAuditLog.deleteMany({}),
+      prisma.propertyUnit.deleteMany({}),
+      prisma.developerProject.deleteMany({}),
+      prisma.rolePermission.deleteMany({}),
+      prisma.user.deleteMany({}),
+      prisma.team.deleteMany({}),
+      prisma.organization.deleteMany({}),
+    ]);
 
     // 2. Create Fresh Organization
     const org = await prisma.organization.create({

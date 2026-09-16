@@ -2,22 +2,35 @@ import { prisma } from '@/lib/db/prisma';
 import { DealsLedgerClient } from '@/components/deals/DealsLedgerClient';
 import { getServerSession } from '@/lib/services/server-auth';
 import { runWithTenant } from '@/lib/db/tenant-context';
+import {
+  getUserDealWhere,
+  getUserLeadWhere,
+  type UserScopeView,
+} from '@/lib/services/user-scope';
 
 export const dynamic = 'force-dynamic';
 
-export default async function DealsPage() {
+export default async function DealsPage(props: {
+  searchParams?: Promise<{ view?: string }>;
+}) {
+  const searchParams = await props.searchParams;
   const session = await getServerSession();
+  const isAdmin = session.role === 'ADMIN' || session.role === 'SUPER_ADMIN' || session.isSuperAdmin;
+  const viewMode: UserScopeView = isAdmin && searchParams?.view === 'firm' ? 'firm' : 'mine';
 
   let initialDeals: any[] = [];
   let initialLeads: any[] = [];
   let initialUnits: any[] = [];
   let summary = { totalGrossBrokerage: 0, totalCollected: 0, totalPending: 0 };
 
+  const dealWhere = getUserDealWhere(session, viewMode);
+  const leadWhere = getUserLeadWhere(session, viewMode);
+
   try {
     const [deals, leads, units] = await runWithTenant(session.organizationId, async () => {
       return Promise.all([
         prisma.dealTransaction.findMany({
-          where: { organizationId: session.organizationId },
+          where: dealWhere,
           include: {
             lead: true,
             propertyUnit: { include: { project: true } },
@@ -27,9 +40,10 @@ export default async function DealsPage() {
           orderBy: { bookingDate: 'desc' },
         }),
         prisma.lead.findMany({
-          where: { organizationId: session.organizationId },
+          where: leadWhere,
           orderBy: { createdAt: 'desc' },
         }),
+        // Property units remain shared firm-wide for all brokers
         prisma.propertyUnit.findMany({
           where: { project: { organizationId: session.organizationId } },
           include: { project: true },

@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
 import { requirePermissionWithScope, forbidden } from '@/lib/services/api-auth';
+import { getUserPortalWhere } from '@/lib/services/user-scope';
 import { getTeamMemberIds } from '@/lib/services/team-service';
 import { prisma } from '@/lib/db/prisma';
 import { evaluateEngagementTier } from '@/lib/domain/portal-generator';
+import { handleApiError } from '@/lib/services/api-handler';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,26 +17,8 @@ export async function GET(req: Request) {
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '50', 10)));
     const skip = (page - 1) * limit;
 
-    const where: Record<string, unknown> = { organizationId: auth.session.organizationId };
-
-    if (auth.scope === 'OWN') {
-      where.OR = [
-        { createdById: auth.session.userId },
-        { lead: { assignedBrokerId: auth.session.userId } },
-      ];
-    } else if (auth.scope === 'OWN_AND_ASSIGNED') {
-      where.OR = [
-        { createdById: auth.session.userId },
-        { lead: { assignedBrokerId: auth.session.userId } },
-        { lead: { assignments: { some: { userId: auth.session.userId, unassignedAt: null } } } },
-      ];
-    } else if (auth.scope === 'TEAM') {
-      const teamMemberIds = await getTeamMemberIds(auth.session.userId);
-      where.OR = [
-        { createdById: { in: teamMemberIds } },
-        { lead: { assignedBrokerId: { in: teamMemberIds } } },
-      ];
-    }
+    const viewParam = (searchParams.get('view') as 'mine' | 'firm') || 'mine';
+    const where: Record<string, unknown> = getUserPortalWhere(auth.session, viewParam);
 
     const [total, portals] = await Promise.all([
       prisma.clientPortal.count({ where }),
@@ -114,8 +98,8 @@ export async function GET(req: Request) {
       totalPages: Math.ceil(total / limit),
       data: formattedPortals,
     });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error, 'Failed to fetch client portals');
   }
 }
 
@@ -213,8 +197,8 @@ export async function DELETE(req: Request) {
       token: portal.token,
       leadId: portal.leadId,
     });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error, 'Failed to delete client portal');
   }
 }
 

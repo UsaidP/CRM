@@ -169,17 +169,50 @@ export function AddLeadModal({
 
   if (!isOpen) return null;
 
-  const userSelectOptions: CustomSelectOption[] = [
-    { value: currentUserId || '', label: 'Assign to Myself (My Account)', shortLabel: 'Myself' },
-    ...assignableUsers
+  const getRoleGroup = (role: string) => {
+    switch (role) {
+      case 'SUPER_ADMIN':
+      case 'ADMIN':
+        return 'Super Admins & Admins';
+      case 'MANAGER':
+        return 'Team Managers';
+      case 'AGENT':
+        return 'Property Advisors / Agents';
+      case 'TELECALLER':
+        return 'Telecallers';
+      default:
+        return 'Team Members';
+    }
+  };
+
+  const sortedAssignableUsers = useMemo(() => {
+    const roleWeight: Record<string, number> = {
+      SUPER_ADMIN: 4,
+      ADMIN: 3,
+      MANAGER: 2,
+      AGENT: 1,
+      TELECALLER: 0,
+    };
+    return [...assignableUsers].sort((a, b) => {
+      const weightA = roleWeight[a.role] ?? -1;
+      const weightB = roleWeight[b.role] ?? -1;
+      if (weightB !== weightA) return weightB - weightA;
+      return a.fullName.localeCompare(b.fullName);
+    });
+  }, [assignableUsers]);
+
+  const userSelectOptions: CustomSelectOption[] = useMemo(() => [
+    { value: currentUserId || '', label: 'Assign to Myself (My Desk)', shortLabel: 'Myself', badge: currentUserRole },
+    ...sortedAssignableUsers
       .filter((u) => u.id !== currentUserId)
       .map((u) => ({
         value: u.id,
         label: `${u.fullName} (${u.role})`,
         shortLabel: u.fullName,
         badge: u.role,
+        group: getRoleGroup(u.role),
       })),
-  ];
+  ], [sortedAssignableUsers, currentUserId, currentUserRole]);
 
   const handleToggleBhk = (bhk: number) => {
     if (selectedBhk.includes(bhk)) {

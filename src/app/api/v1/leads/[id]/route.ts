@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
-import { requirePermission, requirePermissionWithScope, scopedLeadFilter, orgScope } from '@/lib/services/api-auth';
+import { requireSession, requirePermission, requirePermissionWithScope, scopedLeadFilter, orgScope } from '@/lib/services/api-auth';
 import { prisma } from '@/lib/db/prisma';
 import { reassignLead } from '@/lib/services/lead-assignment-service';
+import { normalizeIndianPhone } from '@/lib/domain/phone-normalizer';
+import { handleApiError } from '@/lib/services/api-handler';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,30 +42,78 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     }
 
     return NextResponse.json({ success: true, data: lead });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error, 'Failed to fetch lead');
   }
 }
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const auth = await requirePermissionWithScope(req, 'leads:edit_all');
-    if (!auth.ok) return auth.response;
-    const { session, scope } = auth;
+    const sessionAuth = await requireSession(req);
+    if (!sessionAuth.ok) return sessionAuth.response;
+    const { session } = sessionAuth;
     const { id } = await params;
     const body = await req.json();
-    const { currentStage, assignedBrokerId, notes, fullName, email } = body;
+    const { currentStage, assignedBrokerId, notes, fullName, email, phone } = body;
 
-    const scopeWhere = await scopedLeadFilter(session, scope);
+    // Determine edit authorization:
+    // 1. If user holds 'leads:edit_all', scope to their granted permission scope
+    // 2. Otherwise, allow assigned broker / telecaller to update stage & remarks on their own assigned lead
+    const editAllAuth = await requirePermissionWithScope(req, 'leads:edit_all');
+    let scopeWhere: Record<string, unknown>;
+
+    if (editAllAuth.ok) {
+      scopeWhere = await scopedLeadFilter(session, editAllAuth.scope);
+    } else {
+      if (fullName !== undefined || email !== undefined || phone !== undefined) {
+        return editAllAuth.response;
+      }
+      scopeWhere = {
+        organizationId: session.organizationId,
+        OR: [
+          { assignedBrokerId: session.userId },
+          { assignments: { some: { userId: session.userId, unassignedAt: null } } },
+        ],
+      };
+    }
+
     const existing = await prisma.lead.findFirst({
       where: {
         id,
         ...scopeWhere,
       },
+      select: {
+        id: true,
+        assignedBrokerId: true,
+        contactId: true,
+      },
     });
 
     if (!existing) {
-      return NextResponse.json({ success: false, error: 'Lead not found' }, { status: 404 });
+      if (!editAllAuth.ok) {
+        return editAllAuth.response;
+      }
+      return NextResponse.json(
+        { success: false, error: 'Lead not found or you do not have permission to edit this lead' },
+        { status: 404 }
+      );
+    }
+
+    // Phone normalization if phone is provided
+    let phoneE164Update: string | null | undefined = undefined;
+    if (phone !== undefined) {
+      if (phone.trim() === '') {
+        phoneE164Update = null;
+      } else {
+        const phoneResult = normalizeIndianPhone(phone);
+        if (!phoneResult.isValid) {
+          return NextResponse.json(
+            { success: false, error: phoneResult.error || 'Invalid phone number format' },
+            { status: 400 }
+          );
+        }
+        phoneE164Update = phoneResult.e164;
+      }
     }
 
     // Changing broker assignment requires the leads:reassign capability
@@ -92,6 +142,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         notes: notes || undefined,
         fullName: fullName || undefined,
         email: email || undefined,
+        ...(phoneE164Update !== undefined ? { phoneE164: phoneE164Update } : {}),
       },
       include: {
         campaign: true,
@@ -107,9 +158,16 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       },
     });
 
+    if (existing.contactId && phoneE164Update) {
+      await prisma.contactIdentity.updateMany({
+        where: { contactId: existing.contactId, isPrimary: true },
+        data: { identityValue: phoneE164Update },
+      }).catch(() => {});
+    }
+
     return NextResponse.json({ success: true, message: 'Lead updated successfully', data: lead });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+  } catch (error) {
+    return handleApiError(error, 'Failed to update lead');
   }
 }
 
@@ -135,8 +193,8 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     });
 
     return NextResponse.json({ success: true, message: 'Lead deleted successfully' });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error, 'Failed to delete lead');
   }
 }
 

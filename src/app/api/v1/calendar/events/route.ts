@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireSession } from '@/lib/services/api-auth';
+import { getUserReminderWhere, getUserVisitWhere, type UserScopeView } from '@/lib/services/user-scope';
 import { prisma } from '@/lib/db/prisma';
+import { handleApiError } from '@/lib/services/api-handler';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,6 +15,7 @@ export async function GET(req: Request) {
     const endDateParam = searchParams.get('endDate');
     const eventType = searchParams.get('eventType'); // ALL, REMINDER, SITE_VISIT
     const status = searchParams.get('status'); // ALL, PENDING, COMPLETED
+    const viewParam = (searchParams.get('view') as UserScopeView) || 'mine';
 
     const now = new Date();
     const startDate = startDateParam ? new Date(startDateParam) : new Date(now.getFullYear(), now.getMonth() - 1, 1);
@@ -20,9 +23,13 @@ export async function GET(req: Request) {
 
     const events: any[] = [];
 
+    const baseReminderWhere = getUserReminderWhere(auth.session, viewParam);
+    const baseVisitWhere = getUserVisitWhere(auth.session, viewParam);
+
     // 1. Fetch Lead Reminders
     if (!eventType || eventType === 'ALL' || eventType.startsWith('REMINDER')) {
       const reminderWhere: any = {
+        ...baseReminderWhere,
         dueAt: {
           gte: startDate,
           lte: endDate,
@@ -73,6 +80,7 @@ export async function GET(req: Request) {
     // 2. Fetch Escorted Site Visits
     if (!eventType || eventType === 'ALL' || eventType === 'SITE_VISIT') {
       const visitWhere: any = {
+        ...baseVisitWhere,
         scheduledDate: {
           gte: startDate,
           lte: endDate,
@@ -136,11 +144,7 @@ export async function GET(req: Request) {
       count: events.length,
       events,
     });
-  } catch (error: any) {
-    console.error('Error fetching calendar events:', error);
-    return NextResponse.json(
-      { success: false, error: error.message || 'Failed to fetch calendar events' },
-      { status: 500 }
-    );
+  } catch (error) {
+    return handleApiError(error, 'Failed to fetch calendar events');
   }
 }

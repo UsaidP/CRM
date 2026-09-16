@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db/prisma';
 import { analyzeInboundAttribution } from '@/lib/domain/campaign-attribution';
 import { findOrCreateContact } from '@/lib/domain/contact-manager';
 import { ensureLeadFallbackReminder } from '@/lib/services/lead-reminder-service';
+import { handleApiError } from '@/lib/services/api-handler';
 
 export const dynamic = 'force-dynamic';
 
@@ -336,10 +337,7 @@ export async function POST(req: Request) {
         attribution,
       },
     }, { status: 201 });
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error.message || 'Instagram webhook failed' },
-      { status: 500 }
-    );
+  } catch (error) {
+    return handleApiError(error, 'Instagram webhook processing failed');
   }
 }

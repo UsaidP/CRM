@@ -3,6 +3,7 @@ import { requirePermission, requirePermissionWithScope, scopedLeadFilter } from 
 import { prisma } from '@/lib/db/prisma';
 import { ensureLeadFallbackReminder } from '@/lib/services/lead-reminder-service';
 import { bulkReassignLeads } from '@/lib/services/lead-assignment-service';
+import { handleApiError } from '@/lib/services/api-handler';
 
 export const dynamic = 'force-dynamic';
 
@@ -98,11 +99,7 @@ export async function POST(req: Request) {
       message: `Successfully updated ${authorizedIds.length} leads.`,
       updatedCount: authorizedIds.length,
     });
-  } catch (error: any) {
-    console.error('Error during bulk leads update:', error);
-    return NextResponse.json(
-      { success: false, error: error.message || 'Failed to perform bulk update.' },
-      { status: 500 }
-    );
+  } catch (error) {
+    return handleApiError(error, 'Failed to perform bulk update');
   }
 }

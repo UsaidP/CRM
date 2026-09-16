@@ -3,6 +3,7 @@ import { extractAndProcessBrochure } from '@/lib/services/brochure-extractor';
 import { persistBrochureExtraction } from '@/lib/services/brochure-persistence';
 import { prisma } from '@/lib/db/prisma';
 import { requireSession, orgScope } from '@/lib/services/api-auth';
+import { handleApiError } from '@/lib/services/api-handler';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -86,11 +87,7 @@ export async function POST(req: NextRequest) {
       unitsUpdated,
       message: `Extracted ${result.elevations.length} Elevation renders and ${result.floorPlans.length} Floor Plans from brochure for ${project.projectName}! Persisted to project and ${unitsUpdated} unit(s) pre-filled.`,
     });
-  } catch (error: any) {
-    console.error('[EXTRACT_BROCHURE_ERROR]', error);
-    return NextResponse.json(
-      { error: error.message || 'Failed to extract brochure media assets.' },
-      { status: 500 }
-    );
+  } catch (error) {
+    return handleApiError(error, 'Failed to extract brochure media assets');
   }
 }

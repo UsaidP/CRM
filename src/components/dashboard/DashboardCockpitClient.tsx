@@ -2,9 +2,11 @@
 
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
   Users,
+  User,
   ShieldCheck,
   TrendingUp,
   Car,
@@ -49,10 +51,28 @@ interface DashboardProps {
     units: any[];
     leads: any[];
     siteVisits: any[];
+    viewMode?: 'mine' | 'firm';
+    canToggleView?: boolean;
+    currentUserName?: string;
   };
 }
 
 export function DashboardCockpitClient({ initialData }: DashboardProps) {
+  const router = useRouter();
+  const currentView = initialData.viewMode || 'mine';
+
+  const handleToggleView = (newView: 'mine' | 'firm') => {
+    if (newView === currentView) return;
+    const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
+    if (newView === 'firm') {
+      params.set('view', 'firm');
+    } else {
+      params.delete('view');
+    }
+    const query = params.toString();
+    router.push(query ? `/?${query}` : '/');
+  };
+
   const [timeRange, setTimeRange] = useState<'today' | '7d' | '30d' | 'all'>('all');
   const [selectedMarket, setSelectedMarket] = useState<'ALL' | 'KHARGHAR' | 'TALOJA' | 'PANVEL'>('ALL');
 
@@ -200,24 +220,61 @@ export function DashboardCockpitClient({ initialData }: DashboardProps) {
     <div className="space-y-4 sm:space-y-6 max-w-7xl mx-auto w-full">
       {/* ─── 1. TOP INTERACTIVE EXECUTIVE CONTROL BAR ─── */}
       <div className="p-2.5 sm:p-4 rounded-2xl bg-surface border border-border shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-2.5 sm:gap-3">
-        {/* Market Filter */}
-        <div className="w-full md:w-auto flex items-center">
-          <div className="w-full md:w-auto flex items-center justify-between sm:justify-start gap-1.5 px-3 py-2 sm:py-1.5 rounded-xl bg-surface-subtle border border-border text-xs font-semibold">
-            <div className="flex items-center gap-1.5 shrink-0">
-              <Filter className="w-3.5 h-3.5 text-accent shrink-0" />
-              <span className="text-content-muted text-[11px] sm:text-xs">Market Node:</span>
+        {/* Left: View Mode (Personal vs Firm) & Market Node Filter */}
+        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+          {initialData.canToggleView ? (
+            <div className="flex items-center gap-1 bg-surface-subtle p-1 rounded-xl border border-border text-xs font-semibold">
+              <button
+                type="button"
+                onClick={() => handleToggleView('mine')}
+                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 text-[11px] sm:text-xs ${
+                  currentView === 'mine'
+                    ? 'bg-accent text-white shadow-2xs font-bold'
+                    : 'text-content-muted hover:text-content hover:bg-surface'
+                }`}
+              >
+                <User className="w-3.5 h-3.5" />
+                <span>My Pipeline</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleToggleView('firm')}
+                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 text-[11px] sm:text-xs ${
+                  currentView === 'firm'
+                    ? 'bg-accent text-white shadow-2xs font-bold'
+                    : 'text-content-muted hover:text-content hover:bg-surface'
+                }`}
+              >
+                <Building2 className="w-3.5 h-3.5" />
+                <span>Entire Firm</span>
+              </button>
             </div>
-            <CustomSelect
-              value={selectedMarket}
-              onChange={(val) => setSelectedMarket(val as any)}
-              options={[
-                { value: 'ALL', label: 'All Navi Mumbai Hubs' },
-                { value: 'KHARGHAR', label: 'Kharghar Node (Sectors 1–36)' },
-                { value: 'TALOJA', label: 'Taloja Industrial & CIDCO' },
-                { value: 'PANVEL', label: 'Panvel & Upper Kharghar' },
-              ]}
-              className="font-bold text-accent-text bg-transparent border-none p-0 focus:ring-0 cursor-pointer text-xs"
-            />
+          ) : (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-accent-soft text-accent-text border border-accent/20 text-xs font-bold">
+              <User className="w-3.5 h-3.5 text-accent" />
+              <span>Workspace: {initialData.currentUserName || 'Personal'}</span>
+            </div>
+          )}
+
+          {/* Market Filter */}
+          <div className="flex items-center">
+            <div className="flex items-center justify-between sm:justify-start gap-1.5 px-3 py-2 sm:py-1.5 rounded-xl bg-surface-subtle border border-border text-xs font-semibold">
+              <div className="flex items-center gap-1.5 shrink-0">
+                <Filter className="w-3.5 h-3.5 text-accent shrink-0" />
+                <span className="text-content-muted text-[11px] sm:text-xs">Market:</span>
+              </div>
+              <CustomSelect
+                value={selectedMarket}
+                onChange={(val) => setSelectedMarket(val as any)}
+                options={[
+                  { value: 'ALL', label: 'All Navi Mumbai Hubs' },
+                  { value: 'KHARGHAR', label: 'Kharghar Node (Sectors 1–36)' },
+                  { value: 'TALOJA', label: 'Taloja Industrial & CIDCO' },
+                  { value: 'PANVEL', label: 'Panvel & Upper Kharghar' },
+                ]}
+                className="font-bold text-accent-text bg-transparent border-none p-0 focus:ring-0 cursor-pointer text-xs"
+              />
+            </div>
           </div>
         </div>
 
@@ -250,15 +307,21 @@ export function DashboardCockpitClient({ initialData }: DashboardProps) {
         <div>
           <div className="flex items-center gap-1.5 sm:gap-2 mb-1 flex-wrap">
             <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-accent-soft text-accent-text border border-accent/20 uppercase tracking-wider">
-              {selectedMarket === 'ALL' ? 'Kharghar & Taloja Advisory Network' : `${selectedMarket} Node Hub`}
+              {currentView === 'mine'
+                ? 'Personal Broker Workspace'
+                : selectedMarket === 'ALL'
+                ? 'Kharghar & Taloja Advisory Network'
+                : `${selectedMarket} Node Hub`}
             </span>
             <HallmarkStamp type="rera" label="RERA Compliant Ledger" />
           </div>
           <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-content font-display">
-            Executive Brokerage Cockpit
+            {currentView === 'mine' ? 'Personal Brokerage Cockpit' : 'Executive Firm Cockpit'}
           </h1>
           <p className="text-content-secondary text-xs mt-0.5">
-            Real-time advisory pipeline, active project inventory, and commission cashflow tracking.
+            {currentView === 'mine'
+              ? 'Your assigned leads, scheduled site visits, and commission earnings.'
+              : 'Real-time firm advisory pipeline, active project inventory, and commission cashflow tracking.'}
           </p>
         </div>
 
@@ -371,7 +434,7 @@ export function DashboardCockpitClient({ initialData }: DashboardProps) {
         >
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-bold text-content-secondary uppercase tracking-wider font-mono">
-              Leads ({timeRange.toUpperCase()})
+              {currentView === 'mine' ? 'My Leads' : 'Leads (Firm)'} ({timeRange.toUpperCase()})
             </span>
             <div className="w-8 h-8 rounded-xl bg-accent-soft text-accent flex items-center justify-center shadow-2xs">
               <Users className="w-4 h-4" />
@@ -383,10 +446,12 @@ export function DashboardCockpitClient({ initialData }: DashboardProps) {
               <ArrowUpRight className="w-3 h-3" /> Live
             </span>
           </div>
-          <p className="text-[11px] text-content-muted mt-1">Inbound advisory pipeline</p>
+          <p className="text-[11px] text-content-muted mt-1">
+            {currentView === 'mine' ? 'Your active assigned prospects' : 'Inbound advisory pipeline'}
+          </p>
         </motion.div>
 
-        {/* Metric 2: Marketable Inventory */}
+        {/* Metric 2: Marketable Inventory (SHARED FOR ALL) */}
         <motion.div
           whileHover={{ y: -3 }}
           className="p-4 rounded-2xl bg-surface border border-border shadow-xs hover:border-accent/50 hover:shadow-md transition-all duration-300 cursor-pointer"
@@ -415,7 +480,7 @@ export function DashboardCockpitClient({ initialData }: DashboardProps) {
         >
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-bold text-content-secondary uppercase tracking-wider font-mono">
-              Site Tours
+              {currentView === 'mine' ? 'My Site Tours' : 'Site Tours (Firm)'}
             </span>
             <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shadow-2xs">
               <Car className="w-4 h-4" />
@@ -435,7 +500,7 @@ export function DashboardCockpitClient({ initialData }: DashboardProps) {
         >
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-bold text-content-secondary uppercase tracking-wider font-mono">
-              Commission Ledger
+              {currentView === 'mine' ? 'My Commission' : 'Commission Ledger'}
             </span>
             <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shadow-2xs">
               <TrendingUp className="w-4 h-4" />

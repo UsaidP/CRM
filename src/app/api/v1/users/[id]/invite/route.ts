@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { requireRole, orgScope } from '@/lib/services/api-auth';
 import { prisma } from '@/lib/db/prisma';
-import { generateSecureToken } from '@/lib/services/auth-service';
+import { generateSecureToken, hashToken } from '@/lib/services/auth-service';
+import { handleApiError } from '@/lib/services/api-handler';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,7 +31,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     await prisma.user.update({
       where: { id: user.id },
       data: {
-        inviteToken,
+        inviteToken: hashToken(inviteToken),
         inviteTokenExpiresAt: expiresAt,
       },
     });
@@ -43,10 +44,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       inviteToken,
       inviteUrl,
     });
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error?.message || 'Failed to generate invitation link' },
-      { status: 500 }
-    );
+  } catch (error) {
+    return handleApiError(error, 'Failed to generate invitation link');
   }
 }
