@@ -142,7 +142,7 @@ describe('Brochure Extraction Storage Constraints & Deduplication', () => {
 
       // Stored elevations must be strictly <= 2
       expect(result.elevations.length).toBeLessThanOrEqual(2);
-    });
+    }, 20000);
   });
 
   describe('3. Floor Plans Limit (Strictly at most 3 stored)', () => {

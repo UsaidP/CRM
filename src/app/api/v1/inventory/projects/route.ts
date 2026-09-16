@@ -118,17 +118,10 @@ export async function POST(req: Request) {
       effectiveOrgId = validated.organizationId;
     }
     if (!effectiveOrgId) {
-      let org = await prisma.organization.findFirst();
-      if (!org) {
-        org = await prisma.organization.create({
-          data: {
-            name: 'ZamZam Properties Real Estate',
-            slug: 'zamzam-properties',
-            reraBrokerRegistration: 'A52000029381',
-          },
-        });
-      }
-      effectiveOrgId = org.id;
+      return NextResponse.json(
+        { success: false, error: 'Organization ID is required' },
+        { status: 400 }
+      );
     }
 
     // Check if initial units were provided (e.g. from brochure auto-extractor)

@@ -36,8 +36,9 @@ export async function POST(req: Request) {
 
       // Find or create default Super Admin user record
       const superAdminEmail = process.env.SUPER_ADMIN_EMAIL || 'admin@zamzamproperties.in';
-      let org = await prisma.organization.findFirst();
-      if (!org) {
+      const existingOrgs = await prisma.organization.findMany({ take: 2 });
+      let org;
+      if (existingOrgs.length === 0) {
         org = await prisma.organization.create({
           data: {
             name: 'ZamZam Properties Real Estate Advisory',
@@ -45,6 +46,21 @@ export async function POST(req: Request) {
             reraBrokerRegistration: 'A52000029381',
           },
         });
+      } else if (existingOrgs.length === 1) {
+        org = existingOrgs[0];
+      } else {
+        const existingSuperAdmin = await prisma.user.findFirst({
+          where: { role: 'SUPER_ADMIN' },
+          include: { organization: true },
+        });
+        if (existingSuperAdmin?.organization) {
+          org = existingSuperAdmin.organization;
+        } else {
+          return NextResponse.json(
+            { success: false, error: 'Multiple organizations exist. Contact system administrator.' },
+            { status: 400 }
+          );
+        }
       }
 
       let superAdminUser = await prisma.user.findFirst({

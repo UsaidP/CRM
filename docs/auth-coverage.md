@@ -2,16 +2,19 @@
 
 Invariant (enforced by `test/api-auth-coverage.test.ts`): every route under
 `src/app/api/v1` must call `requireSession` / `requireRole` /
-`requireSuperAdmin`, **or** be on the public allow-list below (in which case
-it must verify its own credential — webhook signature, portal token, etc.).
+`requireSuperAdmin`, **or** be on the canonical public allow-list in
+`src/lib/constants/public-routes.ts` (in which case it must verify its own
+credential — webhook signature, portal token, etc.).
 
 ## Public by design (allow-listed)
+
+Defined in [`src/lib/constants/public-routes.ts`](file:///Users/usaidpatel/Desktop/CRM/src/lib/constants/public-routes.ts):
 
 | Route | Credential |
 |---|---|
 | `auth/*` | Issues credentials itself |
 | `health` | None (liveness probe) |
-| `webhooks/telephony`, `webhooks/whatsapp`, `webhooks/instagram` | Provider webhook signature |
+| `webhooks/telephony`, `webhooks/whatsapp`, `webhooks/instagram` | Provider webhook signature + `WebhookCredential` org routing |
 | `portals/[token]`, `portals/[token]/telemetry` | Portal token |
 | `track/[slug]` | Campaign slug (public pixel) |
 

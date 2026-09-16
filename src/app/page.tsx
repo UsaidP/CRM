@@ -5,7 +5,6 @@ import { evaluateEngagementTier } from '@/lib/domain/portal-generator';
 import { rankFirmLeadsForNextConnect } from '@/lib/domain/prioritization-engine';
 import { DashboardCockpitClient } from '@/components/dashboard/DashboardCockpitClient';
 import { getServerSession } from '@/lib/services/server-auth';
-import { runWithTenant } from '@/lib/db/tenant-context';
 import {
   getUserLeadWhere,
   getUserVisitWhere,
@@ -64,8 +63,7 @@ export default async function DashboardPage(props: {
       rawVisits,
       rawReminders
     ] = await withDbRetry(async () => {
-      return runWithTenant(session.organizationId, async () => {
-        return Promise.all([
+      return Promise.all([
           // Properties & Units remain shared firm-wide for all brokers
           prisma.developerProject.count({ where: { organizationId: session.organizationId } }),
           prisma.propertyUnit.count({ where: { project: { organizationId: session.organizationId } } }),
@@ -126,7 +124,6 @@ export default async function DashboardPage(props: {
           }),
         ]);
       });
-    });
 
     projectCount = pCount;
     unitCount = uCount;

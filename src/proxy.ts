@@ -1,28 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { SESSION_COOKIE_NAME, verifySessionToken } from '@/lib/services/auth-service';
-
-// Paths that NEVER require authentication
-const PUBLIC_PATHS = [
-  '/login',
-  '/forgot-password',
-  '/reset-password',
-  '/set-password',
-  '/robots.txt',
-  '/sitemap.xml',
-  '/sitemap',
-  '/llms.txt',
-  '/llms-full.txt',
-  '/manifest.json',
-  '/manifest.webmanifest',
-];
-
-const PUBLIC_API_PREFIXES = [
-  '/api/v1/auth',
-  '/api/v1/webhooks',
-  '/api/v1/track',
-  '/api/v1/health',
-  '/api/v1/inventory/rera/certificate-view',
-];
+import { PUBLIC_PATHS, PUBLIC_API_PREFIXES } from '@/lib/constants/public-routes';
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -52,7 +30,7 @@ export async function proxy(request: NextRequest) {
   }
 
   // 3. API endpoints: require a valid session EXCEPT for public prefixes
-  //    (auth, public portals, webhooks, tracking, health).
+  //    (/api/v1/auth, /api/v1/portals, /api/v1/webhooks, /api/v1/track, /api/v1/health).
   if (pathname.startsWith('/api/')) {
     const isPublicApi = PUBLIC_API_PREFIXES.some(
       (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)

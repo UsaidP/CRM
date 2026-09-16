@@ -140,19 +140,55 @@ export function handleApiError(
 
 export type RouteHandler = (req: Request, context?: any) => Promise<Response | NextResponse>;
 
+export type AuthenticatedRouteHandler = (
+  req: Request,
+  context?: any,
+  session?: any
+) => Promise<Response | NextResponse>;
+
+export interface WithApiHandlerOptions extends ApiHandlerOptions {
+  public?: boolean;
+  requireAuth?: boolean;
+}
+
 /**
  * Higher-order wrapper for Next.js App Router route handlers.
- * Wraps route execution in a standardized try/catch block.
+ * Wraps route execution in a standardized try/catch block and scopes database
+ * queries to the tenant via runWithTenant when a valid tenant session is present.
  */
 export function withApiHandler(
-  handler: RouteHandler,
-  options?: ApiHandlerOptions
+  handler: AuthenticatedRouteHandler | RouteHandler,
+  options?: WithApiHandlerOptions
 ): RouteHandler {
   return async (req: Request, context?: any) => {
     try {
+      if (options?.public) {
+        return await handler(req, context);
+      }
+
+      const { requireSession } = await import('@/lib/services/api-auth');
+      const { runWithTenant } = await import('@/lib/db/tenant-context');
+
+      const auth = await requireSession(req);
+      if (options?.requireAuth) {
+        if (!auth.ok) return auth.response;
+        return await runWithTenant(
+          auth.session.organizationId,
+          () => handler(req, context, auth.session)
+        );
+      }
+
+      if (auth.ok && auth.session?.organizationId) {
+        return await runWithTenant(
+          auth.session.organizationId,
+          () => handler(req, context, auth.session)
+        );
+      }
+
       return await handler(req, context);
     } catch (error) {
       return handleApiError(error, options?.fallbackMessage);
     }
   };
 }
+

@@ -28,6 +28,7 @@ model Organization {
   reminders               LeadReminder[]
   teams                   Team[]
   rolePermissions         RolePermission[]
+  webhookCredentials      WebhookCredential[]
   createdAt               DateTime            @default(now())
   updatedAt               DateTime            @updatedAt
 }
@@ -602,5 +603,20 @@ model BrochureUploadChunk {
   @@unique([uploadId, chunkIndex])
   @@index([uploadId])
   @@index([createdAt])
+}
+
+model WebhookCredential {
+  id                  String       @id @default(uuid())
+  organizationId      String
+  organization        Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  provider            String       // WHATSAPP, INSTAGRAM, TELEPHONY
+  providerIdentifier  String       // phone_number_id, page_id, virtual_did
+  label               String?      // Human-readable: "ZamZam WhatsApp Business"
+  isActive            Boolean      @default(true)
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  @@unique([provider, providerIdentifier])
+  @@index([organizationId])
 }
 

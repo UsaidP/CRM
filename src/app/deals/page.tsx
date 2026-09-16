@@ -1,7 +1,6 @@
 import { prisma } from '@/lib/db/prisma';
 import { DealsLedgerClient } from '@/components/deals/DealsLedgerClient';
 import { getServerSession } from '@/lib/services/server-auth';
-import { runWithTenant } from '@/lib/db/tenant-context';
 import {
   getUserDealWhere,
   getUserLeadWhere,
@@ -27,30 +26,28 @@ export default async function DealsPage(props: {
   const leadWhere = getUserLeadWhere(session, viewMode);
 
   try {
-    const [deals, leads, units] = await runWithTenant(session.organizationId, async () => {
-      return Promise.all([
-        prisma.dealTransaction.findMany({
-          where: dealWhere,
-          include: {
-            lead: true,
-            propertyUnit: { include: { project: true } },
-            closingBroker: true,
-            developerProject: true,
-          },
-          orderBy: { bookingDate: 'desc' },
-        }),
-        prisma.lead.findMany({
-          where: leadWhere,
-          orderBy: { createdAt: 'desc' },
-        }),
-        // Property units remain shared firm-wide for all brokers
-        prisma.propertyUnit.findMany({
-          where: { project: { organizationId: session.organizationId } },
-          include: { project: true },
-          orderBy: { createdAt: 'desc' },
-        }),
-      ]);
-    });
+    const [deals, leads, units] = await Promise.all([
+      prisma.dealTransaction.findMany({
+        where: dealWhere,
+        include: {
+          lead: true,
+          propertyUnit: { include: { project: true } },
+          closingBroker: true,
+          developerProject: true,
+        },
+        orderBy: { bookingDate: 'desc' },
+      }),
+      prisma.lead.findMany({
+        where: leadWhere,
+        orderBy: { createdAt: 'desc' },
+      }),
+      // Property units remain shared firm-wide for all brokers
+      prisma.propertyUnit.findMany({
+        where: { project: { organizationId: session.organizationId } },
+        include: { project: true },
+        orderBy: { createdAt: 'desc' },
+      }),
+    ]);
 
     initialDeals = deals;
     initialLeads = leads;

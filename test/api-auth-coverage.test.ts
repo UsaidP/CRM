@@ -10,28 +10,12 @@ import { join } from 'path';
  * need a guard added or need to be consciously allow-listed.
  */
 
+import { PUBLIC_API_ALLOW_LIST } from '@/lib/constants/public-routes';
+
 const API_ROOT = join(process.cwd(), 'src', 'app', 'api');
 
-/** Route paths that are public BY DESIGN (each must verify its own credential). */
-const PUBLIC_ALLOW_LIST = [
-  // Auth endpoints are the credential issuers themselves
-  'auth/login',
-  'auth/logout',
-  'auth/session',
-  'auth/forgot-password',
-  'auth/reset-password',
-  'auth/set-password',
-  // Liveness probe
-  'health',
-  // Inbound webhooks (must verify provider signatures in-handler)
-  'webhooks/telephony',
-  'webhooks/whatsapp',
-  'webhooks/instagram',
-  // Public client portals + tracking pixels (token-authenticated in-handler)
-  'portals/[token]',
-  'portals/[token]/telemetry',
-  'track/[slug]',
-];
+/** Route paths that are public BY DESIGN (such as auth/login, health, etc.). */
+const PUBLIC_ALLOW_LIST = [...PUBLIC_API_ALLOW_LIST];
 
 function listRouteFiles(dir: string, prefix = ''): string[] {
   const out: string[] = [];

@@ -3,7 +3,6 @@ import { CampaignAttributionManager } from '@/components/attribution/CampaignAtt
 import { generateCampaignDeepLink } from '@/lib/domain/campaign-attribution';
 import { OFFICIAL_BROKER_NUMBERS } from '@/lib/domain/broker-resolver';
 import { getServerSession } from '@/lib/services/server-auth';
-import { runWithTenant } from '@/lib/db/tenant-context';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,25 +11,23 @@ export default async function AttributionPage() {
 
   let initialCampaigns: any[] = [];
   try {
-    const raw = await runWithTenant(session.organizationId, async () => {
-      return prisma.inboundCampaign.findMany({
-        where: { organizationId: session.organizationId },
-        include: {
-          targetProject: true,
-          targetPropertyUnit: true,
-          assignedBroker: true,
-          leads: {
-            select: {
-              id: true,
-              fullName: true,
-              currentStage: true,
-              sourceConfidence: true,
-              createdAt: true,
-            },
+    const raw = await prisma.inboundCampaign.findMany({
+      where: { organizationId: session.organizationId },
+      include: {
+        targetProject: true,
+        targetPropertyUnit: true,
+        assignedBroker: true,
+        leads: {
+          select: {
+            id: true,
+            fullName: true,
+            currentStage: true,
+            sourceConfidence: true,
+            createdAt: true,
           },
         },
-        orderBy: { createdAt: 'desc' },
-      });
+      },
+      orderBy: { createdAt: 'desc' },
     });
 
     initialCampaigns = raw.map((camp) => {

@@ -46,21 +46,18 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       );
     }
 
-    // Fetch or create default auditor user if none passed
+    // Resolve auditor user from session
     let auditor = await prisma.user.findFirst({
-      where: { organizationId: auth.session.organizationId },
+      where: { id: auth.session.userId, organizationId: auth.session.organizationId },
     });
     if (!auditor) {
-      const org = await prisma.organization.findFirst();
-      auditor = await prisma.user.create({
-        data: {
-          organizationId: org?.id || unit.project.organizationId,
-          fullName: 'Usaid Patel (Broker Admin)',
-          email: 'admin@zamzamproperties.in',
-          phoneE164: '+919820123456',
-          role: 'SUPER_ADMIN',
-        },
+      auditor = await prisma.user.findFirst({
+        where: { organizationId: auth.session.organizationId },
       });
+    }
+
+    if (!auditor) {
+      return NextResponse.json({ success: false, error: 'Auditor user not found' }, { status: 404 });
     }
 
     // Optional price update during audit

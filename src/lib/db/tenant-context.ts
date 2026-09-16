@@ -22,6 +22,7 @@ export const ORG_SCOPED_MODELS = new Set([
   'ClientPortal',
   'Team',
   'RolePermission',
+  'WebhookCredential',
 ]);
 
 /**
@@ -144,7 +145,11 @@ export function currentTxClient(): any | null {
   return storage.getStore()?.txClient ?? null;
 }
 
-/** Bind a tenant to the remainder of the current async execution context. */
+/**
+ * Bind a tenant to the remainder of the current async execution context.
+ * Note: uses AsyncLocalStorage.enterWith() which mutates the execution context.
+ * Preferred for new routes: `withApiHandler` or `runWithTenant` for lexical scope safety.
+ */
 export function bindTenant(organizationId: string): void {
   const current = currentTenant();
   storage.enterWith({ ...current, organizationId });

@@ -1,7 +1,6 @@
 import { prisma } from '@/lib/db/prisma';
 import { CalendarViewClient } from '@/components/calendar/CalendarViewClient';
 import { getServerSession } from '@/lib/services/server-auth';
-import { runWithTenant } from '@/lib/db/tenant-context';
 import {
   getUserReminderWhere,
   getUserVisitWhere,
@@ -31,62 +30,60 @@ export default async function CalendarPage(props: {
     const baseVisitWhere = getUserVisitWhere(session, viewMode);
     const baseLeadWhere = getUserLeadWhere(session, viewMode);
 
-    const [reminders, siteVisits, leads] = await runWithTenant(session.organizationId, async () => {
-      return Promise.all([
-        prisma.leadReminder.findMany({
-          where: {
-            ...baseReminderWhere,
-            dueAt: {
-              gte: startDate,
-              lte: endDate,
-            },
+    const [reminders, siteVisits, leads] = await Promise.all([
+      prisma.leadReminder.findMany({
+        where: {
+          ...baseReminderWhere,
+          dueAt: {
+            gte: startDate,
+            lte: endDate,
           },
-          include: {
-            lead: {
-              include: {
-                contact: {
-                  include: {
-                    identities: true,
-                  },
+        },
+        include: {
+          lead: {
+            include: {
+              contact: {
+                include: {
+                  identities: true,
                 },
-                campaign: true,
               },
+              campaign: true,
             },
           },
-          orderBy: { dueAt: 'asc' },
-        }),
-        prisma.siteVisit.findMany({
-          where: {
-            ...baseVisitWhere,
-            scheduledDate: {
-              gte: startDate,
-              lte: endDate,
+        },
+        orderBy: { dueAt: 'asc' },
+      }),
+      prisma.siteVisit.findMany({
+        where: {
+          ...baseVisitWhere,
+          scheduledDate: {
+            gte: startDate,
+            lte: endDate,
+          },
+        },
+        include: {
+          lead: {
+            include: {
+              contact: true,
+              campaign: true,
             },
           },
-          include: {
-            lead: {
-              include: {
-                contact: true,
-                campaign: true,
-              },
-            },
-            assignedBroker: true,
-          },
-          orderBy: { scheduledDate: 'asc' },
-        }),
-        prisma.lead.findMany({
-          where: baseLeadWhere,
-          select: {
-            id: true,
-            fullName: true,
-            phoneE164: true,
-            sourceCode: true,
-            currentStage: true,
-          },
-          orderBy: { updatedAt: 'desc' },
-        }),
-      ]);
-    });
+          assignedBroker: true,
+        },
+        orderBy: { scheduledDate: 'asc' },
+      }),
+      prisma.lead.findMany({
+        where: baseLeadWhere,
+        select: {
+          id: true,
+          fullName: true,
+          phoneE164: true,
+          sourceCode: true,
+          currentStage: true,
+        },
+        orderBy: { updatedAt: 'desc' },
+      }),
+    ]);
 
     initialLeads = leads;
 

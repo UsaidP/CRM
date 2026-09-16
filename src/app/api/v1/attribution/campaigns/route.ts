@@ -72,17 +72,14 @@ export async function POST(req: Request) {
       waPrefilledText,
     } = body;
 
-    const org = await prisma.organization.findFirst();
-    if (!org) {
-      return NextResponse.json({ error: 'Organization not found' }, { status: 500 });
-    }
+    const organizationId = auth.session.organizationId;
 
     const cleanCode = (sourceCode || customSlug || `CAMPAIGN-${Date.now()}`).toUpperCase();
     const slug = (customSlug || sourceCode || `camp-${Date.now()}`).toLowerCase().replace(/[^a-z0-9-]/g, '-');
 
     const campaign = await prisma.inboundCampaign.create({
       data: {
-        organizationId: org.id,
+        organizationId,
         campaignName,
         channelType,
         contentId,

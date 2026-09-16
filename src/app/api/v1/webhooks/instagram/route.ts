@@ -4,6 +4,8 @@ import { prisma } from '@/lib/db/prisma';
 import { analyzeInboundAttribution } from '@/lib/domain/campaign-attribution';
 import { findOrCreateContact } from '@/lib/domain/contact-manager';
 import { ensureLeadFallbackReminder } from '@/lib/services/lead-reminder-service';
+import { upsertOrCreateLead } from '@/lib/domain/lead-creation';
+import { resolveWebhookOrg } from '@/lib/domain/webhook-org-resolver';
 import { handleApiError } from '@/lib/services/api-handler';
 
 export const dynamic = 'force-dynamic';
@@ -75,12 +77,18 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Malformed JSON payload' }, { status: 400 });
     }
 
-    const org = await prisma.organization.findFirst();
-    if (!org) {
-      return NextResponse.json({ error: 'Organization not found' }, { status: 500 });
-    }
-
     const isOfficialEnvelope = Array.isArray(payload.entry) && payload.entry.length > 0;
+    const inboundPageId = isOfficialEnvelope
+      ? payload.entry?.[0]?.id
+      : (payload.pageId || payload.page_id);
+
+    let org;
+    try {
+      const resolved = await resolveWebhookOrg('INSTAGRAM', inboundPageId);
+      org = resolved.org;
+    } catch (err: any) {
+      return NextResponse.json({ error: err.message || 'Organization not found' }, { status: 404 });
+    }
 
     if (isOfficialEnvelope) {
       const processedResults: any[] = [];
@@ -145,66 +153,18 @@ export async function POST(req: Request) {
             assignedBrokerId = defaultBroker?.id;
           }
 
-          // Upsert Durable Contact with INSTAGRAM_IGID identity (NO FAKE PHONE!)
-          const contact = await findOrCreateContact({
-            organizationId: org.id,
-            fullName: `@${igUserId}`,
-            instagramId: igUserId,
-            assignedBrokerId,
-            notes: `Instagram ${referralSource} inquiry: "${messageText}"`,
-          });
-
-          // Upsert Lead
-          let lead = await prisma.lead.findFirst({
-            where: { contactId: contact?.id },
-          });
-
-          if (lead) {
-            lead = await prisma.lead.update({
-              where: { id: lead.id },
-              data: {
-                leadSource: attribution.leadSource,
-                sourceConfidence: attribution.sourceConfidence,
-                sourceCode: attribution.detectedCode || lead.sourceCode,
-                sourceContentId: referralRef || lead.sourceContentId,
-                campaignId: matchedCampaign?.id || lead.campaignId,
-                assignedBrokerId: assignedBrokerId || lead.assignedBrokerId,
-                lastInboundMessageAt: new Date(),
-                notes: `New Instagram message: "${messageText}"`,
-              },
-            });
-          } else {
-            lead = await prisma.lead.create({
-              data: {
-                organizationId: org.id,
-                contactId: contact?.id,
-                fullName: `@${igUserId}`,
-                phoneE164: null, // NO FAKE PHONE FALLBACK
-                leadSource: attribution.leadSource,
-                sourceConfidence: attribution.sourceConfidence,
-                sourceCode: attribution.detectedCode,
-                sourceContentId: referralRef || undefined,
-                campaignId: matchedCampaign?.id,
-                assignedBrokerId,
-                currentStage: 'new_uncontacted',
-                firstResponseSlaMinutes: 0,
-                lastInboundMessageAt: new Date(),
-                notes: `Lead captured via Instagram ${referralSource}: "${messageText}"`,
-              },
-            });
-
-            if (matchedCampaign) {
-              await prisma.inboundCampaign.update({
-                where: { id: matchedCampaign.id },
-                data: { totalLeadsGenerated: { increment: 1 } },
-              });
+          // Upsert or create lead via universal pipeline (handles durable contact, campaign attribution, SLA, and reminders)
+          const { lead, created } = await upsertOrCreateLead(
+            { organizationId: org.id },
+            {
+              channel: 'INSTAGRAM',
+              fullName: `@${igUserId}`,
+              instagramId: igUserId,
+              sourceContentId: referralRef || undefined,
+              assignedBrokerId,
+              notes: `Instagram ${referralSource} inquiry: "${messageText}"`,
             }
-
-            // Auto-seed speed-to-lead SLA reminder for fresh inbound
-            await ensureLeadFallbackReminder(lead.id, {
-              organizationId: org.id,
-            });
-          }
+          );
 
           // Log Communication Event
           await prisma.communicationLog.create({
@@ -289,30 +249,16 @@ export async function POST(req: Request) {
       where: { role: 'MANAGER' },
     });
 
-    const contact = await findOrCreateContact({
-      organizationId: org.id,
-      fullName: customerName || (igUsername ? `@${igUsername}` : 'Instagram Prospect'),
-      instagramId: igUsername || 'unknown_ig_user',
-      assignedBrokerId: matchedCampaign?.assignedBrokerId || defaultBroker?.id,
-      notes: `Direct Instagram DM: "${commentOrDmText}"`,
-    });
-
-    const lead = await prisma.lead.create({
-      data: {
-        organizationId: org.id,
-        contactId: contact?.id,
+    const { lead } = await upsertOrCreateLead(
+      { organizationId: org.id },
+      {
+        channel: 'INSTAGRAM',
         fullName: customerName || (igUsername ? `@${igUsername}` : 'Instagram Prospect'),
-        phoneE164: null, // NO FAKE PHONE!
-        leadSource: attribution.leadSource,
-        sourceConfidence: attribution.sourceConfidence,
-        sourceCode: attribution.detectedCode,
-        campaignId: matchedCampaign?.id,
+        instagramId: igUsername || 'unknown_ig_user',
         assignedBrokerId: matchedCampaign?.assignedBrokerId || defaultBroker?.id,
-        currentStage: 'new_uncontacted',
-        lastInboundMessageAt: new Date(),
         notes: `Inbound Instagram DM inquiry: "${commentOrDmText}"`,
-      },
-    });
+      }
+    );
 
     await prisma.communicationLog.create({
       data: {
@@ -322,11 +268,6 @@ export async function POST(req: Request) {
         messageContent: commentOrDmText,
         metadataJson: JSON.stringify({ igUsername, attribution }),
       },
-    });
-
-    // Auto-seed speed-to-lead SLA reminder
-    await ensureLeadFallbackReminder(lead.id, {
-      organizationId: org.id,
     });
 
     return NextResponse.json({

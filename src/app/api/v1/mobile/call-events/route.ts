@@ -4,6 +4,7 @@ import { normalizeIndianPhone } from '@/lib/domain/phone-normalizer';
 import { resolveBrokerByInboundIdentifier, OFFICIAL_BROKER_NUMBERS } from '@/lib/domain/broker-resolver';
 import { analyzeInboundAttribution } from '@/lib/domain/campaign-attribution';
 import { findOrCreateContact } from '@/lib/domain/contact-manager';
+import { upsertOrCreateLead } from '@/lib/domain/lead-creation';
 import { requireSession } from '@/lib/services/api-auth';
 import { handleApiError } from '@/lib/services/api-handler';
 
@@ -47,9 +48,9 @@ export async function POST(req: Request) {
 
     const org = await prisma.organization.findUnique({
       where: { id: auth.session.organizationId },
-    }) || await prisma.organization.findFirst();
+    });
     if (!org) {
-      return NextResponse.json({ error: 'Organization not found' }, { status: 500 });
+      return NextResponse.json({ success: false, error: 'Organization not found' }, { status: 404 });
     }
 
     // 1. Resolve Broker Ownership:
@@ -100,82 +101,29 @@ export async function POST(req: Request) {
         : 'WHATSAPP_EXACT';
     }
 
-    // 4. Find or Create Durable Contact & Identities
-    const contact = await findOrCreateContact({
-      organizationId: org.id,
-      fullName: callerName || 'Navi Mumbai Phone Prospect',
-      phoneE164: phoneResult.e164,
-      assignedBrokerId,
-      notes: notes ? `Call note: ${notes}` : `Call recorded via ${inboundNumber}`,
-    });
-
-    // 5. Upsert Lead
-    let lead = await prisma.lead.findFirst({
-      where: { contactId: contact?.id },
-    });
-
+    // 4. Upsert or create lead via unified domain pipeline
     const callSummary = direction === 'MISSED'
       ? `Missed call on ${new Date(startTime).toLocaleTimeString()}`
       : `Phone call (${durationSeconds}s) with ${assignedBrokerName}`;
 
-    if (lead) {
-      lead = await prisma.lead.update({
-        where: { id: lead.id },
-        data: {
-          fullName: lead.fullName || callerName,
-          inboundNumber,
-          sourceConfidence: sourceCode ? 'EXACT' : lead.sourceConfidence,
-          sourceCode: sourceCode?.toUpperCase() || lead.sourceCode,
-          campaignId: matchedCampaign?.id || lead.campaignId,
-          assignedBrokerId: assignedBrokerId || lead.assignedBrokerId,
-          notes: notes ? `${lead.notes || ''}\n${notes}` : lead.notes,
-          lastInboundMessageAt: new Date(),
-        },
-      });
-    } else {
-      lead = await prisma.lead.create({
-        data: {
-          organizationId: org.id,
-          contactId: contact?.id,
-          fullName: callerName || 'Navi Mumbai Phone Prospect',
-          phoneE164: phoneResult.e164,
-          leadSource,
-          sourceConfidence,
-          sourceCode: sourceCode?.toUpperCase(),
-          inboundNumber,
-          campaignId: matchedCampaign?.id,
-          assignedBrokerId,
-          currentStage: direction === 'MISSED' ? 'new_uncontacted' : 'discovery_call',
-          firstResponseSlaMinutes: direction === 'MISSED' ? 0 : 1,
-          firstResponseAt: direction !== 'MISSED' ? new Date() : null,
-          lastInboundMessageAt: new Date(),
-          notes: notes || callSummary,
-        },
-      });
-
-      if (matchedCampaign) {
-        await prisma.inboundCampaign.update({
-          where: { id: matchedCampaign.id },
-          data: { totalLeadsGenerated: { increment: 1 } },
-        });
+    const { lead, contactId } = await upsertOrCreateLead(
+      { organizationId: org.id, userId: auth.session.userId },
+      {
+        channel: 'MOBILE_CALL',
+        fullName: callerName || 'Navi Mumbai Phone Prospect',
+        phone: phoneResult.e164,
+        leadSource,
+        sourceConfidence,
+        sourceCode: sourceCode?.toUpperCase(),
+        inboundNumber,
+        campaignId: matchedCampaign?.id,
+        assignedBrokerId,
+        currentStage: direction === 'MISSED' ? 'new_uncontacted' : 'discovery_call',
+        firstResponseSlaMinutes: direction === 'MISSED' ? 0 : 1,
+        firstResponseAt: direction !== 'MISSED' ? new Date() : null,
+        notes: notes || callSummary,
       }
-
-      if (assignedBrokerId) {
-        try {
-          await prisma.leadAssignment.create({
-            data: {
-              leadId: lead.id,
-              userId: assignedBrokerId,
-              assignedById: auth.session.userId || null,
-              assignmentType: 'DIRECT',
-              notes: 'Initial assignment on call logger lead creation',
-            },
-          });
-        } catch {
-          // Non-blocking
-        }
-      }
-    }
+    );
 
     // 6. Log Communication
     await prisma.communicationLog.create({
@@ -201,7 +149,7 @@ export async function POST(req: Request) {
       message: 'Call event captured and attributed successfully',
       data: {
         lead,
-        contact,
+        contactId,
         brokerAssigned: assignedBrokerName,
         sourceConfidence,
       },

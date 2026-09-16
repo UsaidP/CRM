@@ -49,8 +49,7 @@ export async function POST(request: NextRequest) {
 
     // Resolve organization
     if (!organizationId) {
-      const firstOrg = await prisma.organization.findFirst();
-      organizationId = firstOrg?.id || '';
+      organizationId = auth.session.organizationId || '';
     }
 
     if (!organizationId) {

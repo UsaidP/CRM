@@ -12,6 +12,7 @@ import {
 } from '@/lib/domain/lead-file-parser';
 import { type ColumnMapping } from '@/lib/domain/lead-auto-adjuster';
 import { findOrCreateContact } from '@/lib/domain/contact-manager';
+import { createLead } from '@/lib/domain/lead-creation';
 import { ensureLeadFallbackReminder } from '@/lib/services/lead-reminder-service';
 
 export const dynamic = 'force-dynamic';
@@ -83,11 +84,11 @@ export async function POST(request: NextRequest) {
 
     const org = await prisma.organization.findUnique({
       where: { id: auth.session.organizationId },
-    }) || await prisma.organization.findFirst();
+    });
     if (!org) {
       return NextResponse.json(
         { success: false, error: 'No active CRM organization found.' },
-        { status: 400 }
+        { status: 404 }
       );
     }
 
@@ -150,36 +151,38 @@ export async function POST(request: NextRequest) {
         targetStage = lead.stage;
       }
 
-      // 4. Create Lead Record
-      const createdLead = await prisma.lead.create({
-        data: {
-          organizationId: org.id,
-          contactId: contact?.id || null,
+      // 4. Create Lead Record via universal domain pipeline
+      const createdResult = await createLead(
+        { organizationId: org.id, userId: auth.session.userId },
+        {
+          channel: 'CSV_IMPORT',
           fullName: lead.fullName,
-          phoneE164: lead.phoneE164 || null,
-          email: lead.email || null,
+          phone: lead.phoneE164 || undefined,
+          email: lead.email || undefined,
           city: 'Navi Mumbai',
           leadSource: lead.leadSource,
           sourceConfidence: lead.sourceConfidence,
           inboundNumber: lead.assignedBrokerPhone,
           assignedBrokerId: assignedBroker?.id || null,
           currentStage: targetStage,
-          firstResponseAt: targetStage !== 'new_uncontacted' ? new Date() : null,
           notes: lead.notes,
-          lastInboundMessageAt: new Date(),
+          firstResponseAt: targetStage !== 'new_uncontacted' ? new Date() : null,
+          existingContactId: contact?.id || undefined,
           requirements: {
-            create: {
-              budgetMin: lead.budgetMin || null,
-              budgetMax: lead.budgetMax || 7000000,
-              bhkPreferencesJson: JSON.stringify(lead.bhkPreferences),
-              targetLocationsJson: JSON.stringify(lead.targetLocations),
-              possessionPreference: lead.possessionPreference !== 'ANY' ? lead.possessionPreference : null,
-              loanPreApproved: false,
-              purpose: 'self_use',
-              isActive: true,
-            },
+            budgetMin: lead.budgetMin || null,
+            budgetMax: lead.budgetMax || 7000000,
+            bhkPreferences: lead.bhkPreferences,
+            targetLocations: lead.targetLocations,
+            possessionPreference: lead.possessionPreference !== 'ANY' ? lead.possessionPreference : null,
+            loanPreApproved: false,
+            purpose: 'self_use',
+            isActive: true,
           },
-        },
+        }
+      );
+
+      const createdLead = await prisma.lead.findFirst({
+        where: { id: createdResult.leadId, organizationId: org.id },
         include: {
           contact: {
             include: { identities: true },
@@ -189,11 +192,6 @@ export async function POST(request: NextRequest) {
             select: { id: true, fullName: true, phoneE164: true },
           },
         },
-      });
-
-      // Auto-seed initial outreach reminder for imported lead
-      await ensureLeadFallbackReminder(createdLead.id, {
-        organizationId: org.id,
       });
 
       createdLeadsCount++;

@@ -13,16 +13,13 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { sourceContactId, targetContactId, mergedByUserId, reason } = body;
 
-    const org = await prisma.organization.findFirst();
-    if (!org) {
-      return NextResponse.json({ error: 'Organization not found' }, { status: 500 });
-    }
+    const organizationId = auth.session.organizationId;
 
     const result = await mergeContacts({
-      organizationId: org.id,
+      organizationId,
       sourceContactId,
       targetContactId,
-      mergedByUserId,
+      mergedByUserId: mergedByUserId || auth.session.userId,
       reason,
     });
 
@@ -31,7 +28,7 @@ export async function POST(req: Request) {
     }
 
     const targetContact = await prisma.contact.findFirst({
-      where: { id: result.targetContactId, organizationId: org.id },
+      where: { id: result.targetContactId, organizationId },
       include: {
         identities: true,
         leads: true,

@@ -6,6 +6,8 @@ import { resolveBrokerByInboundIdentifier, OFFICIAL_BROKER_NUMBERS } from '@/lib
 import { analyzeInboundAttribution } from '@/lib/domain/campaign-attribution';
 import { findOrCreateContact } from '@/lib/domain/contact-manager';
 import { ensureLeadFallbackReminder } from '@/lib/services/lead-reminder-service';
+import { upsertOrCreateLead } from '@/lib/domain/lead-creation';
+import { resolveWebhookOrg } from '@/lib/domain/webhook-org-resolver';
 import { handleApiError } from '@/lib/services/api-handler';
 
 export const dynamic = 'force-dynamic';
@@ -77,13 +79,19 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Malformed JSON body' }, { status: 400 });
     }
 
-    const org = await prisma.organization.findFirst();
-    if (!org) {
-      return NextResponse.json({ error: 'Organization not initialized' }, { status: 500 });
-    }
-
     // Check if this is official Meta Envelope or flattened test payload
     const isOfficialMetaEnvelope = Array.isArray(payload.entry) && payload.entry.length > 0;
+    const inboundPhoneId = isOfficialMetaEnvelope
+      ? payload.entry?.[0]?.changes?.[0]?.value?.metadata?.phone_number_id
+      : (payload.phoneNumberId || payload.phone_number_id || payload.contactedBrokerNumber);
+
+    let org;
+    try {
+      const resolved = await resolveWebhookOrg('WHATSAPP', inboundPhoneId);
+      org = resolved.org;
+    } catch (err: any) {
+      return NextResponse.json({ error: err.message || 'Cannot resolve organization' }, { status: 404 });
+    }
 
     if (isOfficialMetaEnvelope) {
       const processedResults: any[] = [];
@@ -164,86 +172,19 @@ export async function POST(req: Request) {
             const customerPhoneResult = normalizeIndianPhone(senderWaId);
             const customerPhoneE164 = customerPhoneResult.isValid ? customerPhoneResult.e164 : `+${senderWaId}`;
 
-            // Attribution & Campaign Matching
-            const attribution = analyzeInboundAttribution(messageText, 'WHATSAPP');
-
-            // Find matching campaign if code present
-            let matchedCampaign = null;
-            if (attribution.detectedCode) {
-              matchedCampaign = await prisma.inboundCampaign.findFirst({
-                where: {
-                  OR: [
-                    { sourceCode: attribution.detectedCode },
-                    { customSlug: attribution.detectedCode.toLowerCase() },
-                  ],
-                },
-              });
-            }
-
-            // Upsert Durable Contact & Identities
-            const contact = await findOrCreateContact({
-              organizationId: org.id,
-              fullName: senderName,
-              phoneE164: customerPhoneE164,
-              whatsappWaId: senderWaId,
-              assignedBrokerId,
-              notes: `WhatsApp inbound on ${inboundBrokerE164}: "${messageText}"`,
-            });
-
-            // Upsert Lead Record
-            let lead = await prisma.lead.findFirst({
-              where: {
-                contactId: contact?.id,
-              },
-            });
-
-            if (lead) {
-              lead = await prisma.lead.update({
-                where: { id: lead.id },
-                data: {
-                  fullName: lead.fullName || senderName,
-                  leadSource: attribution.leadSource,
-                  sourceConfidence: attribution.sourceConfidence,
-                  sourceCode: attribution.detectedCode || lead.sourceCode,
-                  inboundNumber: inboundBrokerE164,
-                  campaignId: matchedCampaign?.id || lead.campaignId,
-                  assignedBrokerId: assignedBrokerId || lead.assignedBrokerId,
-                  lastInboundMessageAt: new Date(),
-                  notes: `New WhatsApp message on ${new Date().toLocaleDateString()}: "${messageText}"`,
-                },
-              });
-            } else {
-              lead = await prisma.lead.create({
-                data: {
-                  organizationId: org.id,
-                  contactId: contact?.id,
-                  fullName: senderName,
-                  phoneE164: customerPhoneE164,
-                  leadSource: attribution.leadSource,
-                  sourceConfidence: attribution.sourceConfidence,
-                  sourceCode: attribution.detectedCode,
-                  inboundNumber: inboundBrokerE164,
-                  campaignId: matchedCampaign?.id,
-                  assignedBrokerId,
-                  currentStage: 'new_uncontacted',
-                  firstResponseSlaMinutes: 0,
-                  lastInboundMessageAt: new Date(),
-                  notes: `Captured via Meta WhatsApp Cloud API: "${messageText}"`,
-                },
-              });
-
-              if (matchedCampaign) {
-                await prisma.inboundCampaign.update({
-                  where: { id: matchedCampaign.id },
-                  data: { totalLeadsGenerated: { increment: 1 } },
-                });
+            // Upsert or create lead via unified lead creation pipeline
+            const { lead, created } = await upsertOrCreateLead(
+              { organizationId: org.id },
+              {
+                channel: 'WHATSAPP',
+                fullName: senderName,
+                phone: customerPhoneE164,
+                whatsappWaId: senderWaId,
+                inboundNumber: inboundBrokerE164,
+                assignedBrokerId,
+                notes: `WhatsApp inbound: "${messageText}"`,
               }
-
-              // Auto-seed speed-to-lead SLA reminder for fresh inbound
-              await ensureLeadFallbackReminder(lead.id, {
-                organizationId: org.id,
-              });
-            }
+            );
 
             // Log Communication Event
             await prisma.communicationLog.create({
@@ -257,7 +198,6 @@ export async function POST(req: Request) {
                   senderWaId,
                   contactedPhoneNumberId: phoneNumberId,
                   assignedBrokerName: brokerRes.brokerName,
-                  attribution,
                 }),
               },
             });
@@ -266,7 +206,6 @@ export async function POST(req: Request) {
               messageId,
               leadId: lead.id,
               brokerAssigned: brokerRes.brokerName,
-              attribution,
             });
           }
         }
@@ -319,33 +258,18 @@ export async function POST(req: Request) {
     const inboundNumber = brokerRes.brokerPhoneE164 || contactedBrokerNumber;
 
     const phoneResult = normalizeIndianPhone(fromPhone || '9820000000');
-    const attribution = analyzeInboundAttribution(messageText, 'WHATSAPP');
-
-    const contact = await findOrCreateContact({
-      organizationId: org.id,
-      fullName: senderName,
-      phoneE164: phoneResult.e164,
-      whatsappWaId: phoneResult.e164 ? phoneResult.e164.replace('+', '') : fromPhone,
-      assignedBrokerId,
-      notes: `Direct WhatsApp test inbound: "${messageText}"`,
-    });
-
-    const lead = await prisma.lead.create({
-      data: {
-        organizationId: org.id,
-        contactId: contact?.id,
+    const { lead } = await upsertOrCreateLead(
+      { organizationId: org.id },
+      {
+        channel: 'WHATSAPP',
         fullName: senderName,
-        phoneE164: phoneResult.e164,
-        leadSource: attribution.leadSource,
-        sourceConfidence: attribution.sourceConfidence,
-        sourceCode: attribution.detectedCode,
+        phone: phoneResult.e164,
+        whatsappWaId: phoneResult.e164 ? phoneResult.e164.replace('+', '') : fromPhone,
         inboundNumber,
         assignedBrokerId,
-        currentStage: 'new_uncontacted',
-        lastInboundMessageAt: new Date(),
         notes: `Inbound WhatsApp lead: "${messageText}"`,
-      },
-    });
+      }
+    );
 
     await prisma.communicationLog.create({
       data: {
@@ -353,13 +277,8 @@ export async function POST(req: Request) {
         channel: 'WHATSAPP',
         direction: 'INBOUND',
         messageContent: messageText,
-        metadataJson: JSON.stringify({ attribution, brokerAssigned: brokerRes.brokerName }),
+        metadataJson: JSON.stringify({ brokerAssigned: brokerRes.brokerName }),
       },
-    });
-
-    // Auto-seed speed-to-lead SLA reminder
-    await ensureLeadFallbackReminder(lead.id, {
-      organizationId: org.id,
     });
 
     return NextResponse.json({
@@ -368,7 +287,6 @@ export async function POST(req: Request) {
       data: {
         lead,
         brokerAssigned: brokerRes.brokerName,
-        attribution,
       },
     }, { status: 201 });
   } catch (error) {

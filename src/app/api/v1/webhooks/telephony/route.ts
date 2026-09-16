@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { normalizeIndianPhone } from '@/lib/domain/phone-normalizer';
 import { ensureLeadFallbackReminder } from '@/lib/services/lead-reminder-service';
+import { upsertOrCreateLead } from '@/lib/domain/lead-creation';
+import { resolveWebhookOrg } from '@/lib/domain/webhook-org-resolver';
 import { handleApiError } from '@/lib/services/api-handler';
 
 export const dynamic = 'force-dynamic';
@@ -66,34 +68,26 @@ export async function POST(req: Request) {
       },
     });
 
-    const org = await prisma.organization.findFirst();
-    if (!org) {
-      return NextResponse.json({ success: false, error: 'Organization not found' }, { status: 500 });
+    let org;
+    try {
+      const resolved = await resolveWebhookOrg('TELEPHONY', virtualNumber);
+      org = resolved.org;
+    } catch (err: any) {
+      return NextResponse.json({ success: false, error: err.message || 'Organization not found' }, { status: 404 });
     }
 
-    let lead = await prisma.lead.findFirst({
-      where: { phoneE164: phoneResult.e164 },
-    });
-
-    if (lead) {
-      lead = await prisma.lead.update({
-        where: { id: lead.id },
-        data: {
-          notes: `Inbound ${callType} from caller on virtual number ${virtualNumber || 'Main Line'}`,
-        },
-      });
-    } else {
-      lead = await prisma.lead.create({
-        data: {
-          organizationId: org.id,
-          fullName: `Caller (${phoneResult.nationalFormat})`,
-          phoneE164: phoneResult.e164,
-          leadSource: 'direct_call',
-          currentStage: 'new_uncontacted',
-          notes: `Direct ${callType} via virtual number ${virtualNumber || 'Main Line'}`,
-        },
-      });
-    }
+    const { lead } = await upsertOrCreateLead(
+      { organizationId: org.id },
+      {
+        channel: 'TELEPHONY',
+        fullName: `Caller (${phoneResult.nationalFormat})`,
+        phone: phoneResult.e164,
+        leadSource: 'direct_call',
+        firstResponseAt: null,
+        notes: `Inbound ${callType} from caller on virtual number ${virtualNumber || 'Main Line'}`,
+        inboundNumber: virtualNumber || undefined,
+      }
+    );
 
     await prisma.communicationLog.create({
       data: {
