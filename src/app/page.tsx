@@ -15,6 +15,7 @@ import {
 } from '@/lib/services/user-scope';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export default async function DashboardPage(props: {
   searchParams?: Promise<{ view?: string }>;
@@ -150,8 +151,9 @@ export default async function DashboardPage(props: {
       .filter((d) => d.dealStatus === 'PAYMENT_RECEIVED')
       .reduce((acc, d) => acc + (d.firmNetBrokerageAmount || 0), 0);
 
-    rawUnits.forEach((u) => {
+    rawUnits.forEach((u: any) => {
       const f = assessUnitFreshness(u.verificationStatus, u.lastVerifiedAt);
+      u.freshness = f;
       if (f.effectiveMarketableStatus === 'ACTIVE_MARKETABLE') {
         activeMarketableCount++;
       } else if (f.effectiveMarketableStatus === 'STALE_EXPIRED') {

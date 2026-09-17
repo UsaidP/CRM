@@ -163,6 +163,39 @@ export function TelecallerConsoleView({
     return leads.find((l) => l.id === selectedLeadId) || leads[0] || null;
   }, [leads, selectedLeadId]);
 
+  // Lead metadata & tags parser (extracts [Priority: ...], [WhatsApp: ...], [Tags: ...] without polluting input)
+  const leadMeta = useMemo(() => {
+    const raw = selectedLead?.notes || '';
+    const tagsMatch = raw.match(/\[Tags:\s*([^\]]+)\]/i);
+    const tags = tagsMatch
+      ? tagsMatch[1]
+          .split(',')
+          .map((t) => t.trim())
+          .filter(Boolean)
+      : [];
+    const priorityMatch = raw.match(/\[Priority:\s*([^\]]+)\]/i);
+    const priority = priorityMatch ? priorityMatch[1].trim() : null;
+    const waMatch = raw.match(/\[WhatsApp:\s*([^\]]+)\]/i);
+    const whatsapp = waMatch ? waMatch[1].trim() : null;
+    const cleanedNotes = raw
+      .replace(/\[Priority:\s*[^\]]+\]/gi, '')
+      .replace(/\[WhatsApp:\s*[^\]]+\]/gi, '')
+      .replace(/\[Tags:\s*[^\]]+\]/gi, '')
+      .trim();
+    return { tags, priority, whatsapp, cleanedNotes };
+  }, [selectedLead?.notes]);
+
+  // Consolidated tags from notes and lead object properties
+  const allLeadTags = useMemo(() => {
+    const metaTags = leadMeta.tags;
+    const propTags = Array.isArray(selectedLead?.tags)
+      ? selectedLead.tags
+      : typeof selectedLead?.tags === 'string'
+        ? selectedLead.tags.split(',').map((t: string) => t.trim())
+        : [];
+    return Array.from(new Set([...metaTags, ...propTags])).filter(Boolean);
+  }, [leadMeta.tags, selectedLead?.tags]);
+
   // Save Shift Stats to LocalStorage on Change
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -215,7 +248,13 @@ export function TelecallerConsoleView({
   // Sync selected lead notes to callNotes input & reset timers
   useEffect(() => {
     if (selectedLead) {
-      setCallNotes(selectedLead.notes || '');
+      const raw = selectedLead.notes || '';
+      const cleaned = raw
+        .replace(/\[Priority:\s*[^\]]+\]/gi, '')
+        .replace(/\[WhatsApp:\s*[^\]]+\]/gi, '')
+        .replace(/\[Tags:\s*[^\]]+\]/gi, '')
+        .trim();
+      setCallNotes(cleaned);
       setCallDurationSec(0);
       setIsCallTimerRunning(false);
       setCopiedPhone(false);
@@ -276,6 +315,7 @@ export function TelecallerConsoleView({
         return (
           lead.currentStage === 'discovery_call' ||
           lead.currentStage === 'visit_scheduled' ||
+          lead.currentStage === 'visit_confirmed' ||
           lead.currentStage === 'negotiation_costing'
         );
       }
@@ -381,8 +421,20 @@ export function TelecallerConsoleView({
     setIsCallTimerRunning(false);
 
     try {
-      const summaryNotes = callNotes
-        ? `${callNotes} [ZamZam Score: ${qualificationScore}/100 - ${dispositionLabel}]`
+      const prefixParts: string[] = [];
+      if (leadMeta.priority) prefixParts.push(`[Priority: ${leadMeta.priority}]`);
+      if (leadMeta.whatsapp) prefixParts.push(`[WhatsApp: ${leadMeta.whatsapp}]`);
+      if (allLeadTags.length > 0) prefixParts.push(`[Tags: ${allLeadTags.join(', ')}]`);
+      const prefix = prefixParts.length > 0 ? prefixParts.join(' ') + ' ' : '';
+      const cleanedUserNotes = callNotes
+        .replace(/\[Priority:\s*[^\]]+\]/gi, '')
+        .replace(/\[WhatsApp:\s*[^\]]+\]/gi, '')
+        .replace(/\[Tags:\s*[^\]]+\]/gi, '')
+        .trim();
+      const baseNotes = cleanedUserNotes ? `${prefix}${cleanedUserNotes}` : prefixParts.join(' ');
+
+      const summaryNotes = baseNotes
+        ? `${baseNotes} [ZamZam Score: ${qualificationScore}/100 - ${dispositionLabel}]`
         : `[ZamZam Score: ${qualificationScore}/100 - ${dispositionLabel}]`;
 
       await fetch(`/api/v1/leads/${selectedLead.id}`, {
@@ -403,9 +455,9 @@ export function TelecallerConsoleView({
         ...prev,
         callsMade: prev.callsMade + 1,
         totalDurationSec: prev.totalDurationSec + durationToRecord,
-        visitsBooked: stage === 'visit_scheduled' ? prev.visitsBooked + 1 : prev.visitsBooked,
+        visitsBooked: (stage === 'visit_scheduled' || stage === 'visit_confirmed') ? prev.visitsBooked + 1 : prev.visitsBooked,
         connectedCalls:
-          ['visit_scheduled', 'portal_shared', 'discovery_call'].includes(stage)
+          ['visit_scheduled', 'visit_confirmed', 'portal_shared', 'discovery_call'].includes(stage)
             ? prev.connectedCalls + 1
             : prev.connectedCalls,
       }));
@@ -646,14 +698,14 @@ export function TelecallerConsoleView({
                 key={filterKey}
                 type="button"
                 onClick={() => setActiveQueueFilter(filterKey)}
-                className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer whitespace-nowrap ${
+                className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer whitespace-nowrap outline-none focus:outline-none focus-visible:outline-none ${
                   activeQueueFilter === filterKey
-                    ? 'bg-accent text-white shadow-2xs'
+                    ? 'bg-accent text-white shadow-xs'
                     : 'text-content-secondary hover:text-content hover:bg-surface'
                 }`}
               >
                 {filterKey === 'UNCONTACTED' && `🔥 Uncontacted (${leads.filter((l) => l.currentStage === 'new_uncontacted').length})`}
-                {filterKey === 'HOT' && `⚡ Hot (${leads.filter((l) => ['discovery_call', 'visit_scheduled', 'negotiation_costing'].includes(l.currentStage)).length})`}
+                {filterKey === 'HOT' && `⚡ Hot (${leads.filter((l) => ['discovery_call', 'visit_scheduled', 'visit_confirmed', 'negotiation_costing'].includes(l.currentStage)).length})`}
                 {filterKey === 'OVERDUE' && '⏰ Due'}
                 {filterKey === 'ALL' && `All (${leads.length})`}
               </button>
@@ -677,8 +729,8 @@ export function TelecallerConsoleView({
             </span>
           </div>
 
-          {/* Fixed-Density 40px Rows Table */}
-          <div className="flex-1 overflow-y-auto divide-y divide-border-subtle p-1.5">
+          {/* Clean Card List */}
+          <div className="flex-1 overflow-y-auto p-2 space-y-1.5 touch-scroll">
             {filteredQueue.length === 0 ? (
               <EmptyState
                 type="filter"
@@ -700,12 +752,21 @@ export function TelecallerConsoleView({
                       handleCancelCountdown();
                       setSelectedLeadId(lead.id);
                     }}
-                    className={`spreadsheet-row px-2.5 py-2 cursor-pointer select-none rounded-xl transition-colors ${
-                      isSelected ? 'is-selected bg-accent-soft/70 border border-accent/20' : 'hover:bg-surface-subtle/70'
+                    className={`relative flex items-center gap-2.5 px-3 py-2.5 cursor-pointer select-none rounded-xl transition-all border outline-none ${
+                      isSelected
+                        ? 'bg-accent/15 border-accent text-content shadow-xs'
+                        : 'bg-surface hover:bg-surface-subtle text-content-secondary border-border/70'
                     }`}
                   >
+                    {/* Active Accent Pill Indicator */}
+                    {isSelected && (
+                      <div className="absolute left-0 top-2 bottom-2 w-1 bg-accent rounded-r-full" />
+                    )}
+
                     {/* Source Icon */}
-                    <div className="w-5 shrink-0 flex items-center justify-center">
+                    <div className={`w-7 h-7 rounded-lg border shrink-0 flex items-center justify-center transition-colors ${
+                      isSelected ? 'bg-surface border-accent/40' : 'bg-surface-subtle border-border'
+                    }`}>
                       {(lead.leadSource || '').includes('YOUTUBE') ? (
                         <YoutubeIcon className="w-3.5 h-3.5 text-red-500" />
                       ) : (lead.leadSource || '').includes('INSTAGRAM') ? (
@@ -718,18 +779,18 @@ export function TelecallerConsoleView({
                     </div>
 
                     {/* Name & Phone */}
-                    <div className="flex-1 min-w-0 pr-1.5">
-                      <div className="flex items-center gap-1 truncate">
-                        <span className="font-bold text-xs text-content truncate font-sans">
+                    <div className="flex-1 min-w-0 pr-1">
+                      <div className="flex items-center gap-1.5 truncate">
+                        <span className={`font-bold text-xs truncate ${isSelected ? 'text-accent-text font-display' : 'text-content'}`}>
                           {lead.fullName || 'Anonymous Prospect'}
                         </span>
                         {lead.sourceCode && (
-                          <span className="font-mono text-[9px] px-1 py-0.2 rounded bg-surface text-accent-text border border-border shrink-0">
+                          <span className="font-mono text-[9px] px-1 py-0.2 rounded bg-accent-soft text-accent-text border border-accent/20 shrink-0">
                             {lead.sourceCode}
                           </span>
                         )}
                       </div>
-                      <div className="font-mono text-[10px] text-content-secondary truncate">
+                      <div className="font-mono text-[10px] text-content-secondary truncate mt-0.5">
                         {lead.phoneE164 || 'No phone'}
                       </div>
                     </div>
@@ -762,389 +823,468 @@ export function TelecallerConsoleView({
         {/* =========================================================================
             CENTER PANE: ACTIVE CALLER WORKBENCH HUD (5 cols on xl, 8 on lg)
             ========================================================================= */}
-        <div className="lg:col-span-8 xl:col-span-5 flex flex-col rounded-2xl bg-surface border border-border shadow-xs overflow-hidden p-4 sm:p-5 space-y-4">
+        <div className="lg:col-span-8 xl:col-span-5 flex flex-col rounded-2xl bg-surface border border-border shadow-xs overflow-hidden xl:h-[780px]">
           {selectedLead ? (
             <>
-              {/* Lead Identity & Direct Telephony Header */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border">
-                <div className="space-y-1 min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="text-base sm:text-lg font-bold text-content font-display tracking-tight truncate">
-                      {selectedLead.fullName || 'Anonymous Inbound Lead'}
-                    </h3>
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${qualificationGrade.class}`}>
-                      {qualificationGrade.label} ({qualificationScore}/100)
-                    </span>
-                  </div>
+              {/* Scrollable Upper Body */}
+              <div className="flex-1 overflow-y-auto touch-scroll p-4 sm:p-5 space-y-4">
+                {/* Lead Identity & Direct Telephony Header */}
+                <div className="flex flex-col gap-2 pb-3 border-b border-border">
+                  {/* Row 1: Identity & Primary Outreach Actions */}
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <h3 className="text-base sm:text-lg font-bold text-content font-display tracking-tight truncate">
+                        {selectedLead.fullName || 'Anonymous Inbound Lead'}
+                      </h3>
+                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border whitespace-nowrap shrink-0 inline-flex items-center gap-1 ${qualificationGrade.class}`}>
+                        {qualificationGrade.label} ({qualificationScore}/100)
+                      </span>
+                    </div>
 
-                  <div className="flex flex-wrap items-center gap-2 text-xs font-mono text-content-secondary">
-                    <span className="font-bold text-content">{selectedLead.phoneE164 || 'No Phone'}</span>
-                    {selectedLead.phoneE164 && (
-                      <button
-                        type="button"
-                        onClick={handleCopyPhone}
-                        className="p-1 rounded hover:bg-surface-subtle text-content-muted hover:text-content transition-colors cursor-pointer"
-                        title="Copy phone number"
-                      >
-                        {copiedPhone ? <Check className="w-3 h-3 text-status-success" /> : <Copy className="w-3 h-3" />}
-                      </button>
-                    )}
-                    <span>•</span>
-                    <span className="capitalize">{selectedLead.city || 'Navi Mumbai'}</span>
-                    {selectedLead.sourceCode && (
-                      <>
-                        <span>•</span>
-                        <span className="text-accent-text font-bold">Code: {selectedLead.sourceCode}</span>
-                      </>
-                    )}
-                    {getPortalLink() ? (
-                      <div className="inline-flex items-center gap-1.5 bg-accent-soft px-2 py-0.5 rounded-lg border border-accent/20">
-                        <Globe className="w-3 h-3 text-accent" />
+                    <div className="flex items-center gap-2 shrink-0">
+                      {/* Call Timer Display */}
+                      {isCallTimerRunning && (
+                        <div className="px-2.5 py-1 rounded-xl bg-status-danger-surface text-status-danger font-mono text-xs font-bold border border-status-danger/30 flex items-center gap-1.5 animate-pulse whitespace-nowrap">
+                          <span className="w-1.5 h-1.5 rounded-full bg-status-danger" />
+                          <span>{formatTimer(callDurationSec)}</span>
+                        </div>
+                      )}
+
+                      {/* Direct WhatsApp Action */}
+                      {selectedLead.phoneE164 && (
                         <a
-                          href={getPortalLink()!}
+                          href={getWhatsAppUrl()}
                           target="_blank"
                           rel="noreferrer"
-                          className="inline-flex items-center gap-0.5 text-accent font-bold hover:underline"
-                          title="Open Private Client Presentation Portal"
+                          className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-status-success hover:bg-status-success/90 text-white font-bold transition-all shadow-xs cursor-pointer flex items-center gap-1.5 text-xs whitespace-nowrap shrink-0"
+                          title="Open WhatsApp chat with prospect"
                         >
-                          Portal <ExternalLink className="w-2.5 h-2.5" />
+                          <MessageSquare className="w-3.5 h-3.5 shrink-0" />
+                          <span>WhatsApp</span>
                         </a>
+                      )}
+
+                      {/* Start/End Call Action */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!isCallTimerRunning) {
+                            setIsCallTimerRunning(true);
+                            if (selectedLead.phoneE164) {
+                              window.open(`tel:${selectedLead.phoneE164}`, '_self');
+                            }
+                          } else {
+                            setIsCallTimerRunning(false);
+                          }
+                        }}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs cursor-pointer whitespace-nowrap shrink-0 ${
+                          isCallTimerRunning
+                            ? 'bg-status-danger hover:opacity-90 text-white'
+                            : 'bg-primary hover:bg-primary-light text-white'
+                        }`}
+                        title="Press [Space] to toggle call timer"
+                      >
+                        {isCallTimerRunning ? (
+                          <>
+                            <PhoneOff className="w-3.5 h-3.5 shrink-0" />
+                            <span>End Call</span>
+                          </>
+                        ) : (
+                          <>
+                            <PhoneCall className="w-3.5 h-3.5 shrink-0" />
+                            <span>Start Call</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Row 2: Contact Info & Portal Action */}
+                  <div className="flex items-center justify-between gap-2 pt-0.5">
+                    <div className="flex items-center gap-2 text-xs font-mono text-content-secondary min-w-0 flex-wrap">
+                      <span className="font-bold text-content whitespace-nowrap">{selectedLead.phoneE164 || 'No Phone'}</span>
+                      {selectedLead.phoneE164 && (
                         <button
                           type="button"
-                          onClick={handleCopyPortalLink}
-                          className="p-0.5 rounded text-accent hover:text-accent-hover transition-colors cursor-pointer"
-                          title="Copy Client Portal URL"
+                          onClick={handleCopyPhone}
+                          className="p-1 rounded hover:bg-surface-subtle text-content-muted hover:text-content transition-colors cursor-pointer shrink-0"
+                          title="Copy phone number"
                         >
-                          {copiedPortal ? <Check className="w-2.5 h-2.5 text-status-success" /> : <Copy className="w-2.5 h-2.5" />}
+                          {copiedPhone ? <Check className="w-3 h-3 text-status-success" /> : <Copy className="w-3 h-3" />}
                         </button>
-                        {getPortal()?.totalViews != null && (
-                          <span className="text-[10px] font-mono font-bold text-accent-text flex items-center gap-0.5">
-                            <Eye className="w-2.5 h-2.5" /> {getPortal()?.totalViews}
-                          </span>
-                        )}
-                      </div>
-                    ) : (
-                      <>
-                        <span>•</span>
+                      )}
+                      <span className="text-border-strong">•</span>
+                      <span className="capitalize whitespace-nowrap">{selectedLead.city || 'Navi Mumbai'}</span>
+                      {selectedLead.sourceCode && (
+                        <>
+                          <span className="text-border-strong">•</span>
+                          <span className="text-accent-text font-bold whitespace-nowrap">Code: {selectedLead.sourceCode}</span>
+                        </>
+                      )}
+                    </div>
+
+                    {/* Client Presentation Portal Action */}
+                    <div className="shrink-0">
+                      {getPortalLink() ? (
+                        <div className="inline-flex items-center gap-1.5 bg-accent-soft px-2.5 py-1 rounded-lg border border-accent/25 font-sans text-xs shadow-2xs whitespace-nowrap">
+                          <Globe className="w-3.5 h-3.5 text-accent shrink-0" />
+                          <a
+                            href={getPortalLink()!}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1 text-accent font-bold hover:underline"
+                            title="Open Private Client Presentation Portal"
+                          >
+                            <span>Portal</span>
+                            <ExternalLink className="w-2.5 h-2.5" />
+                          </a>
+                          <button
+                            type="button"
+                            onClick={handleCopyPortalLink}
+                            className="p-0.5 rounded text-accent hover:text-accent-hover transition-colors cursor-pointer"
+                            title="Copy Client Portal URL"
+                          >
+                            {copiedPortal ? <Check className="w-2.5 h-2.5 text-status-success" /> : <Copy className="w-2.5 h-2.5" />}
+                          </button>
+                          {getPortal()?.totalViews != null && (
+                            <span className="text-[10px] font-mono font-bold text-accent-text flex items-center gap-0.5 border-l border-accent/25 pl-1.5 ml-0.5">
+                              <Eye className="w-2.5 h-2.5" /> {getPortal()?.totalViews}
+                            </span>
+                          )}
+                        </div>
+                      ) : (
                         <button
                           type="button"
                           onClick={() => handleCreatePortalForLead()}
                           disabled={isCreatingPortal}
-                          className="inline-flex items-center gap-1 text-accent font-bold hover:underline text-xs cursor-pointer disabled:opacity-50"
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-surface-subtle hover:bg-surface text-accent font-bold border border-accent/30 transition-all text-xs font-sans shadow-2xs cursor-pointer disabled:opacity-50 whitespace-nowrap"
                           title="Generate Private Client Presentation Portal for this lead"
                         >
-                          <Sparkles className="w-3 h-3 text-accent" />
-                          {isCreatingPortal ? 'Generating Portal...' : '+ Create Portal'}
+                          <Sparkles className="w-3 h-3 text-accent shrink-0" />
+                          <span>{isCreatingPortal ? 'Creating...' : '+ Create Portal'}</span>
                         </button>
-                      </>
-                    )}
+                      )}
+                    </div>
                   </div>
                 </div>
 
-                {/* Telephony Controls & Stopwatch */}
-                <div className="flex items-center gap-2 shrink-0">
-                  {/* Call Timer Display */}
-                  {isCallTimerRunning && (
-                    <div className="px-2.5 py-1 rounded-xl bg-status-danger-surface text-status-danger font-mono text-xs font-bold border border-status-danger/30 flex items-center gap-1.5 animate-pulse">
-                      <span className="w-1.5 h-1.5 rounded-full bg-status-danger" />
-                      <span>{formatTimer(callDurationSec)}</span>
+                {/* Requirement Summary Cards - 3 Column Symmetrical Grid */}
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="p-2 sm:px-2.5 sm:py-2 rounded-xl bg-surface-subtle/80 border border-border flex items-center gap-2 text-[11px] min-w-0 shadow-2xs">
+                    <div className="p-1.5 rounded-lg bg-accent-soft text-accent shrink-0">
+                      <Building2 className="w-3.5 h-3.5" />
                     </div>
-                  )}
+                    <div className="min-w-0 flex-1">
+                      <div className="text-[10px] uppercase font-semibold text-content-secondary leading-none">Pref</div>
+                      <div className="font-bold text-accent-text truncate text-xs mt-0.5">
+                        {selectedLead.preferredBhk ? `${selectedLead.preferredBhk} BHK` : '1 & 2 BHK'}
+                      </div>
+                    </div>
+                  </div>
 
-                  {/* Start/Stop Call Button */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (!isCallTimerRunning) {
-                        setIsCallTimerRunning(true);
-                        if (selectedLead.phoneE164) {
-                          window.open(`tel:${selectedLead.phoneE164}`, '_self');
-                        }
-                      } else {
-                        setIsCallTimerRunning(false);
-                      }
-                    }}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs cursor-pointer ${
-                      isCallTimerRunning
-                        ? 'bg-status-danger hover:opacity-90 text-white'
-                        : 'bg-primary hover:bg-primary-light text-white'
-                    }`}
-                    title="Press [Space] to toggle call timer"
-                  >
-                    {isCallTimerRunning ? (
-                      <>
-                        <PhoneOff className="w-3.5 h-3.5" />
-                        <span>End Call</span>
-                      </>
-                    ) : (
-                      <>
-                        <PhoneCall className="w-3.5 h-3.5" />
-                        <span>Start Call</span>
-                      </>
-                    )}
-                  </button>
+                  <div className="p-2 sm:px-2.5 sm:py-2 rounded-xl bg-surface-subtle/80 border border-border flex items-center gap-2 text-[11px] min-w-0 shadow-2xs">
+                    <div className="p-1.5 rounded-lg bg-status-success-surface text-status-success shrink-0">
+                      <MapPin className="w-3.5 h-3.5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-[10px] uppercase font-semibold text-content-secondary leading-none">Market</div>
+                      <div
+                        className="font-bold text-content truncate text-xs mt-0.5"
+                        title={selectedLead.preferredMicroMarket || 'Kharghar / Taloja Corridor'}
+                      >
+                        {selectedLead.preferredMicroMarket || 'Kharghar / Taloja'}
+                      </div>
+                    </div>
+                  </div>
 
-                  {/* Direct WhatsApp */}
-                  {selectedLead.phoneE164 && (
-                    <a
-                      href={getWhatsAppUrl()}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="p-2 rounded-xl bg-status-success hover:opacity-90 text-white font-bold transition-all shadow-xs cursor-pointer"
-                      title="Open WhatsApp chat with prospect"
+                  <div className="p-2 sm:px-2.5 sm:py-2 rounded-xl bg-surface-subtle/80 border border-border flex items-center gap-2 text-[11px] min-w-0 shadow-2xs">
+                    <div className="p-1.5 rounded-lg bg-amber-500/10 text-amber-500 shrink-0">
+                      <DollarSign className="w-3.5 h-3.5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-[10px] uppercase font-semibold text-content-secondary leading-none">Budget</div>
+                      <div className="font-bold text-content truncate text-xs mt-0.5">
+                        {selectedLead.budgetCeiling
+                          ? `₹${(selectedLead.budgetCeiling / 100000).toFixed(1)}L`
+                          : '₹45L - ₹85L'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ZamZam 4-Pillar Buyer Qualification Scorecard */}
+                <div className="p-3.5 rounded-xl bg-surface-subtle border border-border space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-content flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-accent" />
+                      ZamZam 4-Pillar Qualification
+                    </span>
+                    <span className="font-mono text-xs font-extrabold text-accent-text">
+                      Score: {qualificationScore}/100
+                    </span>
+                  </div>
+
+                  {/* 4 Pillars Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    {/* Pillar 01: INTENT */}
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold text-content-secondary uppercase">
+                        01 · Buyer Intent (30 pts)
+                      </span>
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => setQualificationIntent('IMMEDIATE')}
+                          className={`flex-1 text-center text-[10px] py-1.5 px-1 rounded-lg font-semibold border transition-all cursor-pointer ${
+                            qualificationIntent === 'IMMEDIATE'
+                              ? 'bg-accent text-white border-accent shadow-xs font-bold'
+                              : 'bg-surface border-border text-content-secondary hover:text-content hover:bg-surface-subtle'
+                          }`}
+                        >
+                          Immediate (30)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setQualificationIntent('EXPLORING')}
+                          className={`flex-1 text-center text-[10px] py-1.5 px-1 rounded-lg font-semibold border transition-all cursor-pointer ${
+                            qualificationIntent === 'EXPLORING'
+                              ? 'bg-accent text-white border-accent shadow-xs font-bold'
+                              : 'bg-surface border-border text-content-secondary hover:text-content hover:bg-surface-subtle'
+                          }`}
+                        >
+                          Exploring (18)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setQualificationIntent('CURIOUS')}
+                          className={`flex-1 text-center text-[10px] py-1.5 px-1 rounded-lg font-semibold border transition-all cursor-pointer ${
+                            qualificationIntent === 'CURIOUS'
+                              ? 'bg-accent text-white border-accent shadow-xs font-bold'
+                              : 'bg-surface border-border text-content-secondary hover:text-content hover:bg-surface-subtle'
+                          }`}
+                        >
+                          Curious (6)
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Pillar 02: BUDGET FIT */}
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold text-content-secondary uppercase">
+                        02 · Budget Segment (25 pts)
+                      </span>
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => setQualificationBudget('LUXURY_125CR')}
+                          className={`flex-1 text-center text-[10px] py-1.5 px-1 rounded-lg font-semibold border transition-all cursor-pointer ${
+                            qualificationBudget === 'LUXURY_125CR'
+                              ? 'bg-accent text-white border-accent shadow-xs font-bold'
+                              : 'bg-surface border-border text-content-secondary hover:text-content hover:bg-surface-subtle'
+                          }`}
+                        >
+                          ₹1.25Cr+ (25)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setQualificationBudget('MID_60L_125CR')}
+                          className={`flex-1 text-center text-[10px] py-1.5 px-1 rounded-lg font-semibold border transition-all cursor-pointer ${
+                            qualificationBudget === 'MID_60L_125CR'
+                              ? 'bg-accent text-white border-accent shadow-xs font-bold'
+                              : 'bg-surface border-border text-content-secondary hover:text-content hover:bg-surface-subtle'
+                          }`}
+                        >
+                          ₹60L-1.25Cr (20)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setQualificationBudget('AFFORDABLE_60L')}
+                          className={`flex-1 text-center text-[10px] py-1.5 px-1 rounded-lg font-semibold border transition-all cursor-pointer ${
+                            qualificationBudget === 'AFFORDABLE_60L'
+                              ? 'bg-accent text-white border-accent shadow-xs font-bold'
+                              : 'bg-surface border-border text-content-secondary hover:text-content hover:bg-surface-subtle'
+                          }`}
+                        >
+                          &lt;₹60L (12)
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Pillar 03: MICRO-MARKET */}
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold text-content-secondary uppercase">
+                        03 · Micro-Market (20 pts)
+                      </span>
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => setQualificationLocation('KHARGHAR_PRIME')}
+                          className={`flex-1 text-center text-[10px] py-1.5 px-1 rounded-lg font-semibold border transition-all cursor-pointer ${
+                            qualificationLocation === 'KHARGHAR_PRIME'
+                              ? 'bg-accent text-white border-accent shadow-xs font-bold'
+                              : 'bg-surface border-border text-content-secondary hover:text-content hover:bg-surface-subtle'
+                          }`}
+                        >
+                          Kharghar (20)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setQualificationLocation('TALOJA_METRO')}
+                          className={`flex-1 text-center text-[10px] py-1.5 px-1 rounded-lg font-semibold border transition-all cursor-pointer ${
+                            qualificationLocation === 'TALOJA_METRO'
+                              ? 'bg-accent text-white border-accent shadow-xs font-bold'
+                              : 'bg-surface border-border text-content-secondary hover:text-content hover:bg-surface-subtle'
+                          }`}
+                        >
+                          Taloja (16)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setQualificationLocation('ULWE_PANVEL')}
+                          className={`flex-1 text-center text-[10px] py-1.5 px-1 rounded-lg font-semibold border transition-all cursor-pointer ${
+                            qualificationLocation === 'ULWE_PANVEL'
+                              ? 'bg-accent text-white border-accent shadow-xs font-bold'
+                              : 'bg-surface border-border text-content-secondary hover:text-content hover:bg-surface-subtle'
+                          }`}
+                        >
+                          Ulwe/Panvel (10)
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Pillar 04: TIMELINE */}
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold text-content-secondary uppercase">
+                        04 · Buying Window (25 pts)
+                      </span>
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => setQualificationTimeline('READY_30D')}
+                          className={`flex-1 text-center text-[10px] py-1.5 px-1 rounded-lg font-semibold border transition-all cursor-pointer ${
+                            qualificationTimeline === 'READY_30D'
+                              ? 'bg-accent text-white border-accent shadow-xs font-bold'
+                              : 'bg-surface border-border text-content-secondary hover:text-content hover:bg-surface-subtle'
+                          }`}
+                        >
+                          &lt;30d (25)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setQualificationTimeline('UNDER_CONST_90D')}
+                          className={`flex-1 text-center text-[10px] py-1.5 px-1 rounded-lg font-semibold border transition-all cursor-pointer ${
+                            qualificationTimeline === 'UNDER_CONST_90D'
+                              ? 'bg-accent text-white border-accent shadow-xs font-bold'
+                              : 'bg-surface border-border text-content-secondary hover:text-content hover:bg-surface-subtle'
+                          }`}
+                        >
+                          30–90d (16)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setQualificationTimeline('INVESTOR_90D')}
+                          className={`flex-1 text-center text-[10px] py-1.5 px-1 rounded-lg font-semibold border transition-all cursor-pointer ${
+                            qualificationTimeline === 'INVESTOR_90D'
+                              ? 'bg-accent text-white border-accent shadow-xs font-bold'
+                              : 'bg-surface border-border text-content-secondary hover:text-content hover:bg-surface-subtle'
+                          }`}
+                        >
+                          90d+ (8)
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Quick Discovery Checkchips */}
+                  <div className="pt-2 border-t border-border/60 flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setLoanApproved(!loanApproved)}
+                      className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold border transition-all cursor-pointer ${
+                        loanApproved
+                          ? 'bg-status-success-surface text-status-success border-status-success/40'
+                          : 'bg-surface text-content-muted border-border'
+                      }`}
                     >
-                      <MessageSquare className="w-4 h-4" />
-                    </a>
-                  )}
-                </div>
-              </div>
+                      {loanApproved ? '✓ Loan Approved' : 'Loan Assistance Needed'}
+                    </button>
 
-              {/* Requirement Summary Pills */}
-              <div className="p-2.5 bg-surface-subtle/80 rounded-xl border border-border flex flex-wrap items-center gap-2.5 text-[11px]">
-                <div className="flex items-center gap-1 text-content">
-                  <Building2 className="w-3 h-3 text-accent" />
-                  <span className="font-bold">Pref:</span>
-                  <span className="font-semibold text-accent-text">
-                    {selectedLead.preferredBhk ? `${selectedLead.preferredBhk} BHK` : '1 & 2 BHK'}
-                  </span>
-                </div>
-                <span className="text-border">|</span>
-                <div className="flex items-center gap-1 text-content">
-                  <MapPin className="w-3 h-3 text-status-success" />
-                  <span className="font-bold">Market:</span>
-                  <span>{selectedLead.preferredMicroMarket || 'Kharghar / Taloja Corridor'}</span>
-                </div>
-                <span className="text-border">|</span>
-                <div className="flex items-center gap-1 text-content">
-                  <DollarSign className="w-3 h-3 text-amber-500" />
-                  <span className="font-bold">Budget:</span>
-                  <span>
-                    {selectedLead.budgetCeiling
-                      ? `₹${(selectedLead.budgetCeiling / 100000).toFixed(1)} Lakhs`
-                      : '₹45L - ₹85L'}
-                  </span>
-                </div>
-              </div>
+                    <button
+                      type="button"
+                      onClick={() => setSelfUse(!selfUse)}
+                      className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold border transition-all cursor-pointer ${
+                        selfUse
+                          ? 'bg-accent-soft text-accent-text border-accent/30'
+                          : 'bg-surface text-content-muted border-border'
+                      }`}
+                    >
+                      {selfUse ? '🏠 End-User' : '💼 Investor'}
+                    </button>
 
-              {/* ZamZam 4-Pillar Buyer Qualification Scorecard */}
-              <div className="p-3.5 rounded-xl bg-surface-subtle border border-border space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-content flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-accent" />
-                    ZamZam 4-Pillar Qualification
-                  </span>
-                  <span className="font-mono text-xs font-extrabold text-accent-text">
-                    Score: {qualificationScore}/100
-                  </span>
-                </div>
-
-                {/* 4 Pillars Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                  {/* Pillar 01: INTENT */}
-                  <div className="space-y-1">
-                    <span className="text-[10px] font-bold text-content-secondary uppercase">
-                      01 · Buyer Intent (30 pts)
-                    </span>
-                    <div className="flex items-center gap-1">
-                      <button
-                        type="button"
-                        onClick={() => setQualificationIntent('IMMEDIATE')}
-                        className={`pillar-chip flex-1 text-center text-[10px] py-1 ${
-                          qualificationIntent === 'IMMEDIATE' ? 'is-active' : ''
-                        }`}
-                      >
-                        Immediate (30)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setQualificationIntent('EXPLORING')}
-                        className={`pillar-chip flex-1 text-center text-[10px] py-1 ${
-                          qualificationIntent === 'EXPLORING' ? 'is-active' : ''
-                        }`}
-                      >
-                        Exploring (18)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setQualificationIntent('CURIOUS')}
-                        className={`pillar-chip flex-1 text-center text-[10px] py-1 ${
-                          qualificationIntent === 'CURIOUS' ? 'is-active' : ''
-                        }`}
-                      >
-                        Curious (6)
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Pillar 02: BUDGET FIT */}
-                  <div className="space-y-1">
-                    <span className="text-[10px] font-bold text-content-secondary uppercase">
-                      02 · Budget Segment (25 pts)
-                    </span>
-                    <div className="flex items-center gap-1">
-                      <button
-                        type="button"
-                        onClick={() => setQualificationBudget('LUXURY_125CR')}
-                        className={`pillar-chip flex-1 text-center text-[10px] py-1 ${
-                          qualificationBudget === 'LUXURY_125CR' ? 'is-active' : ''
-                        }`}
-                      >
-                        ₹1.25Cr+ (25)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setQualificationBudget('MID_60L_125CR')}
-                        className={`pillar-chip flex-1 text-center text-[10px] py-1 ${
-                          qualificationBudget === 'MID_60L_125CR' ? 'is-active' : ''
-                        }`}
-                      >
-                        ₹60L-1.25Cr (20)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setQualificationBudget('AFFORDABLE_60L')}
-                        className={`pillar-chip flex-1 text-center text-[10px] py-1 ${
-                          qualificationBudget === 'AFFORDABLE_60L' ? 'is-active' : ''
-                        }`}
-                      >
-                        &lt;₹60L (12)
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Pillar 03: MICRO-MARKET */}
-                  <div className="space-y-1">
-                    <span className="text-[10px] font-bold text-content-secondary uppercase">
-                      03 · Micro-Market (20 pts)
-                    </span>
-                    <div className="flex items-center gap-1">
-                      <button
-                        type="button"
-                        onClick={() => setQualificationLocation('KHARGHAR_PRIME')}
-                        className={`pillar-chip flex-1 text-center text-[10px] py-1 ${
-                          qualificationLocation === 'KHARGHAR_PRIME' ? 'is-active' : ''
-                        }`}
-                      >
-                        Kharghar (20)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setQualificationLocation('TALOJA_METRO')}
-                        className={`pillar-chip flex-1 text-center text-[10px] py-1 ${
-                          qualificationLocation === 'TALOJA_METRO' ? 'is-active' : ''
-                        }`}
-                      >
-                        Taloja (16)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setQualificationLocation('ULWE_PANVEL')}
-                        className={`pillar-chip flex-1 text-center text-[10px] py-1 ${
-                          qualificationLocation === 'ULWE_PANVEL' ? 'is-active' : ''
-                        }`}
-                      >
-                        Ulwe/Panvel (10)
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Pillar 04: TIMELINE */}
-                  <div className="space-y-1">
-                    <span className="text-[10px] font-bold text-content-secondary uppercase">
-                      04 · Buying Window (25 pts)
-                    </span>
-                    <div className="flex items-center gap-1">
-                      <button
-                        type="button"
-                        onClick={() => setQualificationTimeline('READY_30D')}
-                        className={`pillar-chip flex-1 text-center text-[10px] py-1 ${
-                          qualificationTimeline === 'READY_30D' ? 'is-active' : ''
-                        }`}
-                      >
-                        &lt;30d (25)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setQualificationTimeline('UNDER_CONST_90D')}
-                        className={`pillar-chip flex-1 text-center text-[10px] py-1 ${
-                          qualificationTimeline === 'UNDER_CONST_90D' ? 'is-active' : ''
-                        }`}
-                      >
-                        30–90d (16)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setQualificationTimeline('INVESTOR_90D')}
-                        className={`pillar-chip flex-1 text-center text-[10px] py-1 ${
-                          qualificationTimeline === 'INVESTOR_90D' ? 'is-active' : ''
-                        }`}
-                      >
-                        90d+ (8)
-                      </button>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setWeekendVisitReady(!weekendVisitReady)}
+                      className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold border transition-all cursor-pointer ${
+                        weekendVisitReady
+                          ? 'bg-status-warning-surface text-status-warning border-status-warning/40'
+                          : 'bg-surface text-content-muted border-border'
+                      }`}
+                    >
+                      {weekendVisitReady ? '🚗 Visit Ready' : 'Visit Pending'}
+                    </button>
                   </div>
                 </div>
 
-                {/* Quick Discovery Checkchips */}
-                <div className="pt-2 border-t border-border/60 flex flex-wrap items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setLoanApproved(!loanApproved)}
-                    className={`px-2 py-0.5 rounded-lg text-[10px] font-semibold border transition-all cursor-pointer ${
-                      loanApproved
-                        ? 'bg-status-success-surface text-status-success border-status-success/40'
-                        : 'bg-surface text-content-muted border-border'
-                    }`}
-                  >
-                    {loanApproved ? '✓ Loan Approved' : 'Loan Assistance Needed'}
-                  </button>
+                {/* Buyer Preferences & Tags Badges */}
+                {(allLeadTags.length > 0 || leadMeta.whatsapp) && (
+                  <div className="p-3 rounded-xl bg-surface-subtle/60 border border-border space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold text-content-secondary uppercase tracking-wider flex items-center gap-1.5">
+                        <Tag className="w-3 h-3 text-accent" />
+                        Prospect Tags &amp; Preferences {allLeadTags.length > 0 && `(${allLeadTags.length})`}
+                      </span>
+                      {leadMeta.whatsapp && (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-status-success bg-status-success-surface px-2 py-0.5 rounded-full border border-status-success/30">
+                          <CheckCircle2 className="w-2.5 h-2.5" /> WhatsApp {leadMeta.whatsapp}
+                        </span>
+                      )}
+                    </div>
+                    {allLeadTags.length > 0 && (
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        {allLeadTags.map((tag, idx) => (
+                          <span
+                            key={idx}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-surface border border-border/80 text-[11px] font-medium text-content shadow-2xs"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
 
-                  <button
-                    type="button"
-                    onClick={() => setSelfUse(!selfUse)}
-                    className={`px-2 py-0.5 rounded-lg text-[10px] font-semibold border transition-all cursor-pointer ${
-                      selfUse
-                        ? 'bg-accent-soft text-accent-text border-accent/30'
-                        : 'bg-surface text-content-muted border-border'
-                    }`}
-                  >
-                    {selfUse ? '🏠 End-User' : '💼 Investor'}
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setWeekendVisitReady(!weekendVisitReady)}
-                    className={`px-2 py-0.5 rounded-lg text-[10px] font-semibold border transition-all cursor-pointer ${
-                      weekendVisitReady
-                        ? 'bg-status-warning-surface text-status-warning border-status-warning/40'
-                        : 'bg-surface text-content-muted border-border'
-                    }`}
-                  >
-                    {weekendVisitReady ? '🚗 Visit Ready' : 'Visit Pending'}
-                  </button>
+                {/* Real-Time Call Notes */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-content flex items-center gap-1.5">
+                      <FileText className="w-3.5 h-3.5 text-accent" />
+                      Conversation Notes
+                    </label>
+                    <span className="text-[9px] text-content-muted">Auto-saves on disposition</span>
+                  </div>
+                  <textarea
+                    rows={3}
+                    value={callNotes}
+                    onChange={(e) => setCallNotes(e.target.value)}
+                    placeholder="Record buyer's BHK preference, floor requirements, Vastu notes, family decision-makers, or objection details..."
+                    className="w-full min-h-[84px] p-3 rounded-xl bg-surface-subtle border border-border text-xs text-content placeholder:text-content-muted focus:outline-none focus:ring-1 focus:ring-accent leading-relaxed resize-y"
+                  />
                 </div>
               </div>
 
-              {/* Real-Time Call Notes */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <label className="text-[11px] font-bold uppercase tracking-wider text-content flex items-center gap-1.5">
-                    <FileText className="w-3 h-3 text-accent" />
-                    Conversation Notes
-                  </label>
-                  <span className="text-[9px] text-content-muted">Auto-saves on disposition</span>
-                </div>
-                <textarea
-                  rows={2}
-                  value={callNotes}
-                  onChange={(e) => setCallNotes(e.target.value)}
-                  placeholder="Record buyer's BHK preference, floor requirements, Vastu notes, family decision-makers, or objection details..."
-                  className="w-full p-2.5 rounded-xl bg-surface-subtle border border-border text-xs text-content placeholder:text-content-muted focus:outline-none focus:ring-1 focus:ring-accent"
-                />
-              </div>
-
-              {/* 1-Click Color-Coded Disposition Button Bar with Keyboard Shortcuts */}
-              <div className="space-y-1.5 pt-2 border-t border-border">
+              {/* Pinned Bottom 1-Click Color-Coded Disposition Button Bar with Keyboard Shortcuts */}
+              <div className="p-3 sm:p-4 bg-surface-subtle/80 border-t border-border space-y-2 shrink-0">
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-bold uppercase tracking-wider text-content">
                     1-Click Call Disposition
@@ -1234,7 +1374,7 @@ export function TelecallerConsoleView({
         {/* =========================================================================
             RIGHT PANE: SMART ASSISTANT WORKBENCH (4 cols on xl, 12 on lg)
             ========================================================================= */}
-        <div className="lg:col-span-12 xl:col-span-4 flex flex-col rounded-2xl bg-surface border border-border shadow-xs overflow-hidden p-4 sm:p-5 space-y-4 h-full">
+        <div className="lg:col-span-12 xl:col-span-4 flex flex-col rounded-2xl bg-surface border border-border shadow-xs overflow-hidden p-4 sm:p-5 space-y-4 xl:h-[780px]">
           {/* Smart Assistant Tab Selector */}
           <div className="flex items-center p-1 rounded-xl bg-surface-subtle border border-border">
             <button

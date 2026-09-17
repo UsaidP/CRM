@@ -181,6 +181,7 @@ export interface Lead {
     | 'discovery_call' 
     | 'portal_shared' 
     | 'visit_scheduled' 
+    | 'visit_confirmed'
     | 'visit_done' 
     | 'revisit_scheduled'
     | 'negotiation_token'
@@ -272,6 +273,11 @@ export interface SiteVisit {
   feedbackNotes?: string | null;
   feedbackRating?: number | null;
   feedbackOutcome?: 'TOKEN_SUBMITTED' | 'HIGH_INTEREST' | 'PRICE_OBJECTION' | 'LAYOUT_OBJECTION' | 'NEEDS_MORE_OPTIONS' | null;
+  confirmedAt?: string | null;
+  confirmedVia?: 'WHATSAPP' | 'PHONE_CALL' | 'SMS' | 'IN_PERSON' | null;
+  reminderSentAt?: string | null;
+  rescheduleCount?: number;
+  noShowReason?: 'UNREACHABLE' | 'CANCELLED_LAST_MINUTE' | 'WEATHER' | 'PERSONAL_EMERGENCY' | 'UNKNOWN' | null;
   createdAt: string;
   updatedAt: string;
 }

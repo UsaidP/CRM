@@ -227,16 +227,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     return () => clearInterval(interval);
   }, [callTimer, isCallActive]);
 
+  // Role & Privilege Flags
+  const isSuperAdmin = Boolean(currentUser?.isSuperAdmin || currentUser?.role === 'SUPER_ADMIN');
+  const isAdmin = Boolean(isSuperAdmin || currentUser?.role === 'ADMIN' || currentUser?.effectivePermissions?.includes('admin:manage_rbac'));
+
   // Filter visible nav sections based on user role and permissions.
   // NOTE: must stay ABOVE the public-portal early return — React hooks
   // cannot run conditionally (Rules of Hooks).
   const visibleNavSections = useMemo(() => {
     const permissions = currentUser?.effectivePermissions || [];
-    // Role shortcuts must NOT bypass explicit permission grants/revocations:
-    // adminOnly items always require the admin:manage_rbac permission
-    // (SUPER_ADMIN holds every permission by default).
-    const isSuperAdmin =
-      currentUser?.isSuperAdmin || currentUser?.role === 'SUPER_ADMIN';
 
     return navSections
       .map((section) => ({
@@ -281,18 +280,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <BrandLogo mode="horizontal" size="xs" withRera={false} />
         </Link>
         <div className="flex items-center gap-1 sm:gap-1.5">
-          <button
-            type="button"
-            onClick={() => {
-              setBackupModalMode('BACKUP');
-              setIsBackupModalOpen(true);
-            }}
-            className="p-1.5 sm:p-2 rounded-xl text-content-muted hover:text-accent hover:bg-surface-subtle transition-colors cursor-pointer"
-            aria-label="Google Drive Backup"
-            title="Backup to Google Drive"
-          >
-            <Cloud className="w-4 h-4 text-accent" />
-          </button>
+          {isAdmin && (
+            <button
+              type="button"
+              onClick={() => {
+                setBackupModalMode('BACKUP');
+                setIsBackupModalOpen(true);
+              }}
+              className="p-1.5 sm:p-2 rounded-xl text-content-muted hover:text-accent hover:bg-surface-subtle transition-colors cursor-pointer"
+              aria-label="Google Drive Backup"
+              title="Backup to Google Drive"
+            >
+              <Cloud className="w-4 h-4 text-accent" />
+            </button>
+          )}
           <button
             type="button"
             onClick={() => setIsSearchOpen(true)}
@@ -330,21 +331,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           }`}
         >
           {/* Sidebar Header & Branding - Fixed at Top */}
-          <div className="shrink-0 p-4 pb-3 border-b border-border bg-surface/80 backdrop-blur-xs">
-            <Link href="/" className="flex items-center gap-3 group">
+          <div className="shrink-0 h-[64px] px-4 border-b border-border bg-surface/80 backdrop-blur-xs flex items-center">
+            <Link href="/" className="flex items-center gap-3 group w-full">
               <BrandLogo mode="horizontal" size="md" withRera reraNumber="MahaRERA A52000028714" />
             </Link>
-
-            {/* Quick Action: New Inbound Lead / Quick Call */}
-            <div className="mt-3">
-              <Link
-                href="/leads?view=telecaller&action=new"
-                className="w-full flex items-center justify-center gap-2 px-3.5 py-2 bg-accent hover:bg-accent-hover text-white rounded-xl text-xs font-bold shadow-xs transition-all active:scale-98"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>New Lead / Quick Call</span>
-              </Link>
-            </div>
           </div>
 
           {/* Grouped Navigation Links - Only this area scrolls */}
@@ -392,10 +382,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </nav>
 
           {/* Sidebar Footer: Agent Profile & Shift Status - Fixed at Bottom */}
-          <div className="shrink-0 p-2.5 pb-[max(0.65rem,env(safe-area-inset-bottom))] border-t border-border bg-surface/90 backdrop-blur-xs space-y-2">
-            <div className="flex items-center justify-between gap-1.5">
-              <div className="flex items-center gap-2 min-w-0 flex-1">
-                <div className="w-7 h-7 rounded-full bg-accent text-white flex items-center justify-center text-xs font-bold shadow-2xs shrink-0">
+          <div className="shrink-0 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] border-t border-border bg-surface/90 backdrop-blur-xs space-y-2.5">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                <div className="w-8 h-8 rounded-xl bg-accent text-white flex items-center justify-center text-xs font-bold shadow-xs shrink-0 font-display">
                   {currentUser?.fullName
                     ? currentUser.fullName.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()
                     : 'ZP'}
@@ -444,24 +434,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </div>
             </div>
 
-            {/* Unified Status & Backup Control Bar */}
-            <div className="flex items-center justify-between text-[11px] bg-surface-subtle px-2 py-1 rounded-xl border border-border">
-              <div className="flex items-center gap-1.5 text-status-success font-bold text-xs min-w-0">
-                <span className="w-2 h-2 rounded-full bg-status-success animate-pulse shrink-0" />
-                <span className="truncate text-[11px]">Live Dispatch</span>
+            {/* Live Operational Status Strip */}
+            <div className="flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-surface-subtle border border-border">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="relative flex h-2 w-2 shrink-0">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-status-success opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-status-success"></span>
+                </span>
+                <span className="text-[11px] font-semibold text-content-secondary truncate">Live Dispatch</span>
               </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setBackupModalMode('BACKUP');
-                  setIsBackupModalOpen(true);
-                }}
-                className="flex items-center gap-1 bg-accent-soft hover:bg-accent hover:text-white px-2 py-0.5 rounded-lg border border-accent/20 text-accent-text font-bold text-[10px] transition-colors cursor-pointer shrink-0"
-                title="Google Drive Cloud Backup"
-              >
-                <Cloud className="w-3 h-3 text-accent" />
-                <span>Backup</span>
-              </button>
+              <span className="text-[10px] font-mono font-bold text-status-success uppercase tracking-wider bg-status-success-surface px-1.5 py-0.5 rounded-md border border-status-success/30">
+                Active
+              </span>
             </div>
           </div>
         </aside>
@@ -509,20 +493,22 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
             {/* Right: Active Call Timer, GDrive Backup, Quick Links & Status */}
             <div className="flex items-center gap-2 xl:gap-2.5 shrink-0">
-              {/* Google Drive Cloud Backup Button (Visible to all team members) */}
-              <button
-                type="button"
-                onClick={() => {
-                  setBackupModalMode('BACKUP');
-                  setIsBackupModalOpen(true);
-                }}
-                className="flex items-center gap-1.5 px-2.5 xl:px-3 py-1.5 bg-surface hover:bg-surface-subtle border border-border text-content rounded-xl text-xs font-bold transition-all shadow-2xs hover:border-accent/40 cursor-pointer group"
-                title="Google Drive Cloud Backup & Export"
-              >
-                <Cloud className="w-3.5 h-3.5 text-accent group-hover:scale-110 transition-transform" />
-                <span className="font-semibold hidden xl:inline">Backup (GDrive)</span>
-                <span className="font-semibold xl:hidden">Backup</span>
-              </button>
+              {/* Google Drive Cloud Backup Button (Visible only to Admin / Super Admin) */}
+              {isAdmin && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setBackupModalMode('BACKUP');
+                    setIsBackupModalOpen(true);
+                  }}
+                  className="flex items-center gap-1.5 px-2.5 xl:px-3 py-1.5 bg-surface hover:bg-surface-subtle border border-border text-content rounded-xl text-xs font-bold transition-all shadow-2xs hover:border-accent/40 cursor-pointer group"
+                  title="Google Drive Cloud Backup & Export"
+                >
+                  <Cloud className="w-3.5 h-3.5 text-accent group-hover:scale-110 transition-transform" />
+                  <span className="font-semibold hidden xl:inline">Backup (GDrive)</span>
+                  <span className="font-semibold xl:hidden">Backup</span>
+                </button>
+              )}
 
               {/* Active Call Widget */}
               <div className="hidden sm:flex items-center gap-1.5 xl:gap-2 px-2.5 xl:px-3 py-1 bg-status-success-surface border border-status-success/30 rounded-xl">
@@ -599,14 +585,23 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             badge: '/visits',
             action: () => { router.push('/visits'); setIsSearchOpen(false); setSearchQuery(''); },
           },
-          {
-            id: 'quick-backup',
-            icon: Cloud,
-            iconColor: 'text-sky-500',
-            title: 'Backup Real Estate Database to Google Drive',
-            badge: 'Cloud Backup',
-            action: () => { setBackupModalMode('BACKUP'); setIsBackupModalOpen(true); setIsSearchOpen(false); setSearchQuery(''); },
-          },
+          ...(isAdmin
+            ? [
+                {
+                  id: 'quick-backup',
+                  icon: Cloud,
+                  iconColor: 'text-sky-500',
+                  title: 'Backup Real Estate Database to Google Drive',
+                  badge: 'Cloud Backup',
+                  action: () => {
+                    setBackupModalMode('BACKUP');
+                    setIsBackupModalOpen(true);
+                    setIsSearchOpen(false);
+                    setSearchQuery('');
+                  },
+                },
+              ]
+            : []),
         ];
 
         // Flatten active search result items for unified index navigation

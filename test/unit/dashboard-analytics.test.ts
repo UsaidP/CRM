@@ -54,6 +54,46 @@ describe('Dashboard Analytics & Visualization Engine', () => {
       expect(stages).toHaveLength(6);
       expect(stages[0].value).toBe(0);
     });
+
+    it('correctly maps real CRM database stages into 6 sequential advisory gates', () => {
+      const realCrmLeads = [
+        { currentStage: 'new_uncontacted' }, // Gate 1
+        { currentStage: 'discovery_call', requirements: [] }, // Gate 2 (no requirements)
+        { currentStage: 'discovery_call', requirements: [{ id: 'req-1' }] }, // Gate 3 (profiled)
+        { currentStage: 'portal_shared' }, // Gate 4 (proposal dispatched)
+        { currentStage: 'visit_scheduled' }, // Gate 5 (site tour)
+        { currentStage: 'visit_confirmed' }, // Gate 5 (site tour)
+        { currentStage: 'visit_done' }, // Gate 5 (site tour)
+        { currentStage: 'negotiation_token' }, // Gate 6 (won/booked)
+        { currentStage: 'closed_won' }, // Gate 6 (won/booked)
+      ];
+
+      const stages = buildPipelineFunnelStages(realCrmLeads);
+
+      expect(stages[0].label).toBe('01. Inbound Ingestion');
+      expect(stages[0].value).toBe(1);
+
+      expect(stages[1].label).toBe('02. First Connect Made');
+      expect(stages[1].value).toBe(1);
+
+      expect(stages[2].label).toBe('03. Profiled & Verified');
+      expect(stages[2].value).toBe(1);
+
+      expect(stages[3].label).toBe('04. Proposal Dispatched');
+      expect(stages[3].value).toBe(1);
+
+      expect(stages[4].label).toBe('05. Site Tour Scheduled');
+      expect(stages[4].value).toBe(3); // scheduled + confirmed + done
+
+      expect(stages[5].label).toBe('06. Deal Won & Booked');
+      expect(stages[5].value).toBe(2); // token + closed_won
+
+      // Ensure percentage never exceeds 100% even though Gate 5 has 3 leads and Gate 1 has 1 lead
+      stages.forEach((s) => {
+        expect(s.percentage).toBeLessThanOrEqual(100);
+        expect(s.percentage).toBeGreaterThanOrEqual(0);
+      });
+    });
   });
 
   describe('buildCashFlowTimeSeries', () => {

@@ -120,6 +120,7 @@ const STAGE_OPTIONS: CustomSelectOption[] = [
   { value: 'discovery_call', label: 'Discovery & Qualifying', shortLabel: 'Discovery', dotColor: 'bg-amber-500' },
   { value: 'portal_shared', label: 'Shortlist / Deck Sent', shortLabel: 'Deck Sent', dotColor: 'bg-blue-500' },
   { value: 'visit_scheduled', label: 'Site Visit Scheduled', shortLabel: 'Visit Fixed', dotColor: 'bg-sky-500' },
+  { value: 'visit_confirmed', label: 'Site Visit Confirmed', shortLabel: 'Visit Confirmed', dotColor: 'bg-indigo-500' },
   { value: 'visit_done', label: 'Site Visit Completed', shortLabel: 'Tour Done', dotColor: 'bg-emerald-500' },
   { value: 'revisit_scheduled', label: 'Re-Visit / Family Tour', shortLabel: 'Re-Visit', dotColor: 'bg-indigo-500' },
   { value: 'negotiation_token', label: 'Price Negotiation & Token', shortLabel: 'Negotiating', dotColor: 'bg-purple-500' },
@@ -728,7 +729,7 @@ export function LeadsMatrixClient({
 
   return (
     <div 
-      className={`space-y-6 max-w-7xl mx-auto pb-16 text-content font-sans transition-all relative ${
+      className={`space-y-6 ${viewMode === 'kanban' ? 'max-w-full' : 'max-w-7xl'} mx-auto pb-16 text-content font-sans transition-all relative ${
         isPageDragOver ? 'ring-2 ring-accent ring-offset-2 ring-offset-surface' : ''
       }`}
       onDragEnter={(e) => {
@@ -790,7 +791,11 @@ export function LeadsMatrixClient({
         <div className="space-y-1">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-accent-soft text-accent-text border border-accent/20 uppercase tracking-wider">
-              High-Velocity Telecaller Console
+              {viewMode === 'console'
+                ? 'High-Velocity Telecaller Console'
+                : viewMode === 'table'
+                ? 'Dense Records Table'
+                : 'Interactive Pipeline Kanban'}
             </span>
             <HallmarkStamp type="rera" label="RERA Compliant Log" />
           </div>
@@ -810,7 +815,7 @@ export function LeadsMatrixClient({
               type="button"
               onClick={() => setViewMode('kanban')}
               aria-pressed={viewMode === 'kanban'}
-              className={`h-7 px-2 sm:px-2.5 rounded-lg flex items-center gap-1.5 text-xs transition-all cursor-pointer ${
+              className={`h-7 px-2.5 sm:px-3 rounded-lg flex items-center gap-1.5 text-xs transition-all cursor-pointer ${
                 viewMode === 'kanban' ? 'bg-accent text-white font-bold shadow-xs' : 'text-content-secondary hover:text-content font-medium'
               }`}
               title="Interactive Pipeline Kanban Board"
@@ -822,7 +827,7 @@ export function LeadsMatrixClient({
               type="button"
               onClick={() => setViewMode('table')}
               aria-pressed={viewMode === 'table'}
-              className={`h-7 px-2 sm:px-2.5 rounded-lg flex items-center gap-1.5 text-xs transition-all cursor-pointer ${
+              className={`h-7 px-2.5 sm:px-3 rounded-lg flex items-center gap-1.5 text-xs transition-all cursor-pointer ${
                 viewMode === 'table' ? 'bg-accent text-white font-bold shadow-xs' : 'text-content-secondary hover:text-content font-medium'
               }`}
               title="Dense Records Table"
@@ -834,13 +839,13 @@ export function LeadsMatrixClient({
               type="button"
               onClick={() => setViewMode('console')}
               aria-pressed={viewMode === 'console'}
-              className={`h-7 px-2 sm:px-2.5 rounded-lg flex items-center gap-1.5 text-xs transition-all cursor-pointer ${
+              className={`h-7 px-2.5 sm:px-3 rounded-lg flex items-center gap-1.5 text-xs transition-all cursor-pointer ${
                 viewMode === 'console' ? 'bg-accent text-white font-bold shadow-xs' : 'text-content-secondary hover:text-content font-medium'
               }`}
               title="Telecaller 40px Speed Calling Console"
             >
               <Zap className="w-3.5 h-3.5" />
-              <span>Console ⚡</span>
+              <span>Console</span>
             </button>
             <div className="w-px h-4 bg-border mx-0.5" />
             <button
@@ -886,7 +891,7 @@ export function LeadsMatrixClient({
             </button>
           </div>
 
-          <div className="w-px h-6 bg-border mx-0.5 hidden lg:block" />
+          <div className="w-px h-5 bg-border mx-0.5 hidden lg:block" />
 
           {/* Action Buttons: Log Call & Add Lead */}
           <button
@@ -905,8 +910,8 @@ export function LeadsMatrixClient({
             className="h-9 px-3.5 sm:px-4 bg-accent hover:bg-accent-hover text-white font-bold text-xs rounded-xl shadow-xs hover:shadow-sm transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
             title="Add a new buyer prospect to your pipeline"
           >
-            <UserPlus className="w-4 h-4" />
-            <span>+ Add Lead</span>
+            <UserPlus className="w-3.5 h-3.5" />
+            <span>Add Lead</span>
           </button>
         </div>
       </div>
@@ -1199,10 +1204,10 @@ export function LeadsMatrixClient({
         />
       ) : (
         /* Dense Table View */
-        <div className="relative rounded-2xl bg-surface border border-border shadow-xs">
+        <div className="relative rounded-2xl bg-surface border border-border shadow-xs overflow-hidden">
           {/* Floating Bulk Actions Bar */}
           {selectedLeadIds.length > 0 && (
-            <div className="sticky top-0 z-20 px-5 py-3 bg-accent text-white flex items-center justify-between flex-wrap gap-3 shadow-md rounded-t-2xl animate-in slide-in-from-top duration-200">
+            <div className="sticky top-0 z-20 px-5 py-3 bg-accent text-white flex items-center justify-between flex-wrap gap-3 shadow-md border-b border-accent-emphasis/30 animate-in slide-in-from-top duration-200">
               <div className="flex items-center gap-3">
                 <span className="font-bold text-xs bg-white/20 px-2.5 py-1 rounded-lg">
                   {selectedLeadIds.length} Selected
@@ -1274,11 +1279,11 @@ export function LeadsMatrixClient({
             </div>
           )}
 
-          <div className="overflow-x-auto touch-scroll rounded-b-2xl">
-            <table className="w-full text-left text-xs border-collapse min-w-[760px]">
+          <div className="overflow-x-auto touch-scroll">
+            <table className="w-full text-left text-xs border-collapse min-w-[1440px]">
               <thead>
-                <tr className="border-b border-border bg-surface-subtle text-content-secondary font-bold uppercase tracking-wider text-[11px]">
-                  <th className={`py-4 px-4 w-10 text-center ${selectedLeadIds.length === 0 ? 'rounded-tl-2xl' : ''}`} onClick={(e) => e.stopPropagation()}>
+                <tr className="border-b border-border bg-surface-subtle text-content-secondary font-bold uppercase tracking-wider text-[10px]">
+                  <th className="py-3.5 px-3 w-12 text-center shrink-0" onClick={(e) => e.stopPropagation()}>
                     <input
                       type="checkbox"
                       checked={
@@ -1296,13 +1301,27 @@ export function LeadsMatrixClient({
                       title="Select / Deselect all visible leads"
                     />
                   </th>
-                  <th className="py-4 px-4">Priority &amp; Buyer</th>
-                  <th className="py-4 px-4">Assigned Rep</th>
-                  <th className="py-4 px-4">Latest Remark &amp; Audit Trail</th>
-                  <th className="py-4 px-4">Scheduled Reminder / Action</th>
-                  <th className="py-4 px-4">Attribution &amp; Source</th>
-                  <th className="py-4 px-4">Pipeline Stage</th>
-                  <th className={`py-4 px-4 text-right ${selectedLeadIds.length === 0 ? 'rounded-tr-2xl' : ''}`}>Quick Actions</th>
+                  <th className="py-3.5 px-4 w-[240px] min-w-[220px] whitespace-nowrap font-mono text-[10px] tracking-wider text-content-secondary">
+                    Priority &amp; Buyer
+                  </th>
+                  <th className="py-3.5 px-4 w-[200px] min-w-[190px] whitespace-nowrap font-mono text-[10px] tracking-wider text-content-secondary">
+                    Assigned Rep
+                  </th>
+                  <th className="py-3.5 px-4 w-[280px] min-w-[260px] whitespace-nowrap font-mono text-[10px] tracking-wider text-content-secondary">
+                    Latest Remark &amp; Audit Trail
+                  </th>
+                  <th className="py-3.5 px-4 w-[260px] min-w-[240px] whitespace-nowrap font-mono text-[10px] tracking-wider text-content-secondary">
+                    Scheduled Reminder / Action
+                  </th>
+                  <th className="py-3.5 px-4 w-[170px] min-w-[150px] whitespace-nowrap font-mono text-[10px] tracking-wider text-content-secondary">
+                    Attribution &amp; Source
+                  </th>
+                  <th className="py-3.5 px-4 w-[180px] min-w-[170px] whitespace-nowrap font-mono text-[10px] tracking-wider text-content-secondary">
+                    Pipeline Stage
+                  </th>
+                  <th className="py-3.5 px-4 pr-5 w-[200px] min-w-[190px] whitespace-nowrap font-mono text-[10px] tracking-wider text-content-secondary text-right">
+                    Quick Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -1332,15 +1351,24 @@ export function LeadsMatrixClient({
                           isSelected
                             ? 'bg-accent-soft/40'
                             : isRank1
-                            ? 'bg-accent-soft/30 border-l-4 border-l-accent'
+                            ? 'bg-accent-soft/20'
                             : isRankTop3
-                            ? 'border-l-2 border-l-accent/40'
+                            ? 'bg-surface/50'
                             : ''
                         }`}
                         onClick={() => setSelectedLeadForDrawer(lead)}
                       >
                         {/* Checkbox for Bulk Selection */}
-                        <td className="py-4 px-4 text-center" onClick={(e) => e.stopPropagation()}>
+                        <td className="relative py-3.5 px-3 text-center align-middle" onClick={(e) => e.stopPropagation()}>
+                          {/* Accent Pill Indicator for Rank 1 or Top 3 or Selected */}
+                          {isSelected ? (
+                            <div className="absolute left-0 top-1.5 bottom-1.5 w-1 bg-accent rounded-r-full" />
+                          ) : isRank1 ? (
+                            <div className="absolute left-0 top-1.5 bottom-1.5 w-1 bg-accent rounded-r-full shadow-xs" />
+                          ) : isRankTop3 ? (
+                            <div className="absolute left-0 top-2 bottom-2 w-0.5 bg-accent/60 rounded-r-full" />
+                          ) : null}
+
                           <input
                             type="checkbox"
                             checked={isSelected}
@@ -1356,30 +1384,30 @@ export function LeadsMatrixClient({
                         </td>
 
                         {/* Priority Rank & Buyer Details */}
-                        <td className="py-4 px-4">
+                        <td className="py-3.5 px-4 align-middle">
                           <div className="flex items-center gap-3">
-                            <div className="p-2.5 rounded-xl bg-surface-subtle border border-border text-content-secondary shrink-0 group-hover:border-accent/40 transition-colors">
+                            <div className="p-2 rounded-xl bg-surface-subtle border border-border text-content-secondary shrink-0 group-hover:border-accent/40 group-hover:text-accent transition-colors">
                               {getSourceIcon(lead.leadSource)}
                             </div>
-                            <div>
+                            <div className="min-w-0">
                               <div className="flex items-center gap-2">
-                                <p className="font-bold text-sm text-content group-hover:text-accent transition-colors">
+                                <p className="font-bold text-sm text-content group-hover:text-accent transition-colors truncate">
                                   {lead.fullName || 'Navi Mumbai Prospect'}
                                 </p>
 
                                 {isRank1 && (
-                                  <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-accent text-white shadow-2xs">
+                                  <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-accent text-white shadow-2xs shrink-0">
                                     #1 NEXT
                                   </span>
                                 )}
                                 {isRankTop3 && (
-                                  <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-accent-soft text-accent-text border border-accent/20">
+                                  <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-accent-soft text-accent-text border border-accent/20 shrink-0">
                                     #{index + 1}
                                   </span>
                                 )}
                               </div>
 
-                              <p className="font-mono text-xs text-content-secondary mt-0.5">
+                              <p className="font-mono text-xs text-content-secondary mt-0.5 truncate">
                                 {lead.phoneE164
                                   ? lead.phoneE164
                                   : identities[0]?.identityValue
@@ -1391,21 +1419,21 @@ export function LeadsMatrixClient({
                         </td>
 
                         {/* Assigned Telecaller / Rep */}
-                        <td className="py-4 px-4" onClick={(e) => e.stopPropagation()}>
+                        <td className="py-3.5 px-4 align-middle" onClick={(e) => e.stopPropagation()}>
                           {canReassignLeads && assignableUsers.length > 0 ? (
                             <CustomSelect
                               size="xs"
-                              className="w-48"
+                              className="w-full max-w-[185px]"
                               value={lead.assignedBrokerId || 'UNASSIGN'}
                               onChange={(val) => handleAssigneeChange(lead.id, val === 'UNASSIGN' ? null : val)}
                               options={userSelectOptions}
                             />
                           ) : (
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-surface-subtle border border-border text-content font-medium text-xs">
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-surface-subtle border border-border text-content font-medium text-xs max-w-full">
                               <UserCheck className="w-3.5 h-3.5 text-accent shrink-0" />
                               <span className="truncate">{lead.assignedBroker?.fullName || 'Unassigned'}</span>
                               {lead.assignedBroker?.role && (
-                                <span className="text-[9px] px-1 py-0.5 rounded bg-surface border border-border text-content-muted font-mono uppercase">
+                                <span className="text-[9px] px-1 py-0.5 rounded bg-surface border border-border text-content-muted font-mono uppercase shrink-0">
                                   {lead.assignedBroker.role}
                                 </span>
                               )}
@@ -1414,13 +1442,13 @@ export function LeadsMatrixClient({
                         </td>
 
                         {/* 📝 VISIBLE REMARK & AUDIT TRAIL CELL (Directly visible on table list) */}
-                        <td className="py-4 px-4 max-w-xs">
+                        <td className="py-3.5 px-4 align-middle">
                           <div className="space-y-1">
-                            <p className="text-xs text-content font-medium line-clamp-2 italic leading-relaxed">
+                            <p className="text-xs text-content font-medium line-clamp-2 italic leading-relaxed break-words">
                               &quot;{latestRemark || 'No remark recorded.'}&quot;
                             </p>
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-content-secondary">
+                            <div className="flex items-center gap-2 flex-wrap pt-0.5">
+                              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-content-secondary shrink-0">
                                 <MessageSquare className="w-2.5 h-2.5 text-accent" />
                                 {comms.length} {comms.length === 1 ? 'log' : 'logs'}
                               </span>
@@ -1431,7 +1459,7 @@ export function LeadsMatrixClient({
                                   target="_blank"
                                   rel="noreferrer"
                                   onClick={(e) => e.stopPropagation()}
-                                  className="inline-flex items-center gap-1 text-[10px] font-bold text-accent-text hover:underline bg-accent-soft px-1.5 py-0.5 rounded border border-accent/20 cursor-pointer"
+                                  className="inline-flex items-center gap-1 text-[10px] font-bold text-accent-text hover:underline bg-accent-soft px-1.5 py-0.5 rounded border border-accent/20 cursor-pointer shrink-0"
                                   title="View Client Portal & Floor Plans"
                                 >
                                   <ExternalLink className="w-2.5 h-2.5" />
@@ -1443,18 +1471,18 @@ export function LeadsMatrixClient({
                         </td>
 
                         {/* Scheduled Reminder / Diagnostics */}
-                        <td className="py-4 px-4">
+                        <td className="py-3.5 px-4 align-middle">
                           {nextReminder ? (
                             <div
-                              className="space-y-1 group/rem"
+                              className="space-y-1 group/rem cursor-pointer"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setCompletingReminder(nextReminder);
                               }}
                             >
-                              <div className="flex items-center gap-1.5">
+                              <div className="flex items-center gap-1.5 flex-wrap">
                                 <span
-                                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold border ${
+                                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold border shrink-0 ${
                                     isReminderOverdue
                                       ? 'bg-status-danger-surface text-status-danger border-status-danger/40'
                                       : 'bg-status-info-surface text-status-info border-status-info/40'
@@ -1463,13 +1491,13 @@ export function LeadsMatrixClient({
                                   <Clock className="w-3 h-3" />
                                   {isReminderOverdue ? 'OVERDUE' : 'SCHEDULED'}
                                 </span>
-                                <span className="text-xs text-content-secondary font-mono font-medium">
+                                <span className="text-xs text-content-secondary font-mono font-medium whitespace-nowrap">
                                   {formatDateTime(nextReminder.dueAt)}
                                 </span>
                               </div>
-                              <p className="text-xs text-content font-semibold truncate max-w-xs group-hover/rem:text-accent flex items-center gap-1">
-                                <span>{nextReminder.title}</span>
-                                <CheckCircle2 className="w-3 h-3 text-status-success opacity-0 group-hover/rem:opacity-100" />
+                              <p className="text-xs text-content font-semibold truncate group-hover/rem:text-accent flex items-center gap-1">
+                                <span className="truncate">{nextReminder.title}</span>
+                                <CheckCircle2 className="w-3 h-3 text-status-success opacity-0 group-hover/rem:opacity-100 transition-opacity shrink-0" />
                               </p>
                             </div>
                           ) : (
@@ -1488,40 +1516,40 @@ export function LeadsMatrixClient({
                         </td>
 
                         {/* Attribution & Code */}
-                        <td className="py-4 px-4">
+                        <td className="py-3.5 px-4 align-middle">
                           <div className="space-y-1">
-                            <div className="flex items-center gap-1.5">
+                            <div className="flex items-center gap-1.5 flex-wrap">
                               {getConfidenceBadge(lead.sourceConfidence)}
                               {lead.sourceCode && (
-                                <span className="font-mono font-bold text-accent-text px-1.5 py-0.5 rounded bg-accent-soft border border-accent/20 text-[10px]">
+                                <span className="font-mono font-bold text-accent-text px-1.5 py-0.5 rounded bg-accent-soft border border-accent/20 text-[10px] truncate max-w-[110px]">
                                   {lead.sourceCode}
                                 </span>
                               )}
                             </div>
-                            <p className="text-xs text-content-secondary line-clamp-1 font-medium">
+                            <p className="text-xs text-content-secondary truncate font-medium">
                               {lead.campaign?.campaignName || lead.leadSource}
                             </p>
                           </div>
                         </td>
 
                         {/* Pipeline Stage Selector */}
-                        <td className="py-4 px-4" onClick={(e) => e.stopPropagation()}>
+                        <td className="py-3.5 px-4 align-middle" onClick={(e) => e.stopPropagation()}>
                           <CustomSelect
                             options={STAGE_OPTIONS.filter((s) => s.value !== 'ALL')}
                             value={lead.currentStage || 'new_uncontacted'}
                             onChange={(val) => handleStageChange(lead.id, val)}
                             size="xs"
-                            className="w-44"
+                            className="w-full max-w-[170px]"
                           />
                         </td>
 
                         {/* Quick Action Toolbar */}
-                        <td className="py-4 px-4 text-right" onClick={(e) => e.stopPropagation()}>
+                        <td className="py-3.5 px-4 pr-5 align-middle text-right" onClick={(e) => e.stopPropagation()}>
                           <div className="flex items-center justify-end gap-1.5">
                             {/* + Log Call / Note Button */}
                             <button
                               onClick={() => setQuickLogLead(lead)}
-                              className="w-8 h-8 rounded-lg bg-accent-soft hover:bg-accent text-accent-text hover:text-white border border-accent/20 flex items-center justify-center transition-all shadow-2xs cursor-pointer"
+                              className="w-8 h-8 rounded-lg bg-accent-soft hover:bg-accent text-accent-text hover:text-white border border-accent/20 flex items-center justify-center transition-all shadow-2xs cursor-pointer shrink-0"
                               title="+ Log Call / Note / Remark"
                             >
                               <Edit3 className="w-3.5 h-3.5" />
@@ -1529,7 +1557,7 @@ export function LeadsMatrixClient({
 
                             <button
                               onClick={() => setQuickReminderLead(lead)}
-                              className="w-8 h-8 rounded-lg bg-surface hover:bg-accent-soft text-content-secondary hover:text-accent border border-border flex items-center justify-center transition-all shadow-2xs cursor-pointer"
+                              className="w-8 h-8 rounded-lg bg-surface hover:bg-accent-soft text-content-secondary hover:text-accent border border-border flex items-center justify-center transition-all shadow-2xs cursor-pointer shrink-0"
                               title="Schedule Follow-up Reminder"
                             >
                               <Bell className="w-3.5 h-3.5" />
@@ -1543,14 +1571,14 @@ export function LeadsMatrixClient({
                                   )}`}
                                   target="_blank"
                                   rel="noreferrer"
-                                  className="w-8 h-8 rounded-lg bg-surface hover:bg-status-success-surface text-content-secondary hover:text-status-success border border-border flex items-center justify-center transition-all shadow-2xs cursor-pointer"
+                                  className="w-8 h-8 rounded-lg bg-surface hover:bg-status-success-surface text-content-secondary hover:text-status-success border border-border flex items-center justify-center transition-all shadow-2xs cursor-pointer shrink-0"
                                   title="1-Click WhatsApp Reply"
                                 >
                                   <MessageSquare className="w-3.5 h-3.5" />
                                 </a>
                                 <a
                                   href={`tel:${lead.phoneE164}`}
-                                  className="w-8 h-8 rounded-lg bg-surface hover:bg-accent-soft text-content-secondary hover:text-accent border border-border flex items-center justify-center transition-all shadow-2xs cursor-pointer"
+                                  className="w-8 h-8 rounded-lg bg-surface hover:bg-accent-soft text-content-secondary hover:text-accent border border-border flex items-center justify-center transition-all shadow-2xs cursor-pointer shrink-0"
                                   title="1-Click Phone Call"
                                 >
                                   <Phone className="w-3.5 h-3.5" />
@@ -1560,7 +1588,7 @@ export function LeadsMatrixClient({
 
                             <button
                               onClick={() => setSelectedLeadForDrawer(lead)}
-                              className="w-8 h-8 rounded-lg bg-surface hover:bg-surface-subtle text-content-secondary hover:text-content border border-border flex items-center justify-center transition-all shadow-2xs cursor-pointer"
+                              className="w-8 h-8 rounded-lg bg-surface hover:bg-surface-subtle text-content-secondary hover:text-content border border-border flex items-center justify-center transition-all shadow-2xs cursor-pointer shrink-0"
                               title="View Full Profile & History"
                             >
                               <Eye className="w-3.5 h-3.5" />
@@ -1570,7 +1598,7 @@ export function LeadsMatrixClient({
                               <button
                                 type="button"
                                 onClick={() => setLeadToDelete(lead)}
-                                className="w-8 h-8 rounded-lg bg-surface hover:bg-rose-50 dark:hover:bg-rose-950/30 text-content-secondary hover:text-rose-600 border border-border hover:border-rose-300 dark:hover:border-rose-800 flex items-center justify-center transition-all shadow-2xs cursor-pointer"
+                                className="w-8 h-8 rounded-lg bg-surface hover:bg-rose-50 dark:hover:bg-rose-950/30 text-content-secondary hover:text-rose-600 border border-border hover:border-rose-300 dark:hover:border-rose-800 flex items-center justify-center transition-all shadow-2xs cursor-pointer shrink-0"
                                 title="Delete Lead (Permanent)"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />

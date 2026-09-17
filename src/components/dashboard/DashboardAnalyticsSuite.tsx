@@ -14,8 +14,10 @@ import {
   Zap,
   Info,
   Clock,
-  DollarSign
+  DollarSign,
+  Car
 } from 'lucide-react';
+import { SiteVisitAnalyticsPanel } from './SiteVisitAnalyticsPanel';
 import { FunnelChart } from '@/components/charts/funnel-chart';
 import { AreaChart, Area } from '@/components/charts/area-chart';
 import { BarChart } from '@/components/charts/bar-chart';
@@ -34,6 +36,7 @@ import {
 interface DashboardAnalyticsSuiteProps {
   filteredLeads: any[];
   filteredDeals: any[];
+  filteredVisits?: any[];
   filteredUnits: any[];
   timeRange: 'today' | '7d' | '30d' | 'all';
   selectedMarket: 'ALL' | 'KHARGHAR' | 'TALOJA' | 'PANVEL';
@@ -42,11 +45,12 @@ interface DashboardAnalyticsSuiteProps {
 export function DashboardAnalyticsSuite({
   filteredLeads,
   filteredDeals,
+  filteredVisits = [],
   filteredUnits,
   timeRange,
   selectedMarket
 }: DashboardAnalyticsSuiteProps) {
-  const [activeTab, setActiveTab] = useState<'funnel' | 'cashflow' | 'market' | 'sla'>('funnel');
+  const [activeTab, setActiveTab] = useState<'funnel' | 'visits' | 'cashflow' | 'market' | 'sla'>('funnel');
   const [selectedFunnelIndex, setSelectedFunnelIndex] = useState<number | null>(null);
 
   const formatINR = (val: number) => {
@@ -135,6 +139,19 @@ export function DashboardAnalyticsSuite({
 
           <button
             type="button"
+            onClick={() => setActiveTab('visits')}
+            className={`px-2.5 sm:px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap text-[11px] sm:text-xs shrink-0 ${
+              activeTab === 'visits'
+                ? 'bg-accent text-white shadow-2xs font-bold'
+                : 'text-content-muted hover:text-content hover:bg-surface'
+            }`}
+          >
+            <Car className="w-3.5 h-3.5 shrink-0" />
+            <span>Site Visits (Primary)</span>
+          </button>
+
+          <button
+            type="button"
             onClick={() => setActiveTab('cashflow')}
             className={`px-2.5 sm:px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap text-[11px] sm:text-xs shrink-0 ${
               activeTab === 'cashflow'
@@ -208,7 +225,7 @@ export function DashboardAnalyticsSuite({
                 Primary Pipeline Bottleneck
               </span>
               <span className="text-lg sm:text-xl font-black font-display text-accent truncate block">
-                {funnelStages[0]?.value > 0 ? '01. Inbound Ingestion' : 'Pipeline Clear'}
+                {funnelStages[0]?.value > 0 ? (funnelStages[0]?.label || 'Inbound Ingestion') : 'Pipeline Clear'}
               </span>
               <span className="text-[10px] text-content-secondary block mt-0.5 truncate">
                 {funnelStages[0]?.value > 0
@@ -357,6 +374,15 @@ export function DashboardAnalyticsSuite({
             </div>
           </div>
         </div>
+      )}
+
+      {/* ─── TAB: SITE VISIT PRIMARY METRIC ─── */}
+      {activeTab === 'visits' && (
+        <SiteVisitAnalyticsPanel
+          filteredVisits={filteredVisits}
+          filteredDeals={filteredDeals}
+          timeRange={timeRange}
+        />
       )}
 
       {/* ─── TAB 2: CASH FLOW CURVE (BKLIT AREA CHART) ─── */}

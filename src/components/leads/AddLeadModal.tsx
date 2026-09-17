@@ -28,6 +28,8 @@ import {
   Layers,
   MapPin,
   IndianRupee,
+  Plus,
+  SlidersHorizontal,
 } from 'lucide-react';
 import { toast } from '@/lib/client/toast';
 import { formatLakhCr, formatIndianRupees } from '@/lib/money';
@@ -128,10 +130,21 @@ export function AddLeadModal({
   const [assignedBrokerId, setAssignedBrokerId] = useState<string>(currentUserId || '');
 
   // Property Preferences
-  const [selectedBhk, setSelectedBhk] = useState<number[]>([2]);
+  const [selectedBhk, setSelectedBhk] = useState<number[]>([1]);
   const [selectedLocations, setSelectedLocations] = useState<string[]>(['Kharghar (Sec 35)']);
-  const [budgetMin, setBudgetMin] = useState<number>(5000000);
-  const [budgetMax, setBudgetMax] = useState<number>(7500000);
+  const [allLocations, setAllLocations] = useState<string[]>(POPULAR_LOCATIONS);
+  const [customLocationInput, setCustomLocationInput] = useState('');
+
+  // Customizable / Editable Budget State (Navi Mumbai Lakhs/Crores)
+  const [budgetMin, setBudgetMin] = useState<number>(3500000);
+  const [budgetMax, setBudgetMax] = useState<number>(5000000);
+  const [minUnit, setMinUnit] = useState<'LAKH' | 'CR'>('LAKH');
+  const [maxUnit, setMaxUnit] = useState<'LAKH' | 'CR'>('LAKH');
+  const [minInput, setMinInput] = useState<string>('35');
+  const [maxInput, setMaxInput] = useState<string>('50');
+  const [isCustomMode, setIsCustomMode] = useState(false);
+
+  const [whatsappNumber, setWhatsappNumber] = useState('');
   const [possession, setPossession] = useState<string>('READY_TO_MOVE');
   const [purpose, setPurpose] = useState<'self_use' | 'investment'>('self_use');
 
@@ -148,6 +161,109 @@ export function AddLeadModal({
   // Clean raw digits for live counter and validation
   const rawDigits = useMemo(() => phone.replace(/\D/g, ''), [phone]);
   const isPhoneValid = rawDigits.length === 10;
+
+  // Active Preset Index (-1 for Custom)
+  const activePresetIndex = useMemo(() => {
+    if (isCustomMode) return -1;
+    return BUDGET_PRESETS.findIndex((p) => p.min === budgetMin && p.max === budgetMax);
+  }, [budgetMin, budgetMax, isCustomMode]);
+
+  // Handle Preset Selection
+  const handleSelectBudgetPreset = (preset: typeof BUDGET_PRESETS[number]) => {
+    setIsCustomMode(false);
+    setBudgetMin(preset.min);
+    setBudgetMax(preset.max);
+
+    if (preset.min >= 10000000) {
+      setMinUnit('CR');
+      setMinInput(String(Number((preset.min / 10000000).toFixed(2))));
+    } else {
+      setMinUnit('LAKH');
+      setMinInput(String(Number((preset.min / 100000).toFixed(1))));
+    }
+
+    if (preset.max >= 10000000) {
+      setMaxUnit('CR');
+      setMaxInput(String(Number((preset.max / 10000000).toFixed(2))));
+    } else {
+      setMaxUnit('LAKH');
+      setMaxInput(String(Number((preset.max / 100000).toFixed(1))));
+    }
+  };
+
+  // Switch Unit for Min or Max (Lakh vs Cr)
+  const handleSwitchUnit = (which: 'min' | 'max', targetUnit: 'LAKH' | 'CR') => {
+    setIsCustomMode(true);
+    if (which === 'min') {
+      if (minUnit === targetUnit) return;
+      setMinUnit(targetUnit);
+      if (targetUnit === 'CR') {
+        setMinInput((budgetMin / 10000000).toFixed(2));
+      } else {
+        setMinInput(String(Math.round(budgetMin / 100000)));
+      }
+    } else {
+      if (maxUnit === targetUnit) return;
+      setMaxUnit(targetUnit);
+      if (targetUnit === 'CR') {
+        setMaxInput((budgetMax / 10000000).toFixed(2));
+      } else {
+        setMaxInput(String(Math.round(budgetMax / 100000)));
+      }
+    }
+  };
+
+  // Direct Input Handler for Custom Budget
+  const handleInputChange = (which: 'min' | 'max', valStr: string) => {
+    setIsCustomMode(true);
+    if (which === 'min') {
+      setMinInput(valStr);
+      const num = parseFloat(valStr) || 0;
+      const rupees = minUnit === 'CR' ? Math.round(num * 10000000) : Math.round(num * 100000);
+      setBudgetMin(rupees);
+    } else {
+      setMaxInput(valStr);
+      const num = parseFloat(valStr) || 0;
+      const rupees = maxUnit === 'CR' ? Math.round(num * 10000000) : Math.round(num * 100000);
+      setBudgetMax(rupees);
+    }
+  };
+
+  // Stepper increment/decrement (+/- delta in Lakhs)
+  const handleStep = (which: 'min' | 'max', deltaLakhs: number) => {
+    setIsCustomMode(true);
+    if (which === 'min') {
+      const next = Math.max(0, budgetMin + deltaLakhs * 100000);
+      setBudgetMin(next);
+      if (minUnit === 'CR') {
+        setMinInput((next / 10000000).toFixed(2));
+      } else {
+        setMinInput(String(Math.round(next / 100000)));
+      }
+    } else {
+      const next = Math.max(0, budgetMax + deltaLakhs * 100000);
+      setBudgetMax(next);
+      if (maxUnit === 'CR') {
+        setMaxInput((next / 10000000).toFixed(2));
+      } else {
+        setMaxInput(String(Math.round(next / 100000)));
+      }
+    }
+  };
+
+  // Add custom micro-market
+  const handleAddCustomLocation = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const trimmed = customLocationInput.trim();
+    if (!trimmed) return;
+    if (!allLocations.includes(trimmed)) {
+      setAllLocations((prev) => [...prev, trimmed]);
+    }
+    if (!selectedLocations.includes(trimmed)) {
+      setSelectedLocations((prev) => [...prev, trimmed]);
+    }
+    setCustomLocationInput('');
+  };
 
   // Keyboard shortcut listener (Esc to close, Cmd+Enter to submit)
   useEffect(() => {
@@ -234,11 +350,6 @@ export function AddLeadModal({
     }
   };
 
-  const handleSelectBudgetPreset = (preset: typeof BUDGET_PRESETS[number]) => {
-    setBudgetMin(preset.min);
-    setBudgetMax(preset.max);
-  };
-
   const handleToggleTag = (tag: string) => {
     if (selectedTags.includes(tag)) {
       setSelectedTags(selectedTags.filter((t) => t !== tag));
@@ -263,7 +374,12 @@ export function AddLeadModal({
       // Structure any tags, priority, or possession notes neatly
       const tagPrefix = selectedTags.length > 0 ? `[Tags: ${selectedTags.join(', ')}] ` : '';
       const priorityPrefix = `[Priority: ${leadPriority}] `;
-      const whatsappNote = isWhatsappSame ? '[WhatsApp: Verified] ' : '';
+      const cleanWhatsappDigits = whatsappNumber.trim().replace(/\D/g, '');
+      const whatsappNote = !isWhatsappSame && cleanWhatsappDigits.length >= 10
+        ? `[WhatsApp: +91${cleanWhatsappDigits.slice(-10)}] `
+        : isWhatsappSame
+          ? '[WhatsApp: Verified] '
+          : '';
       const consolidatedNotes = `${priorityPrefix}${whatsappNote}${tagPrefix}${notes.trim()}`.trim();
 
       const payload: any = {
@@ -277,7 +393,7 @@ export function AddLeadModal({
         notes: consolidatedNotes || undefined,
         assignedBrokerId: isTelecallerOrAgent ? currentUserId : assignedBrokerId || currentUserId,
         budgetMin: budgetMin || null,
-        budgetMax: budgetMax || 7500000,
+        budgetMax: budgetMax || 5000000,
         bhkPreferences: selectedBhk,
         targetLocations: selectedLocations,
         possessionPreference: possession,
@@ -311,7 +427,7 @@ export function AddLeadModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/65 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="relative w-full max-w-2xl max-h-[92dvh] flex flex-col bg-surface border border-border/90 rounded-2xl shadow-2xl text-content overflow-hidden">
+      <div className="relative w-full max-w-3xl max-h-[92dvh] flex flex-col bg-surface border border-border/90 rounded-2xl shadow-2xl text-content overflow-hidden">
         {/* Header */}
         <div className="px-5 sm:px-6 py-3.5 border-b border-border bg-surface-subtle/80 flex items-center justify-between sticky top-0 z-10 backdrop-blur-md">
           <div className="flex items-center gap-3">
@@ -463,31 +579,54 @@ export function AddLeadModal({
               </div>
             </div>
 
-            {/* Quick WhatsApp check chip */}
-            <div className="flex items-center gap-2 pt-0.5">
-              <button
-                type="button"
-                onClick={() => setIsWhatsappSame(!isWhatsappSame)}
-                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium border transition-all cursor-pointer ${
-                  isWhatsappSame
-                    ? 'bg-status-success-surface text-status-success border-status-success/40'
-                    : 'bg-surface border-border text-content-muted hover:text-content'
-                }`}
-              >
-                <MessageSquare className="w-3.5 h-3.5" />
-                <span>{isWhatsappSame ? '✓ Phone number is active on WhatsApp' : 'Phone differs from WhatsApp'}</span>
-              </button>
+            {/* Quick WhatsApp active toggle & separate WhatsApp number input if different */}
+            <div className="space-y-2 pt-0.5">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsWhatsappSame(!isWhatsappSame)}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
+                    isWhatsappSame
+                      ? 'bg-status-success-surface text-status-success border-status-success/40 shadow-2xs'
+                      : 'bg-surface border-border text-content-muted hover:text-content'
+                  }`}
+                >
+                  <MessageSquare className="w-3.5 h-3.5" />
+                  <span>{isWhatsappSame ? '✓ Phone number is active on WhatsApp' : 'Phone differs from WhatsApp'}</span>
+                </button>
+              </div>
+
+              {!isWhatsappSame && (
+                <div className="p-3 rounded-xl bg-surface border border-border/80 space-y-1 animate-in fade-in duration-200">
+                  <label className="block text-[11px] font-semibold text-content">
+                    Direct WhatsApp Number <span className="text-accent">*</span>
+                  </label>
+                  <div className="relative flex rounded-xl border border-border focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/20 transition-all bg-surface-subtle overflow-hidden">
+                    <div className="flex items-center gap-1 px-2.5 bg-surface border-r border-border text-xs font-mono font-semibold text-content shrink-0 select-none">
+                      <span>🇮🇳</span>
+                      <span>+91</span>
+                    </div>
+                    <input
+                      type="tel"
+                      placeholder="98200 12345"
+                      value={whatsappNumber}
+                      onChange={(e) => setWhatsappNumber(e.target.value)}
+                      className="w-full px-3 py-1.5 bg-transparent text-xs font-mono font-medium text-content placeholder:text-content-muted focus:outline-none"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Section 2: Property Preferences & Budget */}
-          <div className="p-4 rounded-2xl bg-surface-subtle/80 border border-border space-y-4">
+          {/* Section 2: Property Specifications & Budget */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-surface-subtle/80 border border-border space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-bold text-content uppercase tracking-wider font-mono flex items-center gap-1.5">
                 <Home className="w-3.5 h-3.5 text-accent" />
-                Property Specifications & Budget
+                Property Specifications &amp; Budget
               </span>
-              <div className="text-xs font-mono font-bold text-accent bg-surface px-2.5 py-0.5 rounded-md border border-border">
+              <div className="text-xs font-mono font-bold text-accent-text bg-surface px-3 py-1 rounded-lg border border-border shadow-2xs">
                 {formatLakhCr(budgetMin)} – {formatLakhCr(budgetMax)}
               </div>
             </div>
@@ -529,83 +668,220 @@ export function AddLeadModal({
               </div>
             </div>
 
-            {/* Budget Presets & Custom Range */}
-            <div className="space-y-2">
+            {/* Budget Presets & Custom Editable Range */}
+            <div className="space-y-2.5">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-medium text-content">
+                <label className="text-xs font-medium text-content flex items-center gap-1.5">
+                  <SlidersHorizontal className="w-3.5 h-3.5 text-accent" />
                   Budget Presets (Navi Mumbai Sizing)
                 </label>
                 <span className="text-[10px] text-content-muted">
-                  Click preset to auto-set range
+                  Click preset or edit below
                 </span>
               </div>
 
-              {/* Quick Budget Chips */}
-              <div className="flex items-center gap-1.5 flex-wrap">
+              {/* Quick Budget Chips Grid (7 Columns on desktop, no awkward wrapping) */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-1.5">
                 {BUDGET_PRESETS.map((p) => {
-                  const isMatch = budgetMin === p.min && budgetMax === p.max;
+                  const isMatch = activePresetIndex !== -1 && BUDGET_PRESETS[activePresetIndex]?.label === p.label;
                   return (
                     <button
                       key={p.label}
                       type="button"
                       onClick={() => handleSelectBudgetPreset(p)}
-                      className={`px-2.5 py-1 text-xs font-mono font-medium rounded-lg border transition-all cursor-pointer ${
+                      className={`px-2 py-1.5 text-[11px] font-mono rounded-lg border text-center transition-all cursor-pointer truncate ${
                         isMatch
-                          ? 'bg-primary text-white border-primary shadow-xs font-bold'
-                          : 'bg-surface border-border text-content hover:bg-surface-subtle'
+                          ? 'bg-accent text-white border-accent shadow-xs font-bold'
+                          : 'bg-surface border-border text-content hover:bg-surface-subtle hover:border-accent/40'
                       }`}
+                      title={`${p.label} (${p.tag})`}
                     >
                       {p.label}
                     </button>
                   );
                 })}
+                {/* 7th option: Custom Range */}
+                <button
+                  type="button"
+                  onClick={() => setIsCustomMode(true)}
+                  className={`px-2 py-1.5 text-[11px] font-mono rounded-lg border text-center transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                    isCustomMode || activePresetIndex === -1
+                      ? 'bg-accent text-white border-accent shadow-xs font-bold'
+                      : 'bg-surface border-border text-content hover:bg-surface-subtle hover:border-accent/40'
+                  }`}
+                  title="Customize budget range directly"
+                >
+                  <span>✏️ Custom</span>
+                </button>
               </div>
 
-              {/* Min - Max Dual Inputs */}
-              <div className="grid grid-cols-2 gap-3 pt-1">
-                <div>
-                  <label className="block text-[11px] text-content-muted mb-1 font-medium">
-                    Min Budget (₹)
-                  </label>
-                  <div className="relative">
-                    <IndianRupee className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-content-muted pointer-events-none" />
-                    <input
-                      type="number"
-                      step={500000}
-                      value={budgetMin}
-                      onChange={(e) => setBudgetMin(Number(e.target.value))}
-                      className="w-full pl-8 pr-2 py-1.5 bg-surface border border-border rounded-xl text-xs font-mono font-medium text-content focus:outline-none focus:border-accent"
-                    />
+              {/* Min - Max Dual Customizable / Editable Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                {/* Min Budget Card */}
+                <div className="p-3 rounded-xl bg-surface border border-border shadow-2xs space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[11px] font-bold text-content uppercase tracking-wider flex items-center gap-1.5">
+                      <span>Min Budget</span>
+                      {(isCustomMode || activePresetIndex === -1) && (
+                        <span className="text-[9px] px-1.5 py-0.2 rounded bg-accent-soft text-accent font-mono font-bold">
+                          Custom
+                        </span>
+                      )}
+                    </label>
+                    {/* Unit Selector: Lakh vs Cr */}
+                    <div className="inline-flex rounded-lg p-0.5 bg-surface-subtle border border-border text-[10px] font-mono">
+                      <button
+                        type="button"
+                        onClick={() => handleSwitchUnit('min', 'LAKH')}
+                        className={`px-2 py-0.5 rounded-md font-bold transition-all cursor-pointer ${
+                          minUnit === 'LAKH'
+                            ? 'bg-accent text-white shadow-2xs'
+                            : 'text-content-muted hover:text-content'
+                        }`}
+                      >
+                        Lakh
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleSwitchUnit('min', 'CR')}
+                        className={`px-2 py-0.5 rounded-md font-bold transition-all cursor-pointer ${
+                          minUnit === 'CR'
+                            ? 'bg-accent text-white shadow-2xs'
+                            : 'text-content-muted hover:text-content'
+                        }`}
+                      >
+                        Cr
+                      </button>
+                    </div>
                   </div>
-                  <span className="text-[10px] text-content-muted mt-0.5 block font-mono">
-                    {formatLakhCr(budgetMin)}
-                  </span>
+
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => handleStep('min', -5)}
+                      className="px-2 py-1.5 rounded-lg bg-surface-subtle hover:bg-surface border border-border text-content text-xs font-mono font-bold transition-all cursor-pointer shrink-0"
+                      title="Decrease by 5 Lakhs"
+                    >
+                      -5L
+                    </button>
+
+                    <div className="relative flex-1">
+                      <IndianRupee className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-content-muted pointer-events-none" />
+                      <input
+                        type="number"
+                        step={minUnit === 'CR' ? 0.05 : 1}
+                        min={0}
+                        value={minInput}
+                        onChange={(e) => handleInputChange('min', e.target.value)}
+                        className="w-full pl-7 pr-8 py-1.5 bg-surface-subtle border border-border rounded-lg text-sm font-mono font-bold text-content focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent"
+                        placeholder="0"
+                      />
+                      <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-content-muted text-[11px] font-mono font-bold select-none">
+                        {minUnit === 'CR' ? 'Cr' : 'L'}
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => handleStep('min', 5)}
+                      className="px-2 py-1.5 rounded-lg bg-surface-subtle hover:bg-surface border border-border text-content text-xs font-mono font-bold transition-all cursor-pointer shrink-0"
+                      title="Increase by 5 Lakhs"
+                    >
+                      +5L
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between text-[10px] font-mono text-content-muted pt-0.5 border-t border-border/40">
+                    <span>Exact Value:</span>
+                    <span className="font-bold text-content">{formatIndianRupees(budgetMin)}</span>
+                  </div>
                 </div>
 
-                <div>
-                  <label className="block text-[11px] text-content-muted mb-1 font-medium">
-                    Max Budget (₹)
-                  </label>
-                  <div className="relative">
-                    <IndianRupee className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-content-muted pointer-events-none" />
-                    <input
-                      type="number"
-                      step={500000}
-                      value={budgetMax}
-                      onChange={(e) => setBudgetMax(Number(e.target.value))}
-                      className="w-full pl-8 pr-2 py-1.5 bg-surface border border-border rounded-xl text-xs font-mono font-medium text-content focus:outline-none focus:border-accent"
-                    />
+                {/* Max Budget Card */}
+                <div className="p-3 rounded-xl bg-surface border border-border shadow-2xs space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[11px] font-bold text-content uppercase tracking-wider flex items-center gap-1.5">
+                      <span>Max Budget</span>
+                      {(isCustomMode || activePresetIndex === -1) && (
+                        <span className="text-[9px] px-1.5 py-0.2 rounded bg-accent-soft text-accent font-mono font-bold">
+                          Custom
+                        </span>
+                      )}
+                    </label>
+                    {/* Unit Selector: Lakh vs Cr */}
+                    <div className="inline-flex rounded-lg p-0.5 bg-surface-subtle border border-border text-[10px] font-mono">
+                      <button
+                        type="button"
+                        onClick={() => handleSwitchUnit('max', 'LAKH')}
+                        className={`px-2 py-0.5 rounded-md font-bold transition-all cursor-pointer ${
+                          maxUnit === 'LAKH'
+                            ? 'bg-accent text-white shadow-2xs'
+                            : 'text-content-muted hover:text-content'
+                        }`}
+                      >
+                        Lakh
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleSwitchUnit('max', 'CR')}
+                        className={`px-2 py-0.5 rounded-md font-bold transition-all cursor-pointer ${
+                          maxUnit === 'CR'
+                            ? 'bg-accent text-white shadow-2xs'
+                            : 'text-content-muted hover:text-content'
+                        }`}
+                      >
+                        Cr
+                      </button>
+                    </div>
                   </div>
-                  <span className="text-[10px] text-content-muted mt-0.5 block font-mono">
-                    {formatLakhCr(budgetMax)}
-                  </span>
+
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => handleStep('max', -5)}
+                      className="px-2 py-1.5 rounded-lg bg-surface-subtle hover:bg-surface border border-border text-content text-xs font-mono font-bold transition-all cursor-pointer shrink-0"
+                      title="Decrease by 5 Lakhs"
+                    >
+                      -5L
+                    </button>
+
+                    <div className="relative flex-1">
+                      <IndianRupee className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-content-muted pointer-events-none" />
+                      <input
+                        type="number"
+                        step={maxUnit === 'CR' ? 0.05 : 1}
+                        min={0}
+                        value={maxInput}
+                        onChange={(e) => handleInputChange('max', e.target.value)}
+                        className="w-full pl-7 pr-8 py-1.5 bg-surface-subtle border border-border rounded-lg text-sm font-mono font-bold text-content focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent"
+                        placeholder="0"
+                      />
+                      <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-content-muted text-[11px] font-mono font-bold select-none">
+                        {maxUnit === 'CR' ? 'Cr' : 'L'}
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => handleStep('max', 5)}
+                      className="px-2 py-1.5 rounded-lg bg-surface-subtle hover:bg-surface border border-border text-content text-xs font-mono font-bold transition-all cursor-pointer shrink-0"
+                      title="Increase by 5 Lakhs"
+                    >
+                      +5L
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between text-[10px] font-mono text-content-muted pt-0.5 border-t border-border/40">
+                    <span>Exact Value:</span>
+                    <span className="font-bold text-content">{formatIndianRupees(budgetMax)}</span>
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Target Micro-Markets */}
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
                 <label className="text-xs font-medium text-content flex items-center gap-1">
                   <MapPin className="w-3 h-3 text-accent" />
                   Target Micro-Markets
@@ -615,7 +891,7 @@ export function AddLeadModal({
                 </span>
               </div>
               <div className="flex items-center gap-1.5 flex-wrap">
-                {POPULAR_LOCATIONS.map((loc) => {
+                {allLocations.map((loc) => {
                   const isSelected = selectedLocations.includes(loc);
                   return (
                     <button
@@ -624,7 +900,7 @@ export function AddLeadModal({
                       onClick={() => handleToggleLocation(loc)}
                       className={`px-2.5 py-1 text-xs font-medium rounded-lg border transition-all cursor-pointer ${
                         isSelected
-                          ? 'bg-accent-soft text-accent border-accent/40 font-semibold'
+                          ? 'bg-accent-soft text-accent-text border-accent/40 font-semibold shadow-2xs'
                           : 'bg-surface border-border text-content-muted hover:text-content hover:bg-surface-subtle'
                       }`}
                     >
@@ -632,6 +908,32 @@ export function AddLeadModal({
                     </button>
                   );
                 })}
+              </div>
+
+              {/* Add Custom Location Input */}
+              <div className="flex items-center gap-2 max-w-sm pt-1">
+                <input
+                  type="text"
+                  placeholder="+ Add custom sector / area (e.g. Kamothe)"
+                  value={customLocationInput}
+                  onChange={(e) => setCustomLocationInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleAddCustomLocation();
+                    }
+                  }}
+                  className="flex-1 px-3 py-1.5 bg-surface border border-border rounded-lg text-xs text-content placeholder:text-content-muted focus:outline-none focus:border-accent"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleAddCustomLocation()}
+                  disabled={!customLocationInput.trim()}
+                  className="px-3 py-1.5 bg-accent-soft hover:bg-accent text-accent-text hover:text-white border border-accent/25 rounded-lg text-xs font-bold transition-all cursor-pointer disabled:opacity-40 shrink-0"
+                >
+                  <Plus className="w-3.5 h-3.5 inline mr-1" />
+                  Add
+                </button>
               </div>
             </div>
 

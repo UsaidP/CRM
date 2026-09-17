@@ -3,6 +3,7 @@ const { withSentryConfig } = require('@sentry/nextjs/config');
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  devIndicators: false,
   transpilePackages: ['lucide-react', 'goey-toast'],
   experimental: {
     proxyClientMaxBodySize: '100mb',

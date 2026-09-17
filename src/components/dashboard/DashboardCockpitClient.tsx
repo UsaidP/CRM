@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
@@ -25,7 +25,8 @@ import {
   Flame,
   ArrowUpRight,
   Building2,
-  MapPin
+  MapPin,
+  RotateCw,
 } from 'lucide-react';
 import { HallmarkStamp } from '@/components/ui/HallmarkStamp';
 import { CustomSelect } from '@/components/ui/CustomSelect';
@@ -72,6 +73,23 @@ export function DashboardCockpitClient({ initialData }: DashboardProps) {
     const query = params.toString();
     router.push(query ? `/?${query}` : '/');
   };
+
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = useCallback(() => {
+    setIsRefreshing(true);
+    router.refresh();
+    setTimeout(() => setIsRefreshing(false), 700);
+  }, [router]);
+
+  // Revalidate automatically when user returns to Dashboard tab
+  useEffect(() => {
+    const onFocus = () => {
+      router.refresh();
+    };
+    window.addEventListener('focus', onFocus);
+    return () => window.removeEventListener('focus', onFocus);
+  }, [router]);
 
   const [timeRange, setTimeRange] = useState<'today' | '7d' | '30d' | 'all'>('all');
   const [selectedMarket, setSelectedMarket] = useState<'ALL' | 'KHARGHAR' | 'TALOJA' | 'PANVEL'>('ALL');
@@ -132,8 +150,8 @@ export function DashboardCockpitClient({ initialData }: DashboardProps) {
         if (!isNaN(t) && t < cutoffMs) return false;
       }
       if (selectedMarket !== 'ALL') {
-        const reqLoc = l.requirements?.[0]?.preferredLocationsJson;
-        let locStr = `${l.preferredLocation || ''} ${l.notes || ''} ${l.sourceCode || ''} ${l.campaign?.campaignName || ''} ${l.campaign?.utmCampaign || ''}`;
+        const reqLoc = l.requirements?.[0]?.targetLocationsJson || l.requirements?.[0]?.preferredLocationsJson;
+        let locStr = `${l.city || ''} ${l.preferredLocation || ''} ${l.notes || ''} ${l.sourceCode || ''} ${l.campaign?.campaignName || ''} ${l.campaign?.utmCampaign || ''}`;
         if (typeof reqLoc === 'string') {
           locStr += ` ${reqLoc}`;
         } else if (Array.isArray(reqLoc)) {
@@ -219,15 +237,15 @@ export function DashboardCockpitClient({ initialData }: DashboardProps) {
   return (
     <div className="space-y-4 sm:space-y-6 max-w-7xl mx-auto w-full">
       {/* ─── 1. TOP INTERACTIVE EXECUTIVE CONTROL BAR ─── */}
-      <div className="p-2.5 sm:p-4 rounded-2xl bg-surface border border-border shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-2.5 sm:gap-3">
+      <div className="p-2 sm:p-3 rounded-2xl bg-surface border border-border shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-2.5 sm:gap-3">
         {/* Left: View Mode (Personal vs Firm) & Market Node Filter */}
-        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 w-full md:w-auto">
           {initialData.canToggleView ? (
-            <div className="flex items-center gap-1 bg-surface-subtle p-1 rounded-xl border border-border text-xs font-semibold">
+            <div className="inline-flex items-center gap-1 bg-surface-subtle p-1 rounded-xl border border-border text-xs font-semibold h-9 shrink-0">
               <button
                 type="button"
                 onClick={() => handleToggleView('mine')}
-                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 text-[11px] sm:text-xs ${
+                className={`h-7 px-3 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 text-xs ${
                   currentView === 'mine'
                     ? 'bg-accent text-white shadow-2xs font-bold'
                     : 'text-content-muted hover:text-content hover:bg-surface'
@@ -239,7 +257,7 @@ export function DashboardCockpitClient({ initialData }: DashboardProps) {
               <button
                 type="button"
                 onClick={() => handleToggleView('firm')}
-                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 text-[11px] sm:text-xs ${
+                className={`h-7 px-3 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 text-xs ${
                   currentView === 'firm'
                     ? 'bg-accent text-white shadow-2xs font-bold'
                     : 'text-content-muted hover:text-content hover:bg-surface'
@@ -250,36 +268,37 @@ export function DashboardCockpitClient({ initialData }: DashboardProps) {
               </button>
             </div>
           ) : (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-accent-soft text-accent-text border border-accent/20 text-xs font-bold">
+            <div className="h-9 inline-flex items-center gap-1.5 px-3 rounded-xl bg-accent-soft text-accent-text border border-accent/20 text-xs font-bold shrink-0">
               <User className="w-3.5 h-3.5 text-accent" />
               <span>Workspace: {initialData.currentUserName || 'Personal'}</span>
             </div>
           )}
 
           {/* Market Filter */}
-          <div className="flex items-center">
-            <div className="flex items-center justify-between sm:justify-start gap-1.5 px-3 py-2 sm:py-1.5 rounded-xl bg-surface-subtle border border-border text-xs font-semibold">
-              <div className="flex items-center gap-1.5 shrink-0">
-                <Filter className="w-3.5 h-3.5 text-accent shrink-0" />
-                <span className="text-content-muted text-[11px] sm:text-xs">Market:</span>
-              </div>
-              <CustomSelect
-                value={selectedMarket}
-                onChange={(val) => setSelectedMarket(val as any)}
-                options={[
-                  { value: 'ALL', label: 'All Navi Mumbai Hubs' },
-                  { value: 'KHARGHAR', label: 'Kharghar Node (Sectors 1–36)' },
-                  { value: 'TALOJA', label: 'Taloja Industrial & CIDCO' },
-                  { value: 'PANVEL', label: 'Panvel & Upper Kharghar' },
-                ]}
-                className="font-bold text-accent-text bg-transparent border-none p-0 focus:ring-0 cursor-pointer text-xs"
-              />
-            </div>
+          <div className="w-full sm:w-auto shrink-0">
+            <CustomSelect
+              value={selectedMarket}
+              onChange={(val) => setSelectedMarket(val as any)}
+              options={[
+                { value: 'ALL', label: 'All Navi Mumbai Hubs' },
+                { value: 'KHARGHAR', label: 'Kharghar Node (Sectors 1–36)' },
+                { value: 'TALOJA', label: 'Taloja Industrial & CIDCO' },
+                { value: 'PANVEL', label: 'Panvel & Upper Kharghar' },
+              ]}
+              icon={
+                <span className="flex items-center gap-1.5 text-content-muted font-medium shrink-0">
+                  <Filter className="w-3.5 h-3.5 text-accent shrink-0" />
+                  <span className="text-xs">Market:</span>
+                </span>
+              }
+              size="sm"
+              triggerClassName="!h-9 !min-h-[36px] !py-0 px-3 bg-surface-subtle border-border rounded-xl text-xs font-semibold hover:border-accent/40 shadow-2xs cursor-pointer"
+            />
           </div>
         </div>
 
         {/* Time Window Filter Pills */}
-        <div className="w-full md:w-auto flex items-center gap-1 bg-surface-subtle p-1 rounded-xl border border-border text-xs font-semibold overflow-x-auto no-scrollbar">
+        <div className="w-full md:w-auto inline-flex items-center gap-1 bg-surface-subtle p-1 rounded-xl border border-border text-xs font-semibold h-9 overflow-x-auto no-scrollbar shrink-0">
           {[
             { key: 'today', label: 'Today' },
             { key: '7d', label: 'Last 7D' },
@@ -290,7 +309,7 @@ export function DashboardCockpitClient({ initialData }: DashboardProps) {
               key={range.key}
               type="button"
               onClick={() => setTimeRange(range.key as any)}
-              className={`flex-1 md:flex-initial text-center px-2.5 sm:px-3 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap text-[11px] sm:text-xs ${
+              className={`h-7 flex-1 md:flex-initial text-center px-2.5 sm:px-3 rounded-lg transition-all cursor-pointer whitespace-nowrap text-xs flex items-center justify-center ${
                 timeRange === range.key
                   ? 'bg-accent text-white shadow-2xs font-bold'
                   : 'text-content-muted hover:text-content hover:bg-surface'
@@ -327,6 +346,16 @@ export function DashboardCockpitClient({ initialData }: DashboardProps) {
 
         {/* Action Controls */}
         <div className="grid grid-cols-2 sm:flex sm:flex-wrap md:flex-nowrap items-center gap-2 w-full lg:w-auto">
+          <button
+            type="button"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="px-3 py-2.5 sm:py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content-secondary hover:text-content border border-border text-xs font-semibold transition-all flex items-center justify-center gap-1.5 shadow-2xs hover:border-accent/40 active:scale-95 cursor-pointer disabled:opacity-50"
+            title="Refresh dashboard metrics"
+          >
+            <RotateCw className={`w-3.5 h-3.5 text-accent shrink-0 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <span>{isRefreshing ? 'Updating...' : 'Refresh'}</span>
+          </button>
           <Link
             href="/calendar"
             className="px-3 py-2.5 sm:py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content-secondary hover:text-content border border-border text-xs font-semibold transition-all flex items-center justify-center gap-1.5 shadow-2xs hover:border-accent/40 active:scale-95"
@@ -522,6 +551,7 @@ export function DashboardCockpitClient({ initialData }: DashboardProps) {
       <DashboardAnalyticsSuite
         filteredLeads={filteredLeads}
         filteredDeals={filteredDeals}
+        filteredVisits={filteredVisits}
         filteredUnits={filteredUnits}
         timeRange={timeRange}
         selectedMarket={selectedMarket}

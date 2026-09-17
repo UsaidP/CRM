@@ -233,6 +233,13 @@ html[data-theme="dark"],
   --color-border-strong: #334155;
   --color-overlay: rgba(0, 0, 0, 0.8);
 
+  /* Primary Brand Tokens (Executive Slate Navy in Dark) */
+  --color-primary: #3B82F6;
+  --color-primary-light: #60A5FA;
+  --color-primary-dark: #1D4ED8;
+  --color-primary-surface: rgba(59, 130, 246, 0.15);
+  --color-primary-border: #334155;
+
   /* Primary Action & Selection (Electric Indigo / Blue Dark) */
   --color-accent: #3B82F6;                         /* Electric Blue */
   --color-accent-hover: #60A5FA;                   /* Bright Blue Hover */
@@ -1058,7 +1065,7 @@ textarea::selection {
   color: #ffffff;
 }
 
-:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+:where(a, button:not([class*="outline-none"]), input, select, textarea, [tabindex]):focus-visible {
   outline: 2px solid var(--color-focus-ring);
   outline-offset: 2px;
 }
@@ -1289,8 +1296,8 @@ html:not(.dark) [class*="via-[#171d2e]"] {
 }
 
 .spreadsheet-row.is-selected {
-  background-color: var(--color-primary-surface);
-  border-left: 3px solid var(--color-primary);
+  background-color: var(--color-accent-soft);
+  border-left: 3px solid var(--color-accent);
 }
 
 /* 1-Click Color-Coded Disposition Buttons */
@@ -1394,16 +1401,16 @@ html:not(.dark) [class*="via-[#171d2e]"] {
 .pillar-chip:hover,
 .zamzam-chip:hover,
 .brixi-chip:hover {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
 }
 
 .pillar-chip.is-active,
 .zamzam-chip.is-active,
 .brixi-chip.is-active {
-  background-color: var(--color-primary);
+  background-color: var(--color-accent);
   color: #FFFFFF;
-  border-color: var(--color-primary);
+  border-color: var(--color-accent);
 }
 
 /* Maharashtra Statutory Capitalized Cost Table */
@@ -1718,7 +1725,14 @@ html:not(.dark) [class*="via-[#171d2e]"] {
 
 .touch-scroll {
   -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
+  overscroll-behavior-x: contain;
+  overscroll-behavior-y: auto;
+}
+
+.touch-scroll-y {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  overscroll-behavior-x: auto;
 }
 
 .no-scrollbar::-webkit-scrollbar {
@@ -1827,5 +1841,13 @@ html:not(.dark) [class*="via-[#171d2e]"] {
   transform-origin: bottom center !important;
   animation: shadcn-dropdown-enter-up 140ms cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
   transition: none !important;
+}
+
+/* Hide Next.js dev indicator badge to avoid overlapping sidebar footer */
+nextjs-portal,
+[data-nextjs-dev-overlay],
+[data-nextjs-toast-wrapper],
+div[data-nextjs-dialog-overlay] {
+  display: none !important;
 }
 

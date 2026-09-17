@@ -469,11 +469,20 @@ model SiteVisit {
   feedbackNotes      String?
   feedbackRating     Int?         // 1 to 5 stars
   feedbackOutcome    String?      // TOKEN_SUBMITTED, HIGH_INTEREST, PRICE_OBJECTION, LAYOUT_OBJECTION, NEEDS_MORE_OPTIONS
+  
+  // Visit Lifecycle Tracking
+  confirmedAt        DateTime?    // When the buyer confirmed attendance
+  confirmedVia       String?      // WHATSAPP, PHONE_CALL, SMS, IN_PERSON
+  reminderSentAt     DateTime?    // Last reminder sent timestamp
+  rescheduleCount    Int          @default(0) // Number of times rescheduled
+  noShowReason       String?      // UNREACHABLE, CANCELLED_LAST_MINUTE, WEATHER, PERSONAL_EMERGENCY, UNKNOWN
+  
   createdAt          DateTime     @default(now())
   updatedAt          DateTime     @updatedAt
 
   @@index([scheduledDate, status])
   @@index([leadId])
+  @@index([status])
 }
 
 model DealTransaction {

@@ -48,23 +48,75 @@ export function buildPipelineFunnelStages(
   leads: any[],
   stageCounts?: Record<string, number>
 ): FunnelStageData[] {
-  const counts: Record<string, number> = stageCounts || {
-    NEW: 0,
-    CONTACTED: 0,
-    REQUIREMENTS_COLLECTED: 0,
-    PROPOSAL_SHARED: 0,
-    SITE_VISIT_SCHEDULED: 0,
-    NEGOTIATION: 0,
-    BOOKED: 0,
-  };
+  const counts: Record<string, number> = stageCounts
+    ? { ...stageCounts }
+    : {
+        NEW: 0,
+        CONTACTED: 0,
+        REQUIREMENTS_COLLECTED: 0,
+        PROPOSAL_SHARED: 0,
+        SITE_VISIT_SCHEDULED: 0,
+        NEGOTIATION: 0,
+        BOOKED: 0,
+      };
 
   if (!stageCounts) {
-    leads.forEach((l) => {
-      const stage = (l.currentStage || 'NEW').toUpperCase();
-      if (counts[stage] !== undefined) {
-        counts[stage]++;
-      } else {
+    (leads || []).forEach((l) => {
+      const rawStage = (l.currentStage || 'new_uncontacted').toLowerCase().trim();
+
+      // Gate 1: 01. Inbound Ingestion
+      if (['new_uncontacted', 'new', 'inbound', 'new_lead'].includes(rawStage)) {
         counts.NEW = (counts.NEW || 0) + 1;
+      }
+      // Gate 2: 02. First Connect Made
+      // If lead is in discovery_call but has not yet logged specific buyer requirements
+      else if (
+        ['contacted', 'first_connect'].includes(rawStage) ||
+        (rawStage === 'discovery_call' && (!l.requirements || l.requirements.length === 0))
+      ) {
+        counts.CONTACTED = (counts.CONTACTED || 0) + 1;
+      }
+      // Gate 3: 03. Profiled & Verified
+      // If requirements collected or in discovery_call with verified requirements logged
+      else if (
+        ['requirements_collected', 'profiled', 'verified', 'qualified'].includes(rawStage) ||
+        (rawStage === 'discovery_call' && l.requirements && l.requirements.length > 0)
+      ) {
+        counts.REQUIREMENTS_COLLECTED = (counts.REQUIREMENTS_COLLECTED || 0) + 1;
+      }
+      // Gate 4: 04. Proposal Dispatched
+      else if (['portal_shared', 'proposal_shared', 'shortlist_sent', 'deck_sent'].includes(rawStage)) {
+        counts.PROPOSAL_SHARED = (counts.PROPOSAL_SHARED || 0) + 1;
+      }
+      // Gate 5: 05. Site Tour Scheduled (covers scheduled, confirmed, attended/done, revisit)
+      else if (
+        [
+          'visit_scheduled',
+          'visit_confirmed',
+          'visit_done',
+          'revisit_scheduled',
+          'site_visit_scheduled',
+          'site_tour',
+        ].includes(rawStage)
+      ) {
+        counts.SITE_VISIT_SCHEDULED = (counts.SITE_VISIT_SCHEDULED || 0) + 1;
+      }
+      // Gate 6: 06. Deal Won & Booked (covers token, negotiation, under registration, closed won)
+      else if (['negotiation_token', 'negotiation'].includes(rawStage)) {
+        counts.NEGOTIATION = (counts.NEGOTIATION || 0) + 1;
+      } else if (['under_registration', 'closed_won', 'booked'].includes(rawStage)) {
+        counts.BOOKED = (counts.BOOKED || 0) + 1;
+      }
+      // Compatibility fallback for UPPERCASE test keys or on-hold nurture
+      else {
+        const upper = (l.currentStage || '').toUpperCase();
+        if (counts[upper] !== undefined) {
+          counts[upper]++;
+        } else if (rawStage === 'on_hold_nurture') {
+          counts.CONTACTED = (counts.CONTACTED || 0) + 1;
+        } else {
+          counts.NEW = (counts.NEW || 0) + 1;
+        }
       }
     });
   }
@@ -126,7 +178,9 @@ export function buildPipelineFunnelStages(
     },
   ];
 
-  const topValue = Math.max(1, stages[0].count);
+  const maxStageCount = Math.max(...stages.map((s) => s.count), 1);
+  const totalLeadsCount = Math.max(leads?.length || 0, 1);
+  const topValue = stageCounts ? Math.max(1, stages[0].count) : Math.max(maxStageCount, totalLeadsCount);
 
   return stages.map((s) => ({
     label: s.label,
@@ -134,7 +188,7 @@ export function buildPipelineFunnelStages(
     displayValue: `${s.count} leads`,
     color: s.color,
     gradient: s.gradient,
-    percentage: Math.round((s.count / topValue) * 100),
+    percentage: Math.min(100, Math.max(0, Math.round((s.count / topValue) * 100))),
   }));
 }
 
@@ -289,9 +343,10 @@ export function buildSlaVelocityMetrics(leads: any[]): SlaVelocityBreakdown {
       else over1h++;
     } else {
       // Deterministic synthetic distribution based on lead stage for cold leads
-      if (l.currentStage === 'NEW') {
+      const st = (l.currentStage || '').toLowerCase();
+      if (st === 'new' || st === 'new_uncontacted') {
         under5m++;
-      } else if (l.currentStage === 'CONTACTED') {
+      } else if (st === 'contacted' || st === 'discovery_call') {
         under15m++;
       } else {
         under5m++;

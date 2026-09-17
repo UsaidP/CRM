@@ -1060,7 +1060,7 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
                   </div>
 
                   {/* Day Event List */}
-                  <div className="space-y-1 overflow-y-auto max-h-[80px]">
+                  <div className="space-y-1">
                     {dayEvents.slice(0, 3).map((e) => (
                       <div
                         key={e.id}

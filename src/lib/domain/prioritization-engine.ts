@@ -182,6 +182,10 @@ export function evaluateLeadConnectPriority(lead: any, now: Date = new Date()): 
       score += 15;
       secondaryReasons.push(`Site visit scheduled — escort logistics required`);
       break;
+    case 'visit_confirmed':
+      score += 18;
+      secondaryReasons.push(`Site visit confirmed by buyer — high intent tour`);
+      break;
     case 'negotiation_token':
       score += 15;
       secondaryReasons.push(`Active price negotiation & token phase`);

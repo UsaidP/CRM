@@ -161,8 +161,8 @@ export function CustomSelect({
     if (!triggerRef.current) return null;
     const rect = triggerRef.current.getBoundingClientRect();
 
-    // If trigger has scrolled out of the visible viewport or modal bounds, dismiss menu smoothly
-    if (rect.bottom < 40 || rect.top > window.innerHeight - 40) {
+    // If trigger has scrolled completely out of the visible viewport, dismiss menu
+    if (rect.bottom < 0 || rect.top > window.innerHeight) {
       return null;
     }
 
@@ -189,15 +189,17 @@ export function CustomSelect({
 
     const minW = size === 'xs' ? Math.max(rect.width, 130) : Math.max(rect.width, 160);
     const computedWidth = Math.max(rect.width, minW);
-    const computedLeft = align === 'right' ? Math.max(8, rect.right - computedWidth) : Math.min(rect.left, window.innerWidth - computedWidth - 8);
+    const initialLeft = align === 'right' ? rect.right - computedWidth : rect.left;
+    const maxLeft = Math.max(8, window.innerWidth - computedWidth - 8);
+    const computedLeft = Math.min(Math.max(8, initialLeft), maxLeft);
 
     return {
       shouldOpenUpward,
       calculatedMaxHeight,
       coords: {
         top: shouldOpenUpward ? undefined : rect.bottom + 4,
-        bottom: shouldOpenUpward ? window.innerHeight - rect.top + 4 : undefined,
-        left: Math.max(8, computedLeft),
+        bottom: shouldOpenUpward ? Math.max(0, window.innerHeight - rect.top + 4) : undefined,
+        left: computedLeft,
         width: computedWidth,
       },
     };
@@ -226,8 +228,8 @@ export function CustomSelect({
       if (usePortal) {
         setPortalCoords(pos.coords);
       }
+      setIsOpen(true);
     }
-    setIsOpen(true);
   }, [disabled, computePosition, usePortal]);
 
   const toggleDropdown = useCallback(() => {
@@ -245,6 +247,7 @@ export function CustomSelect({
       setSearchQuery('');
       setFocusedIndex(-1);
       isKeyboardNavRef.current = false;
+      setPortalCoords(null);
       return;
     }
 
@@ -264,16 +267,26 @@ export function CustomSelect({
       listRef.current.scrollTop = 0;
     }
 
-    const handleScrollOrResize = () => {
-      updatePosition();
+    // Dismiss dropdown immediately when user scrolls anywhere on the page or outer containers.
+    // Allow smooth scrolling inside the dropdown's own options list.
+    const handleScroll = (event: Event) => {
+      const target = event.target as Node | null;
+      if (menuRef.current && target && menuRef.current.contains(target)) {
+        return;
+      }
+      setIsOpen(false);
     };
 
-    window.addEventListener('resize', handleScrollOrResize);
-    window.addEventListener('scroll', handleScrollOrResize, true);
+    const handleResize = () => {
+      setIsOpen(false);
+    };
+
+    window.addEventListener('resize', handleResize, { passive: true });
+    window.addEventListener('scroll', handleScroll, { capture: true, passive: true });
 
     return () => {
-      window.removeEventListener('resize', handleScrollOrResize);
-      window.removeEventListener('scroll', handleScrollOrResize, true);
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('scroll', handleScroll, true);
     };
   }, [isOpen, updatePosition, isSearchEnabled, filteredOptions, value]);
 
@@ -484,8 +497,8 @@ export function CustomSelect({
         transition: 'none',
         ...(usePortal && portalCoords
           ? {
-              top: portalCoords.top !== undefined ? `${portalCoords.top}px` : undefined,
-              bottom: portalCoords.bottom !== undefined ? `${portalCoords.bottom}px` : undefined,
+              top: portalCoords.top !== undefined ? `${portalCoords.top}px` : 'auto',
+              bottom: portalCoords.bottom !== undefined ? `${portalCoords.bottom}px` : 'auto',
               left: `${portalCoords.left}px`,
               width: `${portalCoords.width}px`,
             }
@@ -526,7 +539,7 @@ export function CustomSelect({
       )}
 
       {/* Options List */}
-      <div ref={listRef} className="overflow-y-auto space-y-0.5 custom-scrollbar flex-1">
+      <div ref={listRef} className="overflow-y-auto overscroll-contain space-y-0.5 custom-scrollbar flex-1">
         {filteredOptions.length === 0 ? (
           <div className="p-4 text-center text-xs text-content-muted">
             No matching options found

@@ -79,6 +79,7 @@ export const STAGE_DISPLAY_NAMES: Record<string, string> = {
   discovery_call: 'Discovery Call',
   portal_shared: 'Portal Shared',
   visit_scheduled: 'Site Visit Scheduled',
+  visit_confirmed: 'Site Visit Confirmed',
   visit_done: 'Site Visit Done',
   revisit_scheduled: 'Re-Visit Scheduled',
   negotiation_token: 'Negotiation / Token',
@@ -100,6 +101,9 @@ export function normalizeLeadStage(input?: string | null): string {
   }
   if (clean.includes('visit_done') || clean.includes('visited') || clean.includes('site_done') || clean.includes('tour_done') || clean.includes('completed_visit')) {
     return 'visit_done';
+  }
+  if (clean.includes('visit_confirm') || clean.includes('confirmed_visit') || clean.includes('confirm_visit')) {
+    return 'visit_confirmed';
   }
   if (clean.includes('visit') || clean.includes('tour') || clean.includes('inspection') || clean.includes('appointment')) {
     return 'visit_scheduled';

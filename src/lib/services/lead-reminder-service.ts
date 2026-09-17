@@ -61,6 +61,16 @@ export function calculateStageFallbackCadence(stage: string, now: Date = new Dat
         notes: 'Confirm buyer pickup point and coordinate with project developer sales POC.',
       };
 
+    case 'visit_confirmed':
+      base.setHours(base.getHours() + 4);
+      return {
+        dueAt: base,
+        title: 'Dispatch Escort Broker & Cab Logistics Protocol',
+        reminderType: 'TASK',
+        priority: 'HIGH',
+        notes: 'Buyer has confirmed attendance. Prepare project brochures and alert on-site sales desk.',
+      };
+
     case 'visit_done':
       // Next morning at 10:30 AM
       base.setDate(base.getDate() + 1);
@@ -321,6 +331,7 @@ export async function syncAllLeadFallbacks(organizationId?: string) {
     'discovery_call',
     'portal_shared',
     'visit_scheduled',
+    'visit_confirmed',
     'visit_done',
     'revisit_scheduled',
     'negotiation_token',

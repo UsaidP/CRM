@@ -66,10 +66,10 @@ export function BrandLogo({
       {/* Optional MahaRERA Registration Label beside logo */}
       {withRera && (
         <div className="flex flex-col justify-center min-w-0">
-          <span className="font-extrabold text-sm tracking-wide text-content font-serif truncate">
+          <span className="font-bold text-sm tracking-tight text-content font-display truncate leading-tight">
             Zam Zam Properties
           </span>
-          <div className="flex items-center gap-1.5 text-[10px] font-semibold text-content-muted truncate font-mono mt-0.5">
+          <div className="flex items-center gap-1.5 text-[10px] font-medium text-content-muted truncate font-mono mt-0.5">
             <span className="w-1.5 h-1.5 rounded-full bg-status-success animate-pulse shrink-0" />
             <span className="truncate">{reraNumber}</span>
           </div>

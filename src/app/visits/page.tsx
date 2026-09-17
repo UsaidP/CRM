@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Calendar, 
   MapPin, 
@@ -24,7 +24,11 @@ import {
   Navigation,
   Share2,
   Printer,
-  Download
+  Download,
+  UserCheck,
+  RotateCcw,
+  AlertTriangle,
+  Play
 } from 'lucide-react';
 import { HallmarkStamp } from '@/components/ui/HallmarkStamp';
 import { AccessibleDialog } from '@/components/ui/AccessibleDialog';
@@ -32,6 +36,7 @@ import { CustomSelect, type CustomSelectOption } from '@/components/ui/CustomSel
 import { formatSiteVisitWhatsApp } from '@/lib/export-utils';
 import { FeedbackAlert } from '@/components/ui/FeedbackAlert';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { calculateVisitKpis } from '@/lib/domain/visit-analytics';
 
 export default function SiteVisitsPage() {
   const [visits, setVisits] = useState<any[]>([]);
@@ -59,6 +64,14 @@ export default function SiteVisitsPage() {
   const [feedbackOutcome, setFeedbackOutcome] = useState('HIGH_INTEREST');
   const [feedbackNotes, setFeedbackNotes] = useState('');
   const [savingFeedback, setSavingFeedback] = useState(false);
+
+  // Lifecycle Action State (Confirm, No-Show, Reschedule)
+  const [updatingVisitId, setUpdatingVisitId] = useState<string | null>(null);
+  const [noShowVisit, setNoShowVisit] = useState<any | null>(null);
+  const [noShowReason, setNoShowReason] = useState('UNREACHABLE');
+  const [rescheduleVisit, setRescheduleVisit] = useState<any | null>(null);
+  const [rescheduleDate, setRescheduleDate] = useState('');
+  const [rescheduleTimeSlot, setRescheduleTimeSlot] = useState('Saturday 11:00 AM');
 
   const fetchVisitsAndData = async () => {
     setLoading(true);
@@ -164,6 +177,51 @@ export default function SiteVisitsPage() {
     }
   };
 
+  const handleUpdateVisit = async (visitId: string, payload: any) => {
+    setActionError(null);
+    setUpdatingVisitId(visitId);
+    try {
+      const res = await fetch(`/api/v1/visits/${visitId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setNoShowVisit(null);
+        setRescheduleVisit(null);
+        await fetchVisitsAndData();
+      } else {
+        setActionError(data.error || 'Failed to update tour status.');
+      }
+    } catch (err: any) {
+      setActionError(err.message || 'Network error updating visit.');
+    } finally {
+      setUpdatingVisitId(null);
+    }
+  };
+
+  const handleConfirmNoShow = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!noShowVisit) return;
+    await handleUpdateVisit(noShowVisit.id, {
+      status: 'NO_SHOW',
+      noShowReason,
+    });
+  };
+
+  const handleConfirmReschedule = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!rescheduleVisit || !rescheduleDate) {
+      setActionError('Please select a new date for the site visit.');
+      return;
+    }
+    await handleUpdateVisit(rescheduleVisit.id, {
+      scheduledDate: rescheduleDate,
+      timeSlot: rescheduleTimeSlot,
+    });
+  };
+
   const toggleUnitSelection = (unitId: string) => {
     if (selectedUnitIds.includes(unitId)) {
       if (selectedUnitIds.length > 1) {
@@ -178,6 +236,8 @@ export default function SiteVisitsPage() {
     if (selectedStatus === 'ALL') return true;
     return v.status === selectedStatus;
   });
+
+  const kpis = useMemo(() => calculateVisitKpis(visits), [visits]);
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-16 text-content font-sans">
@@ -229,6 +289,69 @@ export default function SiteVisitsPage() {
         />
       )}
 
+      {/* ─── SITE VISIT PRIMARY METRICS STRIP ─── */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+        <div className="p-3.5 sm:p-4 rounded-2xl bg-surface border border-border shadow-xs">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-[10px] sm:text-[11px] font-mono font-bold uppercase text-content-muted">
+              Total Tours
+            </span>
+            <Calendar className="w-3.5 h-3.5 text-sky-500" />
+          </div>
+          <span className="text-xl sm:text-2xl font-black font-display text-content block">
+            {kpis.totalVisits}
+          </span>
+          <span className="text-[10px] text-content-secondary block mt-0.5">
+            {kpis.scheduledCount} upcoming • {kpis.completedCount} attended
+          </span>
+        </div>
+
+        <div className="p-3.5 sm:p-4 rounded-2xl bg-surface border border-border shadow-xs">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-[10px] sm:text-[11px] font-mono font-bold uppercase text-content-muted">
+              Confirmation Rate
+            </span>
+            <UserCheck className="w-3.5 h-3.5 text-indigo-500" />
+          </div>
+          <span className="text-xl sm:text-2xl font-black font-display text-indigo-500 block">
+            {kpis.confirmationRate}%
+          </span>
+          <span className="text-[10px] text-content-secondary block mt-0.5">
+            {kpis.confirmedCount} buyer-confirmed slots
+          </span>
+        </div>
+
+        <div className="p-3.5 sm:p-4 rounded-2xl bg-surface border border-border shadow-xs">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-[10px] sm:text-[11px] font-mono font-bold uppercase text-content-muted">
+              Completed Tours
+            </span>
+            <CheckCircle2 className="w-3.5 h-3.5 text-status-success" />
+          </div>
+          <span className="text-xl sm:text-2xl font-black font-display text-status-success block">
+            {kpis.completionRate}%
+          </span>
+          <span className="text-[10px] text-content-secondary block mt-0.5">
+            {kpis.completedCount} escorted tours done
+          </span>
+        </div>
+
+        <div className="p-3.5 sm:p-4 rounded-2xl bg-surface border border-border shadow-xs">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-[10px] sm:text-[11px] font-mono font-bold uppercase text-content-muted">
+              No-Show Rate
+            </span>
+            <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
+          </div>
+          <span className={`text-xl sm:text-2xl font-black font-display block ${kpis.noShowRate > 25 ? 'text-rose-500' : 'text-content'}`}>
+            {kpis.noShowRate}%
+          </span>
+          <span className="text-[10px] text-content-secondary block mt-0.5">
+            {kpis.noShowCount} missed appointments
+          </span>
+        </div>
+      </div>
+
       {/* Filter and Status Bar */}
       <div className="p-3.5 sm:p-4 rounded-2xl bg-surface border border-border shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs font-sans">
         <fieldset className="flex min-w-0 max-w-full items-center gap-1.5 sm:gap-2 overflow-x-auto touch-scroll no-scrollbar w-full sm:w-auto">
@@ -237,7 +360,9 @@ export default function SiteVisitsPage() {
             { id: 'ALL', label: 'All Tours' },
             { id: 'SCHEDULED', label: 'Scheduled' },
             { id: 'CONFIRMED', label: 'Confirmed' },
+            { id: 'IN_PROGRESS', label: 'In Progress' },
             { id: 'COMPLETED', label: 'Completed' },
+            { id: 'NO_SHOW', label: 'No Show' },
             { id: 'CANCELLED', label: 'Cancelled' },
           ].map((st) => (
             <button
@@ -316,13 +441,42 @@ export default function SiteVisitsPage() {
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="font-bold text-content font-sans text-base">{visit.lead?.fullName}</span>
                       <span className="text-accent-text font-mono font-bold">({visit.lead?.phoneE164})</span>
-                      <span className={`px-2.5 py-0.5 rounded-lg text-[10px] font-bold border font-mono ${
-                        isCompleted
-                          ? 'bg-status-success-surface text-status-success border-status-success/40'
-                          : 'bg-status-warning-surface text-status-warning border-status-warning/40'
-                      }`}>
-                        {visit.status}
-                      </span>
+                      {visit.status === 'CONFIRMED' && (
+                        <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-bold border font-mono bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800">
+                          CONFIRMED ({visit.confirmedVia || 'CALL'})
+                        </span>
+                      )}
+                      {visit.status === 'SCHEDULED' && (
+                        <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-bold border font-mono bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 border-sky-200 dark:border-sky-800">
+                          SCHEDULED
+                        </span>
+                      )}
+                      {visit.status === 'IN_PROGRESS' && (
+                        <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-bold border font-mono bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800 flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping" />
+                          IN PROGRESS
+                        </span>
+                      )}
+                      {visit.status === 'COMPLETED' && (
+                        <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-bold border font-mono bg-status-success-surface text-status-success border-status-success/40">
+                          COMPLETED
+                        </span>
+                      )}
+                      {visit.status === 'NO_SHOW' && (
+                        <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-bold border font-mono bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-800">
+                          NO SHOW: {visit.noShowReason || 'UNREACHABLE'}
+                        </span>
+                      )}
+                      {visit.status === 'CANCELLED' && (
+                        <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-bold border font-mono bg-surface-subtle text-content-secondary border-border">
+                          CANCELLED
+                        </span>
+                      )}
+                      {visit.rescheduleCount > 0 && (
+                        <span className="px-2 py-0.5 rounded-lg text-[10px] font-mono font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                          Rescheduled {visit.rescheduleCount}x
+                        </span>
+                      )}
                     </div>
 
                     <div className="text-content-muted text-xs mt-1 flex flex-wrap items-center gap-3">
@@ -333,27 +487,88 @@ export default function SiteVisitsPage() {
                   </div>
 
                   <div className="flex items-center gap-2 flex-wrap">
+                    {/* Confirm Button */}
+                    {visit.status === 'SCHEDULED' && (
+                      <button
+                        type="button"
+                        disabled={updatingVisitId === visit.id}
+                        onClick={() => handleUpdateVisit(visit.id, { status: 'CONFIRMED', confirmedVia: 'PHONE_CALL' })}
+                        className="px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95 transition-all"
+                        title="Buyer confirmed they will attend the scheduled tour"
+                      >
+                        <UserCheck className="w-3.5 h-3.5" />
+                        <span>Confirm Visit</span>
+                      </button>
+                    )}
+
+                    {/* Start Tour Button */}
+                    {visit.status === 'CONFIRMED' && (
+                      <button
+                        type="button"
+                        disabled={updatingVisitId === visit.id}
+                        onClick={() => handleUpdateVisit(visit.id, { status: 'IN_PROGRESS' })}
+                        className="px-3 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95 transition-all"
+                        title="Start physical escort walkthrough"
+                      >
+                        <Play className="w-3.5 h-3.5" />
+                        <span>Start Tour</span>
+                      </button>
+                    )}
+
+                    {/* Reschedule Button */}
+                    {['SCHEDULED', 'CONFIRMED', 'NO_SHOW'].includes(visit.status) && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setRescheduleDate(new Date(visit.scheduledDate).toISOString().split('T')[0]);
+                          setRescheduleTimeSlot(visit.timeSlot || 'Saturday 11:00 AM');
+                          setRescheduleVisit(visit);
+                        }}
+                        className="px-3 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content-secondary hover:text-content border border-border text-xs font-bold flex items-center gap-1 shadow-2xs transition-all cursor-pointer"
+                        title="Reschedule this site tour slot"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5 text-accent" />
+                        <span>Reschedule</span>
+                      </button>
+                    )}
+
+                    {/* Mark No-Show Button */}
+                    {['SCHEDULED', 'CONFIRMED'].includes(visit.status) && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setNoShowReason('UNREACHABLE');
+                          setNoShowVisit(visit);
+                        }}
+                        className="px-3 py-2 rounded-xl bg-surface hover:bg-rose-50 dark:hover:bg-rose-950/30 text-rose-600 border border-border hover:border-rose-300 text-xs font-bold flex items-center gap-1 shadow-2xs transition-all cursor-pointer"
+                        title="Mark tour as buyer no-show"
+                      >
+                        <AlertTriangle className="w-3.5 h-3.5" />
+                        <span>No-Show</span>
+                      </button>
+                    )}
+
                     <button
                       type="button"
                       onClick={() => setPassportVisit(visit)}
-                      className="px-3.5 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content-secondary hover:text-content border border-border hover:border-accent/40 font-bold text-xs flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer"
+                      className="px-3 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content-secondary hover:text-content border border-border hover:border-accent/40 font-bold text-xs flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer"
                       title="View & Print Official VIP Inspection Passport"
                     >
                       <Printer className="w-3.5 h-3.5 text-accent" />
-                      <span>Tour Passport</span>
+                      <span>Passport</span>
                     </button>
 
                     <a
                       href={`https://wa.me/${(visit.lead?.phoneE164 || '').replace(/\+/g, '')}?text=${encodeURIComponent(waShareText)}`}
                       target="_blank"
                       rel="noreferrer"
-                      className="px-3.5 py-2 rounded-xl bg-status-success hover:opacity-90 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs cursor-pointer"
+                      className="px-3 py-2 rounded-xl bg-status-success hover:opacity-90 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs cursor-pointer"
                     >
                       <Share2 className="w-3.5 h-3.5" />
-                      <span>WhatsApp Itinerary</span>
+                      <span>WhatsApp</span>
                     </a>
 
-                    {!isCompleted && (
+                    {!isCompleted && visit.status !== 'NO_SHOW' && (
                       <button
                         onClick={() => { setActionError(null); setFeedbackVisit(visit); }}
                         className="px-3.5 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-accent-text border border-border hover:border-accent/40 font-bold text-xs flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer"
@@ -816,6 +1031,152 @@ export default function SiteVisitsPage() {
             </div>
           );
         })()}
+      </AccessibleDialog>
+
+      {/* MODAL: Mark No-Show */}
+      <AccessibleDialog
+        open={!!noShowVisit}
+        onClose={() => setNoShowVisit(null)}
+        titleId="no-show-title"
+        descriptionId="no-show-desc"
+        size="md"
+      >
+        <form onSubmit={handleConfirmNoShow} className="space-y-4 text-content font-sans">
+          <div className="flex items-center justify-between pb-3 border-b border-border">
+            <div>
+              <h2 id="no-show-title" className="font-bold text-content text-base font-display flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-rose-500" />
+                Record Buyer No-Show
+              </h2>
+              <p id="no-show-desc" className="text-xs text-content-secondary mt-0.5">
+                Tour with {noShowVisit?.lead?.fullName || 'the buyer'} was missed. Log the reason to trigger automated re-engagement.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setNoShowVisit(null)}
+              className="p-1 rounded-lg text-content-muted hover:text-content"
+            >
+              ✕
+            </button>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-content">Reason for Missed Tour</label>
+            <CustomSelect
+              value={noShowReason}
+              onChange={(val) => setNoShowReason(val)}
+              options={[
+                { value: 'UNREACHABLE', label: 'Buyer Unreachable (Phone Switch-off / No Answer)' },
+                { value: 'CANCELLED_LAST_MINUTE', label: 'Cancelled Last Minute by Buyer' },
+                { value: 'PERSONAL_EMERGENCY', label: 'Personal Emergency / Work Conflict' },
+                { value: 'WEATHER', label: 'Weather / Transit Inconvenience' },
+                { value: 'UNKNOWN', label: 'Unknown / Other Reasons' },
+              ]}
+            />
+          </div>
+
+          <p className="text-[11px] text-content-muted bg-surface-subtle p-3 rounded-xl border border-border">
+            Marking as No-Show will automatically generate a follow-up reminder for tomorrow morning and record a timeline communication log.
+          </p>
+
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
+            <button
+              type="button"
+              onClick={() => setNoShowVisit(null)}
+              className="px-4 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-bold transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={updatingVisitId === noShowVisit?.id}
+              className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-xs cursor-pointer"
+            >
+              {updatingVisitId === noShowVisit?.id ? 'Recording...' : 'Confirm No-Show'}
+            </button>
+          </div>
+        </form>
+      </AccessibleDialog>
+
+      {/* MODAL: Reschedule Tour */}
+      <AccessibleDialog
+        open={!!rescheduleVisit}
+        onClose={() => setRescheduleVisit(null)}
+        titleId="reschedule-title"
+        descriptionId="reschedule-desc"
+        size="md"
+      >
+        <form onSubmit={handleConfirmReschedule} className="space-y-4 text-content font-sans">
+          <div className="flex items-center justify-between pb-3 border-b border-border">
+            <div>
+              <h2 id="reschedule-title" className="font-bold text-content text-base font-display flex items-center gap-2">
+                <RotateCcw className="w-4 h-4 text-accent" />
+                Reschedule Site Tour
+              </h2>
+              <p id="reschedule-desc" className="text-xs text-content-secondary mt-0.5">
+                Set a new date and time slot for {rescheduleVisit?.lead?.fullName || 'the buyer'}.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setRescheduleVisit(null)}
+              className="p-1 rounded-lg text-content-muted hover:text-content"
+            >
+              ✕
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-content">New Tour Date</label>
+              <input
+                type="date"
+                required
+                value={rescheduleDate}
+                onChange={(e) => setRescheduleDate(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl bg-surface-subtle border border-border text-xs font-sans text-content focus:outline-none focus:border-accent"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-content">New Time Slot</label>
+              <CustomSelect
+                value={rescheduleTimeSlot}
+                onChange={(val) => setRescheduleTimeSlot(val)}
+                options={[
+                  { value: 'Saturday 11:00 AM', label: 'Saturday 11:00 AM' },
+                  { value: 'Saturday 03:00 PM', label: 'Saturday 03:00 PM' },
+                  { value: 'Sunday 11:00 AM', label: 'Sunday 11:00 AM' },
+                  { value: 'Sunday 03:00 PM', label: 'Sunday 03:00 PM' },
+                  { value: 'Weekday 11:30 AM', label: 'Weekday 11:30 AM' },
+                  { value: 'Weekday 04:30 PM', label: 'Weekday 04:30 PM' },
+                ]}
+              />
+            </div>
+          </div>
+
+          <p className="text-[11px] text-content-muted bg-surface-subtle p-3 rounded-xl border border-border">
+            Rescheduling will update the itinerary, increment the tour reschedule count ({((rescheduleVisit?.rescheduleCount || 0) + 1)}x), and log an outbound communication note.
+          </p>
+
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
+            <button
+              type="button"
+              onClick={() => setRescheduleVisit(null)}
+              className="px-4 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-bold transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={updatingVisitId === rescheduleVisit?.id}
+              className="px-4 py-2 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold shadow-xs cursor-pointer"
+            >
+              {updatingVisitId === rescheduleVisit?.id ? 'Rescheduling...' : 'Save New Slot'}
+            </button>
+          </div>
+        </form>
       </AccessibleDialog>
     </div>
   );
