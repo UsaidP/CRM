@@ -237,15 +237,15 @@ export function DashboardCockpitClient({ initialData }: DashboardProps) {
   return (
     <div className="space-y-4 sm:space-y-6 max-w-7xl mx-auto w-full">
       {/* ─── 1. TOP INTERACTIVE EXECUTIVE CONTROL BAR ─── */}
-      <div className="p-2 sm:p-3 rounded-2xl bg-surface border border-border shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-2.5 sm:gap-3">
+      <div className="p-2 sm:p-3 rounded-2xl bg-surface border border-border shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-2 sm:gap-3">
         {/* Left: View Mode (Personal vs Firm) & Market Node Filter */}
-        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 w-full md:w-auto">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2.5 w-full md:w-auto">
           {initialData.canToggleView ? (
-            <div className="inline-flex items-center gap-1 bg-surface-subtle p-1 rounded-xl border border-border text-xs font-semibold h-9 shrink-0">
+            <div className="inline-flex items-center gap-1 bg-surface-subtle p-1 rounded-xl border border-border text-xs font-semibold h-9 shrink-0 justify-center">
               <button
                 type="button"
                 onClick={() => handleToggleView('mine')}
-                className={`h-7 px-3 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 text-xs ${
+                className={`h-7 px-3 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 text-xs flex-1 sm:flex-initial ${
                   currentView === 'mine'
                     ? 'bg-accent text-white shadow-2xs font-bold'
                     : 'text-content-muted hover:text-content hover:bg-surface'
@@ -257,7 +257,7 @@ export function DashboardCockpitClient({ initialData }: DashboardProps) {
               <button
                 type="button"
                 onClick={() => handleToggleView('firm')}
-                className={`h-7 px-3 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 text-xs ${
+                className={`h-7 px-3 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 text-xs flex-1 sm:flex-initial ${
                   currentView === 'firm'
                     ? 'bg-accent text-white shadow-2xs font-bold'
                     : 'text-content-muted hover:text-content hover:bg-surface'
@@ -292,7 +292,7 @@ export function DashboardCockpitClient({ initialData }: DashboardProps) {
                 </span>
               }
               size="sm"
-              triggerClassName="!h-9 !min-h-[36px] !py-0 px-3 bg-surface-subtle border-border rounded-xl text-xs font-semibold hover:border-accent/40 shadow-2xs cursor-pointer"
+              triggerClassName="!h-9 !min-h-[36px] !py-0 px-3 bg-surface-subtle border-border rounded-xl text-xs font-semibold hover:border-accent/40 shadow-2xs cursor-pointer w-full"
             />
           </div>
         </div>
@@ -384,7 +384,7 @@ export function DashboardCockpitClient({ initialData }: DashboardProps) {
           </Link>
           <Link
             href="/deals"
-            className="px-3 sm:px-4 py-2.5 sm:py-2 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-xs hover:shadow-sm active:scale-95"
+            className="col-span-2 sm:col-span-1 px-3 sm:px-4 py-2.5 sm:py-2 rounded-xl bg-gradient-to-r from-accent to-blue-600 hover:from-accent-hover hover:to-blue-700 text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-xs hover:shadow-sm active:scale-95"
           >
             <DollarSign className="w-3.5 h-3.5 shrink-0" />
             <span>Record Deal</span>
@@ -430,120 +430,124 @@ export function DashboardCockpitClient({ initialData }: DashboardProps) {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-2.5 w-full sm:w-auto shrink-0">
-            {(topConnectNext.phoneE164 || topConnectNext.lead?.phoneE164) && (
-              <>
-                <a
-                  href={`tel:${topConnectNext.phoneE164 || topConnectNext.lead?.phoneE164}`}
-                  className="flex-1 sm:flex-initial justify-center px-3.5 sm:px-4 py-2.5 rounded-xl bg-status-success hover:bg-status-success-hover text-white text-xs font-bold flex items-center gap-1.5 shadow-xs hover:shadow-sm active:scale-95 transition-all cursor-pointer"
-                >
-                  <Phone className="w-3.5 h-3.5 shrink-0" />
-                  <span>Call Lead</span>
-                </a>
-                <a
-                  href={`https://wa.me/${(topConnectNext.phoneE164 || topConnectNext.lead?.phoneE164 || '').replace(/\D/g, '')}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex-1 sm:flex-initial justify-center px-3.5 sm:px-4 py-2.5 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border hover:border-emerald-500 text-xs font-bold flex items-center gap-1.5 shadow-2xs active:scale-95 transition-all"
-                >
-                  <MessageSquare className="w-3.5 h-3.5 text-status-success shrink-0" />
-                  <span>WhatsApp</span>
-                </a>
-              </>
-            )}
+            {(topConnectNext.phoneE164 || topConnectNext.lead?.phoneE164) && (() => {
+              const rawPhone = topConnectNext.phoneE164 || topConnectNext.lead?.phoneE164 || '';
+              const cleanDigits = rawPhone.replace(/\D/g, '');
+              const leadName = topConnectNext.leadName || topConnectNext.lead?.fullName || 'Client';
+              const whatsappUrl = `https://wa.me/${cleanDigits}?text=${encodeURIComponent(`Hello ${leadName}, this is Zam Zam Properties following up on your property inquiry.`)}`;
+
+              return (
+                <>
+                  <a
+                    href={`tel:${rawPhone}`}
+                    className="flex-1 sm:flex-initial justify-center px-4 py-2.5 rounded-xl bg-status-success hover:bg-status-success-hover text-white text-xs font-bold flex items-center gap-2 shadow-xs hover:shadow-sm active:scale-95 transition-all cursor-pointer"
+                  >
+                    <Phone className="w-3.5 h-3.5 shrink-0" />
+                    <span>Call Lead</span>
+                  </a>
+                  <a
+                    href={whatsappUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex-1 sm:flex-initial justify-center px-4 py-2.5 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border hover:border-emerald-500 text-xs font-bold flex items-center gap-2 shadow-2xs active:scale-95 transition-all"
+                  >
+                    <MessageSquare className="w-3.5 h-3.5 text-status-success shrink-0" />
+                    <span>WhatsApp</span>
+                  </a>
+                </>
+              );
+            })()}
           </div>
         </motion.div>
       )}
 
-      {/* ─── 4. CORE KPI METRIC TILES ─── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      {/* ─── 4. CORE KPI METRIC TILES (2x2 Grid on Mobile for Instant Scannability) ─── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
         {/* Metric 1: Total Leads */}
         <motion.div
           whileHover={{ y: -3 }}
-          className="p-4 rounded-2xl bg-surface border border-border shadow-xs hover:border-accent/50 hover:shadow-md transition-all duration-300 cursor-pointer"
+          className="p-3 sm:p-4 rounded-2xl bg-surface border border-border shadow-xs hover:border-accent/50 hover:shadow-md transition-all duration-300 cursor-pointer"
         >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-bold text-content-secondary uppercase tracking-wider font-mono">
-              {currentView === 'mine' ? 'My Leads' : 'Leads (Firm)'} ({timeRange.toUpperCase()})
+          <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+            <span className="text-[10px] sm:text-xs font-bold text-content-secondary uppercase tracking-wider font-mono truncate">
+              {currentView === 'mine' ? 'My Leads' : 'Leads'}
             </span>
-            <div className="w-8 h-8 rounded-xl bg-accent-soft text-accent flex items-center justify-center shadow-2xs">
-              <Users className="w-4 h-4" />
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-accent-soft text-accent flex items-center justify-center shadow-2xs shrink-0">
+              <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black text-content font-display">{filteredLeads.length}</span>
-            <span className="text-xs font-mono text-status-success font-bold flex items-center">
+          <div className="flex items-baseline gap-1.5 sm:gap-2">
+            <span className="text-xl sm:text-2xl font-black text-content font-display">{filteredLeads.length}</span>
+            <span className="text-[10px] sm:text-xs font-mono text-status-success font-bold flex items-center">
               <ArrowUpRight className="w-3 h-3" /> Live
             </span>
           </div>
-          <p className="text-[11px] text-content-muted mt-1">
-            {currentView === 'mine' ? 'Your active assigned prospects' : 'Inbound advisory pipeline'}
+          <p className="text-[10px] sm:text-[11px] text-content-muted mt-0.5 sm:mt-1 truncate">
+            {currentView === 'mine' ? 'Assigned prospects' : 'Advisory pipeline'}
           </p>
         </motion.div>
 
         {/* Metric 2: Marketable Inventory (SHARED FOR ALL) */}
         <motion.div
           whileHover={{ y: -3 }}
-          className="p-4 rounded-2xl bg-surface border border-border shadow-xs hover:border-accent/50 hover:shadow-md transition-all duration-300 cursor-pointer"
+          className="p-3 sm:p-4 rounded-2xl bg-surface border border-border shadow-xs hover:border-accent/50 hover:shadow-md transition-all duration-300 cursor-pointer"
         >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-bold text-content-secondary uppercase tracking-wider font-mono">
-              Marketable Units
+          <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+            <span className="text-[10px] sm:text-xs font-bold text-content-secondary uppercase tracking-wider font-mono truncate">
+              Marketable
             </span>
-            <div className="w-8 h-8 rounded-xl bg-status-success/10 text-status-success flex items-center justify-center shadow-2xs">
-              <ShieldCheck className="w-4 h-4" />
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-status-success/10 text-status-success flex items-center justify-center shadow-2xs shrink-0">
+              <ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black text-content font-display">{activeMarketableCount}</span>
-            <span className="text-xs font-mono text-content-muted">/ {filteredUnits.length} total</span>
+          <div className="flex items-baseline gap-1 sm:gap-2">
+            <span className="text-xl sm:text-2xl font-black text-content font-display">{activeMarketableCount}</span>
+            <span className="text-[10px] sm:text-xs font-mono text-content-muted">/ {filteredUnits.length} total</span>
           </div>
-          <p className="text-[11px] text-content-muted mt-1">
-            {staleCount > 0 ? `${staleCount} units need re-verification` : 'All inventory RERA verified'}
+          <p className="text-[10px] sm:text-[11px] text-content-muted mt-0.5 sm:mt-1 truncate">
+            {staleCount > 0 ? `${staleCount} need re-check` : 'RERA verified'}
           </p>
         </motion.div>
 
         {/* Metric 3: Site Visits */}
         <motion.div
           whileHover={{ y: -3 }}
-          className="p-4 rounded-2xl bg-surface border border-border shadow-xs hover:border-accent/50 hover:shadow-md transition-all duration-300 cursor-pointer"
+          className="p-3 sm:p-4 rounded-2xl bg-surface border border-border shadow-xs hover:border-accent/50 hover:shadow-md transition-all duration-300 cursor-pointer"
         >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-bold text-content-secondary uppercase tracking-wider font-mono">
-              {currentView === 'mine' ? 'My Site Tours' : 'Site Tours (Firm)'}
+          <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+            <span className="text-[10px] sm:text-xs font-bold text-content-secondary uppercase tracking-wider font-mono truncate">
+              {currentView === 'mine' ? 'Site Tours' : 'Tours'}
             </span>
-            <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shadow-2xs">
-              <Car className="w-4 h-4" />
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shadow-2xs shrink-0">
+              <Car className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black text-content font-display">{filteredVisits.length}</span>
-            <span className="text-xs font-mono text-status-success font-bold">Scheduled</span>
+          <div className="flex items-baseline gap-1.5 sm:gap-2">
+            <span className="text-xl sm:text-2xl font-black text-content font-display">{filteredVisits.length}</span>
+            <span className="text-[10px] sm:text-xs font-mono text-status-success font-bold">Tours</span>
           </div>
-          <p className="text-[11px] text-content-muted mt-1">Navi Mumbai physical itineraries</p>
+          <p className="text-[10px] sm:text-[11px] text-content-muted mt-0.5 sm:mt-1 truncate">Physical itineraries</p>
         </motion.div>
 
         {/* Metric 4: Commission Ledger */}
         <motion.div
           whileHover={{ y: -3 }}
-          className="p-4 rounded-2xl bg-surface border border-border shadow-xs hover:border-accent/50 hover:shadow-md transition-all duration-300 cursor-pointer"
+          className="p-3 sm:p-4 rounded-2xl bg-surface border border-border shadow-xs hover:border-accent/50 hover:shadow-md transition-all duration-300 cursor-pointer"
         >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-bold text-content-secondary uppercase tracking-wider font-mono">
-              {currentView === 'mine' ? 'My Commission' : 'Commission Ledger'}
+          <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+            <span className="text-[10px] sm:text-xs font-bold text-content-secondary uppercase tracking-wider font-mono truncate">
+              Commission
             </span>
-            <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shadow-2xs">
-              <TrendingUp className="w-4 h-4" />
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shadow-2xs shrink-0">
+              <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
-          <div className="flex flex-wrap items-baseline gap-1 sm:gap-2">
-            <span className="text-xl sm:text-2xl font-black text-content font-display">
+          <div className="flex flex-wrap items-baseline gap-1 sm:gap-1.5">
+            <span className="text-base sm:text-xl font-black text-content font-display truncate">
               {formatINR(currentRealizedNet || currentGrossBrokerage * 0.7)}
             </span>
-            <span className="text-xs font-mono text-accent-text font-bold">
-              ({formatINR(currentGrossBrokerage)} gross)
-            </span>
           </div>
-          <p className="text-[11px] text-status-success font-medium mt-1">100% compliant payout structure</p>
+          <p className="text-[10px] sm:text-[11px] text-status-success font-medium mt-0.5 sm:mt-1 truncate">Payout ready</p>
         </motion.div>
       </div>
 

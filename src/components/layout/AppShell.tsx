@@ -275,11 +275,31 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen flex flex-col bg-canvas text-content antialiased">
       {/* Mobile Top Header */}
-      <header className="lg:hidden flex items-center justify-between px-3 sm:px-4 h-[56px] sm:h-[60px] bg-surface border-b border-border z-50 sticky top-0">
-        <Link href="/" className="flex items-center gap-2">
-          <BrandLogo mode="horizontal" size="xs" withRera={false} />
+      <header className="lg:hidden flex items-center justify-between px-3 sm:px-4 h-[56px] sm:h-[60px] bg-surface/95 backdrop-blur-md border-b border-border z-50 sticky top-0 shadow-2xs">
+        <Link href="/" className="flex items-center gap-2 min-w-0">
+          <BrandLogo mode="icon" size="xs" withRera={false} />
+          <div className="flex flex-col min-w-0">
+            <span className="font-bold text-xs tracking-tight text-content font-display truncate leading-tight">
+              Zam Zam
+            </span>
+            <div className="flex items-center gap-1 text-[9px] font-mono text-content-muted leading-none">
+              <span className="w-1.5 h-1.5 rounded-full bg-status-success animate-pulse shrink-0" />
+              <span className="truncate font-semibold">MahaRERA</span>
+            </div>
+          </div>
         </Link>
         <div className="flex items-center gap-1 sm:gap-1.5">
+          {/* Quick Telecaller Desk Shortcut for Mobile */}
+          <Link
+            href="/leads?view=telecaller"
+            className="flex items-center gap-1 px-2.5 py-1.5 bg-accent-soft text-accent-text hover:bg-accent hover:text-white rounded-xl text-xs font-bold transition-all border border-accent/25 shadow-2xs shrink-0"
+            title="Instant Telecaller High-Velocity Desk"
+            aria-label="Telecaller High-Velocity Desk"
+          >
+            <Zap className="w-3.5 h-3.5 text-accent" />
+            <span className="text-[11px] font-bold">Desk</span>
+          </Link>
+
           {isAdmin && (
             <button
               type="button"
@@ -287,61 +307,71 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 setBackupModalMode('BACKUP');
                 setIsBackupModalOpen(true);
               }}
-              className="p-1.5 sm:p-2 rounded-xl text-content-muted hover:text-accent hover:bg-surface-subtle transition-colors cursor-pointer"
+              className="w-8 h-8 rounded-xl bg-surface border border-border flex items-center justify-center text-content-muted hover:text-accent hover:bg-surface-subtle transition-colors cursor-pointer shadow-2xs shrink-0"
               aria-label="Google Drive Backup"
               title="Backup to Google Drive"
             >
-              <Cloud className="w-4 h-4 text-accent" />
+              <Cloud className="w-3.5 h-3.5 text-accent" />
             </button>
           )}
+
           <button
             type="button"
             onClick={() => setIsSearchOpen(true)}
-            className="p-1.5 sm:p-2 rounded-xl text-content-muted hover:text-content hover:bg-surface-subtle transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-xl bg-surface border border-border flex items-center justify-center text-content-muted hover:text-content hover:bg-surface-subtle transition-colors cursor-pointer shadow-2xs shrink-0"
             aria-label="Search"
+            title="Search (⌘K)"
           >
-            <Search className="w-4 h-4" />
+            <Search className="w-3.5 h-3.5" />
           </button>
-          <ThemeToggle id="theme-toggle-mobile" variant="compact" ariaLabelPrefix="Mobile" />
-          <button
-            type="button"
-            className="p-1.5 sm:p-2 rounded-xl text-content-muted hover:text-content hover:bg-surface-subtle transition-colors cursor-pointer"
-            aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
-            onClick={() => setIsMenuOpen((prev) => !prev)}
-          >
-            {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
+
+          <ThemeToggle
+            id="theme-toggle-mobile"
+            variant="compact"
+            ariaLabelPrefix="Mobile"
+            className="!w-8 !h-8 !min-w-[32px] !min-h-[32px] !rounded-xl !p-0 !border-border !bg-surface shrink-0"
+          />
         </div>
       </header>
 
       {/* Mobile Backdrop */}
       {isMenuOpen && (
         <div
-          className="fixed inset-0 bg-black/40 backdrop-blur-xs z-40 lg:hidden"
+          className="fixed inset-0 bg-black/50 backdrop-blur-xs z-40 lg:hidden transition-opacity"
           onClick={() => setIsMenuOpen(false)}
         />
       )}
 
       <div className="flex flex-1 relative">
-        {/* Stitch 280px Left Navigation Sidebar */}
+        {/* Stitch 300px Left Navigation Sidebar / Mobile Drawer */}
         <aside
           id="app-navigation"
-          className={`fixed lg:sticky top-0 left-0 h-dvh max-h-dvh w-[280px] max-w-[85vw] bg-surface-subtle border-r border-border z-40 flex flex-col transition-transform duration-200 ease-out shrink-0 overflow-hidden ${
+          aria-label="Sidebar navigation"
+          className={`fixed lg:sticky top-0 left-0 h-dvh max-h-dvh w-[300px] sm:w-[280px] max-w-[85vw] bg-surface-subtle border-r border-border z-50 lg:z-40 flex flex-col transition-transform duration-200 ease-out shrink-0 overflow-hidden shadow-xl lg:shadow-none ${
             isMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
           }`}
         >
           {/* Sidebar Header & Branding - Fixed at Top */}
-          <div className="shrink-0 h-[64px] px-4 border-b border-border bg-surface/80 backdrop-blur-xs flex items-center">
-            <Link href="/" className="flex items-center gap-3 group w-full">
+          <div className="shrink-0 h-[64px] px-3.5 sm:px-4 border-b border-border bg-surface/90 backdrop-blur-xs flex items-center justify-between">
+            <Link href="/" className="flex items-center gap-2.5 group min-w-0 flex-1" onClick={() => setIsMenuOpen(false)}>
               <BrandLogo mode="horizontal" size="md" withRera reraNumber="MahaRERA A52000028714" />
             </Link>
+            {/* Explicit Mobile Drawer Close Button */}
+            <button
+              type="button"
+              onClick={() => setIsMenuOpen(false)}
+              className="lg:hidden p-2 rounded-xl text-content-muted hover:text-content hover:bg-surface border border-transparent hover:border-border min-w-[40px] min-h-[40px] flex items-center justify-center cursor-pointer transition-colors"
+              aria-label="Close navigation menu"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
 
           {/* Grouped Navigation Links - Only this area scrolls */}
           <nav className="flex-1 min-h-0 px-3 py-3 space-y-4 overflow-y-auto touch-scroll" aria-label="Primary navigation">
             {visibleNavSections.map((section) => (
               <div key={section.title} className="space-y-1">
-                <div className="px-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-content-muted font-mono">
+                <div className="px-2.5 pb-1 text-[11px] sm:text-[10px] font-bold uppercase tracking-wider text-content-secondary/80 font-mono">
                   {section.title}
                 </div>
                 {section.items.map((item) => {
@@ -352,7 +382,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     <Link
                       key={item.href}
                       href={item.href}
-                      className={`flex items-center justify-between px-2.5 py-2 rounded-xl text-xs transition-all ${
+                      onClick={() => setIsMenuOpen(false)}
+                      className={`flex items-center justify-between px-3 py-2.5 sm:py-2 min-h-[44px] sm:min-h-[38px] rounded-xl text-[13px] sm:text-xs transition-all ${
                         isActive
                           ? 'bg-accent-soft text-accent-text font-bold shadow-2xs border-l-4 border-accent'
                           : 'text-content-muted hover:bg-surface hover:text-content font-medium'
@@ -360,7 +391,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                       aria-current={isActive ? 'page' : undefined}
                     >
                       <div className="flex items-center gap-2.5 truncate">
-                        <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-accent' : 'text-content-muted'}`} />
+                        <Icon className={`w-4.5 h-4.5 sm:w-4 sm:h-4 shrink-0 ${isActive ? 'text-accent' : 'text-content-muted'}`} />
                         <span className="truncate">{item.label}</span>
                       </div>
                       {item.badge && (
@@ -385,7 +416,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="shrink-0 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] border-t border-border bg-surface/90 backdrop-blur-xs space-y-2.5">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                <div className="w-8 h-8 rounded-xl bg-accent text-white flex items-center justify-center text-xs font-bold shadow-xs shrink-0 font-display">
+                <div className="w-9 h-9 sm:w-8 sm:h-8 rounded-xl bg-accent text-white flex items-center justify-center text-xs font-bold shadow-xs shrink-0 font-display">
                   {currentUser?.fullName
                     ? currentUser.fullName.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()
                     : 'ZP'}
@@ -410,25 +441,25 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 </div>
               </div>
 
-              <div className="flex items-center gap-1 shrink-0">
+              <div className="flex items-center gap-1.5 shrink-0">
                 <ThemeToggle 
                   id="theme-toggle-desktop" 
                   variant="compact" 
                   ariaLabelPrefix="Desktop" 
-                  className="!w-7 !h-7 !min-w-[28px] !min-h-[28px] rounded-lg p-0" 
+                  className="!w-8 !h-8 !min-w-[32px] !min-h-[32px] rounded-lg p-0" 
                 />
                 <button
                   type="button"
                   onClick={handleLogout}
                   disabled={isLoggingOut}
-                  className="p-1 rounded-lg text-content-muted hover:text-status-danger hover:bg-status-danger-surface transition-colors cursor-pointer disabled:opacity-50"
+                  className="p-1.5 min-w-[32px] min-h-[32px] flex items-center justify-center rounded-lg text-content-muted hover:text-status-danger hover:bg-status-danger-surface transition-colors cursor-pointer disabled:opacity-50 border border-transparent hover:border-status-danger/20"
                   title="Sign Out"
                   aria-label="Sign Out"
                 >
                   {isLoggingOut ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin text-accent" />
+                    <Loader2 className="w-4 h-4 animate-spin text-accent" />
                   ) : (
-                    <LogOut className="w-3.5 h-3.5" />
+                    <LogOut className="w-4 h-4" />
                   )}
                 </button>
               </div>
@@ -527,12 +558,100 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </div>
           </header>
 
-          {/* Main Page Area */}
-          <main id="main-content" className="flex-1 p-3 pb-16 sm:p-4 sm:pb-8 md:p-6 lg:p-8 max-w-[1600px] 2xl:max-w-[1720px] w-full mx-auto">
+          {/* Main Page Area - pb-24 on mobile ensures bottom nav bar never obscures content */}
+          <main id="main-content" className="flex-1 p-3 pb-24 sm:p-4 sm:pb-24 md:p-6 lg:p-8 max-w-[1600px] 2xl:max-w-[1720px] w-full mx-auto">
             {children}
           </main>
         </div>
       </div>
+
+      {/* Sticky Mobile Bottom Navigation Bar (Natural Thumb Zone Core) */}
+      <nav
+        aria-label="Mobile primary navigation"
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-surface/95 backdrop-blur-xl border-t border-border px-1.5 pt-1.5 pb-[max(0.6rem,env(safe-area-inset-bottom))] shadow-[0_-4px_24px_rgba(0,0,0,0.12)] flex items-center justify-around"
+      >
+        {/* 1. Dashboard */}
+        <Link
+          href="/"
+          className={`flex flex-col items-center justify-center flex-1 py-1 px-1 min-h-[48px] rounded-xl transition-all active:scale-95 ${
+            pathname === '/'
+              ? 'text-accent font-bold'
+              : 'text-content-muted hover:text-content font-medium'
+          }`}
+          aria-current={pathname === '/' ? 'page' : undefined}
+        >
+          <div className={`relative p-1.5 rounded-xl transition-all ${pathname === '/' ? 'bg-accent/15 text-accent shadow-2xs scale-105' : ''}`}>
+            <LayoutDashboard className="w-5 h-5" />
+          </div>
+          <span className="text-[10px] tracking-tight leading-none mt-1 font-display font-semibold">Dashboard</span>
+        </Link>
+
+        {/* 2. Leads & Desk */}
+        <Link
+          href="/leads"
+          className={`flex flex-col items-center justify-center flex-1 py-1 px-1 min-h-[48px] rounded-xl transition-all active:scale-95 relative ${
+            pathname.startsWith('/leads')
+              ? 'text-accent font-bold'
+              : 'text-content-muted hover:text-content font-medium'
+          }`}
+          aria-current={pathname.startsWith('/leads') ? 'page' : undefined}
+        >
+          <div className={`relative p-1.5 rounded-xl transition-all ${pathname.startsWith('/leads') ? 'bg-accent/15 text-accent shadow-2xs scale-105' : ''}`}>
+            <Users className="w-5 h-5" />
+            <span className="absolute top-0 right-0 w-2 h-2 bg-accent rounded-full animate-pulse ring-2 ring-surface" />
+          </div>
+          <span className="text-[10px] tracking-tight leading-none mt-1 font-display font-semibold">Leads</span>
+        </Link>
+
+        {/* 3. Site Visits */}
+        <Link
+          href="/visits"
+          className={`flex flex-col items-center justify-center flex-1 py-1 px-1 min-h-[48px] rounded-xl transition-all active:scale-95 ${
+            pathname.startsWith('/visits') || pathname.startsWith('/calendar')
+              ? 'text-accent font-bold'
+              : 'text-content-muted hover:text-content font-medium'
+          }`}
+          aria-current={pathname.startsWith('/visits') || pathname.startsWith('/calendar') ? 'page' : undefined}
+        >
+          <div className={`relative p-1.5 rounded-xl transition-all ${pathname.startsWith('/visits') || pathname.startsWith('/calendar') ? 'bg-accent/15 text-accent shadow-2xs scale-105' : ''}`}>
+            <Car className="w-5 h-5" />
+          </div>
+          <span className="text-[10px] tracking-tight leading-none mt-1 font-display font-semibold">Visits</span>
+        </Link>
+
+        {/* 4. Inventory */}
+        <Link
+          href="/inventory"
+          className={`flex flex-col items-center justify-center flex-1 py-1 px-1 min-h-[48px] rounded-xl transition-all active:scale-95 ${
+            pathname.startsWith('/inventory') || pathname.startsWith('/matching')
+              ? 'text-accent font-bold'
+              : 'text-content-muted hover:text-content font-medium'
+          }`}
+          aria-current={pathname.startsWith('/inventory') || pathname.startsWith('/matching') ? 'page' : undefined}
+        >
+          <div className={`relative p-1.5 rounded-xl transition-all ${pathname.startsWith('/inventory') || pathname.startsWith('/matching') ? 'bg-accent/15 text-accent shadow-2xs scale-105' : ''}`}>
+            <Building2 className="w-5 h-5" />
+          </div>
+          <span className="text-[10px] tracking-tight leading-none mt-1 font-display font-semibold">Units</span>
+        </Link>
+
+        {/* 5. More / Full Drawer Menu */}
+        <button
+          type="button"
+          onClick={() => setIsMenuOpen((prev) => !prev)}
+          className={`flex flex-col items-center justify-center flex-1 py-1 px-1 min-h-[48px] rounded-xl transition-all active:scale-95 cursor-pointer ${
+            isMenuOpen
+              ? 'text-accent font-bold'
+              : 'text-content-muted hover:text-content font-medium'
+          }`}
+          aria-label={isMenuOpen ? 'Close all menu items' : 'Open all menu items'}
+        >
+          <div className={`relative p-1.5 rounded-xl transition-all ${isMenuOpen ? 'bg-accent/15 text-accent shadow-2xs scale-105' : ''}`}>
+            {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </div>
+          <span className="text-[10px] tracking-tight leading-none mt-1 font-display font-semibold">Menu</span>
+        </button>
+      </nav>
 
       {/* Global Omnisearch Dialog Modal (⌘K) */}
       {isSearchOpen && (() => {
