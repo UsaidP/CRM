@@ -92,8 +92,8 @@ export function LoginClient({
 
       {/* Top Header */}
       <header className="p-6 md:px-12 flex items-center justify-between z-10">
-        <Link href="/" className="flex items-center gap-3 group" aria-label="ZamZam Properties Home">
-          <BrandLogo mode="horizontal" size="md" withRera reraNumber="MahaRERA A52000028714" />
+        <Link href="/" className="flex items-center gap-3 group" aria-label="Lucky CRM Home">
+          <BrandLogo mode="horizontal" size="md" withRera firmName="Lucky CRM" reraNumber="Real Estate Brokerage OS" />
         </Link>
 
         <ThemeToggle variant="compact" />

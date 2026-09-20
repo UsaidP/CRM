@@ -19,22 +19,23 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
     const portal = await prisma.clientPortal.findUnique({
       where: { token },
-      select: { title: true, customMessage: true },
+      select: { title: true, customMessage: true, organization: { select: { name: true } } },
     });
 
     if (!portal) {
       return {
-        title: 'Portal Not Found | ZamZam Properties',
+        title: 'Portal Not Found',
       };
     }
 
+    const orgName = portal.organization?.name || 'Lucky CRM';
     return {
-      title: `${portal.title} | ZamZam Properties Advisory`,
-      description: portal.customMessage || 'Curated verified Navi Mumbai property portfolio.',
+      title: `${portal.title} | ${orgName} Advisory`,
+      description: portal.customMessage || 'Curated verified property portfolio.',
     };
   } catch {
     return {
-      title: 'Client Property Portal | ZamZam Properties',
+      title: 'Client Property Portal',
     };
   }
 }
@@ -54,6 +55,8 @@ export default async function ClientPortalPage({ params }: PageProps) {
           name: true,
           slug: true,
           reraBrokerRegistration: true,
+          youtubeUrl: true,
+          instagramUrl: true,
         },
       },
       lead: {

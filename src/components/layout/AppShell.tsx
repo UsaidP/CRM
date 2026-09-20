@@ -40,10 +40,12 @@ import {
   MapPin,
   Loader2,
   ArrowRight,
+  Settings,
 } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
-import { isPublicLayoutPath, isPublicAuthPath, isPublicPortalPath } from '@/lib/navigation';
+import { isPublicLayoutPath, isPublicAuthPath, isPublicPortalPath, isPublicLandingPath } from '@/lib/navigation';
 import { BackupModal } from '@/components/admin/BackupModal';
+import { OrganizationSettingsModal } from '@/components/admin/OrganizationSettingsModal';
 import { BrandLogo } from '@/components/ui/BrandLogo';
 import { fetchSession, logout } from '@/lib/client/auth';
 
@@ -66,7 +68,7 @@ const navSections: NavSection[] = [
   {
     title: 'Operations',
     items: [
-      { href: '/', label: 'Dashboard', icon: LayoutDashboard },
+      { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
       { href: '/leads', label: 'Leads & Calling', icon: Users },
       { href: '/calendar', label: 'Calendar & Visits', icon: CalendarDays },
     ],
@@ -94,7 +96,9 @@ const navSections: NavSection[] = [
 
 function isCurrentRoute(pathname?: string | null, href?: string) {
   if (!pathname || !href) return false;
-  return href === '/' ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
+  // /dashboard is the canonical home — also active on root '/' for authenticated users
+  if (href === '/dashboard') return pathname === '/' || pathname === '/dashboard' || pathname.startsWith('/dashboard/');
+  return pathname === href || pathname.startsWith(`${href}/`);
 }
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -112,10 +116,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     email: string;
     role: string;
     isSuperAdmin: boolean;
+    organization?: {
+      id: string;
+      name: string;
+      slug: string;
+      reraBrokerRegistration?: string | null;
+    } | null;
     effectivePermissions?: string[];
   } | null>(null);
   const [isBackupModalOpen, setIsBackupModalOpen] = useState(false);
   const [backupModalMode, setBackupModalMode] = useState<'BACKUP' | 'DUTY_END'>('BACKUP');
+  const [isOrgSettingsModalOpen, setIsOrgSettingsModalOpen] = useState(false);
 
   // Global Omnisearch State
   const [searchResults, setSearchResults] = useState<{
@@ -160,19 +171,23 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   const isPublicLayout = isPublicLayoutPath(pathname);
 
-  // Fetch active session user; bounce unauthenticated visitors to login so
-  // the authenticated shell (sidebar, search, etc.) is never exposed.
+  // Fetch active session user; bounce unauthenticated visitors to login
+  // ONLY on protected routes. Unauthenticated visitors on '/' see the landing page.
   useEffect(() => {
     if (isPublicLayout) return;
     fetchSession()
       .then((user) => {
         if (user) {
-          setCurrentUser(user as { id: string; fullName: string; email: string; role: string; isSuperAdmin: boolean });
-        } else {
+          setCurrentUser(user as any);
+        } else if (pathname !== '/') {
           router.replace('/login');
         }
       })
-      .catch(() => router.replace('/login'));
+      .catch(() => {
+        if (pathname !== '/') {
+          router.replace('/login');
+        }
+      });
   }, [isPublicLayout, pathname, router]);
 
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -255,8 +270,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   // Public layout rendering:
   // - Public auth paths (/login, /forgot-password, etc.) render their own <main> inside the page component.
-  // - Public portal paths (/p/...) are wrapped with the public-portal-main shell.
-  if (isPublicAuthPath(pathname)) {
+  // - Public landing paths (/landing, /register) render their own full landing experience.
+  // - Unauthenticated visitor on root ('/') renders landing page.
+  if (isPublicAuthPath(pathname) || isPublicLandingPath(pathname)) {
+    return <>{children}</>;
+  }
+
+  if (pathname === '/' && !currentUser) {
     return <>{children}</>;
   }
 
@@ -276,19 +296,34 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen flex flex-col bg-canvas text-content antialiased">
       {/* Mobile Top Header */}
       <header className="lg:hidden flex items-center justify-between px-3 sm:px-4 h-[56px] sm:h-[60px] bg-surface/95 backdrop-blur-md border-b border-border z-50 sticky top-0 shadow-2xs">
-        <Link href="/" className="flex items-center gap-2 min-w-0">
-          <BrandLogo mode="icon" size="xs" withRera={false} />
+        <Link href="/dashboard" className="flex items-center gap-2 min-w-0">
+          <BrandLogo mode="icon" size="xs" withRera={false} firmName={currentUser?.organization?.name || 'Lucky CRM'} />
           <div className="flex flex-col min-w-0">
             <span className="font-bold text-xs tracking-tight text-content font-display truncate leading-tight">
-              Zam Zam
+              {currentUser?.organization?.name || 'Lucky CRM'}
             </span>
             <div className="flex items-center gap-1 text-[9px] font-mono text-content-muted leading-none">
               <span className="w-1.5 h-1.5 rounded-full bg-status-success animate-pulse shrink-0" />
-              <span className="truncate font-semibold">MahaRERA</span>
+              <span className="truncate font-semibold">
+                {currentUser?.organization?.reraBrokerRegistration ? 'MahaRERA' : 'Real Estate'}
+              </span>
             </div>
           </div>
         </Link>
         <div className="flex items-center gap-1 sm:gap-1.5">
+          {/* Firm Settings Shortcut for Mobile */}
+          {isAdmin && (
+            <button
+              type="button"
+              onClick={() => setIsOrgSettingsModalOpen(true)}
+              className="w-8 h-8 rounded-xl bg-surface border border-border flex items-center justify-center text-content-muted hover:text-accent hover:bg-surface-subtle transition-colors cursor-pointer shadow-2xs shrink-0"
+              aria-label="Firm Settings"
+              title="Customize Firm Profile"
+            >
+              <Settings className="w-3.5 h-3.5 text-accent" />
+            </button>
+          )}
+
           {/* Quick Telecaller Desk Shortcut for Mobile */}
           <Link
             href="/leads?view=telecaller"
@@ -353,9 +388,28 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         >
           {/* Sidebar Header & Branding - Fixed at Top */}
           <div className="shrink-0 h-[64px] px-3.5 sm:px-4 border-b border-border bg-surface/90 backdrop-blur-xs flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2.5 group min-w-0 flex-1" onClick={() => setIsMenuOpen(false)}>
-              <BrandLogo mode="horizontal" size="md" withRera reraNumber="MahaRERA A52000028714" />
-            </Link>
+            <div className="flex items-center gap-1.5 min-w-0 flex-1">
+              <Link href="/dashboard" className="flex items-center gap-2.5 group min-w-0 flex-1" onClick={() => setIsMenuOpen(false)}>
+                <BrandLogo
+                  mode="horizontal"
+                  size="md"
+                  withRera
+                  firmName={currentUser?.organization?.name || 'Lucky CRM'}
+                  reraNumber={currentUser?.organization?.reraBrokerRegistration || 'MahaRERA Registered'}
+                />
+              </Link>
+              {isAdmin && (
+                <button
+                  type="button"
+                  onClick={() => setIsOrgSettingsModalOpen(true)}
+                  className="p-1.5 rounded-lg text-content-muted hover:text-accent hover:bg-surface border border-transparent hover:border-border cursor-pointer transition-colors shrink-0"
+                  title="Customize Firm Name & Profile"
+                  aria-label="Customize Firm Name & Profile"
+                >
+                  <Settings className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
             {/* Explicit Mobile Drawer Close Button */}
             <button
               type="button"
@@ -489,8 +543,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <div className="flex items-center gap-3 xl:gap-4 min-w-0">
               <div className="truncate">
                 <div className="flex items-center gap-2 text-xs text-content-muted truncate">
-                  <Link href="/" className="hover:text-content transition-colors font-medium shrink-0">
-                    ZamZam Console
+                  <Link href="/dashboard" className="hover:text-content transition-colors font-medium shrink-0">
+                    {currentUser?.organization?.name || 'Lucky CRM'}
                   </Link>
                   <span>/</span>
                   <span className="font-bold text-content truncate">{activeItem.label}</span>
@@ -572,15 +626,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       >
         {/* 1. Dashboard */}
         <Link
-          href="/"
+          href="/dashboard"
           className={`flex flex-col items-center justify-center flex-1 py-1 px-1 min-h-[48px] rounded-xl transition-all active:scale-95 ${
-            pathname === '/'
+            pathname === '/' || pathname === '/dashboard' || pathname.startsWith('/dashboard/')
               ? 'text-accent font-bold'
               : 'text-content-muted hover:text-content font-medium'
           }`}
-          aria-current={pathname === '/' ? 'page' : undefined}
+          aria-current={pathname === '/' || pathname === '/dashboard' ? 'page' : undefined}
         >
-          <div className={`relative p-1.5 rounded-xl transition-all ${pathname === '/' ? 'bg-accent/15 text-accent shadow-2xs scale-105' : ''}`}>
+          <div className={`relative p-1.5 rounded-xl transition-all ${pathname === '/' || pathname === '/dashboard' || pathname.startsWith('/dashboard/') ? 'bg-accent/15 text-accent shadow-2xs scale-105' : ''}`}>
             <LayoutDashboard className="w-5 h-5" />
           </div>
           <span className="text-[10px] tracking-tight leading-none mt-1 font-display font-semibold">Dashboard</span>
@@ -1176,6 +1230,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         initialMode={backupModalMode}
         currentUser={currentUser}
       />
+
+      {/* Organization / Firm Settings Modal */}
+      {isAdmin && (
+        <OrganizationSettingsModal
+          isOpen={isOrgSettingsModalOpen}
+          onClose={() => setIsOrgSettingsModalOpen(false)}
+          currentOrganization={currentUser?.organization}
+          onOrganizationUpdated={(updatedOrg) => {
+            setCurrentUser((prev: any) =>
+              prev ? { ...prev, organization: updatedOrg } : prev
+            );
+          }}
+        />
+      )}
     </div>
   );
 }

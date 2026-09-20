@@ -1,21 +1,27 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React from 'react';
+import { motion, AnimatePresence, useScroll } from 'framer-motion';
 import {
   ShieldCheck,
   Share2,
   Check,
   PhoneCall,
   Layers,
-  Sparkles,
-  ExternalLink,
 } from 'lucide-react';
 import { BrandLogo } from '@/components/ui/BrandLogo';
 import { YoutubeIcon, InstagramIcon } from '@/components/icons/SocialIcons';
 
 interface PortalHeaderProps {
-  portal: any;
+  portal: {
+    organization?: {
+      name?: string | null;
+      reraBrokerRegistration?: string | null;
+      youtubeUrl?: string | null;
+      instagramUrl?: string | null;
+    } | null;
+    [key: string]: any;
+  };
   advisor: {
     fullName?: string;
     phoneE164?: string;
@@ -28,6 +34,16 @@ interface PortalHeaderProps {
   sendTelemetry: (action: string) => void;
 }
 
+/**
+ * Normalizes user-provided URLs to ensure they start with an absolute protocol (https://).
+ * Prevents relative route navigation bugs when users enter "youtube.com/..." without http(s).
+ */
+function ensureAbsoluteUrl(url?: string | null): string {
+  if (!url) return '#';
+  const trimmed = url.trim();
+  return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+}
+
 export function PortalHeader({
   portal,
   advisor,
@@ -37,18 +53,8 @@ export function PortalHeader({
   unitsCount,
   sendTelemetry,
 }: PortalHeaderProps) {
-  const [scrollProgress, setScrollProgress] = useState(0);
-
-  useEffect(() => {
-    const onScroll = () => {
-      const doc = document.documentElement;
-      const max = doc.scrollHeight - doc.clientHeight;
-      setScrollProgress(max > 0 ? Math.min(1, doc.scrollTop / max) : 0);
-    };
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
+  // GPU-accelerated scroll tracking outside React render loop (0 re-renders)
+  const { scrollYProgress } = useScroll();
 
   return (
     <motion.header
@@ -65,10 +71,11 @@ export function PortalHeader({
             mode="horizontal"
             size="sm"
             withRera
+            firmName={portal.organization?.name || 'Lucky CRM'}
             reraNumber={
               portal.organization?.reraBrokerRegistration
                 ? `MahaRERA: ${portal.organization.reraBrokerRegistration}`
-                : 'MahaRERA A52000028714'
+                : 'Verified Real Estate Advisor'
             }
           />
           <div className="hidden lg:flex items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-50/90 via-amber-100/60 to-amber-50/90 px-3 py-1 text-[11px] font-bold text-gold border border-amber-300/90 shadow-2xs shrink-0 tracking-wide font-serif">
@@ -95,29 +102,37 @@ export function PortalHeader({
             </motion.button>
           )}
 
-          {/* Social Walkthrough Video Links */}
-          <div className="hidden md:flex items-center gap-1.5 border-r border-slate-200/80 pr-2.5 mr-0.5">
-            <a
-              href="https://www.youtube.com/@zamzamproperties6354"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-red-50/90 hover:bg-red-100 border border-red-200 text-red-700 text-xs font-bold transition-[background-color,border-color,box-shadow,transform] duration-200 hover:scale-[1.02] shadow-2xs"
-              title="Watch high-definition property tours on YouTube"
-            >
-              <YoutubeIcon className="w-3.5 h-3.5 text-red-600 shrink-0" />
-              <span className="hidden xl:inline">YouTube</span>
-            </a>
-            <a
-              href="https://www.instagram.com/zamzamproperties5531/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-pink-50/90 hover:bg-pink-100 border border-pink-200 text-pink-700 text-xs font-bold transition-[background-color,border-color,box-shadow,transform] duration-200 hover:scale-[1.02] shadow-2xs"
-              title="Watch reels and live site walkthroughs on Instagram"
-            >
-              <InstagramIcon className="w-3.5 h-3.5 text-pink-600 shrink-0" />
-              <span className="hidden xl:inline">Instagram</span>
-            </a>
-          </div>
+          {/* Social Walkthrough Video Links — only shown when org has configured social URLs */}
+          {(portal.organization?.youtubeUrl || portal.organization?.instagramUrl) && (
+            <div className="hidden md:flex items-center gap-1.5 border-r border-slate-200/80 pr-2.5 mr-0.5">
+              {portal.organization?.youtubeUrl && (
+                <a
+                  href={ensureAbsoluteUrl(portal.organization.youtubeUrl)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-red-50/90 hover:bg-red-100 border border-red-200 text-red-700 text-xs font-bold transition-[background-color,border-color,box-shadow,transform] duration-200 hover:scale-[1.02] shadow-2xs"
+                  title="Watch high-definition property tours on YouTube"
+                  aria-label={`Watch property walkthroughs on YouTube for ${portal.organization?.name || 'Firm'}`}
+                >
+                  <YoutubeIcon className="w-3.5 h-3.5 text-red-600 shrink-0" />
+                  <span className="hidden xl:inline">YouTube</span>
+                </a>
+              )}
+              {portal.organization?.instagramUrl && (
+                <a
+                  href={ensureAbsoluteUrl(portal.organization.instagramUrl)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-pink-50/90 hover:bg-pink-100 border border-pink-200 text-pink-700 text-xs font-bold transition-[background-color,border-color,box-shadow,transform] duration-200 hover:scale-[1.02] shadow-2xs"
+                  title="Watch reels and live site walkthroughs on Instagram"
+                  aria-label={`Watch reels and live site walkthroughs on Instagram for ${portal.organization?.name || 'Firm'}`}
+                >
+                  <InstagramIcon className="w-3.5 h-3.5 text-pink-600 shrink-0" />
+                  <span className="hidden xl:inline">Instagram</span>
+                </a>
+              )}
+            </div>
+          )}
 
           {/* Share Button */}
           <motion.button
@@ -127,6 +142,7 @@ export function PortalHeader({
             onClick={onShare}
             className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white hover:bg-amber-50/50 hover:border-amber-300 px-2.5 sm:px-3.5 py-1.5 text-xs font-bold text-slate-700 transition-[background-color,border-color,box-shadow] duration-200 shadow-2xs hover:shadow-xs cursor-pointer"
             title="Share this curated portfolio link"
+            aria-label="Share this curated portfolio link"
           >
             <AnimatePresence mode="wait">
               {copiedLink ? (
@@ -159,10 +175,11 @@ export function PortalHeader({
           <motion.a
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.96 }}
-            href={`tel:${advisor.phoneE164 || '+919967731071'}`}
+            href={`tel:${(advisor.phoneE164 || '+919967731071').replace(/\s+/g, '')}`}
             onClick={() => sendTelemetry('CALL_CLICK')}
             className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-700 hover:to-teal-800 text-white px-3 sm:px-4 py-1.5 text-xs font-extrabold transition-[background-color,border-color,box-shadow] duration-200 shadow-xs shadow-emerald-700/25"
             title={`Call Advisor: ${advisor.fullName || 'Property Advisor'}`}
+            aria-label={`Call Advisor: ${advisor.fullName || 'Property Advisor'}`}
           >
             <PhoneCall className="w-3.5 h-3.5 text-white shrink-0" />
             <span className="text-[11px] sm:text-xs font-serif">
@@ -171,12 +188,14 @@ export function PortalHeader({
           </motion.a>
         </div>
       </div>
-      {/* Scroll Progress Hairline */}
-      <div
+
+      {/* Scroll Progress Hairline (GPU-accelerated, 0 re-renders) */}
+      <motion.div
         aria-hidden="true"
-        className="absolute bottom-0 left-0 h-[2px] bg-gradient-to-r from-gold-lighter via-gold-light to-gold transition-[width] duration-150 ease-out"
-        style={{ width: `${scrollProgress * 100}%` }}
+        className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-gold-lighter via-gold-light to-gold origin-left"
+        style={{ scaleX: scrollYProgress }}
       />
     </motion.header>
   );
 }
+

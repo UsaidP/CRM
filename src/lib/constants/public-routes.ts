@@ -5,6 +5,9 @@
 
 /** Page and asset paths that never require user session authentication. */
 export const PUBLIC_PATHS = [
+  '/',
+  '/landing',
+  '/register',
   '/login',
   '/forgot-password',
   '/reset-password',
@@ -34,6 +37,7 @@ export const PUBLIC_API_PREFIXES = [
 export const PUBLIC_API_ALLOW_LIST = [
   // Auth endpoints are the credential issuers themselves
   'auth/login',
+  'auth/register',
   'auth/logout',
   'auth/session',
   'auth/forgot-password',

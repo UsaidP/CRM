@@ -19,9 +19,19 @@ export function isPublicAuthPath(pathname?: string | null): boolean {
   );
 }
 
+export function isPublicLandingPath(pathname?: string | null): boolean {
+  if (!pathname) return false;
+  return (
+    pathname === '/landing' ||
+    pathname.startsWith('/landing/') ||
+    pathname === '/register' ||
+    pathname.startsWith('/register/')
+  );
+}
+
 export function isPublicLayoutPath(pathname?: string | null): boolean {
   if (!pathname) return false;
-  return isPublicPortalPath(pathname) || isPublicAuthPath(pathname);
+  return isPublicPortalPath(pathname) || isPublicAuthPath(pathname) || isPublicLandingPath(pathname);
 }
 
 export function buildPublicPortalPath(token: string): string {

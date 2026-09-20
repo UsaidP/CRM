@@ -30,3 +30,29 @@ export async function getServerSession(): Promise<SessionPayload> {
   return session;
 }
 
+/**
+ * Retrieve the verified authenticated session if available without redirecting.
+ * Returns null if unauthenticated or session token is missing/invalid.
+ */
+export async function getOptionalServerSession(): Promise<SessionPayload | null> {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
+
+    if (!token) {
+      return null;
+    }
+
+    const session = await verifySessionToken(token);
+    if (!session || !session.organizationId || !session.userId) {
+      return null;
+    }
+
+    bindTenant(session.organizationId);
+    return session;
+  } catch {
+    return null;
+  }
+}
+
+

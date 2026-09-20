@@ -62,10 +62,11 @@ export function PortalDossierModal({
               mode="horizontal"
               size="sm"
               withRera
+              firmName={portal.organization?.name || 'Lucky CRM'}
               reraNumber={
                 portal.organization?.reraBrokerRegistration
                   ? `MahaRERA: ${portal.organization.reraBrokerRegistration}`
-                  : 'MahaRERA A52000028714'
+                  : 'Verified Real Estate Advisory'
               }
             />
             <div className="hidden sm:block border-l border-amber-300 pl-3">
@@ -73,7 +74,7 @@ export function PortalDossierModal({
                 Official Property Dossier &amp; Factsheet
               </h3>
               <p id="dossier-modal-description" className="text-[11px] text-gold font-medium font-mono">
-                ZamZam Verified • Sanctioned MahaRERA Records
+                {portal.organization?.name || 'Lucky CRM'} Verified • Sanctioned MahaRERA Records
               </p>
             </div>
           </div>

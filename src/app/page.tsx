@@ -4,7 +4,8 @@ import { assessUnitFreshness } from '@/lib/domain/verification-engine';
 import { evaluateEngagementTier } from '@/lib/domain/portal-generator';
 import { rankFirmLeadsForNextConnect } from '@/lib/domain/prioritization-engine';
 import { DashboardCockpitClient } from '@/components/dashboard/DashboardCockpitClient';
-import { getServerSession } from '@/lib/services/server-auth';
+import { LandingPageClient } from '@/components/landing/LandingPageClient';
+import { getOptionalServerSession } from '@/lib/services/server-auth';
 import {
   getUserLeadWhere,
   getUserVisitWhere,
@@ -21,7 +22,12 @@ export default async function DashboardPage(props: {
   searchParams?: Promise<{ view?: string }>;
 }) {
   const searchParams = await props.searchParams;
-  const session = await getServerSession();
+  const session = await getOptionalServerSession();
+
+  if (!session) {
+    return <LandingPageClient />;
+  }
+
   const isAdmin = session.role === 'ADMIN' || session.role === 'SUPER_ADMIN' || session.isSuperAdmin;
   const viewMode: UserScopeView = isAdmin && searchParams?.view === 'firm' ? 'firm' : 'mine';
 

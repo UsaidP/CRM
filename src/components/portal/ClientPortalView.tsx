@@ -340,39 +340,43 @@ export function ClientPortalView({ portal, token }: ClientPortalViewProps) {
         {/* Footer Advisory & Social Proof */}
         <footer className="mt-12 sm:mt-16 pt-8 border-t border-amber-200/80 space-y-6 text-center text-xs text-slate-500">
           <div className="max-w-lg mx-auto p-5 sm:p-7 rounded-3xl bg-white border border-amber-200/90 shadow-sm space-y-3.5">
-            <BrandLogo variant="light" size="lg" withRera={false} />
+            <BrandLogo variant="light" size="lg" withRera={false} firmName={portal.organization?.name || 'Lucky CRM'} />
             <p className="text-xs text-gold font-bold font-serif">
-              Navi Mumbai’s Leading Verified Real Estate Advisory
+              {portal.organization?.name || 'Lucky CRM'} Verified Advisory Desk
             </p>
             <p className="text-xs text-slate-600 leading-relaxed max-w-sm mx-auto">
               Have questions regarding registration, title search, or loan pre-approval? Connect directly with your personal property advisor <strong>{advisor.fullName}</strong>.
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2 max-w-sm mx-auto">
+            <div className="flex flex-wrap items-center justify-center gap-2 pt-2 max-w-sm mx-auto">
               <a
                 href={`tel:${(advisor.phoneE164 || '+919967731071').replace(/\s+/g, '')}`}
-                className="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 text-xs font-bold transition shadow-xs font-serif"
+                className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 text-xs font-bold transition shadow-xs font-serif"
               >
                 <PhoneCall className="w-3.5 h-3.5 text-white shrink-0" />
                 <span>Call Advisor</span>
               </a>
-              <a
-                href="https://www.youtube.com/@zamzamproperties6354"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-red-50 border border-red-200 text-red-700 hover:bg-red-100 text-xs font-bold transition shadow-xs"
-              >
-                <YoutubeIcon className="w-3.5 h-3.5 text-red-600" />
-                <span>YouTube</span>
-              </a>
-              <a
-                href="https://www.instagram.com/zamzamproperties5531/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-pink-50 border border-pink-200 text-pink-700 hover:bg-pink-100 text-xs font-bold transition shadow-xs"
-              >
-                <InstagramIcon className="w-3.5 h-3.5 text-pink-600" />
-                <span>Instagram</span>
-              </a>
+              {portal.organization?.youtubeUrl && (
+                <a
+                  href={portal.organization.youtubeUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-red-50 border border-red-200 text-red-700 hover:bg-red-100 text-xs font-bold transition shadow-xs"
+                >
+                  <YoutubeIcon className="w-3.5 h-3.5 text-red-600" />
+                  <span>YouTube</span>
+                </a>
+              )}
+              {portal.organization?.instagramUrl && (
+                <a
+                  href={portal.organization.instagramUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-pink-50 border border-pink-200 text-pink-700 hover:bg-pink-100 text-xs font-bold transition shadow-xs"
+                >
+                  <InstagramIcon className="w-3.5 h-3.5 text-pink-600" />
+                  <span>Instagram</span>
+                </a>
+              )}
             </div>
           </div>
 

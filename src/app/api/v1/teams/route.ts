@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { requireRole, orgScope } from '@/lib/services/api-auth';
+import { requireRole } from '@/lib/services/api-auth';
 import { createTeam, getTeamsByOrg } from '@/lib/services/team-service';
 
 export const dynamic = 'force-dynamic';
@@ -34,7 +34,7 @@ export async function POST(req: Request) {
     const { session } = auth;
 
     const body = await req.json();
-    const { name, description, managerId } = body;
+    const { name, description, managerId, memberIds } = body;
 
     if (!name || !name.trim()) {
       return NextResponse.json(
@@ -48,12 +48,13 @@ export async function POST(req: Request) {
       name: name.trim(),
       description: description?.trim(),
       managerId: managerId || undefined,
+      memberIds: Array.isArray(memberIds) ? memberIds : undefined,
     });
 
     return NextResponse.json({
       success: true,
       team,
-      message: `Team "${team.name}" created successfully.`,
+      message: `Custom team "${team?.name || name}" created successfully.`,
     });
   } catch (error: any) {
     if (error?.code === 'P2002') {

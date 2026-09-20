@@ -58,25 +58,39 @@ export async function proxy(request: NextRequest) {
   const sessionUser = await verifySessionToken(sessionCookie);
   const isAuthenticated = !!sessionUser;
 
-  // 5. If user is on an Auth page (/login, /forgot-password, etc.)
-  const isAuthPath = PUBLIC_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));
+  // 5. If user is on a guest-only Auth page (/login, /forgot-password, etc.)
+  const isGuestOnlyAuthPath = [
+    '/login',
+    '/forgot-password',
+    '/reset-password',
+    '/set-password',
+  ].some((path) => pathname === path || pathname.startsWith(`${path}/`));
 
-  if (isAuthPath) {
+  if (isGuestOnlyAuthPath) {
     if (isAuthenticated) {
       // Already logged in -> redirect to home dashboard
-      const redirectUrl = request.nextUrl.searchParams.get('redirect') || '/';
+      const redirectUrl = request.nextUrl.searchParams.get('redirect') || '/dashboard';
       return NextResponse.redirect(new URL(redirectUrl, request.url));
     }
     return NextResponse.next();
   }
 
-  // 6. If user is accessing protected routes without authentication
+  // 6. Public marketing & landing pages allowed for everyone
+  if (
+    pathname === '/' ||
+    pathname === '/landing' ||
+    pathname.startsWith('/landing/') ||
+    pathname === '/register' ||
+    pathname.startsWith('/register/')
+  ) {
+    return NextResponse.next();
+  }
+
+  // 7. If user is accessing protected routes without authentication
   if (!isAuthenticated) {
     // If it's a page request -> redirect to /login with redirect query param
     const loginUrl = new URL('/login', request.url);
-    if (pathname !== '/') {
-      loginUrl.searchParams.set('redirect', pathname);
-    }
+    loginUrl.searchParams.set('redirect', pathname);
     return NextResponse.redirect(loginUrl);
   }
 

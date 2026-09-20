@@ -1,8 +1,8 @@
 /**
  * Team Management Service
  *
- * CRUD operations for teams and team membership.
- * Only Admins+ can create teams and add users.
+ * CRUD operations for custom teams and team membership.
+ * Only Admins and Super Admins can create/manage custom teams and assign users.
  * Single team per user — enforced at this layer.
  */
 
@@ -13,12 +13,13 @@ export interface CreateTeamInput {
   name: string;
   description?: string;
   managerId?: string;
+  memberIds?: string[];
 }
 
 export async function createTeam(input: CreateTeamInput) {
-  const { organizationId, name, description, managerId } = input;
+  const { organizationId, name, description, managerId, memberIds } = input;
 
-  // Validate manager exists and has MANAGER role if provided
+  // Validate manager exists and has MANAGER or ADMIN role if provided
   if (managerId) {
     const manager = await prisma.user.findFirst({
       where: { id: managerId, organizationId, isActive: true },
@@ -27,31 +28,58 @@ export async function createTeam(input: CreateTeamInput) {
       throw new Error('Manager user not found in this organization');
     }
     if (manager.role !== 'MANAGER' && manager.role !== 'ADMIN' && manager.role !== 'SUPER_ADMIN') {
-      throw new Error('The designated manager must have at least a MANAGER role');
+      throw new Error('The designated team manager must have at least a MANAGER, ADMIN, or SUPER_ADMIN role');
     }
   }
 
-  return prisma.team.create({
+  const team = await prisma.team.create({
     data: {
       organizationId,
       name: name.trim(),
       description: description?.trim() || null,
       managerId: managerId || null,
     },
-    include: {
-      members: {
-        select: { id: true, fullName: true, email: true, role: true, isActive: true },
-      },
-    },
   });
+
+  if (memberIds && memberIds.length > 0) {
+    await prisma.user.updateMany({
+      where: { id: { in: memberIds }, organizationId },
+      data: { teamId: team.id },
+    });
+  }
+
+  return getTeamById(team.id, organizationId);
 }
 
 export async function updateTeam(
   teamId: string,
   organizationId: string,
-  updates: { name?: string; description?: string; managerId?: string | null; isActive?: boolean }
+  updates: {
+    name?: string;
+    description?: string;
+    managerId?: string | null;
+    isActive?: boolean;
+    memberIds?: string[];
+  }
 ) {
-  return prisma.team.update({
+  const existing = await prisma.team.findFirst({
+    where: { id: teamId, organizationId },
+  });
+  if (!existing) throw new Error('Team not found in this organization');
+
+  if (updates.managerId) {
+    const manager = await prisma.user.findFirst({
+      where: { id: updates.managerId, organizationId, isActive: true },
+    });
+    if (!manager) {
+      throw new Error('Manager user not found in this organization');
+    }
+    if (manager.role !== 'MANAGER' && manager.role !== 'ADMIN' && manager.role !== 'SUPER_ADMIN') {
+      throw new Error('The designated team manager must have at least a MANAGER, ADMIN, or SUPER_ADMIN role');
+    }
+  }
+
+  await prisma.team.update({
     where: { id: teamId },
     data: {
       ...(updates.name !== undefined && { name: updates.name.trim() }),
@@ -59,12 +87,29 @@ export async function updateTeam(
       ...(updates.managerId !== undefined && { managerId: updates.managerId }),
       ...(updates.isActive !== undefined && { isActive: updates.isActive }),
     },
-    include: {
-      members: {
-        select: { id: true, fullName: true, email: true, role: true, isActive: true },
-      },
-    },
   });
+
+  if (updates.memberIds !== undefined) {
+    // Unassign members currently in this team who are not in the new memberIds list
+    await prisma.user.updateMany({
+      where: {
+        teamId,
+        id: { notIn: updates.memberIds },
+        organizationId,
+      },
+      data: { teamId: null },
+    });
+
+    // Assign new members to this team
+    if (updates.memberIds.length > 0) {
+      await prisma.user.updateMany({
+        where: { id: { in: updates.memberIds }, organizationId },
+        data: { teamId },
+      });
+    }
+  }
+
+  return getTeamById(teamId, organizationId);
 }
 
 /**
@@ -72,19 +117,16 @@ export async function updateTeam(
  * Removes the user from their current team (if any) before adding.
  */
 export async function addTeamMember(teamId: string, userId: string, organizationId: string) {
-  // Verify team exists in this org
   const team = await prisma.team.findFirst({
     where: { id: teamId, organizationId, isActive: true },
   });
   if (!team) throw new Error('Team not found');
 
-  // Verify user exists in this org
   const user = await prisma.user.findFirst({
     where: { id: userId, organizationId, isActive: true },
   });
   if (!user) throw new Error('User not found');
 
-  // Update user's teamId (single-team enforcement)
   return prisma.user.update({
     where: { id: userId },
     data: { teamId },
@@ -109,7 +151,7 @@ export async function removeTeamMember(userId: string, organizationId: string) {
 }
 
 export async function getTeamsByOrg(organizationId: string) {
-  return prisma.team.findMany({
+  const teams = await prisma.team.findMany({
     where: { organizationId },
     include: {
       members: {
@@ -119,10 +161,25 @@ export async function getTeamsByOrg(organizationId: string) {
     },
     orderBy: { name: 'asc' },
   });
+
+  const managerIds = teams.map((t) => t.managerId).filter((id): id is string => Boolean(id));
+  const managers = managerIds.length > 0
+    ? await prisma.user.findMany({
+        where: { id: { in: managerIds }, organizationId },
+        select: { id: true, fullName: true, email: true, role: true, phoneE164: true },
+      })
+    : [];
+
+  const managerMap = new Map(managers.map((m) => [m.id, m]));
+
+  return teams.map((team) => ({
+    ...team,
+    manager: team.managerId ? managerMap.get(team.managerId) || null : null,
+  }));
 }
 
 export async function getTeamById(teamId: string, organizationId: string) {
-  return prisma.team.findFirst({
+  const team = await prisma.team.findFirst({
     where: { id: teamId, organizationId },
     include: {
       members: {
@@ -131,6 +188,21 @@ export async function getTeamById(teamId: string, organizationId: string) {
       },
     },
   });
+
+  if (!team) return null;
+
+  let manager = null;
+  if (team.managerId) {
+    manager = await prisma.user.findFirst({
+      where: { id: team.managerId, organizationId },
+      select: { id: true, fullName: true, email: true, role: true, phoneE164: true },
+    });
+  }
+
+  return {
+    ...team,
+    manager,
+  };
 }
 
 /**
@@ -154,9 +226,9 @@ export async function getTeamMemberIds(userId: string): Promise<string[]> {
 }
 
 export async function deleteTeam(teamId: string, organizationId: string) {
-  // First, remove all users from this team
+  // Unassign all users in this team
   await prisma.user.updateMany({
-    where: { teamId },
+    where: { teamId, organizationId },
     data: { teamId: null },
   });
 
