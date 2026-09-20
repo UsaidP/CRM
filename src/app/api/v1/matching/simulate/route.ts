@@ -8,10 +8,10 @@ import { handleApiError } from '@/lib/services/api-handler';
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
-  const auth = await requireSession(req);
-  if (!auth.ok) return auth.response;
-
   try {
+    const auth = await requireSession(req);
+    if (!auth.ok) return auth.response;
+
     const body = await req.json();
     const {
       budgetMax,

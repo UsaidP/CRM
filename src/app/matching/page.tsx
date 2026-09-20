@@ -85,9 +85,18 @@ export default function MatchmakerConsolePage() {
           generateAiPitch: true,
         }),
       });
-      const data = await res.json();
-      if (res.ok && data.aiPitch) {
+      let data: any = null;
+      try {
+        data = await res.json();
+      } catch {
+        // Empty or non-JSON response body
+      }
+      if (res.ok && data?.aiPitch) {
         setAiPitchData(data.aiPitch);
+      } else {
+        toast.error('AI Pitch Generation', {
+          description: data?.error || (res.status === 401 ? 'Session expired. Please sign in again.' : `Could not generate pitch (${res.status}).`),
+        });
       }
     } catch (err) {
       console.error('Failed to generate AI pitch:', err);
@@ -130,14 +139,20 @@ export default function MatchmakerConsolePage() {
           customMessage: 'Here are the property options selected from current broker records for your requirements.',
         }),
       });
-      const data = await res.json();
-      if (res.ok && data.success) {
+      let data: any = null;
+      try {
+        data = await res.json();
+      } catch {
+        // Empty or non-JSON response body
+      }
+      if (res.ok && data?.success) {
         setCopiedPortalUrl(false);
         setGeneratedPortalData(data.data);
         toast.success('Client Portal Generated', { description: 'Private presentation link ready to share.' });
       } else {
-        setPortalError(data.error || 'The client portal could not be created. Review the selected lead and units, then try again.');
-        toast.error('Portal Creation Failed', { description: data.error || 'Review selection and try again.' });
+        const errorMsg = data?.error || (res.status === 401 ? 'Session expired. Please sign in again.' : `The client portal could not be created (${res.status}).`);
+        setPortalError(errorMsg);
+        toast.error('Portal Creation Failed', { description: errorMsg });
       }
     } catch (err: any) {
       setPortalError(err.message || 'The client portal request could not be completed. Check your connection, then try again.');
@@ -166,11 +181,16 @@ export default function MatchmakerConsolePage() {
       setLeadsError(null);
       try {
         const res = await fetch('/api/v1/leads');
-        const data = await res.json();
-        if (!res.ok || !data.success) {
-          throw new Error(data.error || 'Lead profiles could not be loaded.');
+        let data: any = null;
+        try {
+          data = await res.json();
+        } catch {
+          // Empty or non-JSON response body
         }
-        if (data.data.length > 0) {
+        if (!res.ok || !data?.success) {
+          throw new Error(data?.error || (res.status === 401 ? 'Session expired. Please sign in again.' : `Lead profiles could not be loaded (${res.status}).`));
+        }
+        if (Array.isArray(data.data) && data.data.length > 0) {
           setLeads(data.data);
           const firstLead = data.data[0];
           if (firstLead) {
@@ -178,7 +198,11 @@ export default function MatchmakerConsolePage() {
             if (firstLead.requirements?.[0]) {
               const req = firstLead.requirements[0];
               setBudgetMax(req.budgetMax || 7500000);
-              setBhkPreferences(JSON.parse(req.bhkPreferencesJson || '[2]'));
+              let parsedBhk: number[] = [2];
+              try {
+                if (req.bhkPreferencesJson) parsedBhk = JSON.parse(req.bhkPreferencesJson);
+              } catch {}
+              setBhkPreferences(Array.isArray(parsedBhk) ? parsedBhk : [2]);
               setPossessionPreference(req.possessionPreference || 'ANY');
               setMinCarpetSqft(req.minCarpetSqft || 600);
             }
@@ -210,11 +234,16 @@ export default function MatchmakerConsolePage() {
             purpose,
           }),
         });
-        const data = await res.json();
-        if (res.ok && data.success) {
+        let data: any = null;
+        try {
+          data = await res.json();
+        } catch {
+          // Empty or non-JSON response body
+        }
+        if (res.ok && data?.success) {
           setMatchedResults(data.data || []);
         } else {
-          throw new Error(data.error || 'Matches could not be evaluated.');
+          throw new Error(data?.error || (res.status === 401 ? 'Session expired. Please sign in again.' : `Matches could not be evaluated (${res.status}).`));
         }
       } catch (err: any) {
         if (err.name === 'AbortError') return;
@@ -236,7 +265,11 @@ export default function MatchmakerConsolePage() {
     if (l && l.requirements?.[0]) {
       const req = l.requirements[0];
       setBudgetMax(req.budgetMax || 7500000);
-      setBhkPreferences(JSON.parse(req.bhkPreferencesJson || '[2]'));
+      let parsedBhk: number[] = [2];
+      try {
+        if (req.bhkPreferencesJson) parsedBhk = JSON.parse(req.bhkPreferencesJson);
+      } catch {}
+      setBhkPreferences(Array.isArray(parsedBhk) ? parsedBhk : [2]);
       setPossessionPreference(req.possessionPreference || 'ANY');
       setMinCarpetSqft(req.minCarpetSqft || 600);
     }

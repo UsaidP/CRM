@@ -30,6 +30,16 @@ const ERROR_PATTERNS: Array<{
       actionType: 'retry',
     }),
   },
+  // 1b. Unexpected Non-JSON / Server Response Empty or Malformed
+  {
+    pattern: /unexpected end of json|failed to execute 'json'|not valid json|unexpected token '<'|syntaxerror.*json/i,
+    resolve: () => ({
+      title: 'Server Response Issue',
+      description: 'The server returned an empty or invalid response. Please check your connection and try again.',
+      actionLabel: 'Retry',
+      actionType: 'retry',
+    }),
+  },
   // 2. Request Timeout / Abort
   {
     pattern: /aborterror|timeout|timed\s*out|etimedout/i,

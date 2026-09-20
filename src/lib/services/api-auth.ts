@@ -75,35 +75,46 @@ export async function requireSession(req: Request): Promise<ApiAuthResult> {
   // Stale-session & deactivation guard:
   // 1. If organization was deleted/re-seeded, reject stale session.
   // 2. If user account was deactivated or removed, reject immediately without waiting for 7-day JWT expiry.
-  const [org, user] = await Promise.all([
-    prisma.organization.findUnique({
-      where: { id: session.organizationId },
-      select: { id: true },
-    }),
-    prisma.user.findUnique({
-      where: { id: session.userId },
-      select: { isActive: true, role: true },
-    }),
-  ]);
+  try {
+    const [org, user] = await Promise.all([
+      prisma.organization.findUnique({
+        where: { id: session.organizationId },
+        select: { id: true },
+      }),
+      prisma.user.findUnique({
+        where: { id: session.userId },
+        select: { isActive: true, role: true },
+      }),
+    ]);
 
-  if (!org) {
+    if (!org) {
+      return {
+        ok: false,
+        response: unauthorized('Session is stale — please sign in again'),
+      };
+    }
+
+    if (!user || !user.isActive) {
+      return {
+        ok: false,
+        response: unauthorized('Your account has been deactivated — please contact your administrator'),
+      };
+    }
+
+    // If the user's role was changed in DB after JWT issuance, update the in-memory session object
+    // so downstream permission/role checks respect the current DB role.
+    if (user.role && user.role !== session.role) {
+      session.role = user.role as CrmRole;
+    }
+  } catch (err) {
+    console.error('[requireSession] Database check failed:', err);
     return {
       ok: false,
-      response: unauthorized('Session is stale — please sign in again'),
+      response: NextResponse.json(
+        { success: false, error: 'Database service temporarily unavailable. Please retry.' },
+        { status: 503 }
+      ),
     };
-  }
-
-  if (!user || !user.isActive) {
-    return {
-      ok: false,
-      response: unauthorized('Your account has been deactivated — please contact your administrator'),
-    };
-  }
-
-  // If the user's role was changed in DB after JWT issuance, update the in-memory session object
-  // so downstream permission/role checks respect the current DB role.
-  if (user.role && user.role !== session.role) {
-    session.role = user.role as CrmRole;
   }
 
   // Bind the tenant for the remainder of this request's async context so the
@@ -152,16 +163,27 @@ export async function requirePermission(
   if (!result.ok) return result;
   const { session } = result;
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.userId },
-    select: { role: true, customPermissionsJson: true },
-  });
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: session.userId },
+      select: { role: true, customPermissionsJson: true },
+    });
 
-  if (!hasPermission(user, permission)) {
-    return { ok: false, response: forbidden(`Missing permission: ${permission}`) };
+    if (!hasPermission(user, permission)) {
+      return { ok: false, response: forbidden(`Missing permission: ${permission}`) };
+    }
+
+    return result;
+  } catch (err) {
+    console.error('[requirePermission] Database check failed:', err);
+    return {
+      ok: false,
+      response: NextResponse.json(
+        { success: false, error: 'Database service temporarily unavailable. Please retry.' },
+        { status: 503 }
+      ),
+    };
   }
-
-  return result;
 }
 
 /**
@@ -181,18 +203,29 @@ export async function requirePermissionWithScope(
   if (!result.ok) return result;
   const { session } = result;
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.userId },
-    select: { role: true, customPermissionsJson: true, teamId: true },
-  });
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: session.userId },
+      select: { role: true, customPermissionsJson: true, teamId: true },
+    });
 
-  if (!hasPermission(user, permission)) {
-    return { ok: false, response: forbidden(`Missing permission: ${permission}`) };
+    if (!hasPermission(user, permission)) {
+      return { ok: false, response: forbidden(`Missing permission: ${permission}`) };
+    }
+
+    const scope = getPermissionScope(user, permission);
+
+    return { ok: true, session: { ...session, teamId: user?.teamId }, scope };
+  } catch (err) {
+    console.error('[requirePermissionWithScope] Database check failed:', err);
+    return {
+      ok: false,
+      response: NextResponse.json(
+        { success: false, error: 'Database service temporarily unavailable. Please retry.' },
+        { status: 503 }
+      ),
+    };
   }
-
-  const scope = getPermissionScope(user, permission);
-
-  return { ok: true, session: { ...session, teamId: user?.teamId }, scope };
 }
 
 /**
