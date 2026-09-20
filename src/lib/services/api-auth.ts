@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/db/prisma';
+import { prisma, ensureSchemaUpToDate } from '@/lib/db/prisma';
 import {
   SESSION_COOKIE_NAME,
   verifySessionToken,
@@ -69,12 +69,16 @@ export async function requireSession(req: Request): Promise<ApiAuthResult> {
     return { ok: false, response: unauthorized() };
   }
 
+  // Ensure schema columns are auto-healed in background on runtime
+  ensureSchemaUpToDate().catch(() => {});
+
   // Stale-session & deactivation guard:
   // 1. If organization was deleted/re-seeded, reject stale session.
   // 2. If user account was deactivated or removed, reject immediately without waiting for 7-day JWT expiry.
   const [org, user] = await Promise.all([
     prisma.organization.findUnique({
       where: { id: session.organizationId },
+      select: { id: true },
     }),
     prisma.user.findUnique({
       where: { id: session.userId },

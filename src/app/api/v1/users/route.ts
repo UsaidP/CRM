@@ -140,7 +140,10 @@ export async function POST(req: Request) {
     }
 
     // Create the user inside the caller's organization
-    const org = await prisma.organization.findUnique({ where: { id: session.organizationId } });
+    const org = await prisma.organization.findUnique({
+      where: { id: session.organizationId },
+      select: { id: true },
+    });
     if (!org) {
       return NextResponse.json({ success: false, error: 'Organization not found' }, { status: 404 });
     }

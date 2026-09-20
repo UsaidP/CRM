@@ -78,7 +78,7 @@ export async function POST(req: Request) {
 
     let uniqueSlug = baseSlug;
     let counter = 1;
-    while (await prisma.organization.findUnique({ where: { slug: uniqueSlug } })) {
+    while (await prisma.organization.findUnique({ where: { slug: uniqueSlug }, select: { id: true } })) {
       uniqueSlug = `${baseSlug}-${counter}`;
       counter++;
     }

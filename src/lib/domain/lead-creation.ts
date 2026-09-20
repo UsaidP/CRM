@@ -132,6 +132,7 @@ export async function createLead(
 
   const org = await prisma.organization.findUnique({
     where: { id: ctx.organizationId },
+    select: { id: true },
   });
   if (!org) {
     throw new LeadValidationError('Organization not found');
@@ -351,6 +352,7 @@ export async function upsertOrCreateLead(
 ): Promise<UpsertLeadResult> {
   const org = await prisma.organization.findUnique({
     where: { id: ctx.organizationId },
+    select: { id: true },
   });
   if (!org) {
     throw new LeadValidationError('Organization not found');

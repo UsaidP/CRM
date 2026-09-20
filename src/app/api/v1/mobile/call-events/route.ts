@@ -48,6 +48,7 @@ export async function POST(req: Request) {
 
     const org = await prisma.organization.findUnique({
       where: { id: auth.session.organizationId },
+      select: { id: true },
     });
     if (!org) {
       return NextResponse.json({ success: false, error: 'Organization not found' }, { status: 404 });

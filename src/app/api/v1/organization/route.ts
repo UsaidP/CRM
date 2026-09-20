@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/db/prisma';
+import { prisma, ensureSchemaUpToDate } from '@/lib/db/prisma';
 import { requireSession, requireRole } from '@/lib/services/api-auth';
 
 export const dynamic = 'force-dynamic';
@@ -9,25 +9,47 @@ export const dynamic = 'force-dynamic';
  * Retrieve details of the authenticated user's organization.
  */
 export async function GET(req: Request) {
-  const auth = await requireSession(req);
-  if (!auth.ok) return auth.response;
-  const { session } = auth;
-
   try {
-    const org = await prisma.organization.findUnique({
-      where: { id: session.organizationId },
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        reraBrokerRegistration: true,
-        youtubeUrl: true,
-        instagramUrl: true,
-        settingsJson: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+    const auth = await requireSession(req);
+    if (!auth.ok) return auth.response;
+    const { session } = auth;
+    await ensureSchemaUpToDate();
+
+    let org: any;
+    try {
+      org = await prisma.organization.findUnique({
+        where: { id: session.organizationId },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          reraBrokerRegistration: true,
+          youtubeUrl: true,
+          instagramUrl: true,
+          settingsJson: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+    } catch {
+      // Graceful fallback if new social columns are not yet provisioned
+      org = await prisma.organization.findUnique({
+        where: { id: session.organizationId },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          reraBrokerRegistration: true,
+          settingsJson: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+      if (org) {
+        org.youtubeUrl = null;
+        org.instagramUrl = null;
+      }
+    }
 
     if (!org) {
       return NextResponse.json({ success: false, error: 'Organization not found' }, { status: 404 });
@@ -49,11 +71,11 @@ export async function GET(req: Request) {
  * Restricted to ADMIN and SUPER_ADMIN roles.
  */
 export async function PATCH(req: Request) {
-  const auth = await requireRole(req, ['ADMIN', 'SUPER_ADMIN']);
-  if (!auth.ok) return auth.response;
-  const { session } = auth;
-
   try {
+    const auth = await requireRole(req, ['ADMIN', 'SUPER_ADMIN']);
+    if (!auth.ok) return auth.response;
+    const { session } = auth;
+    await ensureSchemaUpToDate();
     const body = await req.json();
     const { name, reraBrokerRegistration, youtubeUrl, instagramUrl, settingsJson } = body;
 

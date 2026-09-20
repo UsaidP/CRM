@@ -84,6 +84,7 @@ export async function POST(request: NextRequest) {
 
     const org = await prisma.organization.findUnique({
       where: { id: auth.session.organizationId },
+      select: { id: true },
     });
     if (!org) {
       return NextResponse.json(
