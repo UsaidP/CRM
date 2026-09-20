@@ -67,7 +67,7 @@ export function BrandLogo({
     .join('') || 'LC';
 
   return (
-    <div className={`inline-flex items-center gap-2.5 sm:gap-3 ${className}`}>
+    <div className={`inline-flex items-center gap-2.5 sm:gap-3 min-w-0 ${className}`}>
       {/* Brand Mark Icon / Tile */}
       <div
         className="relative shrink-0 flex items-center justify-center rounded-xl overflow-hidden shadow-xs select-none transition-transform group-hover:scale-105"
@@ -146,8 +146,8 @@ export function BrandLogo({
 
       {/* Optional MahaRERA Registration Label beside logo */}
       {withRera && (
-        <div className="flex flex-col justify-center min-w-0">
-          <span className={`font-bold text-sm tracking-tight ${titleColor} font-display truncate leading-tight`}>
+        <div className="flex flex-col justify-center min-w-0 flex-1 overflow-hidden">
+          <span className={`font-bold text-sm tracking-tight ${titleColor} font-display truncate leading-tight block`} title={firmName}>
             {firmName}
           </span>
           <div className={`flex items-center gap-1.5 text-[10px] font-medium ${subtitleColor} truncate font-mono mt-0.5`}>

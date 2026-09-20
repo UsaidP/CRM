@@ -382,50 +382,55 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <aside
           id="app-navigation"
           aria-label="Sidebar navigation"
-          className={`fixed lg:sticky top-0 left-0 h-dvh max-h-dvh w-[300px] sm:w-[280px] max-w-[85vw] bg-surface-subtle border-r border-border z-50 lg:z-40 flex flex-col transition-transform duration-200 ease-out shrink-0 overflow-hidden shadow-xl lg:shadow-none ${
+          className={`fixed lg:sticky top-0 left-0 h-dvh max-h-dvh w-[290px] sm:w-[285px] lg:w-[290px] max-w-[85vw] bg-surface-subtle border-r border-border z-50 lg:z-40 flex flex-col transition-transform duration-200 ease-out shrink-0 overflow-hidden shadow-xl lg:shadow-none ${
             isMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
           }`}
         >
           {/* Sidebar Header & Branding - Fixed at Top */}
-          <div className="shrink-0 h-[64px] px-3.5 sm:px-4 border-b border-border bg-surface/90 backdrop-blur-xs flex items-center justify-between">
-            <div className="flex items-center gap-1.5 min-w-0 flex-1">
-              <Link href="/dashboard" className="flex items-center gap-2.5 group min-w-0 flex-1" onClick={() => setIsMenuOpen(false)}>
-                <BrandLogo
-                  mode="horizontal"
-                  size="md"
-                  withRera
-                  firmName={currentUser?.organization?.name || 'Lucky CRM'}
-                  reraNumber={currentUser?.organization?.reraBrokerRegistration || 'MahaRERA Registered'}
-                />
-              </Link>
+          <div className="shrink-0 h-[64px] px-3.5 sm:px-4 border-b border-border bg-surface/95 backdrop-blur-xs flex items-center justify-between gap-2">
+            <Link
+              href="/dashboard"
+              className="flex items-center gap-2.5 group min-w-0 flex-1 overflow-hidden"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              <BrandLogo
+                mode="horizontal"
+                size="sm"
+                withRera
+                className="min-w-0 flex-1"
+                firmName={currentUser?.organization?.name || 'Lucky CRM'}
+                reraNumber={currentUser?.organization?.reraBrokerRegistration || 'MahaRERA Registered'}
+              />
+            </Link>
+            <div className="flex items-center gap-1 shrink-0">
               {isAdmin && (
                 <button
                   type="button"
                   onClick={() => setIsOrgSettingsModalOpen(true)}
-                  className="p-1.5 rounded-lg text-content-muted hover:text-accent hover:bg-surface border border-transparent hover:border-border cursor-pointer transition-colors shrink-0"
+                  className="p-1.5 rounded-lg text-content-muted hover:text-accent hover:bg-surface border border-transparent hover:border-border cursor-pointer transition-colors"
                   title="Customize Firm Name & Profile"
                   aria-label="Customize Firm Name & Profile"
                 >
-                  <Settings className="w-3.5 h-3.5" />
+                  <Settings className="w-4 h-4" />
                 </button>
               )}
+              {/* Explicit Mobile Drawer Close Button */}
+              <button
+                type="button"
+                onClick={() => setIsMenuOpen(false)}
+                className="lg:hidden p-1.5 rounded-lg text-content-muted hover:text-content hover:bg-surface border border-transparent hover:border-border min-w-[36px] min-h-[36px] flex items-center justify-center cursor-pointer transition-colors"
+                aria-label="Close navigation menu"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
-            {/* Explicit Mobile Drawer Close Button */}
-            <button
-              type="button"
-              onClick={() => setIsMenuOpen(false)}
-              className="lg:hidden p-2 rounded-xl text-content-muted hover:text-content hover:bg-surface border border-transparent hover:border-border min-w-[40px] min-h-[40px] flex items-center justify-center cursor-pointer transition-colors"
-              aria-label="Close navigation menu"
-            >
-              <X className="w-5 h-5" />
-            </button>
           </div>
 
           {/* Grouped Navigation Links - Only this area scrolls */}
           <nav className="flex-1 min-h-0 px-3 py-3 space-y-4 overflow-y-auto touch-scroll" aria-label="Primary navigation">
             {visibleNavSections.map((section) => (
               <div key={section.title} className="space-y-1">
-                <div className="px-2.5 pb-1 text-[11px] sm:text-[10px] font-bold uppercase tracking-wider text-content-secondary/80 font-mono">
+                <div className="px-2.5 pb-1 text-[11px] sm:text-[10px] font-bold uppercase tracking-wider text-content-secondary/80 font-mono select-none">
                   {section.title}
                 </div>
                 {section.items.map((item) => {
@@ -437,15 +442,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                       key={item.href}
                       href={item.href}
                       onClick={() => setIsMenuOpen(false)}
-                      className={`flex items-center justify-between px-3 py-2.5 sm:py-2 min-h-[44px] sm:min-h-[38px] rounded-xl text-[13px] sm:text-xs transition-all ${
+                      className={`group relative flex items-center justify-between px-3 py-2.5 sm:py-2 min-h-[42px] sm:min-h-[38px] rounded-xl text-[13px] sm:text-xs transition-all duration-150 select-none outline-none focus-visible:ring-2 focus-visible:ring-accent/40 ${
                         isActive
-                          ? 'bg-accent-soft text-accent-text font-bold shadow-2xs border-l-4 border-accent'
-                          : 'text-content-muted hover:bg-surface hover:text-content font-medium'
+                          ? 'bg-accent-soft/90 text-accent-text font-bold shadow-2xs border border-accent/25'
+                          : 'text-content-muted hover:text-content hover:bg-surface font-medium border border-transparent'
                       }`}
                       aria-current={isActive ? 'page' : undefined}
                     >
-                      <div className="flex items-center gap-2.5 truncate">
-                        <Icon className={`w-4.5 h-4.5 sm:w-4 sm:h-4 shrink-0 ${isActive ? 'text-accent' : 'text-content-muted'}`} />
+                      <div className="flex items-center gap-2.5 min-w-0 truncate">
+                        <Icon className={`w-4.5 h-4.5 sm:w-4 sm:h-4 shrink-0 transition-colors ${isActive ? 'text-accent' : 'text-content-muted group-hover:text-content'}`} />
                         <span className="truncate">{item.label}</span>
                       </div>
                       {item.badge && (
@@ -467,7 +472,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </nav>
 
           {/* Sidebar Footer: Agent Profile & Shift Status - Fixed at Bottom */}
-          <div className="shrink-0 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] border-t border-border bg-surface/90 backdrop-blur-xs space-y-2.5">
+          <div className="shrink-0 p-3.5 pb-[max(1rem,env(safe-area-inset-bottom))] border-t border-border bg-surface/95 backdrop-blur-xs space-y-2.5">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2.5 min-w-0 flex-1">
                 <div className="w-9 h-9 sm:w-8 sm:h-8 rounded-xl bg-accent text-white flex items-center justify-center text-xs font-bold shadow-xs shrink-0 font-display">
