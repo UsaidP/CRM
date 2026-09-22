@@ -153,10 +153,11 @@ export function ForgotPasswordClient() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-content">Registered Email Address</label>
+                <label htmlFor="forgot-password-email" className="text-xs font-bold text-content">Registered Email Address</label>
                 <div className="relative">
                   <Mail className="w-4 h-4 absolute left-3.5 top-3 text-content-muted" />
                   <input
+                    id="forgot-password-email"
                     type="email"
                     required
                     value={email}

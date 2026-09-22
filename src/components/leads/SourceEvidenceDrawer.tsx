@@ -680,6 +680,9 @@ export function SourceEvidenceDrawer({
       />
 
       <div 
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="lead-drawer-title"
         className={`fixed inset-y-0 right-0 z-[70] bg-surface shadow-2xl overflow-hidden flex flex-col font-sans transition-all duration-300 ${
           isFullScreen 
             ? 'inset-0 w-full max-w-full border-none animate-in fade-in' 
@@ -707,6 +710,7 @@ export function SourceEvidenceDrawer({
                         value={profileName}
                         onChange={(e) => setProfileName(e.target.value)}
                         placeholder="Prospect full name"
+                        aria-label="Prospect full name"
                         className="bg-surface-inset border border-accent rounded-lg px-2.5 py-1 text-sm font-bold text-content focus:outline-none"
                       />
                       <input
@@ -714,6 +718,7 @@ export function SourceEvidenceDrawer({
                         value={profilePhone}
                         onChange={(e) => setProfilePhone(e.target.value)}
                         placeholder="Phone (10 digits)"
+                        aria-label="Prospect phone number"
                         className="bg-surface-inset border border-border rounded-lg px-2.5 py-1 text-xs font-mono text-content focus:outline-none"
                       />
                       <input
@@ -721,6 +726,7 @@ export function SourceEvidenceDrawer({
                         value={profileEmail}
                         onChange={(e) => setProfileEmail(e.target.value)}
                         placeholder="Email address"
+                        aria-label="Prospect email address"
                         className="bg-surface-inset border border-border rounded-lg px-2.5 py-1 text-xs text-content focus:outline-none"
                       />
                       <button
@@ -744,17 +750,18 @@ export function SourceEvidenceDrawer({
                     </div>
                   ) : (
                     <>
-                      <h1 className="text-base sm:text-lg font-black text-content font-display tracking-tight truncate flex items-center gap-2">
+                      <h2 id="lead-drawer-title" className="text-base sm:text-lg font-black text-content font-display tracking-tight truncate flex items-center gap-2">
                         <span>{profileName || lead.fullName || 'Unnamed Prospect'}</span>
                         <button
                           type="button"
                           onClick={() => setIsEditingProfile(true)}
-                          className="text-content-muted hover:text-accent p-1 transition-colors"
+                          className="text-content-muted hover:text-accent p-1 transition-colors cursor-pointer"
+                          aria-label="Edit Name & Contact"
                           title="Edit Name & Contact"
                         >
-                          <Edit3 className="w-3.5 h-3.5" />
+                          <Edit3 className="w-3.5 h-3.5" aria-hidden="true" />
                         </button>
-                      </h1>
+                      </h2>
                       {getConfidenceBadge(lead.sourceConfidence)}
                     </>
                   )}
@@ -808,16 +815,18 @@ export function SourceEvidenceDrawer({
                 type="button"
                 onClick={() => setIsFullScreen(!isFullScreen)}
                 className="p-2 rounded-xl text-content-muted hover:text-content hover:bg-surface-subtle transition-colors cursor-pointer border border-transparent hover:border-border"
+                aria-label={isFullScreen ? "Minimize to drawer" : "Maximize to full screen"}
                 title={isFullScreen ? "Minimize to drawer" : "Maximize to full screen"}
               >
-                {isFullScreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                {isFullScreen ? <Minimize2 className="w-4 h-4" aria-hidden="true" /> : <Maximize2 className="w-4 h-4" aria-hidden="true" />}
               </button>
               <button
                 type="button"
                 onClick={onClose}
+                aria-label="Close lead dossier drawer"
                 className="p-2 rounded-xl text-content-muted hover:text-content hover:bg-surface-subtle transition-colors cursor-pointer border border-transparent hover:border-border"
               >
-                <X className="w-4 h-4" />
+                <X className="w-4 h-4" aria-hidden="true" />
               </button>
             </div>
           </div>
@@ -1202,11 +1211,13 @@ export function SourceEvidenceDrawer({
                         {/* Call Duration & Pipeline Stage Update */}
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                           <div>
-                            <label className="text-[11px] font-bold text-content-muted block mb-1">Call Duration (Minutes)</label>
+                            <label htmlFor="drawer-call-duration" className="text-[11px] font-bold text-content-muted block mb-1">Call Duration (Minutes)</label>
                             <input
+                              id="drawer-call-duration"
                               type="number"
                               min="0"
                               max="180"
+                              aria-label="Call Duration in Minutes"
                               value={callDurationMinutes}
                               onChange={(e) => setCallDurationMinutes(parseInt(e.target.value, 10) || 0)}
                               className="w-full bg-surface-inset border border-border rounded-xl p-2 text-xs text-content focus:outline-none focus:border-accent font-mono"
@@ -1215,9 +1226,11 @@ export function SourceEvidenceDrawer({
                           </div>
 
                           <div>
-                            <label className="text-[11px] font-bold text-content-muted block mb-1">Next Follow-Up Date &amp; Time</label>
+                            <label htmlFor="drawer-follow-up-date" className="text-[11px] font-bold text-content-muted block mb-1">Next Follow-Up Date &amp; Time</label>
                             <input
+                              id="drawer-follow-up-date"
                               type="datetime-local"
+                              aria-label="Next Follow-Up Date and Time"
                               value={followUpDate}
                               onChange={(e) => setFollowUpDate(e.target.value)}
                               className="w-full bg-surface-inset border border-border rounded-xl p-2 text-xs text-content focus:outline-none focus:border-accent font-mono"
@@ -1239,10 +1252,11 @@ export function SourceEvidenceDrawer({
 
                         {/* Conversation Notes */}
                         <div>
-                          <label className="text-[11px] font-bold text-content-muted block mb-1">
+                          <label htmlFor="drawer-message-content" className="text-[11px] font-bold text-content-muted block mb-1">
                             Conversation Notes &amp; Client Feedback <span className="text-accent">*</span>
                           </label>
                           <textarea
+                            id="drawer-message-content"
                             value={messageContent}
                             onChange={(e) => setMessageContent(e.target.value)}
                             rows={3}
@@ -1254,9 +1268,11 @@ export function SourceEvidenceDrawer({
 
                         {/* Next Steps */}
                         <div>
-                          <label className="text-[11px] font-bold text-content-muted block mb-1">Action Items / Immediate Next Steps</label>
+                          <label htmlFor="drawer-next-steps" className="text-[11px] font-bold text-content-muted block mb-1">Action Items / Immediate Next Steps</label>
                           <input
+                            id="drawer-next-steps"
                             type="text"
+                            aria-label="Action Items or Immediate Next Steps"
                             value={nextSteps}
                             onChange={(e) => setNextSteps(e.target.value)}
                             placeholder="e.g. Share project video walkthrough on WhatsApp and confirm driver for Saturday tour."
@@ -1366,9 +1382,11 @@ export function SourceEvidenceDrawer({
                                     </div>
 
                                     <div>
-                                      <label className="text-[11px] font-bold text-content-muted block mb-1">Follow-Up Date</label>
+                                      <label htmlFor="drawer-edit-followup" className="text-[11px] font-bold text-content-muted block mb-1">Follow-Up Date</label>
                                       <input
+                                        id="drawer-edit-followup"
                                         type="datetime-local"
+                                        aria-label="Edit Follow-Up Date"
                                         value={editFollowUp}
                                         onChange={(e) => setEditFollowUp(e.target.value)}
                                         className="w-full bg-surface-inset border border-border rounded-xl p-2 text-xs text-content font-mono"
@@ -1377,9 +1395,11 @@ export function SourceEvidenceDrawer({
                                   </div>
 
                                   <div>
-                                    <label className="text-[11px] font-bold text-content-muted block mb-1">Next Steps</label>
+                                    <label htmlFor="drawer-edit-nextsteps" className="text-[11px] font-bold text-content-muted block mb-1">Next Steps</label>
                                     <input
+                                      id="drawer-edit-nextsteps"
                                       type="text"
+                                      aria-label="Edit Next Steps"
                                       value={editNextSteps}
                                       onChange={(e) => setEditNextSteps(e.target.value)}
                                       className="w-full bg-surface-inset border border-border rounded-xl p-2 text-xs text-content"
@@ -1561,20 +1581,24 @@ export function SourceEvidenceDrawer({
                       {/* Manual Inputs */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                         <div>
-                          <label className="text-[11px] font-bold text-content-muted block mb-1">Min Budget (₹)</label>
+                          <label htmlFor="drawer-budget-min" className="text-[11px] font-bold text-content-muted block mb-1">Min Budget (₹)</label>
                           <input
+                            id="drawer-budget-min"
                             type="number"
                             step="100000"
+                            aria-label="Minimum Budget in Rupees"
                             value={budgetMin}
                             onChange={(e) => setBudgetMin(Number(e.target.value) || 0)}
                             className="w-full bg-surface-inset border border-border rounded-xl p-2.5 text-xs text-content font-mono focus:outline-none focus:border-accent"
                           />
                         </div>
                         <div>
-                          <label className="text-[11px] font-bold text-content-muted block mb-1">Max Budget (₹)</label>
+                          <label htmlFor="drawer-budget-max" className="text-[11px] font-bold text-content-muted block mb-1">Max Budget (₹)</label>
                           <input
+                            id="drawer-budget-max"
                             type="number"
                             step="100000"
+                            aria-label="Maximum Budget in Rupees"
                             value={budgetMax}
                             onChange={(e) => setBudgetMax(Number(e.target.value) || 0)}
                             className="w-full bg-surface-inset border border-border rounded-xl p-2.5 text-xs text-content font-mono focus:outline-none focus:border-accent"

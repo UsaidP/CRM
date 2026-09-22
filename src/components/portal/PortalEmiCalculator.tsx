@@ -246,6 +246,7 @@ export function PortalEmiCalculator({
                       min={7.0}
                       max={12.0}
                       step={0.05}
+                      aria-label="Custom Interest Rate percentage per annum"
                       value={customRate}
                       onChange={(e) => setCustomRate(parseFloat(e.target.value))}
                       className="w-full accent-gold bg-slate-200 h-2 rounded-lg cursor-pointer"
@@ -285,6 +286,7 @@ export function PortalEmiCalculator({
                       min={10}
                       max={60}
                       step={5}
+                      aria-label="Down Payment Contribution percentage"
                       value={downPaymentPct}
                       onChange={(e) => setDownPaymentPct(Number(e.target.value))}
                       className="w-full accent-gold bg-slate-200 h-2.5 rounded-lg cursor-pointer"
@@ -331,6 +333,7 @@ export function PortalEmiCalculator({
                       min={5}
                       max={30}
                       step={1}
+                      aria-label="Loan Repayment Tenure in years"
                       value={tenureYears}
                       onChange={(e) => setTenureYears(Number(e.target.value))}
                       className="w-full accent-gold bg-slate-200 h-2.5 rounded-lg cursor-pointer"

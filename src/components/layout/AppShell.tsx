@@ -294,8 +294,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen flex flex-col bg-canvas text-content antialiased">
+      {/* Skip Navigation Link (WCAG 2.4.1 Bypass Blocks Level A) */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:px-4 focus:py-2.5 focus:bg-accent focus:text-white focus:font-bold focus:rounded-xl focus:shadow-xl focus:ring-2 focus:ring-white focus:outline-none transition-all"
+      >
+        Skip to main content
+      </a>
+
       {/* Mobile Top Header */}
-      <header className="lg:hidden flex items-center justify-between px-3 sm:px-4 h-[56px] sm:h-[60px] bg-surface/95 backdrop-blur-md border-b border-border z-50 sticky top-0 shadow-2xs">
+      <header aria-label="Mobile application header" className="lg:hidden flex items-center justify-between px-3 sm:px-4 h-[56px] sm:h-[60px] bg-surface/95 backdrop-blur-md border-b border-border z-50 sticky top-0 shadow-2xs">
         <Link href="/dashboard" className="flex items-center gap-2 min-w-0">
           <BrandLogo mode="icon" size="xs" withRera={false} firmName={currentUser?.organization?.name || 'Lucky CRM'} />
           <div className="flex flex-col min-w-0">
@@ -354,7 +362,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             type="button"
             onClick={() => setIsSearchOpen(true)}
             className="w-8 h-8 rounded-xl bg-surface border border-border flex items-center justify-center text-content-muted hover:text-content hover:bg-surface-subtle transition-colors cursor-pointer shadow-2xs shrink-0"
-            aria-label="Search"
+            aria-label="Open search dialog (⌘K)"
+            aria-haspopup="dialog"
+            aria-expanded={isSearchOpen}
             title="Search (⌘K)"
           >
             <Search className="w-3.5 h-3.5" />
@@ -543,7 +553,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         {/* Main Content Pane with Sticky Stitch Topbar */}
         <div className="flex-1 flex flex-col min-w-0">
           {/* Sticky Stitch Top Navigation Bar */}
-          <header className="hidden lg:flex items-center justify-between px-4 xl:px-6 h-[64px] bg-surface border-b border-border sticky top-0 z-30 shadow-2xs">
+          <header aria-label="Application header" className="hidden lg:flex items-center justify-between px-4 xl:px-6 h-[64px] bg-surface border-b border-border sticky top-0 z-30 shadow-2xs">
             {/* Left: Breadcrumbs & SLA Status Badge */}
             <div className="flex items-center gap-3 xl:gap-4 min-w-0">
               <div className="truncate">
@@ -557,9 +567,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </div>
 
               {/* Speed-to-Lead SLA Target Alert Badge */}
-              <div className="hidden xl:flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent-soft/90 border border-accent/35 text-accent-text text-xs font-bold shadow-2xs shrink-0">
-                <span className="w-2 h-2 rounded-full bg-accent animate-ping" />
-                <Flame className="w-3.5 h-3.5 text-accent" />
+              <div className="hidden xl:flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent-soft/90 border border-accent/35 text-accent-text text-xs font-bold shadow-2xs shrink-0" role="status" aria-label="Speed to lead target: under 5 minutes">
+                <span className="w-2 h-2 rounded-full bg-accent animate-ping" aria-hidden="true" />
+                <Flame className="w-3.5 h-3.5 text-accent" aria-hidden="true" />
                 <span className="font-mono font-bold">Speed-to-Lead: &lt; 5m Target</span>
               </div>
             </div>
@@ -570,12 +580,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 type="button"
                 onClick={() => setIsSearchOpen(true)}
                 className="w-full flex items-center justify-between px-3.5 py-1.5 bg-surface-subtle border border-border rounded-xl text-xs text-content-muted hover:border-accent transition-colors group text-left cursor-pointer"
+                aria-label="Open search dialog (⌘K)"
+                aria-haspopup="dialog"
+                aria-expanded={isSearchOpen}
               >
                 <div className="flex items-center gap-2 truncate">
-                  <Search className="w-3.5 h-3.5 text-content-muted group-hover:text-accent transition-colors shrink-0" />
+                  <Search className="w-3.5 h-3.5 text-content-muted group-hover:text-accent transition-colors shrink-0" aria-hidden="true" />
                   <span className="truncate">Search leads, phone, RERA ID, units...</span>
                 </div>
-                <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-mono font-bold bg-surface border border-border rounded-md text-content-muted shrink-0">
+                <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-mono font-bold bg-surface border border-border rounded-md text-content-muted shrink-0" aria-hidden="true">
                   ⌘K
                 </kbd>
               </button>
@@ -593,16 +606,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   }}
                   className="flex items-center gap-1.5 px-2.5 xl:px-3 py-1.5 bg-surface hover:bg-surface-subtle border border-border text-content rounded-xl text-xs font-bold transition-all shadow-2xs hover:border-accent/40 cursor-pointer group"
                   title="Google Drive Cloud Backup & Export"
+                  aria-label="Google Drive Cloud Backup & Export"
                 >
-                  <Cloud className="w-3.5 h-3.5 text-accent group-hover:scale-110 transition-transform" />
+                  <Cloud className="w-3.5 h-3.5 text-accent group-hover:scale-110 transition-transform" aria-hidden="true" />
                   <span className="font-semibold hidden xl:inline">Backup (GDrive)</span>
                   <span className="font-semibold xl:hidden">Backup</span>
                 </button>
               )}
 
               {/* Active Call Widget */}
-              <div className="hidden sm:flex items-center gap-1.5 xl:gap-2 px-2.5 xl:px-3 py-1 bg-status-success-surface border border-status-success/30 rounded-xl">
-                <PhoneCall className="w-3.5 h-3.5 text-status-success animate-pulse" />
+              <div className="hidden sm:flex items-center gap-1.5 xl:gap-2 px-2.5 xl:px-3 py-1 bg-status-success-surface border border-status-success/30 rounded-xl" role="status" aria-label={`Active Call duration: ${callTimer}`}>
+                <PhoneCall className="w-3.5 h-3.5 text-status-success animate-pulse" aria-hidden="true" />
                 <span className="text-xs font-bold text-status-success hidden xl:inline">Active Call:</span>
                 <span className="font-mono font-bold text-xs text-content">{callTimer}</span>
               </div>
@@ -610,15 +624,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <Link
                 href="/leads?view=telecaller"
                 className="flex items-center gap-1.5 px-3 py-1.5 bg-accent hover:bg-accent-hover text-white rounded-xl text-xs font-bold transition-all shadow-xs"
+                aria-label="Open Telecaller Desk"
               >
-                <Zap className="w-3.5 h-3.5" />
+                <Zap className="w-3.5 h-3.5" aria-hidden="true" />
                 <span>Tele-Desk</span>
               </Link>
             </div>
           </header>
 
           {/* Main Page Area - pb-24 on mobile ensures bottom nav bar never obscures content */}
-          <main id="main-content" className="flex-1 p-3 pb-24 sm:p-4 sm:pb-24 md:p-6 lg:p-8 max-w-[1600px] 2xl:max-w-[1720px] w-full mx-auto">
+          <main id="main-content" tabIndex={-1} className="flex-1 p-3 pb-24 sm:p-4 sm:pb-24 md:p-6 lg:p-8 max-w-[1600px] 2xl:max-w-[1720px] w-full mx-auto focus:outline-none">
             {children}
           </main>
         </div>
@@ -867,6 +882,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         return (
           <div 
             className="fixed inset-0 z-50 flex items-start justify-center pt-3 sm:pt-16 md:pt-20 px-2 sm:px-4 bg-black/60 backdrop-blur-xs"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="omnisearch-modal-title"
             onClick={(e) => {
               if (e.target === e.currentTarget) {
                 setIsSearchOpen(false);
@@ -875,12 +893,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             }}
           >
             <div className="w-full max-w-2xl bg-surface rounded-2xl shadow-2xl border border-border overflow-hidden animate-in fade-in zoom-in-95 duration-150 flex flex-col max-h-[88dvh] sm:max-h-[80vh]">
+              <h2 id="omnisearch-modal-title" className="sr-only">
+                Global Omnisearch
+              </h2>
               {/* Search Input Bar */}
               <div className="px-3 sm:px-4 py-3 sm:py-3.5 border-b border-border flex items-center gap-2.5 sm:gap-3 bg-surface">
                 {isSearching ? (
-                  <Loader2 className="w-4 h-4 text-accent animate-spin shrink-0" />
+                  <Loader2 className="w-4 h-4 text-accent animate-spin shrink-0" aria-hidden="true" />
                 ) : (
-                  <Search className="w-4 h-4 text-content-muted shrink-0" />
+                  <Search className="w-4 h-4 text-content-muted shrink-0" aria-hidden="true" />
                 )}
                 <input
                   type="text"
@@ -891,6 +912,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="Search leads, phone (+91), RERA, units, deals..."
+                  aria-label="Search leads, phone number, RERA ID, units, or deals"
                   className="omnisearch-input w-full bg-transparent border-0 ring-0 focus:ring-0 focus:outline-none text-xs sm:text-sm text-content placeholder:text-content-muted font-medium !p-0 !shadow-none"
                 />
                 {searchQuery && (
@@ -898,6 +920,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     type="button"
                     onClick={() => setSearchQuery('')}
                     className="px-2 py-0.5 text-xs text-content-muted hover:text-content bg-surface-subtle hover:bg-surface border border-border rounded-md cursor-pointer transition-colors shrink-0"
+                    aria-label="Clear search query"
                   >
                     Clear
                   </button>
@@ -909,6 +932,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     setSearchQuery('');
                   }}
                   className="p-1 text-content-muted hover:text-content hover:bg-surface-subtle rounded-lg cursor-pointer transition-colors shrink-0"
+                  aria-label="Close search dialog"
                 >
                   <X className="w-4 h-4" />
                 </button>

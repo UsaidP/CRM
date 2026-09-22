@@ -107,6 +107,8 @@ export function AccessibleDialog({
   return (
     <dialog
       ref={dialogRef}
+      role="dialog"
+      aria-modal="true"
       className="app-dialog"
       aria-labelledby={titleId}
       aria-describedby={descriptionId}

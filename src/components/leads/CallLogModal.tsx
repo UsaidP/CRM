@@ -59,16 +59,21 @@ export function CallLogModal({ isOpen, onClose, onSuccess }: CallLogModalProps) 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+    <div 
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="call-log-modal-title"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200"
+    >
       <div className="relative w-full max-w-lg max-h-[90dvh] overflow-y-auto bg-surface border border-border rounded-2xl shadow-2xl text-content">
         {/* Header */}
         <div className="px-5 sm:px-6 py-4 sm:py-5 border-b border-border bg-surface-subtle flex items-center justify-between sticky top-0 z-10 backdrop-blur-md">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-accent-soft border border-accent/20 rounded-xl text-accent">
+            <div className="p-2.5 bg-accent-soft border border-accent/20 rounded-xl text-accent" aria-hidden="true">
               <PhoneCall className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-base sm:text-lg font-semibold tracking-tight text-content flex items-center gap-2">
+              <h3 id="call-log-modal-title" className="text-base sm:text-lg font-semibold tracking-tight text-content flex items-center gap-2">
                 Mobile Quick Call Logger
                 <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-accent-soft text-accent-text border border-accent/20">
                   Broker Desk
@@ -78,10 +83,12 @@ export function CallLogModal({ isOpen, onClose, onSuccess }: CallLogModalProps) 
             </div>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-content-muted hover:text-content hover:bg-surface transition-colors"
+            aria-label="Close call log dialog"
+            className="p-1.5 rounded-lg text-content-muted hover:text-content hover:bg-surface transition-colors cursor-pointer"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5" aria-hidden="true" />
           </button>
         </div>
 

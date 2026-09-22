@@ -146,10 +146,11 @@ export function ResetPasswordClient() {
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-content">New Password</label>
+                  <label htmlFor="reset-password-new" className="text-xs font-bold text-content">New Password</label>
                   <div className="relative">
                     <Lock className="w-4 h-4 absolute left-3.5 top-3 text-content-muted" />
                     <input
+                      id="reset-password-new"
                       type={showPassword ? 'text' : 'password'}
                       required
                       minLength={6}
@@ -163,6 +164,7 @@ export function ResetPasswordClient() {
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-3 top-2.5 text-content-muted hover:text-content p-0.5 cursor-pointer"
                       title={showPassword ? 'Hide password' : 'Show password'}
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -170,10 +172,11 @@ export function ResetPasswordClient() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-content">Confirm New Password</label>
+                  <label htmlFor="reset-password-confirm" className="text-xs font-bold text-content">Confirm New Password</label>
                   <div className="relative">
                     <Lock className="w-4 h-4 absolute left-3.5 top-3 text-content-muted" />
                     <input
+                      id="reset-password-confirm"
                       type={showPassword ? 'text' : 'password'}
                       required
                       minLength={6}

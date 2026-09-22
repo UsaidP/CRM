@@ -719,34 +719,39 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
         {/* Action Buttons */}
         <div className="flex items-center gap-2.5">
           <button
+            type="button"
             onClick={() => {
               applyDatePreset('TODAY_4PM');
               setShowAddModal(true);
             }}
-            className="px-4 py-2.5 bg-accent hover:bg-accent-hover text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center gap-2"
+            className="px-4 py-2.5 bg-accent hover:bg-accent-hover text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center gap-2 cursor-pointer"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-4 h-4" aria-hidden="true" />
             <span>Schedule Reminder</span>
           </button>
 
           <button
+            type="button"
             onClick={fetchEvents}
             disabled={loading}
-            className="p-2.5 bg-surface hover:bg-surface-subtle border border-border text-content-secondary hover:text-content rounded-xl transition-all shadow-xs disabled:opacity-50"
+            className="p-2.5 bg-surface hover:bg-surface-subtle border border-border text-content-secondary hover:text-content rounded-xl transition-all shadow-xs disabled:opacity-50 cursor-pointer"
+            aria-label="Refresh calendar feed"
             title="Refresh Calendar Feed"
           >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-accent' : ''}`} />
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-accent' : ''}`} aria-hidden="true" />
           </button>
         </div>
       </div>
 
       {/* Metrics Summary Strip */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div 
+        <button 
+          type="button"
           onClick={() => setFilterType('OVERDUE')}
-          className={`p-4 rounded-xl cursor-pointer transition-all border shadow-xs ${
+          className={`p-4 rounded-xl cursor-pointer transition-all border text-left w-full shadow-xs ${
             filterType === 'OVERDUE' ? 'bg-status-danger-surface border-status-danger ring-1 ring-status-danger/30' : 'bg-surface border-status-danger/30 hover:border-status-danger/50'
           }`}
+          aria-label={`Filter by Overdue Follow-ups: ${counts.overdue} tasks`}
         >
           <div className="flex items-center justify-between">
             <div>
@@ -754,65 +759,71 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
               <h3 className="text-2xl font-bold text-status-danger mt-1">{counts.overdue}</h3>
               <p className="text-[11px] text-content-muted mt-0.5">Missed client call promises</p>
             </div>
-            <div className="p-3 rounded-xl bg-status-danger-surface text-status-danger border border-status-danger/30">
+            <div className="p-3 rounded-xl bg-status-danger-surface text-status-danger border border-status-danger/30" aria-hidden="true">
               <AlertCircle className="w-5 h-5" />
             </div>
           </div>
-        </div>
+        </button>
 
-        <div 
+        <button 
+          type="button"
           onClick={() => setFilterType('TODAY')}
-          className={`p-4 rounded-xl cursor-pointer transition-all border shadow-xs ${
+          className={`p-4 rounded-xl cursor-pointer transition-all border text-left w-full shadow-xs ${
             filterType === 'TODAY' ? 'bg-accent-soft border-accent ring-1 ring-accent/30' : 'bg-surface border-border hover:border-accent/40'
           }`}
+          aria-label={`Filter by Scheduled Today: ${counts.today} tasks`}
         >
           <div className="flex items-center justify-between">
             <div>
               <p className="text-[11px] uppercase font-bold tracking-wider text-content-secondary">Scheduled Today</p>
-              <h3 className="text-2xl font-bold text-accent mt-1">{counts.today}</h3>
-              <p className="text-[11px] text-content-muted mt-0.5">Due before end of day</p>
+              <h3 className="text-2xl font-bold text-accent-text mt-1">{counts.today}</h3>
+              <p className="text-[11px] text-content-muted mt-0.5">Calls &amp; meetings due today</p>
             </div>
-            <div className="p-3 rounded-xl bg-accent-soft text-accent border border-accent/20">
+            <div className="p-3 rounded-xl bg-accent-soft text-accent border border-accent/30" aria-hidden="true">
               <Clock className="w-5 h-5" />
             </div>
           </div>
-        </div>
+        </button>
 
-        <div 
+        <button 
+          type="button"
           onClick={() => setFilterType('SITE_VISIT')}
-          className={`p-4 rounded-xl cursor-pointer transition-all border shadow-xs ${
-            filterType === 'SITE_VISIT' ? 'bg-status-info-surface border-status-info ring-1 ring-status-info/30' : 'bg-surface border-status-info/30 hover:border-status-info/50'
+          className={`p-4 rounded-xl cursor-pointer transition-all border text-left w-full shadow-xs ${
+            filterType === 'SITE_VISIT' ? 'bg-status-info-surface border-status-info ring-1 ring-status-info/30' : 'bg-surface border-border hover:border-status-info/40'
           }`}
+          aria-label={`Filter by Site Visits & Tours: ${counts.visits} tours`}
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-[11px] uppercase font-bold tracking-wider text-content-secondary">Escorted Site Tours</p>
+              <p className="text-[11px] uppercase font-bold tracking-wider text-content-secondary">Site Visits &amp; Tours</p>
               <h3 className="text-2xl font-bold text-status-info mt-1">{counts.visits}</h3>
-              <p className="text-[11px] text-content-muted mt-0.5">Physical multi-project visits</p>
+              <p className="text-[11px] text-content-muted mt-0.5">Physical property tours</p>
             </div>
-            <div className="p-3 rounded-xl bg-status-info-surface text-status-info border border-status-info/30">
+            <div className="p-3 rounded-xl bg-status-info-surface text-status-info border border-status-info/30" aria-hidden="true">
               <Car className="w-5 h-5" />
             </div>
           </div>
-        </div>
+        </button>
 
-        <div 
+        <button 
+          type="button"
           onClick={() => setFilterType('COMPLETED')}
-          className={`p-4 rounded-xl cursor-pointer transition-all border shadow-xs ${
-            filterType === 'COMPLETED' ? 'bg-status-success-surface border-status-success ring-1 ring-status-success/30' : 'bg-surface border-status-success/30 hover:border-status-success/50'
+          className={`p-4 rounded-xl cursor-pointer transition-all border text-left w-full shadow-xs ${
+            filterType === 'COMPLETED' ? 'bg-status-success-surface border-status-success ring-1 ring-status-success/30' : 'bg-surface border-border hover:border-status-success/40'
           }`}
+          aria-label={`Filter by Completed: ${counts.completed} tasks`}
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-[11px] uppercase font-bold tracking-wider text-content-secondary">Completed Tasks</p>
+              <p className="text-[11px] uppercase font-bold tracking-wider text-content-secondary">Completed</p>
               <h3 className="text-2xl font-bold text-status-success mt-1">{counts.completed}</h3>
-              <p className="text-[11px] text-content-muted mt-0.5">Resolved firm touchpoints</p>
+              <p className="text-[11px] text-content-muted mt-0.5">Actioned &amp; resolved items</p>
             </div>
-            <div className="p-3 rounded-xl bg-status-success-surface text-status-success border border-status-success/30">
+            <div className="p-3 rounded-xl bg-status-success-surface text-status-success border border-status-success/30" aria-hidden="true">
               <CheckCircle2 className="w-5 h-5" />
             </div>
           </div>
-        </div>
+        </button>
       </div>
 
       {/* Calendar Controls & Filters */}
@@ -822,8 +833,18 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
           <div className="flex items-center gap-3">
             <div className="flex items-center bg-surface-subtle border border-border rounded-xl p-1">
               <button
+                type="button"
                 onClick={prevPeriod}
                 className="p-1.5 hover:bg-surface text-content-secondary hover:text-content rounded-lg transition-colors cursor-pointer"
+                aria-label={
+                  viewMode === 'MONTH'
+                    ? 'Previous Month'
+                    : viewMode === 'WEEK'
+                    ? 'Previous 7 Days'
+                    : viewMode === 'DAY'
+                    ? 'Previous Day'
+                    : 'Previous Period'
+                }
                 title={
                   viewMode === 'MONTH'
                     ? 'Previous Month'
@@ -834,17 +855,28 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
                     : 'Previous Period'
                 }
               >
-                <ChevronLeft className="w-4 h-4" />
+                <ChevronLeft className="w-4 h-4" aria-hidden="true" />
               </button>
               <button
+                type="button"
                 onClick={goToToday}
                 className="px-3 py-1 text-xs font-bold text-accent hover:bg-surface rounded-lg transition-colors cursor-pointer"
               >
                 Today
               </button>
               <button
+                type="button"
                 onClick={nextPeriod}
                 className="p-1.5 hover:bg-surface text-content-secondary hover:text-content rounded-lg transition-colors cursor-pointer"
+                aria-label={
+                  viewMode === 'MONTH'
+                    ? 'Next Month'
+                    : viewMode === 'WEEK'
+                    ? 'Next 7 Days'
+                    : viewMode === 'DAY'
+                    ? 'Next Day'
+                    : 'Next Period'
+                }
                 title={
                   viewMode === 'MONTH'
                     ? 'Next Month'
@@ -855,7 +887,7 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
                     : 'Next Period'
                 }
               >
-                <ChevronRight className="w-4 h-4" />
+                <ChevronRight className="w-4 h-4" aria-hidden="true" />
               </button>
             </div>
 
@@ -997,6 +1029,7 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
             <input
               type="text"
               placeholder="Search tasks, clients, notes..."
+              aria-label="Search tasks, clients, and calendar notes"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="search-input w-full pr-3.5 py-2 bg-surface-subtle border border-border rounded-xl text-xs text-content placeholder:text-content-muted focus:outline-hidden focus:border-accent font-medium shadow-2xs"
@@ -1028,17 +1061,30 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
                   return (
                     <div
                       key={idx}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`Schedule reminder on ${date.toDateString()}`}
                       onClick={() => {
-                    const localISO = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
-                      .toISOString()
-                      .slice(0, 10);
-                    setNewDueDate(`${localISO}T11:00`);
-                    setShowAddModal(true);
-                  }}
-                  className={`min-h-[110px] p-2.5 transition-colors group relative cursor-pointer ${
-                    !isCurrentMonth ? 'bg-surface-subtle/40 text-content-muted' : 'bg-surface text-content'
-                  } ${isToday ? 'bg-accent-soft/30 ring-2 ring-inset ring-accent/40' : 'hover:bg-surface-subtle'}`}
-                >
+                        const localISO = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+                          .toISOString()
+                          .slice(0, 10);
+                        setNewDueDate(`${localISO}T11:00`);
+                        setShowAddModal(true);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          const localISO = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+                            .toISOString()
+                            .slice(0, 10);
+                          setNewDueDate(`${localISO}T11:00`);
+                          setShowAddModal(true);
+                        }
+                      }}
+                      className={`min-h-[110px] p-2.5 transition-colors group relative cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
+                        !isCurrentMonth ? 'bg-surface-subtle/40 text-content-muted' : 'bg-surface text-content'
+                      } ${isToday ? 'bg-accent-soft/30 ring-2 ring-inset ring-accent/40' : 'hover:bg-surface-subtle'}`}
+                    >
                   <div className="flex items-center justify-between mb-1.5">
                     <span
                       className={`text-xs font-bold rounded-lg px-2 py-0.5 ${
@@ -1064,11 +1110,21 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
                     {dayEvents.slice(0, 3).map((e) => (
                       <div
                         key={e.id}
+                        role="button"
+                        tabIndex={0}
+                        aria-label={`Event: ${e.title} with ${e.leadName} at ${formatTimeShort(e.start)}`}
                         onClick={(evt) => {
                           evt.stopPropagation();
                           openEventDetails(e);
                         }}
-                        className={`text-[10px] px-1.5 py-1 rounded border transition-all flex items-center gap-1 cursor-pointer truncate ${getEventBadgeColor(
+                        onKeyDown={(evt) => {
+                          if (evt.key === 'Enter' || evt.key === ' ') {
+                            evt.preventDefault();
+                            evt.stopPropagation();
+                            openEventDetails(e);
+                          }
+                        }}
+                        className={`text-[10px] px-1.5 py-1 rounded border transition-all flex items-center gap-1 cursor-pointer truncate focus:outline-none focus-visible:ring-1 focus-visible:ring-accent ${getEventBadgeColor(
                           e
                         )}`}
                         title={`${e.title} - ${e.leadName}`}
@@ -1110,11 +1166,21 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
               return (
                 <div
                   key={dateStr}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`View single-day timeline for ${dayName} ${date.getDate()}`}
                   onClick={() => {
                     setCurrentDate(date);
                     setViewMode('DAY');
                   }}
-                  className={`p-3 text-center cursor-pointer transition-all hover:bg-surface ${
+                  onKeyDown={(evt) => {
+                    if (evt.key === 'Enter' || evt.key === ' ') {
+                      evt.preventDefault();
+                      setCurrentDate(date);
+                      setViewMode('DAY');
+                    }
+                  }}
+                  className={`p-3 text-center cursor-pointer transition-all hover:bg-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
                     isToday ? 'bg-accent-soft/30 ring-1 ring-inset ring-accent/30' : ''
                   }`}
                   title="Click to view single-day timeline"
@@ -1170,8 +1236,17 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
                         return (
                           <div
                             key={e.id}
+                            role="button"
+                            tabIndex={0}
+                            aria-label={`Event: ${e.title} at ${formatTimeShort(e.start)}`}
                             onClick={() => openEventDetails(e)}
-                            className={`p-2.5 rounded-xl border transition-all cursor-pointer group/card shadow-2xs hover:shadow-xs ${
+                            onKeyDown={(evt) => {
+                              if (evt.key === 'Enter' || evt.key === ' ') {
+                                evt.preventDefault();
+                                openEventDetails(e);
+                              }
+                            }}
+                            className={`p-2.5 rounded-xl border transition-all cursor-pointer group/card shadow-2xs hover:shadow-xs focus:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
                               isOverdue
                                 ? 'border-status-danger/50 bg-status-danger-surface/40 hover:border-status-danger'
                                 : e.status === 'COMPLETED'
@@ -1379,8 +1454,17 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
                           return (
                             <div
                               key={event.id}
+                              role="button"
+                              tabIndex={0}
+                              aria-label={`Event: ${event.title}`}
                               onClick={() => openEventDetails(event)}
-                              className={`p-4 rounded-2xl border transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 cursor-pointer group shadow-2xs hover:shadow-xs ${
+                              onKeyDown={(evt) => {
+                                if (evt.key === 'Enter' || evt.key === ' ') {
+                                  evt.preventDefault();
+                                  openEventDetails(event);
+                                }
+                              }}
+                              className={`p-4 rounded-2xl border transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 cursor-pointer group shadow-2xs hover:shadow-xs focus:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
                                 isOverdue
                                   ? 'border-status-danger/50 hover:border-status-danger bg-status-danger-surface/20'
                                   : event.status === 'COMPLETED'
@@ -1481,6 +1565,7 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
                                       rel="noopener noreferrer"
                                       className="p-2.5 rounded-xl bg-status-success-surface hover:bg-status-success/20 text-status-success border border-status-success/30 transition-all cursor-pointer shadow-2xs"
                                       title="WhatsApp Client"
+                                      aria-label={`WhatsApp ${event.leadName}`}
                                     >
                                       <MessageSquare className="w-4 h-4" />
                                     </a>
@@ -1488,6 +1573,7 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
                                       href={`tel:${event.phoneE164}`}
                                       className="p-2.5 rounded-xl bg-accent-soft hover:bg-accent/20 text-accent-text border border-accent/30 transition-all cursor-pointer shadow-2xs"
                                       title="Call Client"
+                                      aria-label={`Call ${event.leadName}`}
                                     >
                                       <Phone className="w-4 h-4" />
                                     </a>
@@ -1503,6 +1589,7 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
                                         : 'bg-surface hover:bg-surface-subtle text-content-muted hover:text-status-success hover:border-status-success/40 border-border'
                                     }`}
                                     title={event.status === 'COMPLETED' ? 'Mark Incomplete' : 'Mark Completed'}
+                                    aria-label={event.status === 'COMPLETED' ? `Mark incomplete: ${event.title}` : `Mark completed: ${event.title}`}
                                   >
                                     <Check className="w-4 h-4" />
                                   </button>
@@ -1559,8 +1646,17 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
               return (
                 <div
                   key={event.id}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Agenda Event: ${event.title}`}
                   onClick={() => openEventDetails(event)}
-                  className={`p-4 rounded-2xl bg-surface border transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 cursor-pointer group shadow-xs ${
+                  onKeyDown={(evt) => {
+                    if (evt.key === 'Enter' || evt.key === ' ') {
+                      evt.preventDefault();
+                      openEventDetails(event);
+                    }
+                  }}
+                  className={`p-4 rounded-2xl bg-surface border transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 cursor-pointer group shadow-xs focus:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
                     isOverdue
                       ? 'border-status-danger/50 hover:border-status-danger bg-status-danger-surface/30'
                       : event.status === 'COMPLETED'
@@ -1656,6 +1752,7 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
                           rel="noopener noreferrer"
                           className="p-2 rounded-xl bg-status-success-surface hover:bg-status-success/20 text-status-success border border-status-success/30 transition-all cursor-pointer"
                           title="WhatsApp Client"
+                          aria-label={`WhatsApp ${event.leadName}`}
                         >
                           <MessageSquare className="w-4 h-4" />
                         </a>
@@ -1663,6 +1760,7 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
                           href={`tel:${event.phoneE164}`}
                           className="p-2 rounded-xl bg-accent-soft hover:bg-accent/20 text-accent-text border border-accent/30 transition-all cursor-pointer"
                           title="Call Client"
+                          aria-label={`Call ${event.leadName}`}
                         >
                           <Phone className="w-4 h-4" />
                         </a>
@@ -1678,6 +1776,7 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
                             : 'bg-surface hover:bg-surface-subtle text-content-muted hover:text-status-success hover:border-status-success/40 border-border'
                         }`}
                         title={event.status === 'COMPLETED' ? 'Mark Incomplete' : 'Mark Completed'}
+                        aria-label={event.status === 'COMPLETED' ? `Mark incomplete: ${event.title}` : `Mark completed: ${event.title}`}
                       >
                         <Check className="w-4 h-4" />
                       </button>
@@ -1968,11 +2067,12 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
 
                 {/* Title / Promise */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-content flex items-center gap-1.5">
+                  <label htmlFor="edit-event-title" className="text-xs font-bold text-content flex items-center gap-1.5">
                     <FileText className="w-3.5 h-3.5 text-accent" />
                     <span>Task Title / Description *</span>
                   </label>
                   <input
+                    id="edit-event-title"
                     type="text"
                     required
                     value={editTitle}
@@ -2070,11 +2170,12 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
 
                 {/* Scheduled Due Date */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-content flex items-center gap-1.5">
+                  <label htmlFor="edit-event-duedate" className="text-xs font-bold text-content flex items-center gap-1.5">
                     <Calendar className="w-3.5 h-3.5 text-accent" />
                     <span>Due Date &amp; Time *</span>
                   </label>
                   <input
+                    id="edit-event-duedate"
                     type="datetime-local"
                     required
                     value={editDueDate}
@@ -2087,8 +2188,9 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
                 {selectedEvent.sourceType === 'SITE_VISIT' && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                     <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-content">Pickup Location</label>
+                      <label htmlFor="edit-pickup-loc" className="text-xs font-bold text-content">Pickup Location</label>
                       <input
+                        id="edit-pickup-loc"
                         type="text"
                         value={editPickupLocation}
                         onChange={(e) => setEditPickupLocation(e.target.value)}
@@ -2097,8 +2199,9 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-content">Cab &amp; Driver Details</label>
+                      <label htmlFor="edit-cab-details" className="text-xs font-bold text-content">Cab &amp; Driver Details</label>
                       <input
+                        id="edit-cab-details"
                         type="text"
                         value={editCabDetails}
                         onChange={(e) => setEditCabDetails(e.target.value)}
@@ -2111,8 +2214,9 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
 
                 {/* Notes & Talking Points */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-content">Notes &amp; Instructions</label>
+                  <label htmlFor="edit-event-notes" className="text-xs font-bold text-content">Notes &amp; Instructions</label>
                   <textarea
+                    id="edit-event-notes"
                     rows={3}
                     value={editNotes}
                     onChange={(e) => setEditNotes(e.target.value)}
@@ -2206,11 +2310,12 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
 
             {/* Title / Description */}
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-content flex items-center gap-1.5">
+              <label htmlFor="new-event-title" className="text-xs font-bold text-content flex items-center gap-1.5">
                 <FileText className="w-3.5 h-3.5 text-accent" />
                 <span>Reminder Title / Promise *</span>
               </label>
               <input
+                id="new-event-title"
                 type="text"
                 required
                 placeholder="e.g. Call to discuss Kharghar Sec 35 floor plans & builder discount"
@@ -2289,11 +2394,12 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
 
             {/* Due Date Input */}
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-content flex items-center gap-1.5">
+              <label htmlFor="new-event-duedate" className="text-xs font-bold text-content flex items-center gap-1.5">
                 <Calendar className="w-3.5 h-3.5 text-accent" />
                 <span>Due Date &amp; Time *</span>
               </label>
               <input
+                id="new-event-duedate"
                 type="datetime-local"
                 required
                 value={newDueDate}
@@ -2304,8 +2410,9 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
 
             {/* Notes */}
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-content">Notes / Talking Points</label>
+              <label htmlFor="new-event-notes" className="text-xs font-bold text-content">Notes / Talking Points</label>
               <textarea
+                id="new-event-notes"
                 rows={3}
                 placeholder="Mention developer VP negotiation, 2BHK corner unit carpet area..."
                 value={newNotes}

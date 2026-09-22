@@ -786,26 +786,37 @@ export function UnitDetailsModal({
                     <button
                       type="button"
                       onClick={() => setLightboxUrl(resolvedMedia.floorPlanUrl)}
+                      aria-label="Enlarge floor plan blueprint"
                       className="p-2 rounded-lg bg-black/60 hover:bg-black/80 text-white backdrop-blur-xs transition-colors cursor-pointer shadow-sm"
                       title="Enlarge Floor Plan"
                     >
-                      <Maximize2 className="w-4 h-4" />
+                      <Maximize2 className="w-4 h-4" aria-hidden="true" />
                     </button>
                     <button
                       type="button"
                       onClick={handleDeleteFloorPlan}
                       disabled={uploading}
+                      aria-label="Remove blueprint from this flat"
                       className="p-2 rounded-lg bg-black/60 hover:bg-status-danger text-white backdrop-blur-xs transition-colors cursor-pointer shadow-sm"
                       title="Remove Blueprint from this Flat"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-4 h-4" aria-hidden="true" />
                     </button>
                   </div>
                 </div>
               ) : (
                 <div
+                  role="button"
+                  tabIndex={0}
+                  aria-label="Click to upload floor plan blueprint"
                   onClick={() => floorPlanInputRef.current?.click()}
-                  className="p-10 rounded-2xl border-2 border-dashed border-border hover:border-accent/50 bg-surface-subtle/50 hover:bg-surface-raised transition-all text-center cursor-pointer flex flex-col items-center justify-center gap-3"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      floorPlanInputRef.current?.click();
+                    }
+                  }}
+                  className="p-10 rounded-2xl border-2 border-dashed border-border hover:border-accent/50 bg-surface-subtle/50 hover:bg-surface-raised transition-all text-center cursor-pointer flex flex-col items-center justify-center gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                 >
                   <div className="p-3.5 rounded-full bg-accent/10 text-accent">
                     <Layers className="w-8 h-8" />

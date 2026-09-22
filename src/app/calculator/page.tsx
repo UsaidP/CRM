@@ -550,10 +550,11 @@ export default function CostCalculatorPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
               <div>
-                <label className="block text-[11px] font-bold text-content-muted mb-1 uppercase font-mono">
+                <label htmlFor="calc-project-name" className="block text-[11px] font-bold text-content-muted mb-1 uppercase font-mono">
                   Project Name
                 </label>
                 <input
+                  id="calc-project-name"
                   type="text"
                   value={projectName}
                   onChange={(e) => setProjectName(e.target.value)}
@@ -562,10 +563,11 @@ export default function CostCalculatorPage() {
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-content-muted mb-1 uppercase font-mono">
+                <label htmlFor="calc-tower-unit" className="block text-[11px] font-bold text-content-muted mb-1 uppercase font-mono">
                   Tower / Unit No.
                 </label>
                 <input
+                  id="calc-tower-unit"
                   type="text"
                   value={towerUnit}
                   onChange={(e) => setTowerUnit(e.target.value)}
@@ -575,10 +577,11 @@ export default function CostCalculatorPage() {
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-content-muted mb-1 uppercase font-mono">
+                <label htmlFor="calc-client-name" className="block text-[11px] font-bold text-content-muted mb-1 uppercase font-mono">
                   Client / Lead Name
                 </label>
                 <input
+                  id="calc-client-name"
                   type="text"
                   value={clientName}
                   onChange={(e) => setClientName(e.target.value)}
@@ -588,10 +591,11 @@ export default function CostCalculatorPage() {
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-content-muted mb-1 uppercase font-mono">
+                <label htmlFor="calc-prepared-by" className="block text-[11px] font-bold text-content-muted mb-1 uppercase font-mono">
                   Prepared By (Executive)
                 </label>
                 <input
+                  id="calc-prepared-by"
                   type="text"
                   value={preparedBy}
                   onChange={(e) => setPreparedBy(e.target.value)}
@@ -635,7 +639,7 @@ export default function CostCalculatorPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
               <div>
                 <div className="flex justify-between items-center mb-1">
-                  <label className="text-[11px] font-bold text-content-muted uppercase font-mono">
+                  <label htmlFor="calc-carpet-area" className="text-[11px] font-bold text-content-muted uppercase font-mono">
                     Carpet Area (sq.ft)
                   </label>
                   <span className="text-[10px] font-mono text-content-muted">
@@ -644,6 +648,7 @@ export default function CostCalculatorPage() {
                 </div>
                 <div className="flex items-center gap-1">
                   <input
+                    id="calc-carpet-area"
                     type="number"
                     value={carpetAreaSqft}
                     onChange={(e) => handleCarpetChange(Number(e.target.value))}
@@ -652,6 +657,7 @@ export default function CostCalculatorPage() {
                   <button
                     type="button"
                     onClick={() => handleCarpetChange(carpetAreaSqft - 25)}
+                    aria-label="Decrease carpet area by 25 sq.ft"
                     className="px-2 py-2 bg-surface-subtle border border-border rounded-xl text-xs font-bold text-content-muted hover:text-content"
                   >
                     -
@@ -659,6 +665,7 @@ export default function CostCalculatorPage() {
                   <button
                     type="button"
                     onClick={() => handleCarpetChange(carpetAreaSqft + 25)}
+                    aria-label="Increase carpet area by 25 sq.ft"
                     className="px-2 py-2 bg-surface-subtle border border-border rounded-xl text-xs font-bold text-content-muted hover:text-content"
                   >
                     +
@@ -667,10 +674,11 @@ export default function CostCalculatorPage() {
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-content-muted mb-1 uppercase font-mono">
+                <label htmlFor="calc-base-rate" className="block text-[11px] font-bold text-content-muted mb-1 uppercase font-mono">
                   Base Rate (₹ / sq.ft)
                 </label>
                 <input
+                  id="calc-base-rate"
                   type="number"
                   step="100"
                   value={ratePerSqft}
@@ -680,11 +688,12 @@ export default function CostCalculatorPage() {
               </div>
 
               <div className="sm:col-span-2">
-                <label className="block text-[11px] font-bold text-content-muted mb-1 uppercase font-mono">
+                <label htmlFor="calc-agreement-val" className="block text-[11px] font-bold text-content-muted mb-1 uppercase font-mono">
                   Base Agreement Value (₹) — Statutory Base
                 </label>
                 <div className="relative">
                   <input
+                    id="calc-agreement-val"
                     type="number"
                     step="50000"
                     value={agreementValue}
@@ -701,8 +710,9 @@ export default function CostCalculatorPage() {
             {/* Floor Rise Customization Sub-Section */}
             <div className="pt-2 border-t border-border space-y-3">
               <div className="flex items-center justify-between">
-                <label className="flex items-center gap-2 cursor-pointer">
+                <label htmlFor="calc-include-floor-rise" className="flex items-center gap-2 cursor-pointer">
                   <input
+                    id="calc-include-floor-rise"
                     type="checkbox"
                     checked={includeFloorRise}
                     onChange={(e) => setIncludeFloorRise(e.target.checked)}
@@ -721,10 +731,11 @@ export default function CostCalculatorPage() {
               {includeFloorRise && (
                 <div className="grid grid-cols-3 gap-2.5 text-xs pt-1">
                   <div>
-                    <label className="block text-[10px] font-bold text-content-muted mb-1 uppercase font-mono">
+                    <label htmlFor="calc-floor-num" className="block text-[10px] font-bold text-content-muted mb-1 uppercase font-mono">
                       Unit Floor #
                     </label>
                     <input
+                      id="calc-floor-num"
                       type="number"
                       value={floorNumber}
                       onChange={(e) => setFloorNumber(Number(e.target.value))}
@@ -732,10 +743,11 @@ export default function CostCalculatorPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-content-muted mb-1 uppercase font-mono">
+                    <label htmlFor="calc-base-threshold" className="block text-[10px] font-bold text-content-muted mb-1 uppercase font-mono">
                       Base Threshold
                     </label>
                     <input
+                      id="calc-base-threshold"
                       type="number"
                       value={baseFloorThreshold}
                       onChange={(e) => setBaseFloorThreshold(Number(e.target.value))}
@@ -744,10 +756,11 @@ export default function CostCalculatorPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-content-muted mb-1 uppercase font-mono">
+                    <label htmlFor="calc-floor-rise-rate" className="block text-[10px] font-bold text-content-muted mb-1 uppercase font-mono">
                       Rate (₹/sqft/fl)
                     </label>
                     <input
+                      id="calc-floor-rise-rate"
                       type="number"
                       step="10"
                       value={floorRiseRate}
@@ -831,8 +844,9 @@ export default function CostCalculatorPage() {
               {stampDutyMode === 'CUSTOM' && (
                 <div className="grid grid-cols-2 gap-2 pt-1 bg-surface-subtle p-2.5 rounded-xl border border-border">
                   <div>
-                    <label className="block text-[10px] font-bold text-content-muted mb-1 font-mono">Custom Stamp Duty %</label>
+                    <label htmlFor="calc-custom-stamp-duty" className="block text-[10px] font-bold text-content-muted mb-1 font-mono">Custom Stamp Duty %</label>
                     <input
+                      id="calc-custom-stamp-duty"
                       type="number"
                       step="0.1"
                       value={customStampDutyRate}
@@ -841,8 +855,9 @@ export default function CostCalculatorPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-content-muted mb-1 font-mono">Direct ₹ Override (Optional)</label>
+                    <label htmlFor="calc-custom-stamp-amt" className="block text-[10px] font-bold text-content-muted mb-1 font-mono">Direct ₹ Override (Optional)</label>
                     <input
+                      id="calc-custom-stamp-amt"
                       type="number"
                       placeholder="e.g. 350000"
                       value={customStampDutyAmountOverride}
@@ -896,8 +911,9 @@ export default function CostCalculatorPage() {
 
               {registrationMode === 'CUSTOM' && (
                 <div className="pt-1 bg-surface-subtle p-2.5 rounded-xl border border-border">
-                  <label className="block text-[10px] font-bold text-content-muted mb-1 font-mono">Enter Custom Registration Fee (₹)</label>
+                  <label htmlFor="calc-custom-reg-fee" className="block text-[10px] font-bold text-content-muted mb-1 font-mono">Enter Custom Registration Fee (₹)</label>
                   <input
+                    id="calc-custom-reg-fee"
                     type="number"
                     value={customRegistrationOverride}
                     onChange={(e) => setCustomRegistrationOverride(e.target.value)}
@@ -967,8 +983,9 @@ export default function CostCalculatorPage() {
               {gstMode === 'CUSTOM' && (
                 <div className="grid grid-cols-2 gap-2 pt-1 bg-surface-subtle p-2.5 rounded-xl border border-border">
                   <div>
-                    <label className="block text-[10px] font-bold text-content-muted mb-1 font-mono">Custom GST %</label>
+                    <label htmlFor="calc-custom-gst-rate" className="block text-[10px] font-bold text-content-muted mb-1 font-mono">Custom GST %</label>
                     <input
+                      id="calc-custom-gst-rate"
                       type="number"
                       step="0.5"
                       value={customGstRate}
@@ -977,8 +994,9 @@ export default function CostCalculatorPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-content-muted mb-1 font-mono">Direct ₹ Override (Optional)</label>
+                    <label htmlFor="calc-custom-gst-amt" className="block text-[10px] font-bold text-content-muted mb-1 font-mono">Direct ₹ Override (Optional)</label>
                     <input
+                      id="calc-custom-gst-amt"
                       type="number"
                       placeholder="e.g. 260000"
                       value={customGstAmountOverride}
@@ -993,12 +1011,13 @@ export default function CostCalculatorPage() {
             {/* Legal & Scrutiny Fee */}
             <div className="pt-2 border-t border-border">
               <div className="flex items-center justify-between mb-1">
-                <label className="text-[11px] font-bold text-content-muted uppercase font-mono">
+                <label htmlFor="calc-legal-charges" className="text-[11px] font-bold text-content-muted uppercase font-mono">
                   Legal Documentation & Scrutiny Fee (₹)
                 </label>
                 <span className="font-mono text-xs font-bold text-content">{formatINRFull(legalCharges)}</span>
               </div>
               <input
+                id="calc-legal-charges"
                 type="number"
                 step="5000"
                 value={legalCharges}
@@ -1019,10 +1038,11 @@ export default function CostCalculatorPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
               <div>
-                <label className="block text-[11px] font-bold text-content-muted mb-1 uppercase font-mono">
+                <label htmlFor="calc-parking-charges" className="block text-[11px] font-bold text-content-muted mb-1 uppercase font-mono">
                   Covered Car Parking (₹)
                 </label>
                 <input
+                  id="calc-parking-charges"
                   type="number"
                   step="25000"
                   value={parkingCharges}
@@ -1032,10 +1052,11 @@ export default function CostCalculatorPage() {
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-content-muted mb-1 uppercase font-mono">
+                <label htmlFor="calc-society-charges" className="block text-[11px] font-bold text-content-muted mb-1 uppercase font-mono">
                   Society Corpus / Sinking Fund (₹)
                 </label>
                 <input
+                  id="calc-society-charges"
                   type="number"
                   step="25000"
                   value={societyDevCharges}
@@ -1045,10 +1066,11 @@ export default function CostCalculatorPage() {
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-content-muted mb-1 uppercase font-mono">
+                <label htmlFor="calc-clubhouse-charges" className="block text-[11px] font-bold text-content-muted mb-1 uppercase font-mono">
                   Clubhouse / Amenities Fee (₹)
                 </label>
                 <input
+                  id="calc-clubhouse-charges"
                   type="number"
                   step="10000"
                   value={clubhouseCharges}
@@ -1058,10 +1080,11 @@ export default function CostCalculatorPage() {
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-content-muted mb-1 uppercase font-mono">
+                <label htmlFor="calc-infra-charges" className="block text-[11px] font-bold text-content-muted mb-1 uppercase font-mono">
                   Water / Electricity / Gas Infra (₹)
                 </label>
                 <input
+                  id="calc-infra-charges"
                   type="number"
                   step="10000"
                   value={infraCharges}
@@ -1122,8 +1145,9 @@ export default function CostCalculatorPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-content-muted mb-1 font-mono">Rate (₹/sqft/mo)</label>
+                    <label htmlFor="calc-maint-rate" className="block text-[10px] font-bold text-content-muted mb-1 font-mono">Rate (₹/sqft/mo)</label>
                     <input
+                      id="calc-maint-rate"
                       type="number"
                       step="0.5"
                       value={advanceMaintenanceRatePerSqft}
@@ -1134,8 +1158,9 @@ export default function CostCalculatorPage() {
                 </div>
               ) : (
                 <div className="pt-1">
-                  <label className="block text-[10px] font-bold text-content-muted mb-1 font-mono">Lump Sum Advance Maintenance (₹)</label>
+                  <label htmlFor="calc-maint-lump" className="block text-[10px] font-bold text-content-muted mb-1 font-mono">Lump Sum Advance Maintenance (₹)</label>
                   <input
+                    id="calc-maint-lump"
                     type="number"
                     step="5000"
                     value={advanceMaintenanceLumpSum}
@@ -1172,6 +1197,7 @@ export default function CostCalculatorPage() {
                         onClick={() => handleRemoveCustomCharge(item.id)}
                         className="text-status-danger hover:text-status-danger/80 p-1 cursor-pointer"
                         title="Delete line item"
+                        aria-label={`Delete custom charge: ${item.name}`}
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -1187,6 +1213,7 @@ export default function CostCalculatorPage() {
                 <input
                   type="text"
                   placeholder="Charge Name (e.g. Modular Kitchen, Solar Setup)"
+                  aria-label="New Custom Charge Name"
                   value={newChargeName}
                   onChange={(e) => setNewChargeName(e.target.value)}
                   className="w-full px-3 py-2 bg-surface-subtle border border-border rounded-xl text-xs font-medium text-content focus:outline-hidden focus:border-accent"
@@ -1196,6 +1223,7 @@ export default function CostCalculatorPage() {
                 <input
                   type="number"
                   placeholder="Amount (₹)"
+                  aria-label="New Custom Charge Amount in Rupees"
                   value={newChargeAmount}
                   onChange={(e) => setNewChargeAmount(e.target.value)}
                   className="w-full px-3 py-2 bg-surface-subtle border border-border rounded-xl text-xs font-mono font-bold text-content focus:outline-hidden focus:border-accent"
@@ -1205,6 +1233,7 @@ export default function CostCalculatorPage() {
                 <button
                   type="button"
                   onClick={handleAddCustomCharge}
+                  aria-label="Add custom line item"
                   className="w-full h-full py-2 bg-primary text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1 hover:bg-primary-light transition-colors cursor-pointer shadow-2xs"
                 >
                   <Plus className="w-3.5 h-3.5" /> Add
@@ -1218,8 +1247,10 @@ export default function CostCalculatorPage() {
         <div className="lg:col-span-6 space-y-5 lg:sticky lg:top-24">
           
           {/* Navigation View Tabs */}
-          <div className="flex items-center gap-1.5 p-1 bg-surface-subtle border border-border rounded-2xl text-xs font-bold">
+          <div role="tablist" aria-label="Calculator views" className="flex items-center gap-1.5 p-1 bg-surface-subtle border border-border rounded-2xl text-xs font-bold">
             <button
+              role="tab"
+              aria-selected={activeTab === 'BREAKDOWN'}
               onClick={() => setActiveTab('BREAKDOWN')}
               className={`flex-1 py-2 rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                 activeTab === 'BREAKDOWN'
@@ -1232,6 +1263,8 @@ export default function CostCalculatorPage() {
             </button>
 
             <button
+              role="tab"
+              aria-selected={activeTab === 'SCHEDULE'}
               onClick={() => setActiveTab('SCHEDULE')}
               className={`flex-1 py-2 rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                 activeTab === 'SCHEDULE'
@@ -1244,6 +1277,8 @@ export default function CostCalculatorPage() {
             </button>
 
             <button
+              role="tab"
+              aria-selected={activeTab === 'LOAN'}
               onClick={() => setActiveTab('LOAN')}
               className={`flex-1 py-2 rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                 activeTab === 'LOAN'
@@ -1256,6 +1291,8 @@ export default function CostCalculatorPage() {
             </button>
 
             <button
+              role="tab"
+              aria-selected={activeTab === 'SAVED'}
               onClick={() => setActiveTab('SAVED')}
               className={`flex-1 py-2 rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                 activeTab === 'SAVED'
@@ -1449,10 +1486,11 @@ export default function CostCalculatorPage() {
 
               {/* Notes Box */}
               <div className="space-y-1.5 pt-2">
-                <label className="block text-[11px] font-bold text-content-muted uppercase font-mono">
+                <label htmlFor="calc-quotation-notes" className="block text-[11px] font-bold text-content-muted uppercase font-mono">
                   Quotation Notes & Special Inclusions
                 </label>
                 <textarea
+                  id="calc-quotation-notes"
                   rows={2}
                   value={quotationNotes}
                   onChange={(e) => setQuotationNotes(e.target.value)}
@@ -1515,6 +1553,7 @@ export default function CostCalculatorPage() {
                           min="0"
                           max="40"
                           step="1"
+                          aria-label={`Milestone percentage for ${ms.name}`}
                           value={ms.percentage}
                           onChange={(e) => handleMilestonePercentageChange(ms.id, Number(e.target.value))}
                           className="w-full accent-accent cursor-pointer"
@@ -1564,6 +1603,7 @@ export default function CostCalculatorPage() {
                     min="50"
                     max="90"
                     step="5"
+                    aria-label="Bank Funding Loan-to-Value percentage"
                     value={loanLtv}
                     onChange={(e) => setLoanLtv(Number(e.target.value))}
                     className="w-full accent-accent cursor-pointer"
@@ -1573,10 +1613,11 @@ export default function CostCalculatorPage() {
                 {/* Interest Rate & Tenure */}
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[10px] font-bold text-content-muted mb-1 uppercase font-mono">
+                    <label htmlFor="calc-interest-rate" className="block text-[10px] font-bold text-content-muted mb-1 uppercase font-mono">
                       Interest Rate (% p.a.)
                     </label>
                     <input
+                      id="calc-interest-rate"
                       type="number"
                       step="0.05"
                       value={loanInterestRate}
@@ -1586,10 +1627,11 @@ export default function CostCalculatorPage() {
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-bold text-content-muted mb-1 uppercase font-mono">
+                    <label htmlFor="calc-loan-tenure" className="block text-[10px] font-bold text-content-muted mb-1 uppercase font-mono">
                       Loan Tenure (Years)
                     </label>
                     <input
+                      id="calc-loan-tenure"
                       type="number"
                       min="5"
                       max="30"
@@ -1663,8 +1705,9 @@ export default function CostCalculatorPage() {
               ) : (
                 <div className="space-y-3 text-xs">
                   {savedQuotes.map((q) => (
-                    <div
+                    <button
                       key={q.id}
+                      type="button"
                       onClick={() => {
                         setProjectName(q.projectName);
                         setClientName(q.clientName);
@@ -1675,7 +1718,7 @@ export default function CostCalculatorPage() {
                         setActiveTab('BREAKDOWN');
                         showToast(`Loaded quote for ${q.clientName}`);
                       }}
-                      className="p-3.5 bg-surface-subtle hover:bg-surface border border-border rounded-xl flex items-center justify-between transition-all cursor-pointer shadow-2xs"
+                      className="text-left w-full p-3.5 bg-surface-subtle hover:bg-surface border border-border rounded-xl flex items-center justify-between transition-all cursor-pointer shadow-2xs focus-visible:ring-2 focus-visible:ring-accent"
                     >
                       <div>
                         <div className="font-bold text-content text-sm">{q.clientName}</div>
@@ -1694,13 +1737,14 @@ export default function CostCalculatorPage() {
                         <button
                           type="button"
                           onClick={(e) => handleDeleteSavedQuote(q.id, e)}
-                          className="text-content-muted hover:text-status-danger p-1.5 cursor-pointer"
+                          className="text-content-muted hover:text-status-danger p-1.5 cursor-pointer rounded-lg hover:bg-surface-muted"
                           title="Delete quote"
+                          aria-label={`Delete saved quote for ${q.clientName}`}
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
-                    </div>
+                    </button>
                   ))}
                 </div>
               )}

@@ -426,17 +426,22 @@ export function AddLeadModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/65 backdrop-blur-sm animate-in fade-in duration-200">
+    <div 
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="add-lead-modal-title"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/65 backdrop-blur-sm animate-in fade-in duration-200"
+    >
       <div className="relative w-full max-w-3xl max-h-[92dvh] flex flex-col bg-surface border border-border/90 rounded-2xl shadow-2xl text-content overflow-hidden">
         {/* Header */}
         <div className="px-5 sm:px-6 py-3.5 border-b border-border bg-surface-subtle/80 flex items-center justify-between sticky top-0 z-10 backdrop-blur-md">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-gradient-to-br from-accent to-blue-700 text-white rounded-xl shadow-xs shrink-0">
+            <div className="p-2.5 bg-gradient-to-br from-accent to-blue-700 text-white rounded-xl shadow-xs shrink-0" aria-hidden="true">
               <UserPlus className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="text-base sm:text-lg font-bold tracking-tight text-content">
+                <h3 id="add-lead-modal-title" className="text-base sm:text-lg font-bold tracking-tight text-content">
                   New Buyer Lead
                 </h3>
                 {isTelecallerOrAgent ? (
@@ -457,16 +462,17 @@ export function AddLeadModal({
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="hidden sm:inline-block text-[11px] font-mono text-content-subtle bg-surface px-2 py-0.5 rounded-md border border-border">
+            <span className="hidden sm:inline-block text-[11px] font-mono text-content-subtle bg-surface px-2 py-0.5 rounded-md border border-border" aria-hidden="true">
               Esc to close
             </span>
             <button
               type="button"
               onClick={onClose}
+              aria-label="Close add lead dialog"
               className="p-1.5 rounded-lg text-content-muted hover:text-content hover:bg-surface transition-colors cursor-pointer"
               title="Close modal"
             >
-              <X className="w-5 h-5" />
+              <X className="w-5 h-5" aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -496,14 +502,16 @@ export function AddLeadModal({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               {/* Buyer Full Name */}
               <div>
-                <label className="block text-xs font-semibold text-content mb-1">
+                <label htmlFor="lead-full-name" className="block text-xs font-semibold text-content mb-1">
                   Buyer Full Name <span className="text-accent">*</span>
                 </label>
                 <div className="relative">
-                  <User className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-content-muted pointer-events-none" />
+                  <User className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-content-muted pointer-events-none" aria-hidden="true" />
                   <input
+                    id="lead-full-name"
                     type="text"
                     required
+                    aria-required="true"
                     placeholder="e.g. Rahul Sharma"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
@@ -515,14 +523,14 @@ export function AddLeadModal({
               {/* Phone Number with +91 Prefix */}
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs font-semibold text-content">
+                  <label htmlFor="lead-phone" className="text-xs font-semibold text-content">
                     Phone Number <span className="text-accent">*</span>
                   </label>
                   {rawDigits.length > 0 && (
                     <span className={`text-[10px] font-mono font-medium ${isPhoneValid ? 'text-status-success font-bold flex items-center gap-0.5' : 'text-content-muted'}`}>
                       {isPhoneValid ? (
                         <>
-                          <Check className="w-3 h-3 text-status-success" /> Valid 10-Digit
+                          <Check className="w-3 h-3 text-status-success" aria-hidden="true" /> Valid 10-Digit
                         </>
                       ) : (
                         `(${rawDigits.length}/10 digits)`
@@ -531,13 +539,16 @@ export function AddLeadModal({
                   )}
                 </div>
                 <div className="relative flex rounded-xl border border-border focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/20 transition-all bg-surface-subtle overflow-hidden">
-                  <div className="flex items-center gap-1 px-2.5 bg-surface border-r border-border text-xs font-mono font-semibold text-content shrink-0 select-none">
+                  <div className="flex items-center gap-1 px-2.5 bg-surface border-r border-border text-xs font-mono font-semibold text-content shrink-0 select-none" aria-hidden="true">
                     <span>🇮🇳</span>
                     <span>+91</span>
                   </div>
                   <input
+                    id="lead-phone"
                     type="tel"
                     required
+                    aria-required="true"
+                    aria-label="10-digit mobile number"
                     placeholder="98200 12345"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
@@ -550,12 +561,13 @@ export function AddLeadModal({
             {/* Email & WhatsApp toggle */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
               <div>
-                <label className="block text-xs font-semibold text-content mb-1">
+                <label htmlFor="lead-email" className="block text-xs font-semibold text-content mb-1">
                   Email Address <span className="text-content-muted font-normal">(Optional)</span>
                 </label>
                 <div className="relative">
-                  <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-content-muted pointer-events-none" />
+                  <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-content-muted pointer-events-none" aria-hidden="true" />
                   <input
+                    id="lead-email"
                     type="email"
                     placeholder="e.g. rahul@example.com"
                     value={email}

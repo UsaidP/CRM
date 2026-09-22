@@ -525,6 +525,7 @@ export function CustomSelect({
             <input
               ref={searchInputRef}
               type="text"
+              aria-label={searchPlaceholder || "Search options"}
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);

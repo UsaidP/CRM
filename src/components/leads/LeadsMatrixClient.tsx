@@ -853,6 +853,7 @@ export function LeadsMatrixClient({
               disabled={loading}
               className="h-7 w-7 grid place-items-center rounded-lg text-content-secondary hover:text-content transition-all cursor-pointer disabled:opacity-50"
               title="Refresh Inbound Leads"
+              aria-label="Refresh Inbound Leads"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-accent' : ''}`} />
             </button>

@@ -719,6 +719,7 @@ export function TelecallerConsoleView({
               <input
                 type="text"
                 placeholder="Search leads in queue..."
+                aria-label="Search leads in queue"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pr-3 pl-8 py-1.5 text-xs rounded-xl bg-surface-subtle border border-border text-content placeholder:text-content-muted focus:outline-none focus:ring-1 focus:ring-accent"
@@ -746,13 +747,16 @@ export function TelecallerConsoleView({
                 const isUrgent = lead.currentStage === 'new_uncontacted' && elapsedMins <= 15;
 
                 return (
-                  <div
+                  <button
+                    type="button"
                     key={lead.id}
                     onClick={() => {
                       handleCancelCountdown();
                       setSelectedLeadId(lead.id);
                     }}
-                    className={`relative flex items-center gap-2.5 px-3 py-2.5 cursor-pointer select-none rounded-xl transition-all border outline-none ${
+                    aria-label={`Select prospect ${lead.fullName || 'Anonymous'}`}
+                    aria-pressed={isSelected}
+                    className={`w-full text-left relative flex items-center gap-2.5 px-3 py-2.5 cursor-pointer select-none rounded-xl transition-all border outline-none focus-visible:ring-2 focus-visible:ring-accent ${
                       isSelected
                         ? 'bg-accent/15 border-accent text-content shadow-xs'
                         : 'bg-surface hover:bg-surface-subtle text-content-secondary border-border/70'
@@ -768,13 +772,13 @@ export function TelecallerConsoleView({
                       isSelected ? 'bg-surface border-accent/40' : 'bg-surface-subtle border-border'
                     }`}>
                       {(lead.leadSource || '').includes('YOUTUBE') ? (
-                        <YoutubeIcon className="w-3.5 h-3.5 text-red-500" />
-                      ) : (lead.leadSource || '').includes('INSTAGRAM') ? (
-                        <InstagramIcon className="w-3.5 h-3.5 text-pink-500" />
+                        <span className="text-red-500 font-bold text-xs">▶</span>
                       ) : (lead.leadSource || '').includes('WHATSAPP') ? (
-                        <MessageSquare className="w-3.5 h-3.5 text-emerald-500" />
+                        <span className="text-status-success font-bold text-xs">💬</span>
+                      ) : (lead.leadSource || '').includes('INSTAGRAM') ? (
+                        <span className="text-pink-500 font-bold text-xs">📷</span>
                       ) : (
-                        <Phone className="w-3.5 h-3.5 text-blue-500" />
+                        <Building2 className="w-3.5 h-3.5 text-accent" />
                       )}
                     </div>
 
@@ -813,7 +817,7 @@ export function TelecallerConsoleView({
                         </span>
                       )}
                     </div>
-                  </div>
+                  </button>
                 );
               })
             )}

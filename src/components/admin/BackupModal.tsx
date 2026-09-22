@@ -137,17 +137,22 @@ export function BackupModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150">
+    <div 
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="backup-modal-title"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150"
+    >
       <div className="w-full max-w-2xl bg-surface border border-border rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
         {/* Modal Header */}
         <div className="p-5 border-b border-border bg-surface-subtle flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-accent-soft text-accent-text flex items-center justify-center font-bold shadow-xs">
+            <div className="w-10 h-10 rounded-2xl bg-accent-soft text-accent-text flex items-center justify-center font-bold shadow-xs" aria-hidden="true">
               <Cloud className="w-5 h-5 text-accent" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-base font-extrabold text-content font-display">
+                <h3 id="backup-modal-title" className="text-base font-extrabold text-content font-display">
                   Google Drive Cloud Backup
                 </h3>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-status-success-surface text-status-success border border-status-success/30 font-mono">
@@ -160,43 +165,51 @@ export function BackupModal({
             </div>
           </div>
           <button
+            type="button"
             onClick={onClose}
+            aria-label="Close backup dialog"
             className="p-2 rounded-xl text-content-muted hover:text-content hover:bg-surface transition-colors cursor-pointer"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5" aria-hidden="true" />
           </button>
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex border-b border-border bg-surface/50 px-5 pt-2 gap-2">
+        <div className="flex border-b border-border bg-surface/50 px-5 pt-2 gap-2" role="tablist" aria-label="Backup options">
           <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'BACKUP'}
             onClick={() => {
               setActiveTab('BACKUP');
               setBackupResult(null);
               setError(null);
             }}
-            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-t-xl transition-all border-b-2 ${
+            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-t-xl transition-all border-b-2 cursor-pointer ${
               activeTab === 'BACKUP'
                 ? 'border-accent text-accent bg-surface font-extrabold shadow-xs'
                 : 'border-transparent text-content-muted hover:text-content'
             }`}
           >
-            <HardDrive className="w-3.5 h-3.5" />
+            <HardDrive className="w-3.5 h-3.5" aria-hidden="true" />
             <span>General Cloud Backup</span>
           </button>
           <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'DUTY_END'}
             onClick={() => {
               setActiveTab('DUTY_END');
               setBackupResult(null);
               setError(null);
             }}
-            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-t-xl transition-all border-b-2 ${
+            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-t-xl transition-all border-b-2 cursor-pointer ${
               activeTab === 'DUTY_END'
                 ? 'border-accent text-accent bg-surface font-extrabold shadow-xs'
                 : 'border-transparent text-content-muted hover:text-content'
             }`}
           >
-            <Flame className="w-3.5 h-3.5 text-status-warning" />
+            <Flame className="w-3.5 h-3.5 text-status-warning" aria-hidden="true" />
             <span>Telecaller End-of-Duty Backup</span>
           </button>
         </div>

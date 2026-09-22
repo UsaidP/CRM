@@ -131,10 +131,13 @@ export function CampaignAttributionManager({ initialCampaigns = [] }: { initialC
             <span>Create Campaign Code</span>
           </button>
           <button
+            type="button"
             onClick={fetchCampaigns}
+            aria-label="Refresh campaigns list"
+            title="Refresh campaigns list"
             className="p-2.5 bg-surface hover:bg-surface-subtle border border-border text-content-secondary hover:text-content rounded-xl transition-all shadow-xs cursor-pointer shrink-0"
           >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-accent' : ''}`} />
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-accent' : ''}`} aria-hidden="true" />
           </button>
         </div>
       </div>
@@ -254,12 +257,22 @@ export function CampaignAttributionManager({ initialCampaigns = [] }: { initialC
 
       {/* Create Campaign Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
+        <div 
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="create-campaign-title"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in"
+        >
           <div className="bg-surface border border-border rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl text-content">
             <div className="flex items-center justify-between border-b border-border pb-3">
-              <h3 className="font-bold text-content text-base">Create Campaign Attribution Code</h3>
-              <button onClick={() => setShowCreateModal(false)} className="text-content-muted hover:text-content">
-                <X className="w-5 h-5" />
+              <h3 id="create-campaign-title" className="font-bold text-content text-base">Create Campaign Attribution Code</h3>
+              <button 
+                type="button"
+                onClick={() => setShowCreateModal(false)} 
+                aria-label="Close create campaign dialog"
+                className="text-content-muted hover:text-content cursor-pointer p-1 rounded-lg"
+              >
+                <X className="w-5 h-5" aria-hidden="true" />
               </button>
             </div>
 

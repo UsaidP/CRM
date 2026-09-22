@@ -1122,6 +1122,7 @@ export default function SiteVisitsPage() {
               type="button"
               onClick={() => setRescheduleVisit(null)}
               className="p-1 rounded-lg text-content-muted hover:text-content"
+              aria-label="Close reschedule dialog"
             >
               ✕
             </button>
@@ -1129,8 +1130,9 @@ export default function SiteVisitsPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-content">New Tour Date</label>
+              <label htmlFor="reschedule-tour-date" className="text-xs font-bold text-content">New Tour Date</label>
               <input
+                id="reschedule-tour-date"
                 type="date"
                 required
                 value={rescheduleDate}
