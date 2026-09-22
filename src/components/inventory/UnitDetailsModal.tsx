@@ -316,120 +316,144 @@ export function UnitDetailsModal({
         />
 
         {/* Header */}
-        <div className="p-5 border-b border-border bg-surface-raised flex items-start justify-between">
-          <div className="flex items-start gap-4">
-            <div className="p-3 bg-accent-soft border border-accent/30 rounded-xl text-accent">
-              <Home className="w-6 h-6" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2.5 flex-wrap">
-                <h2 id="unit-modal-title" className="text-xl font-bold text-content font-display">
+        <div className="px-6 py-4 border-b border-border bg-surface-raised space-y-3">
+          {/* Top Row: Title + Key Status on Left | Action Toolbar + Close on Right */}
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 rounded-xl bg-accent-soft border border-accent/30 flex items-center justify-center text-accent shrink-0">
+                <Home className="w-5 h-5" />
+              </div>
+              <div className="flex items-center gap-2.5 min-w-0 flex-wrap">
+                <h2 id="unit-modal-title" className="text-xl font-bold text-content font-display tracking-tight whitespace-nowrap">
                   {currentUnit.unitNumber ? `Flat ${currentUnit.unitNumber}` : `Unit Specification`}
                 </h2>
-                <span className="badge-cobalt">
-                  {currentUnit.bhk} BHK • {currentUnit.carpetAreaSqft || 650} Sq.Ft. RERA
-                </span>
-                <span className="text-xs px-2.5 py-0.5 rounded-full font-mono bg-surface-subtle border border-border text-content-muted">
-                  Floor {currentUnit.floorNumber || 1} of {currentUnit.totalFloors || 14}
-                </span>
                 {isOcReady ? (
-                  <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-status-success-surface text-status-success border border-status-success/30 flex items-center gap-1">
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-status-success-surface text-status-success border border-status-success/30 inline-flex items-center gap-1 shrink-0">
                     <CheckCircle2 className="w-3 h-3" /> Ready OC (0% GST)
                   </span>
                 ) : (
-                  <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-status-warning-surface text-status-warning border border-status-warning/30 flex items-center gap-1">
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-status-warning-surface text-status-warning border border-status-warning/30 inline-flex items-center gap-1 shrink-0">
                     <Calendar className="w-3 h-3" /> Under-Construction ({gstPercentage}% GST)
                   </span>
                 )}
                 {Boolean(currentUnit.isHotDeal) && (
-                  <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30 flex items-center gap-1">
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30 inline-flex items-center gap-1 shrink-0">
                     <Flame className="w-3 h-3" /> Hot Deal
                   </span>
                 )}
                 {Boolean(currentUnit.isExclusive) && (
-                  <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-accent/15 text-accent border border-accent/30 flex items-center gap-1">
-                    <Star className="w-3 h-3" /> Exclusive Mandate
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-accent/15 text-accent border border-accent/30 inline-flex items-center gap-1 shrink-0">
+                    <Star className="w-3 h-3" /> Exclusive
                   </span>
                 )}
               </div>
-              <p className="text-xs text-content-muted mt-1">
-                Project: <strong className="text-content">{currentProject.projectName || 'Developer Project'}</strong>
-                {currentProject.developerName && <span> by {currentProject.developerName}</span>}
-                {currentProject.microMarket && <span> • {currentProject.microMarket}</span>}
-                {currentUnit.facing && <span> • Facing: <strong className="text-content">{currentUnit.facing}</strong></span>}
-              </p>
+            </div>
+
+            {/* Top Right: Actions & Close */}
+            <div className="flex items-center gap-1.5 shrink-0">
+              {onSelectUnitForCalc && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    onSelectUnitForCalc(currentUnit);
+                  }}
+                  className="h-8.5 px-3 rounded-lg border border-border bg-surface text-content text-xs font-semibold hover:bg-surface-raised hover:border-accent/40 inline-flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
+                  title="Open Cost & EMI Calculator"
+                >
+                  <Calculator className="w-3.5 h-3.5 text-accent" />
+                  <span className="hidden sm:inline">Calculator</span>
+                </button>
+              )}
+
+              {onEditUnit && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    onEditUnit(currentUnit);
+                  }}
+                  className="h-8.5 px-3 rounded-lg border border-border bg-surface text-content text-xs font-semibold hover:bg-surface-raised hover:border-accent/40 inline-flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
+                  title={`Edit Flat ${currentUnit.unitNumber || ''}`}
+                >
+                  <Pencil className="w-3.5 h-3.5 text-accent" />
+                  <span className="hidden sm:inline">Edit Unit</span>
+                </button>
+              )}
+
+              {onDeleteUnit && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    onDeleteUnit(currentUnit);
+                  }}
+                  className="h-8.5 px-3 rounded-lg border border-status-danger/30 bg-status-danger-surface text-status-danger text-xs font-semibold hover:bg-status-danger/15 inline-flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
+                  title={`Delete Flat ${currentUnit.unitNumber || ''}`}
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Delete</span>
+                </button>
+              )}
+
+              <div className="h-6 w-px bg-border/80 mx-1" />
+
+              <button
+                type="button"
+                data-dialog-close
+                onClick={onClose}
+                className="h-8.5 w-8.5 rounded-lg text-content-muted hover:text-content hover:bg-surface border border-transparent hover:border-border inline-flex items-center justify-center transition-all cursor-pointer shrink-0"
+                aria-label="Close dialog"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 flex-wrap justify-end">
-            <div className="text-right mr-2 hidden sm:block">
-              <div className="text-[10px] text-content-muted uppercase font-semibold">All-In Cost</div>
-              <div className="text-base font-bold text-accent font-mono">
+          {/* Bottom Row: Metadata Badges & Project info on Left | All-In Cost on Right */}
+          <div className="flex items-center justify-between gap-4 pt-2.5 border-t border-border/60 text-xs">
+            <div className="flex items-center gap-2 flex-wrap min-w-0">
+              <span className="badge-cobalt shrink-0">
+                {currentUnit.bhk} BHK • {currentUnit.carpetAreaSqft || 650} Sq.Ft. RERA
+              </span>
+              <span className="px-2.5 py-0.5 rounded-full font-mono bg-surface-subtle border border-border text-content-muted shrink-0">
+                Floor {currentUnit.floorNumber || 1} of {currentUnit.totalFloors || 14}
+              </span>
+              <span className="text-border-strong hidden sm:inline">•</span>
+              <span className="text-content-muted truncate">
+                Project: <strong className="text-content font-semibold">{currentProject.projectName || 'Developer Project'}</strong>
+                {currentProject.developerName && <span> by {currentProject.developerName}</span>}
+              </span>
+              {currentProject.microMarket && (
+                <>
+                  <span className="text-border-strong hidden md:inline">•</span>
+                  <span className="text-content-muted hidden md:inline">{currentProject.microMarket}</span>
+                </>
+              )}
+              {currentUnit.facing && (
+                <>
+                  <span className="text-border-strong hidden sm:inline">•</span>
+                  <span className="text-content-muted inline-flex items-center gap-1">
+                    Facing: <strong className="text-content font-semibold">{currentUnit.facing}</strong>
+                  </span>
+                </>
+              )}
+            </div>
+
+            {/* All-In Cost highlighted badge */}
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="text-[11px] text-content-muted uppercase tracking-wider font-semibold hidden sm:inline">All-In Cost</span>
+              <div className="px-3 py-1 rounded-lg bg-surface border border-accent/30 text-accent font-mono font-bold text-sm sm:text-base shadow-2xs">
                 {formatINR(currentUnit.allInTotalCost || currentUnit.agreementValue)}
               </div>
             </div>
-
-            {onSelectUnitForCalc && (
-              <button
-                type="button"
-                onClick={() => {
-                  onClose();
-                  onSelectUnitForCalc(currentUnit);
-                }}
-                className="px-3 py-1.5 rounded-lg border border-border bg-surface text-content text-xs font-semibold hover:bg-surface-raised flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
-                title="Open Cost & EMI Calculator"
-              >
-                <Calculator className="w-3.5 h-3.5 text-accent" />
-                <span className="hidden sm:inline">Calculator</span>
-              </button>
-            )}
-
-            {onEditUnit && (
-              <button
-                type="button"
-                onClick={() => {
-                  onClose();
-                  onEditUnit(currentUnit);
-                }}
-                className="px-3 py-1.5 rounded-lg border border-border bg-surface text-content text-xs font-semibold hover:bg-surface-raised flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
-                title={`Edit Flat ${currentUnit.unitNumber || ''}`}
-              >
-                <Pencil className="w-3.5 h-3.5 text-accent" />
-                <span className="hidden sm:inline">Edit Unit</span>
-              </button>
-            )}
-
-            {onDeleteUnit && (
-              <button
-                type="button"
-                onClick={() => {
-                  onClose();
-                  onDeleteUnit(currentUnit);
-                }}
-                className="px-3 py-1.5 rounded-lg border border-status-danger/30 bg-status-danger-surface text-status-danger text-xs font-semibold hover:bg-status-danger/10 flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
-                title={`Delete Flat ${currentUnit.unitNumber || ''}`}
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Delete</span>
-              </button>
-            )}
-
-            <button
-              type="button"
-              data-dialog-close
-              onClick={onClose}
-              className="p-2 rounded-lg text-content-muted hover:text-content hover:bg-surface transition-colors cursor-pointer"
-              aria-label="Close dialog"
-            >
-              <X className="w-5 h-5" />
-            </button>
           </div>
         </div>
 
         {/* Unit Configuration Switcher Bar (Sibling Units in the same project) */}
         {siblingUnits.length > 1 && (
-          <div className="px-6 py-2.5 border-b border-border bg-surface-subtle flex items-center gap-2 overflow-x-auto text-xs">
-            <span className="text-content-muted font-medium whitespace-nowrap flex items-center gap-1">
+          <div className="px-6 py-2 border-b border-border bg-surface-subtle flex items-center gap-3 overflow-x-auto text-xs">
+            <span className="text-content-muted font-medium whitespace-nowrap inline-flex items-center gap-1.5 shrink-0">
               <Layers className="w-3.5 h-3.5 text-accent" />
               Switch Flat:
             </span>
@@ -443,15 +467,15 @@ export function UnitDetailsModal({
                     key={u.id}
                     type="button"
                     onClick={() => handleSwitchUnit(u)}
-                    className={`px-3 py-1 rounded-lg text-xs font-medium transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
+                    className={`h-7 px-2.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap inline-flex items-center gap-1.5 cursor-pointer ${
                       isSelected
                         ? 'bg-accent text-accent-contrast font-bold shadow-xs'
                         : 'bg-surface border border-border text-content hover:border-accent/40'
                     }`}
                   >
                     <span>{u.unitNumber ? `Flat ${u.unitNumber}` : `${u.bhk} BHK`}</span>
-                    <span className="opacity-80">({u.bhk}B • {u.carpetAreaSqft || 650}sft)</span>
-                    {hasMedia && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />}
+                    <span className="opacity-80 font-normal">({u.bhk}B • {u.carpetAreaSqft || 650}sft)</span>
+                    {hasMedia && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />}
                   </button>
                 );
               })}
@@ -460,49 +484,49 @@ export function UnitDetailsModal({
         )}
 
         {/* Tab Navigation */}
-        <div className="flex items-center gap-2 px-6 border-b border-border bg-surface-subtle overflow-x-auto">
+        <div className="flex items-center gap-1 px-6 border-b border-border bg-surface-subtle overflow-x-auto">
           <button
             onClick={() => setActiveTab('overview')}
-            className={`py-3 px-3 text-xs font-medium border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+            className={`py-3 px-3 text-xs font-medium border-b-2 transition-colors inline-flex items-center gap-2 whitespace-nowrap cursor-pointer ${
               activeTab === 'overview'
                 ? 'border-accent text-accent font-semibold'
                 : 'border-transparent text-content-muted hover:text-content'
             }`}
           >
-            <Home className="w-4 h-4" /> Overview &amp; Specifications
+            <Home className="w-4 h-4 shrink-0" /> Overview &amp; Specifications
           </button>
           <button
             onClick={() => setActiveTab('floorplan')}
-            className={`py-3 px-3 text-xs font-medium border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+            className={`py-3 px-3 text-xs font-medium border-b-2 transition-colors inline-flex items-center gap-2 whitespace-nowrap cursor-pointer ${
               activeTab === 'floorplan'
                 ? 'border-accent text-accent font-semibold'
                 : 'border-transparent text-content-muted hover:text-content'
             }`}
           >
-            <Layers className="w-4 h-4" /> Floor Plan Blueprint
+            <Layers className="w-4 h-4 shrink-0" /> Floor Plan Blueprint
             {resolvedMedia.floorPlanUrl && (
-              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
             )}
           </button>
           <button
             onClick={() => setActiveTab('photos')}
-            className={`py-3 px-3 text-xs font-medium border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+            className={`py-3 px-3 text-xs font-medium border-b-2 transition-colors inline-flex items-center gap-2 whitespace-nowrap cursor-pointer ${
               activeTab === 'photos'
                 ? 'border-accent text-accent font-semibold'
                 : 'border-transparent text-content-muted hover:text-content'
             }`}
           >
-            <ImageIcon className="w-4 h-4" /> Unit Photos &amp; Interior ({resolvedMedia.photos.length})
+            <ImageIcon className="w-4 h-4 shrink-0" /> Unit Photos &amp; Interior ({resolvedMedia.photos.length})
           </button>
           <button
             onClick={() => setActiveTab('cost')}
-            className={`py-3 px-3 text-xs font-medium border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+            className={`py-3 px-3 text-xs font-medium border-b-2 transition-colors inline-flex items-center gap-2 whitespace-nowrap cursor-pointer ${
               activeTab === 'cost'
                 ? 'border-accent text-accent font-semibold'
                 : 'border-transparent text-content-muted hover:text-content'
             }`}
           >
-            <Calculator className="w-4 h-4" /> Cost &amp; Tax Breakdown
+            <Calculator className="w-4 h-4 shrink-0" /> Cost &amp; Tax Breakdown
           </button>
         </div>
 

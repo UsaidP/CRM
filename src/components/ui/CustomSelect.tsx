@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronDown, Check, Search, X } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export interface CustomSelectOption {
   value: string;
@@ -385,13 +386,13 @@ export function CustomSelect({
   // Size styling tokens
   const sizeClasses = {
     xs: 'px-2.5 py-1 text-[11px] rounded-lg gap-1.5 min-h-[30px]',
-    sm: 'px-3 py-2 text-xs rounded-xl gap-2 min-h-[36px]',
-    md: 'px-3.5 py-2.5 text-xs font-semibold rounded-xl gap-2.5 min-h-[40px]',
-    lg: 'px-4 py-3 text-sm font-semibold rounded-2xl gap-3 min-h-[46px]',
+    sm: 'px-3 py-1.5 text-xs rounded-xl gap-2 h-9 min-h-[36px]',
+    md: 'px-3.5 py-2 text-xs font-semibold rounded-xl gap-2.5 h-10 min-h-[40px]',
+    lg: 'px-4 py-2.5 text-sm font-semibold rounded-2xl gap-3 h-11 min-h-[44px]',
   }[size];
 
   const itemSizeClasses = {
-    xs: 'px-2 py-1.5 text-[11px] rounded-lg min-h-[28px] gap-1.5',
+    xs: 'px-2.5 py-1.5 text-[11px] rounded-lg min-h-[28px] gap-1.5',
     sm: 'px-3 py-2 text-xs rounded-xl min-h-[34px] gap-2.5',
     md: 'px-3.5 py-2 text-xs rounded-xl min-h-[36px] gap-2.5',
     lg: 'px-4 py-2.5 text-sm rounded-xl min-h-[40px] gap-3',
@@ -425,31 +426,39 @@ export function CustomSelect({
           isKeyboardNavRef.current = false;
           setFocusedIndex(index);
         }}
-        className={`w-full flex items-center justify-between transition-all text-left cursor-pointer group select-none ${itemSizeClasses} ${
+        className={cn(
+          'w-full flex items-center justify-between transition-colors duration-150 text-left cursor-pointer group select-none rounded-xl',
+          itemSizeClasses,
           opt.disabled
-            ? 'opacity-40 cursor-not-allowed'
+            ? 'opacity-40 cursor-not-allowed pointer-events-none'
             : isSelected
-            ? 'bg-accent text-white font-bold shadow-xs'
+            ? isFocused
+              ? 'bg-surface-subtle text-accent dark:text-accent font-semibold'
+              : 'bg-transparent text-accent dark:text-accent font-semibold'
             : isFocused
-            ? 'bg-accent-soft/80 text-accent-text font-semibold'
-            : 'text-content hover:bg-surface-subtle hover:text-content font-medium'
-        }`}
+            ? 'bg-surface-subtle text-content font-medium'
+            : 'text-content hover:bg-surface-subtle font-medium'
+        )}
       >
         <div className="flex items-center gap-2 min-w-0 flex-1">
           {opt.dotColor && (
             <span
               className={`w-2 h-2 rounded-full ${opt.dotColor} shrink-0 transition-transform ${
-                isSelected ? 'ring-2 ring-white/60' : 'group-hover:scale-125'
+                isSelected ? 'ring-2 ring-accent/30 scale-110' : 'group-hover:scale-110'
               }`}
             />
           )}
-          {opt.icon && <span className={`shrink-0 ${isSelected ? 'text-white' : 'text-accent'}`}>{opt.icon}</span>}
+          {opt.icon && (
+            <span className={`shrink-0 transition-colors ${isSelected ? 'text-accent' : 'text-content-secondary group-hover:text-content'}`}>
+              {opt.icon}
+            </span>
+          )}
           <div className="truncate flex-1">
             <div className="truncate leading-tight">{opt.label}</div>
             {opt.description && (
               <div
                 className={`text-[10px] font-normal mt-0.5 truncate ${
-                  isSelected ? 'text-white/80' : 'text-content-muted'
+                  isSelected ? 'text-accent/80' : 'text-content-muted'
                 }`}
               >
                 {opt.description}
@@ -465,14 +474,14 @@ export function CustomSelect({
                 opt.badgeColor
                   ? opt.badgeColor
                   : isSelected
-                  ? 'bg-white/20 text-white'
+                  ? 'bg-accent/15 text-accent border border-accent/30'
                   : 'bg-surface-subtle text-content-secondary border border-border'
               }`}
             >
               {opt.badge}
             </span>
           )}
-          {isSelected && <Check className="w-3.5 h-3.5 text-white shrink-0" />}
+          {isSelected && <Check className="w-4 h-4 text-accent shrink-0 stroke-[2.2]" />}
         </div>
       </button>
     );
@@ -483,15 +492,18 @@ export function CustomSelect({
       ref={menuRef}
       role="listbox"
       tabIndex={-1}
-      className={`${
+      className={cn(
         usePortal
           ? 'fixed'
           : `absolute ${align === 'right' ? 'right-0' : 'left-0'} ${
               openUpward ? 'bottom-full mb-1.5' : 'top-full mt-1.5'
-            }`
-      } w-full ${menuMinWidthClasses} z-[9999] flex flex-col rounded-xl bg-surface/95 border border-border shadow-xl p-1.5 backdrop-blur-md overflow-hidden ${
-        openUpward ? 'shadcn-dropdown-up' : 'shadcn-dropdown-down'
-      } ${menuClassName}`}
+            }`,
+        'w-full',
+        menuMinWidthClasses,
+        'z-[9999] flex flex-col rounded-2xl bg-surface/98 dark:bg-surface/98 border border-border/80 shadow-2xl p-1.5 backdrop-blur-xl ring-1 ring-black/5 dark:ring-white/5 overflow-hidden',
+        openUpward ? 'shadcn-dropdown-up' : 'shadcn-dropdown-down',
+        menuClassName
+      )}
       style={{
         maxHeight: `${maxMenuHeight}px`,
         transition: 'none',
@@ -507,7 +519,7 @@ export function CustomSelect({
     >
       {/* Optional Search Bar */}
       {isSearchEnabled && (
-        <div className="p-1.5 border-b border-border/60 pb-2 mb-1 shrink-0">
+        <div className="p-1.5 border-b border-border/50 pb-2 mb-1 shrink-0">
           <div className="relative flex items-center">
             <Search className="w-3.5 h-3.5 text-content-muted absolute left-2.5 pointer-events-none" />
             <input
@@ -520,7 +532,7 @@ export function CustomSelect({
               }}
               onKeyDown={handleKeyDown}
               placeholder={searchPlaceholder}
-              className="w-full bg-surface-subtle border border-border rounded-xl pl-8 pr-7 py-1.5 text-xs text-content placeholder-content-muted focus:outline-hidden focus:border-accent font-medium"
+              className="w-full bg-surface-subtle/70 hover:bg-surface-subtle border border-border/70 rounded-lg pl-8 pr-7 py-1.5 text-xs text-content placeholder-content-muted focus:outline-hidden focus:border-accent/50 focus:ring-2 focus:ring-accent/10 font-medium transition-all shadow-2xs"
             />
             {searchQuery && (
               <button
@@ -529,7 +541,8 @@ export function CustomSelect({
                   setSearchQuery('');
                   searchInputRef.current?.focus();
                 }}
-                className="p-1 text-content-muted hover:text-content absolute right-1.5"
+                className="p-1 text-content-muted hover:text-content absolute right-1.5 transition-colors cursor-pointer"
+                aria-label="Clear search"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -539,7 +552,11 @@ export function CustomSelect({
       )}
 
       {/* Options List */}
-      <div ref={listRef} className="overflow-y-auto overscroll-contain space-y-0.5 custom-scrollbar flex-1">
+      <div
+        ref={listRef}
+        onMouseLeave={() => setFocusedIndex(-1)}
+        className="overflow-y-auto overscroll-contain space-y-0.5 custom-scrollbar flex-1 pr-0.5"
+      >
         {filteredOptions.length === 0 ? (
           <div className="p-4 text-center text-xs text-content-muted">
             No matching options found
@@ -584,13 +601,14 @@ export function CustomSelect({
         disabled={disabled}
         onClick={toggleDropdown}
         onKeyDown={handleKeyDown}
-        className={`w-full flex items-center justify-between border font-semibold transition-all cursor-pointer select-none text-left ${
-          isOpen
-            ? 'border-accent ring-2 ring-accent/20 bg-surface shadow-xs'
-            : 'border-border hover:border-accent/70 hover:bg-surface-subtle/50'
-        } ${sizeClasses} ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${
-          triggerClassName ? triggerClassName : 'bg-surface-subtle text-content shadow-2xs'
-        }`}
+        className={cn(
+          'w-full flex items-center justify-between border font-medium transition-all duration-200 cursor-pointer select-none text-left group shadow-2xs',
+          'bg-surface-subtle border-border text-content hover:border-accent/40 hover:bg-surface',
+          sizeClasses,
+          disabled && 'opacity-50 cursor-not-allowed pointer-events-none',
+          triggerClassName,
+          isOpen && 'border-accent/60 ring-2 ring-accent/15 bg-surface-subtle shadow-xs'
+        )}
       >
         <div className="flex items-center gap-2 min-w-0 truncate flex-1">
           {icon && <span className="text-accent shrink-0">{icon}</span>}
@@ -621,7 +639,7 @@ export function CustomSelect({
           )}
           <ChevronDown
             className={`w-4 h-4 text-content-muted shrink-0 transition-transform duration-200 ${
-              isOpen ? 'rotate-180 text-accent' : ''
+              isOpen ? 'rotate-180 text-accent' : 'group-hover:text-content'
             }`}
           />
         </div>

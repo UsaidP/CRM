@@ -1331,7 +1331,7 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
                               <select
                                 value="elevation"
                                 onChange={(e) => handleReclassifyAsset(elevUrl, e.target.value as any)}
-                                className="text-[10px] bg-surface-inset border border-border rounded px-1.5 py-0.5 text-accent font-bold font-mono focus:outline-none"
+                                className="text-[10px] bg-surface-inset border border-border hover:border-accent/40 rounded-lg px-2 py-1 text-accent font-bold font-mono focus:outline-none transition-colors cursor-pointer shadow-2xs"
                               >
                                 <option value="elevation">Elevation</option>
                                 <option value="floor_plan">Move to Floor Plan</option>
@@ -1409,7 +1409,7 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
                               <select
                                 value="floor_plan"
                                 onChange={(e) => handleReclassifyAsset(fpUrl, e.target.value as any)}
-                                className="text-[10px] bg-surface-inset border border-border rounded px-1.5 py-0.5 text-emerald-600 dark:text-emerald-400 font-bold font-mono focus:outline-none"
+                                className="text-[10px] bg-surface-inset border border-border hover:border-accent/40 rounded-lg px-2 py-1 text-emerald-600 dark:text-emerald-400 font-bold font-mono focus:outline-none transition-colors cursor-pointer shadow-2xs"
                               >
                                 <option value="floor_plan">Floor Plan</option>
                                 <option value="elevation">Move to Elevation</option>
@@ -1426,7 +1426,7 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
                                     handleUpdateFloorPlan(idx, { bhk: val ? Number(val) : undefined, typology: val ? `${val}BHK` : undefined });
                                   }
                                 }}
-                                className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-mono border border-emerald-500/20 focus:outline-none shrink-0"
+                                className="text-[10px] font-bold px-2 py-1 rounded-lg bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-mono border border-emerald-500/20 hover:border-emerald-500/40 focus:outline-none shrink-0 transition-colors cursor-pointer shadow-2xs"
                               >
                                 <option value="">Typical Layout</option>
                                 <option value="1RK">1 RK</option>
@@ -1525,7 +1525,7 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
                             <select
                               value="master_plan"
                               onChange={(e) => handleReclassifyAsset(masterUrl, e.target.value as any)}
-                              className="text-[10px] bg-surface-inset border border-border rounded px-1.5 py-0.5 text-accent font-bold font-mono focus:outline-none"
+                              className="text-[10px] bg-surface-inset border border-border hover:border-accent/40 rounded-lg px-2 py-1 text-accent font-bold font-mono focus:outline-none transition-colors cursor-pointer shadow-2xs"
                             >
                               <option value="master_plan">Master Plan</option>
                               <option value="elevation">Move to Elevation</option>
@@ -1578,7 +1578,7 @@ export function BrochureUploadModal({ open, onClose, onSuccess, onPrefillProject
                               <select
                                 value="brochure_photo"
                                 onChange={(e) => handleReclassifyAsset(itemUrl, e.target.value as any)}
-                                className="text-[10px] bg-surface-inset border border-border rounded px-1.5 py-0.5 text-amber-600 dark:text-amber-400 font-bold font-mono focus:outline-none"
+                                className="text-[10px] bg-surface-inset border border-border hover:border-accent/40 rounded-lg px-2 py-1 text-amber-600 dark:text-amber-400 font-bold font-mono focus:outline-none transition-colors cursor-pointer shadow-2xs"
                               >
                                 <option value="brochure_photo">Gallery / Photo</option>
                                 <option value="elevation">Move to Elevation</option>

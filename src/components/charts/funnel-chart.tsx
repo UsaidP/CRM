@@ -25,6 +25,8 @@ export interface FunnelStage {
   label: string;
   value: number;
   displayValue?: string;
+  /** Explicit percentage (0-100). If omitted, calculated dynamically against max stage */
+  percentage?: number;
   /** Override the chart-level color for this segment */
   color?: string;
   /**
@@ -162,9 +164,14 @@ function vSegmentPath(
     return `M ${mx - w0} 0 L ${mx - w1} ${segH} L ${mx + w1} ${segH} L ${mx + w0} 0 Z`;
   }
 
-  const cy = segH * 0.55;
-  const left = `M ${mx - w0} 0 C ${mx - w0} ${cy}, ${mx - w1} ${segH - cy}, ${mx - w1} ${segH}`;
-  const right = `L ${mx + w1} ${segH} C ${mx + w1} ${segH - cy}, ${mx + w0} ${cy}, ${mx + w0} 0`;
+  // Smooth proportional S-curve blending between stages
+  const cp1Y = segH * 0.38;
+  const cp2Y = segH * 0.62;
+  const cp1W = w0 * 0.82 + w1 * 0.18;
+  const cp2W = w0 * 0.18 + w1 * 0.82;
+
+  const left = `M ${mx - w0} 0 C ${mx - cp1W} ${cp1Y}, ${mx - cp2W} ${cp2Y}, ${mx - w1} ${segH}`;
+  const right = `L ${mx + w1} ${segH} C ${mx + cp2W} ${cp2Y}, ${mx + cp1W} ${cp1Y}, ${mx + w0} 0`;
   return `${left} ${right} Z`;
 }
 
@@ -505,16 +512,18 @@ function VSegment({
             <g>
               <path
                 d={conduitD}
-                fill="var(--color-surface-subtle)"
-                opacity={hovered ? 0.9 : 0.5}
+                fill={hovered ? `${color}15` : "var(--color-surface-subtle)"}
+                opacity={hovered ? 0.8 : 0.35}
+                className="transition-all duration-200"
               />
               <path
                 d={conduitD}
                 fill="none"
                 stroke={color}
                 strokeWidth={hovered ? 1.5 : 1}
-                strokeDasharray="4 3"
-                opacity={hovered ? 0.85 : 0.35}
+                strokeDasharray={hovered ? "3 3" : "4 4"}
+                opacity={hovered ? 0.65 : 0.22}
+                className="transition-all duration-200"
               />
             </g>
           ) : (
@@ -580,6 +589,7 @@ function SegmentLabel({
 }) {
   const display = stage.displayValue ?? formatValue(stage.value);
   const hasValue = stage.value > 0;
+  const safePct = Math.round(Number.isFinite(pct) ? pct : 0);
 
   const valueEl = showValues && (
     <span
@@ -594,24 +604,24 @@ function SegmentLabel({
   const pctEl = showPercentage && (
     <span
       className={cn(
-        "rounded-full px-2.5 py-0.5 font-mono font-bold text-[10px] sm:text-xs shadow-2xs border tracking-tight transition-all",
+        "rounded-full px-2.5 py-0.5 font-mono font-bold text-[11px] sm:text-xs shadow-2xs border tracking-tight tabular-nums transition-all backdrop-blur-md",
         hasValue
-          ? "bg-surface text-content border-border font-black shadow-xs"
-          : "bg-surface/80 text-content-muted border-border/50 font-semibold"
+          ? "bg-surface/90 text-content border-border font-black shadow-xs"
+          : "bg-surface/60 text-content-muted border-border/50 font-semibold"
       )}
     >
-      {formatPercentage(pct)}
+      {formatPercentage(safePct)}
     </span>
   );
   const labelEl = showLabels && (
-    <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+    <div className="flex items-center gap-1.5 sm:gap-2 min-w-0" title={stage.label}>
       <span
-        className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full shrink-0 shadow-2xs"
+        className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full shrink-0 shadow-2xs ring-1 ring-black/10 dark:ring-white/10"
         style={{ backgroundColor: stage.color || "#3B82F6" }}
       />
       <span
         className={cn(
-          "whitespace-nowrap font-bold text-xs sm:text-sm tracking-tight truncate",
+          "font-bold text-xs sm:text-[13px] tracking-tight truncate font-display",
           hasValue ? "text-content" : "text-content-secondary"
         )}
       >
@@ -649,16 +659,24 @@ function SegmentLabel({
             </div>
           </>
         ) : (
-          <div className="w-full flex items-center justify-between pointer-events-auto">
-            <div className="w-[45%] sm:w-[42%] flex items-center justify-start min-w-0 pr-1">
-              {labelEl}
-            </div>
-            <div className="w-[22%] sm:w-[24%] flex items-center justify-center shrink-0">
-              {pctEl}
-            </div>
-            <div className="w-[33%] sm:w-[34%] flex items-center justify-end shrink-0 pl-1">
-              {valueEl}
-            </div>
+          <div className="w-full flex items-center justify-between gap-2 sm:gap-3 pointer-events-auto">
+            {showLabels ? (
+              <div className="flex-1 min-w-0 flex items-center justify-start pr-1">
+                {labelEl}
+              </div>
+            ) : (
+              <div className="flex-1 min-w-0" />
+            )}
+            {showPercentage && (
+              <div className="shrink-0 flex items-center justify-center">
+                {pctEl}
+              </div>
+            )}
+            {showValues && (
+              <div className="shrink-0 flex items-center justify-end text-right min-w-[50px] pl-1">
+                {valueEl}
+              </div>
+            )}
           </div>
         )}
       </motion.div>
@@ -988,7 +1006,7 @@ export function FunnelChart({
           {/* Label overlays — one per segment, positioned over each segment cell.
               These are the hover triggers for each segment. */}
           {data.map((stage, i) => {
-            const pct = (stage.value / max) * 100;
+            const pct = stage.percentage !== undefined ? stage.percentage : (stage.value / max) * 100;
             const posStyle: CSSProperties = horiz
               ? {
                   left: (segW + gap) * i,

@@ -18,6 +18,7 @@ import { join } from 'path';
 const API_ROOT = join(process.cwd(), 'src', 'app', 'api');
 
 const PUBLIC_MUTATION_ALLOW_LIST = [
+  'v1/auth/register',
   'v1/auth/login',
   'v1/auth/logout',
   'v1/auth/forgot-password',

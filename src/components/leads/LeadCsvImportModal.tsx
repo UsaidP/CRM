@@ -330,7 +330,7 @@ export function LeadCsvImportModal({
             {/* Target Stage Override Selector */}
             <div className="w-full sm:w-auto min-w-[220px]">
               <CustomSelect
-                size="xs"
+                size="sm"
                 icon={<SlidersHorizontal className="w-3.5 h-3.5 text-accent shrink-0" />}
                 value={defaultStage}
                 onChange={(val) => setDefaultStage(val)}
@@ -345,7 +345,7 @@ export function LeadCsvImportModal({
             {parseResult?.sheetNames && parseResult.sheetNames.length > 1 && (
               <div className="w-full sm:w-auto min-w-[160px]">
                 <CustomSelect
-                  size="xs"
+                  size="sm"
                   label="Sheet"
                   value={String(selectedSheetIndex)}
                   onChange={(val) => setSelectedSheetIndex(parseInt(val, 10))}

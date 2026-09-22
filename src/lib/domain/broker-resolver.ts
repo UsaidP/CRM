@@ -75,7 +75,6 @@ export async function resolveBrokerByInboundIdentifier(
             OR: [
               { email: OFFICIAL_BROKER_NUMBERS.SAFWAN.email },
               { fullName: { contains: 'Safwan' } },
-              { phoneE164: OFFICIAL_BROKER_NUMBERS.SAFWAN.e164 },
             ],
           },
         });
@@ -104,7 +103,6 @@ export async function resolveBrokerByInboundIdentifier(
             OR: [
               { email: OFFICIAL_BROKER_NUMBERS.SUHEL.email },
               { fullName: { contains: 'Suhel' } },
-              { phoneE164: OFFICIAL_BROKER_NUMBERS.SUHEL.e164 },
             ],
           },
         });

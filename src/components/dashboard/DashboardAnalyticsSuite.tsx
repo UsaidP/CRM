@@ -315,7 +315,7 @@ export function DashboardAnalyticsSuite({
               </div>
 
               {/* Proportional Funnel Container */}
-              <div className="w-full max-w-[380px] sm:max-w-[420px] mx-auto py-2 flex-1 flex items-center justify-center">
+              <div className="w-full max-w-[440px] sm:max-w-[480px] mx-auto py-2 flex-1 flex items-center justify-center">
                 <FunnelChart
                   data={funnelStages}
                   orientation="vertical"
@@ -326,8 +326,8 @@ export function DashboardAnalyticsSuite({
                   onHoverChange={(idx) => setSelectedFunnelIndex(idx)}
                   className="w-full"
                   formatValue={(v) => `${v} leads`}
-                  formatPercentage={(p) => `${p}%`}
-                  aspectRatio="1.15 / 1"
+                  formatPercentage={(p) => `${Math.round(p)}%`}
+                  aspectRatio="1.2 / 1"
                 />
               </div>
 
@@ -343,7 +343,7 @@ export function DashboardAnalyticsSuite({
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1.5">
                         <span
-                          className="w-2.5 h-2.5 rounded-full"
+                          className="w-2.5 h-2.5 rounded-full shadow-2xs"
                           style={{ backgroundColor: activeStage.color || '#3B82F6' }}
                         />
                         <span className="text-xs font-bold text-content font-display">{activeStage.label}</span>
@@ -352,7 +352,7 @@ export function DashboardAnalyticsSuite({
                         </span>
                       </div>
                       <span className="text-xs font-mono font-black text-accent-text tabular-nums">
-                        {activeStage.percentage}% of Top
+                        {activeStage.percentage}% Pipeline Share
                       </span>
                     </div>
 

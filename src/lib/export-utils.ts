@@ -36,7 +36,11 @@ export function formatINRFull(val: unknown): string {
  */
 function escapeCsvCell(cell: unknown): string {
   if (cell === null || cell === undefined) return '""';
-  const str = String(cell);
+  let str = String(cell).trim();
+  // Neutralize CSV / formula injection for spreadsheet applications (=, +, -, @, tab, CR)
+  if (/^[=+\-@\t\r]/.test(str)) {
+    str = `'${str}`;
+  }
   if (str.includes('"') || str.includes(',') || str.includes('\n') || str.includes('\r')) {
     return `"${str.replace(/"/g, '""')}"`;
   }

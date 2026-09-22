@@ -1618,39 +1618,42 @@ export function SourceEvidenceDrawer({
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-2 border-t border-border text-xs">
                       <div>
                         <label className="text-[11px] font-bold text-content-muted block mb-1">Possession Timeline</label>
-                        <select
+                        <CustomSelect
                           value={possessionPreference}
-                          onChange={(e) => setPossessionPreference(e.target.value)}
-                          className="w-full bg-surface-inset border border-border rounded-xl p-2.5 text-xs text-content focus:outline-none focus:border-accent"
-                        >
-                          <option value="ANY">Any / Flexible</option>
-                          <option value="READY_TO_MOVE">Ready to Move (OC Received)</option>
-                          <option value="UNDER_CONSTRUCTION">Under Construction (Within 1-2 Yrs)</option>
-                        </select>
+                          onChange={(val) => setPossessionPreference(val)}
+                          options={[
+                            { value: 'ANY', label: 'Any / Flexible' },
+                            { value: 'READY_TO_MOVE', label: 'Ready to Move (OC Received)' },
+                            { value: 'UNDER_CONSTRUCTION', label: 'Under Construction (Within 1-2 Yrs)' },
+                          ]}
+                          size="sm"
+                        />
                       </div>
 
                       <div>
                         <label className="text-[11px] font-bold text-content-muted block mb-1">Purchase Purpose</label>
-                        <select
+                        <CustomSelect
                           value={purpose}
-                          onChange={(e) => setPurpose(e.target.value)}
-                          className="w-full bg-surface-inset border border-border rounded-xl p-2.5 text-xs text-content focus:outline-none focus:border-accent"
-                        >
-                          <option value="self_use">End-Use / Family Residence</option>
-                          <option value="investment">Investment &amp; Rental Yield</option>
-                        </select>
+                          onChange={(val) => setPurpose(val)}
+                          options={[
+                            { value: 'self_use', label: 'End-Use / Family Residence' },
+                            { value: 'investment', label: 'Investment & Rental Yield' },
+                          ]}
+                          size="sm"
+                        />
                       </div>
 
                       <div>
                         <label className="text-[11px] font-bold text-content-muted block mb-1">Home Loan Status</label>
-                        <select
+                        <CustomSelect
                           value={loanPreApproved ? 'true' : 'false'}
-                          onChange={(e) => setLoanPreApproved(e.target.value === 'true')}
-                          className="w-full bg-surface-inset border border-border rounded-xl p-2.5 text-xs text-content focus:outline-none focus:border-accent"
-                        >
-                          <option value="false">Self Funding / Need Bank Assistance</option>
-                          <option value="true">Pre-Approved / Sanctioned</option>
-                        </select>
+                          onChange={(val) => setLoanPreApproved(val === 'true')}
+                          options={[
+                            { value: 'false', label: 'Self Funding / Need Bank Assistance' },
+                            { value: 'true', label: 'Pre-Approved / Sanctioned' },
+                          ]}
+                          size="sm"
+                        />
                       </div>
                     </div>
                   </div>
@@ -1842,15 +1845,15 @@ export function SourceEvidenceDrawer({
             {lead.phoneE164 ? (
               <div className="flex-1 flex flex-col sm:flex-row items-center gap-2 w-full">
                 <div className="w-full sm:w-64">
-                  <select
+                  <CustomSelect
                     value={selectedTemplateId}
-                    onChange={(e) => setSelectedTemplateId(e.target.value)}
-                    className="w-full bg-surface-inset border border-border rounded-xl p-2.5 text-xs text-content font-bold focus:outline-none focus:border-accent"
-                  >
-                    {WHATSAPP_TEMPLATES.map((t) => (
-                      <option key={t.id} value={t.id}>{t.title}</option>
-                    ))}
-                  </select>
+                    onChange={(val) => setSelectedTemplateId(val)}
+                    options={WHATSAPP_TEMPLATES.map((t) => ({
+                      value: t.id,
+                      label: t.title,
+                    }))}
+                    size="sm"
+                  />
                 </div>
 
                 <a
