@@ -22,6 +22,7 @@ import {
   AlertTriangle,
   FileText,
   User,
+  Users,
   SlidersHorizontal,
   ChevronRight,
   ShieldCheck,
@@ -98,6 +99,7 @@ export function TelecallerConsoleView({
   const [isBackupModalOpen, setIsBackupModalOpen] = useState(false);
   const [backupMode, setBackupMode] = useState<'BACKUP' | 'DUTY_END'>('DUTY_END');
   const [copiedPhone, setCopiedPhone] = useState(false);
+  const [mobileActivePane, setMobileActivePane] = useState<'QUEUE' | 'CALL' | 'ASSISTANT'>('CALL');
 
   // Tab State for Right-Pane Smart Assistant
   const [assistantTab, setAssistantTab] = useState<'INVENTORY' | 'BATTLECARDS' | 'TEMPLATES'>('INVENTORY');
@@ -685,12 +687,54 @@ export function TelecallerConsoleView({
         />
       )}
 
+      {/* Mobile Segmented Pane Switcher (< lg) */}
+      <div className="lg:hidden flex items-center bg-surface-subtle border border-border p-1 rounded-2xl shadow-2xs">
+        <button
+          type="button"
+          onClick={() => setMobileActivePane('QUEUE')}
+          className={`flex-1 py-2 px-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+            mobileActivePane === 'QUEUE'
+              ? 'bg-accent text-white shadow-xs'
+              : 'text-content-secondary hover:text-content'
+          }`}
+        >
+          <Users className="w-3.5 h-3.5" />
+          <span>Queue ({filteredQueue.length})</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setMobileActivePane('CALL')}
+          className={`flex-1 py-2 px-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+            mobileActivePane === 'CALL'
+              ? 'bg-accent text-white shadow-xs'
+              : 'text-content-secondary hover:text-content'
+          }`}
+        >
+          <Phone className="w-3.5 h-3.5" />
+          <span>Active Call</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setMobileActivePane('ASSISTANT')}
+          className={`flex-1 py-2 px-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+            mobileActivePane === 'ASSISTANT'
+              ? 'bg-accent text-white shadow-xs'
+              : 'text-content-secondary hover:text-content'
+          }`}
+        >
+          <Sparkles className="w-3.5 h-3.5" />
+          <span>Assistant</span>
+        </button>
+      </div>
+
       {/* 2. MAIN 3-PANE WORKSTATION */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 items-start">
         {/* =========================================================================
             LEFT PANE: 40px SPREADSHEET-SPEED CALL QUEUE (3 cols on xl, 4 on lg)
             ========================================================================= */}
-        <div className="lg:col-span-4 xl:col-span-3 flex flex-col rounded-2xl bg-surface border border-border shadow-xs overflow-hidden h-[420px] sm:h-[500px] xl:h-[780px]">
+        <div className={`lg:col-span-4 xl:col-span-3 rounded-2xl bg-surface border border-border shadow-xs overflow-hidden h-[450px] sm:h-[500px] xl:h-[780px] ${
+          mobileActivePane === 'QUEUE' ? 'flex flex-col' : 'hidden lg:flex lg:flex-col'
+        }`}>
           {/* Quick Queue Filter Chips */}
           <div className="p-2 border-b border-border bg-surface-subtle flex items-center gap-1 overflow-x-auto">
             {(['UNCONTACTED', 'HOT', 'OVERDUE', 'ALL'] as const).map((filterKey) => (
@@ -753,6 +797,7 @@ export function TelecallerConsoleView({
                     onClick={() => {
                       handleCancelCountdown();
                       setSelectedLeadId(lead.id);
+                      setMobileActivePane('CALL');
                     }}
                     aria-label={`Select prospect ${lead.fullName || 'Anonymous'}`}
                     aria-pressed={isSelected}
@@ -827,7 +872,9 @@ export function TelecallerConsoleView({
         {/* =========================================================================
             CENTER PANE: ACTIVE CALLER WORKBENCH HUD (5 cols on xl, 8 on lg)
             ========================================================================= */}
-        <div className="lg:col-span-8 xl:col-span-5 flex flex-col rounded-2xl bg-surface border border-border shadow-xs overflow-hidden xl:h-[780px]">
+        <div className={`lg:col-span-8 xl:col-span-5 rounded-2xl bg-surface border border-border shadow-xs overflow-hidden xl:h-[780px] ${
+          mobileActivePane === 'CALL' ? 'flex flex-col' : 'hidden lg:flex lg:flex-col'
+        }`}>
           {selectedLead ? (
             <>
               {/* Scrollable Upper Body */}
@@ -1378,7 +1425,9 @@ export function TelecallerConsoleView({
         {/* =========================================================================
             RIGHT PANE: SMART ASSISTANT WORKBENCH (4 cols on xl, 12 on lg)
             ========================================================================= */}
-        <div className="lg:col-span-12 xl:col-span-4 flex flex-col rounded-2xl bg-surface border border-border shadow-xs overflow-hidden p-4 sm:p-5 space-y-4 xl:h-[780px]">
+        <div className={`lg:col-span-12 xl:col-span-4 rounded-2xl bg-surface border border-border shadow-xs overflow-hidden p-4 sm:p-5 space-y-4 xl:h-[780px] ${
+          mobileActivePane === 'ASSISTANT' ? 'flex flex-col' : 'hidden xl:flex xl:flex-col'
+        }`}>
           {/* Smart Assistant Tab Selector */}
           <div className="flex items-center p-1 rounded-xl bg-surface-subtle border border-border">
             <button

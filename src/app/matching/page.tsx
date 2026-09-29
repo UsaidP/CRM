@@ -64,6 +64,7 @@ export default function MatchmakerConsolePage() {
   const [generatingAiPitch, setGeneratingAiPitch] = useState(false);
   const [aiPitchData, setAiPitchData] = useState<{ pitchNarrative: string; tradeOffAnalysis: string; waMessage: string } | null>(null);
   const [copiedPitch, setCopiedPitch] = useState(false);
+  const [showMobileCriteria, setShowMobileCriteria] = useState(false);
 
   const handleGenerateAiPitch = async () => {
     if (matchedResults.length === 0) return;
@@ -352,10 +353,25 @@ export default function MatchmakerConsolePage() {
         </div>
       </div>
 
+      {/* Mobile Toggle for Parameters (< lg) */}
+      <button
+        type="button"
+        onClick={() => setShowMobileCriteria(!showMobileCriteria)}
+        className="lg:hidden w-full p-3.5 rounded-2xl bg-surface border border-border shadow-2xs flex items-center justify-between text-xs font-bold text-content cursor-pointer transition-all active:scale-[0.99]"
+      >
+        <div className="flex items-center gap-2">
+          <Sliders className="w-4 h-4 text-accent" />
+          <span>Adjust Matching Parameters ({formatINR(budgetMax)}, {bhkPreferences.map(b => `${b} BHK`).join(', ')})</span>
+        </div>
+        <span className="text-accent text-[11px] font-bold">
+          {showMobileCriteria ? 'Hide ▲' : 'Show ▼'}
+        </span>
+      </button>
+
       {/* Main Two-Column Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column: Criteria Input Controls (4 Cols, Sticky) */}
-        <div className="lg:col-span-4 space-y-4 lg:sticky lg:top-24">
+        <div className={`lg:col-span-4 space-y-4 lg:sticky lg:top-24 ${showMobileCriteria ? 'block' : 'hidden lg:block'}`}>
           <div className="p-5 rounded-2xl bg-surface border border-border shadow-xs space-y-4 text-xs font-sans">
             <div className="flex items-center justify-between pb-3 border-b border-border">
               <h3 className="font-bold text-content text-sm font-display flex items-center gap-2">
@@ -713,6 +729,27 @@ export default function MatchmakerConsolePage() {
           </div>
         </div>
       </div>
+
+      {/* Mobile Sticky Selection & Dispatch Bar */}
+      {selectedUnitIds.length > 0 && (
+        <div className="lg:hidden fixed bottom-14 left-0 right-0 z-30 p-3 bg-surface/95 backdrop-blur-md border-t border-border shadow-lg flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <span className="w-6 h-6 rounded-full bg-accent text-white font-mono font-bold text-xs flex items-center justify-center">
+              {selectedUnitIds.length}
+            </span>
+            <span className="text-xs font-bold text-content">Units In Basket</span>
+          </div>
+          <button
+            type="button"
+            onClick={handleGeneratePortal}
+            disabled={generatingPortal}
+            className="px-4 py-2 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold shadow-xs transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+          >
+            <Send className="w-3.5 h-3.5" />
+            <span>{generatingPortal ? 'Generating...' : 'Create Portal'}</span>
+          </button>
+        </div>
+      )}
 
       {/* MODAL: 5-Factor Score Breakdown */}
       <AccessibleDialog

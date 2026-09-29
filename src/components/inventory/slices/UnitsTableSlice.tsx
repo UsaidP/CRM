@@ -58,12 +58,129 @@ export function UnitsTableSlice({
         </span>
       </div>
 
-      {/* TABLE VIEW */}
+      {/* TABLE VIEW (Desktop Table + Mobile Cards) */}
       {viewMode === 'table' && (
-        <div className="rounded-2xl bg-surface border border-border shadow-xs overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-surface-subtle text-content-secondary uppercase text-[10px] font-bold border-b border-border">
+        <>
+          {/* Mobile Card List (Visible on < md) */}
+          <div className="md:hidden space-y-3">
+            {filteredUnits.length > 0 ? (
+              filteredUnits.map((unit) => {
+                const isStale = unit.freshness?.effectiveMarketableStatus === 'STALE_EXPIRED';
+                return (
+                  <div
+                    key={unit.id}
+                    className={`p-4 rounded-2xl bg-surface border border-border shadow-2xs space-y-3 font-sans text-xs ${
+                      isStale ? 'border-rose-300 dark:border-rose-900/50 bg-rose-500/5' : ''
+                    }`}
+                  >
+                    <div className="flex justify-between items-start gap-2">
+                      <div>
+                        <h3 className="font-bold text-content text-sm font-display">
+                          {unit.project?.projectName}
+                        </h3>
+                        <p className="text-[11px] text-content-muted mt-0.5">
+                          {unit.project?.developerName} • {unit.project?.microMarket}
+                        </p>
+                      </div>
+                      <HallmarkStamp type="rera" code={unit.project?.reraNumber} size="sm" />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 p-2.5 rounded-xl bg-surface-inset border border-border text-[11px]">
+                      <div>
+                        <span className="text-content-muted block text-[10px] uppercase font-semibold">Unit / Floor</span>
+                        <span className="font-bold text-content">Unit {unit.unitNumber}</span>
+                        <span className="text-content-muted text-[10px] block">Fl. {unit.floorNumber}/{unit.totalFloors}</span>
+                      </div>
+                      <div>
+                        <span className="text-content-muted block text-[10px] uppercase font-semibold">Config &amp; Area</span>
+                        <span className="font-bold text-accent-text">{formatUnitTypology(unit)}</span>
+                        <span className="text-content-muted text-[10px] font-mono block">{unit.carpetAreaSqft} sq.ft</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-1">
+                      <div>
+                        <span className="text-[10px] text-content-muted uppercase font-semibold block">
+                          All-In Total Cost
+                        </span>
+                        <strong className="text-content text-sm font-bold font-mono">
+                          {formatINR(unit.allInTotalCost)}
+                        </strong>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => onOpenCalcModal(unit)}
+                        className="px-2.5 py-1 rounded-lg bg-surface-subtle hover:bg-surface-inset border border-border text-accent-text text-[11px] font-bold cursor-pointer transition-colors"
+                      >
+                        Breakdown 🧮
+                      </button>
+                    </div>
+
+                    <div className="pt-2 border-t border-border flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            onInspectUnit(
+                              unit,
+                              unit.project || allProjects.find((p) => p.id === unit.projectId)
+                            )
+                          }
+                          aria-label={`Inspect ${unit.project?.projectName} specifications for Unit ${unit.unitNumber}`}
+                          title="Inspect Unit"
+                          className="h-9 w-9 flex items-center justify-center rounded-xl border border-border bg-surface text-content hover:text-accent hover:border-accent/40 shadow-2xs transition-all cursor-pointer"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onEditUnit(unit)}
+                          aria-label={`Edit unit ${unit.unitNumber || 'record'}`}
+                          title="Edit unit"
+                          className="h-9 w-9 flex items-center justify-center rounded-xl border border-border bg-surface text-content hover:text-accent shadow-2xs transition-all cursor-pointer"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            onDeleteUnit({
+                              id: unit.id,
+                              unitNumber: unit.unitNumber || 'Unit',
+                              projectName: unit.project?.projectName || 'Project',
+                            })
+                          }
+                          aria-label={`Delete unit ${unit.unitNumber || 'record'}`}
+                          title="Delete unit"
+                          className="h-9 w-9 flex items-center justify-center rounded-xl border border-border bg-surface text-content hover:text-rose-600 hover:border-rose-300 shadow-2xs transition-all cursor-pointer"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => onOpenVerifyModal(unit)}
+                        className="flex-1 h-9 px-3 rounded-xl bg-accent hover:bg-accent-hover text-white font-bold text-xs shadow-2xs transition-all flex items-center justify-center cursor-pointer"
+                      >
+                        Record Update
+                      </button>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="p-6 text-center bg-surface rounded-2xl border border-border text-content-muted text-xs">
+                No property units match the current criteria.
+              </div>
+            )}
+          </div>
+
+          {/* Desktop Table (Visible on >= md) */}
+          <div className="hidden md:block rounded-2xl bg-surface border border-border shadow-xs overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-surface-subtle text-content-secondary uppercase text-[10px] font-bold border-b border-border">
                 <tr>
                   <th className="p-3.5 pl-4">Project &amp; Developer</th>
                   <th className="p-3.5">Unit / Floor</th>
@@ -235,7 +352,8 @@ export function UnitsTableSlice({
             </table>
           </div>
         </div>
-      )}
+      </>
+    )}
 
       {/* CARD GRID VIEW */}
       {viewMode === 'cards' &&

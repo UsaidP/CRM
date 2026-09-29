@@ -1280,7 +1280,216 @@ export function LeadsMatrixClient({
             </div>
           )}
 
-          <div className="overflow-x-auto touch-scroll">
+          {/* Mobile Card List View (< md screens) */}
+          <div className="md:hidden divide-y divide-border">
+            {filteredAndSortedLeads.length > 0 ? (
+              filteredAndSortedLeads.map((lead, index) => {
+                const identities = lead.contact?.identities || [];
+                const score = scoredLeadsMap.get(lead.id);
+                const isRank1 = index === 0 && sortBy === 'SMART_PRIORITY' && score && score.totalScore >= 50;
+                const isRankTop3 = (index === 1 || index === 2) && sortBy === 'SMART_PRIORITY' && score && score.totalScore >= 40;
+                const isSelected = selectedLeadIds.includes(lead.id);
+                const pendingReminders = (lead.reminders || []).filter(
+                  (r: any) => r.status === 'PENDING' || r.status === 'SNOOZED'
+                );
+                const nextReminder = pendingReminders[0];
+                const isReminderOverdue =
+                  nextReminder && new Date(nextReminder.dueAt).getTime() < Date.now();
+                const comms = lead.communications || [];
+                const latestComm = comms[0];
+                const latestRemark = latestComm?.messageContent || lead.notes;
+                const cleanPhone = lead.phoneE164?.replace(/\D/g, '');
+
+                return (
+                  <div
+                    key={lead.id}
+                    onClick={() => setSelectedLeadForDrawer(lead)}
+                    className={`p-3.5 space-y-3 cursor-pointer transition-colors active:bg-surface-subtle/80 relative ${
+                      isSelected ? 'bg-accent-soft/30' : isRank1 ? 'bg-accent-soft/15' : 'hover:bg-surface-subtle'
+                    }`}
+                  >
+                    {/* Top row: Checkbox, Name, Rank, and Source */}
+                    <div className="flex items-start justify-between gap-2.5">
+                      <div className="flex items-start gap-2.5 min-w-0">
+                        <div className="pt-0.5" onClick={(e) => e.stopPropagation()}>
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => {
+                              setSelectedLeadIds((prev) =>
+                                prev.includes(lead.id) ? prev.filter((id) => id !== lead.id) : [...prev, lead.id]
+                              );
+                            }}
+                            className="w-4 h-4 rounded text-accent border-border focus:ring-accent cursor-pointer"
+                          />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="font-bold text-sm text-content truncate font-display">
+                              {lead.fullName || 'Navi Mumbai Prospect'}
+                            </span>
+                            {isRank1 && (
+                              <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-accent text-white shadow-2xs">
+                                #1 NEXT
+                              </span>
+                            )}
+                            {isRankTop3 && (
+                              <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-accent-soft text-accent-text border border-accent/20">
+                                #{index + 1}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2 text-xs text-content-muted mt-0.5 flex-wrap font-mono">
+                            {lead.phoneE164 ? (
+                              <span className="text-content font-semibold">{lead.phoneE164}</span>
+                            ) : (
+                              <span className="text-amber-500 font-sans">Social Lead</span>
+                            )}
+                            <span>•</span>
+                            <span className="flex items-center gap-1 font-sans text-[11px] text-content-secondary">
+                              {getSourceIcon(lead.leadSource)}
+                              {lead.sourceCode || lead.leadSource}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="shrink-0">
+                        {getConfidenceBadge(lead.sourceConfidence)}
+                      </div>
+                    </div>
+
+                    {/* Middle: Remark & Reminder */}
+                    <div className="space-y-1.5 text-xs">
+                      {latestRemark && (
+                        <p className="text-content-secondary text-[11px] line-clamp-2 bg-surface-subtle/60 p-2 rounded-lg border border-border/40">
+                          {latestRemark}
+                        </p>
+                      )}
+
+                      {nextReminder && (
+                        <div
+                          className="flex items-center justify-between text-[11px] py-1 px-2 rounded-lg bg-surface-subtle border border-border"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setCompletingReminder(nextReminder);
+                          }}
+                        >
+                          <div className="flex items-center gap-1.5 truncate">
+                            <span
+                              className={`px-1.5 py-0.5 rounded text-[9px] font-bold shrink-0 ${
+                                isReminderOverdue
+                                  ? 'bg-status-danger-surface text-status-danger border border-status-danger/40'
+                                  : 'bg-status-info-surface text-status-info border border-status-info/40'
+                              }`}
+                            >
+                              {isReminderOverdue ? 'OVERDUE' : 'REMINDER'}
+                            </span>
+                            <span className="truncate text-content font-medium">{nextReminder.title}</span>
+                          </div>
+                          <span className="font-mono text-[10px] text-content-muted shrink-0">
+                            {formatDateTime(nextReminder.dueAt)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Stage & Assigned Rep Row */}
+                    <div className="flex items-center justify-between gap-2 pt-1" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex-1 max-w-[170px]">
+                        <CustomSelect
+                          options={STAGE_OPTIONS.filter((s) => s.value !== 'ALL')}
+                          value={lead.currentStage || 'new_uncontacted'}
+                          onChange={(val) => handleStageChange(lead.id, val)}
+                          size="xs"
+                          className="w-full"
+                        />
+                      </div>
+
+                      <div className="text-[11px] text-content-muted font-mono truncate">
+                        {lead.assignedBroker?.fullName ? `Rep: ${lead.assignedBroker.fullName.split(' ')[0]}` : 'Unassigned'}
+                      </div>
+                    </div>
+
+                    {/* Quick 1-Tap Action Strip */}
+                    <div className="flex items-center gap-1.5 pt-1 border-t border-border/50" onClick={(e) => e.stopPropagation()}>
+                      {lead.phoneE164 && (
+                        <>
+                          <a
+                            href={`https://wa.me/${cleanPhone}?text=${encodeURIComponent(
+                              `Hello ${lead.fullName || 'Sir/Madam'}, Safwan from ZamZam Properties here regarding your property inquiry.`
+                            )}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex-1 py-1.5 px-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white border border-emerald-500/25 flex items-center justify-center gap-1 text-xs font-bold transition-all shadow-2xs"
+                            title="Open WhatsApp chat"
+                          >
+                            <MessageSquare className="w-3.5 h-3.5 shrink-0" />
+                            <span>WhatsApp</span>
+                          </a>
+
+                          <a
+                            href={`tel:${lead.phoneE164}`}
+                            className="flex-1 py-1.5 px-2 rounded-xl bg-accent-soft text-accent-text hover:bg-accent hover:text-white border border-accent/25 flex items-center justify-center gap-1 text-xs font-bold transition-all shadow-2xs"
+                            title="Direct Phone Call"
+                          >
+                            <Phone className="w-3.5 h-3.5 shrink-0" />
+                            <span>Call</span>
+                          </a>
+                        </>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={() => setQuickLogLead(lead)}
+                        className="p-1.5 min-w-[36px] min-h-[36px] rounded-xl bg-surface border border-border text-content hover:text-accent hover:bg-surface-subtle flex items-center justify-center transition-all shadow-2xs cursor-pointer shrink-0"
+                        title="Log Call / Remark"
+                      >
+                        <Edit3 className="w-3.5 h-3.5" />
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setQuickReminderLead(lead)}
+                        className="p-1.5 min-w-[36px] min-h-[36px] rounded-xl bg-surface border border-border text-content hover:text-accent hover:bg-surface-subtle flex items-center justify-center transition-all shadow-2xs cursor-pointer shrink-0"
+                        title="Set Reminder"
+                      >
+                        <Bell className="w-3.5 h-3.5" />
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setSelectedLeadForDrawer(lead)}
+                        className="p-1.5 min-w-[36px] min-h-[36px] rounded-xl bg-surface border border-border text-content hover:text-accent hover:bg-surface-subtle flex items-center justify-center transition-all shadow-2xs cursor-pointer shrink-0"
+                        title="View Full Lead Dossier"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="p-6">
+                <EmptyState
+                  type="filter"
+                  title="No Matching Leads Found"
+                  description="Try adjusting your search query, clearing source filters, or switching stage tabs."
+                  actionLabel="Reset Search & Filters"
+                  onAction={() => {
+                    setSearchQuery('');
+                    setSelectedSource('ALL');
+                    setSelectedStage('ALL');
+                    setSelectedConfidence('ALL');
+                    setSelectedAssignee('ALL');
+                  }}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Desktop Dense Table View (>= md screens) */}
+          <div className="hidden md:block overflow-x-auto touch-scroll">
             <table className="w-full text-left text-xs border-collapse min-w-[1440px]">
               <thead>
                 <tr className="border-b border-border bg-surface-subtle text-content-secondary font-bold uppercase tracking-wider text-[10px]">

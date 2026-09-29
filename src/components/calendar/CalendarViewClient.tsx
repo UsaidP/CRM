@@ -904,12 +904,12 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
           </div>
 
           {/* View Mode Toggle: Month | 7 Days | 1 Day | Agenda */}
-          <div className="flex items-center gap-2">
-            <div className="flex items-center bg-surface-subtle border border-border rounded-xl p-1 flex-wrap">
+          <div className="flex items-center gap-2 w-full lg:w-auto">
+            <div className="flex items-center bg-surface-subtle border border-border rounded-xl p-1 overflow-x-auto no-scrollbar w-full sm:w-auto">
               <button
                 type="button"
                 onClick={() => setViewMode('MONTH')}
-                className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+                className={`flex-1 sm:flex-initial px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap ${
                   viewMode === 'MONTH'
                     ? 'bg-accent text-white font-bold shadow-xs'
                     : 'text-content-secondary hover:text-content'
@@ -921,7 +921,7 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
               <button
                 type="button"
                 onClick={() => setViewMode('WEEK')}
-                className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+                className={`flex-1 sm:flex-initial px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap ${
                   viewMode === 'WEEK'
                     ? 'bg-accent text-white font-bold shadow-xs'
                     : 'text-content-secondary hover:text-content'
@@ -933,7 +933,7 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
               <button
                 type="button"
                 onClick={() => setViewMode('DAY')}
-                className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+                className={`flex-1 sm:flex-initial px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap ${
                   viewMode === 'DAY'
                     ? 'bg-accent text-white font-bold shadow-xs'
                     : 'text-content-secondary hover:text-content'
@@ -945,7 +945,7 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
               <button
                 type="button"
                 onClick={() => setViewMode('AGENDA')}
-                className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+                className={`flex-1 sm:flex-initial px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap ${
                   viewMode === 'AGENDA'
                     ? 'bg-accent text-white font-bold shadow-xs'
                     : 'text-content-secondary hover:text-content'

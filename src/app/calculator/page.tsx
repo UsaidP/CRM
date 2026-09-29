@@ -1244,10 +1244,10 @@ export default function CostCalculatorPage() {
         </div>
 
         {/* Right Column: Breakdown Output, Financial Scheduling, Loan Simulator (6 Cols, Sticky) */}
-        <div className="lg:col-span-6 space-y-5 lg:sticky lg:top-24">
+        <div id="calculator-breakdown-section" className="lg:col-span-6 space-y-5 lg:sticky lg:top-24">
           
           {/* Navigation View Tabs */}
-          <div role="tablist" aria-label="Calculator views" className="flex items-center gap-1.5 p-1 bg-surface-subtle border border-border rounded-2xl text-xs font-bold">
+          <div role="tablist" aria-label="Calculator views" className="flex items-center gap-1.5 p-1 bg-surface-subtle border border-border rounded-2xl text-xs font-bold overflow-x-auto no-scrollbar">
             <button
               role="tab"
               aria-selected={activeTab === 'BREAKDOWN'}
@@ -1750,6 +1750,39 @@ export default function CostCalculatorPage() {
               )}
             </div>
           )}
+        </div>
+      </div>
+
+      {/* Mobile Sticky Total Cost Summary Bar (Visible on < lg screens) */}
+      <div className="lg:hidden fixed bottom-14 left-0 right-0 z-30 p-3 bg-surface/95 backdrop-blur-md border-t border-border shadow-lg flex items-center justify-between gap-3">
+        <div>
+          <span className="text-[10px] uppercase font-bold text-content-muted block leading-tight font-mono">
+            All-In Total Cost
+          </span>
+          <span className="text-base font-extrabold text-accent font-mono">
+            {formatINR(costBreakdown.totalAllInCost)}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab('BREAKDOWN');
+              document.getElementById('calculator-breakdown-section')?.scrollIntoView({ behavior: 'smooth' });
+            }}
+            className="px-3 py-1.5 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold shadow-xs transition-all flex items-center gap-1 cursor-pointer"
+          >
+            <FileText className="w-3.5 h-3.5" />
+            <span>Breakdown</span>
+          </button>
+          <button
+            type="button"
+            onClick={handleShareWhatsApp}
+            className="px-3 py-1.5 rounded-xl bg-status-success-surface border border-status-success/40 text-status-success text-xs font-bold shadow-xs transition-all flex items-center gap-1 cursor-pointer"
+          >
+            <MessageSquare className="w-3.5 h-3.5" />
+            <span>WA</span>
+          </button>
         </div>
       </div>
 

@@ -175,7 +175,7 @@ export function SourceEvidenceDrawer({
   onReassign,
 }: SourceEvidenceDrawerProps) {
   // Tabs: 'activity' | 'requirements' | 'portals' | 'dossier'
-  const [activeTab, setActiveTab] = useState<'activity' | 'requirements' | 'portals' | 'dossier'>('activity');
+  const [activeTab, setActiveTab] = useState<'info' | 'activity' | 'requirements' | 'portals' | 'dossier'>('activity');
   const [isFullScreen, setIsFullScreen] = useState(true);
   const [hasCopiedPhone, setHasCopiedPhone] = useState(false);
 
@@ -871,16 +871,85 @@ export function SourceEvidenceDrawer({
         </div>
 
         {/* ==================================================================
-            3. MAIN BODY WORKSPACE (HIGH-DENSITY 2-PANEL LAYOUT)
+            3. MAIN BODY WORKSPACE (RESPONSIVE SEGMENTED WORKSPACE)
             ================================================================== */}
         <div className="flex-1 overflow-y-auto touch-scroll bg-surface-inset/30">
-          <div className={`p-4 sm:p-6 ${isFullScreen ? 'max-w-7xl mx-auto' : ''}`}>
+          <div className={`p-4 sm:p-6 space-y-4 ${isFullScreen ? 'max-w-7xl mx-auto' : ''}`}>
+            
+            {/* Mobile Workspace Segmented Selector (Shown on < 1024px) */}
+            <div className="lg:hidden p-1 bg-surface border border-border rounded-2xl flex items-center gap-1 overflow-x-auto no-scrollbar shadow-2xs">
+              <button
+                type="button"
+                onClick={() => setActiveTab('info')}
+                className={`flex-1 min-w-[95px] py-2 px-2.5 rounded-xl text-xs font-bold font-display transition-all flex items-center justify-center gap-1.5 cursor-pointer shrink-0 ${
+                  activeTab === 'info'
+                    ? 'bg-accent text-white shadow-xs'
+                    : 'text-content-secondary hover:text-content hover:bg-surface-subtle'
+                }`}
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Overview</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab('activity')}
+                className={`flex-1 min-w-[95px] py-2 px-2.5 rounded-xl text-xs font-bold font-display transition-all flex items-center justify-center gap-1.5 cursor-pointer shrink-0 ${
+                  activeTab === 'activity'
+                    ? 'bg-accent text-white shadow-xs'
+                    : 'text-content-secondary hover:text-content hover:bg-surface-subtle'
+                }`}
+              >
+                <MessageSquare className="w-3.5 h-3.5" />
+                <span>Activity ({communications.length})</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab('requirements')}
+                className={`flex-1 min-w-[95px] py-2 px-2.5 rounded-xl text-xs font-bold font-display transition-all flex items-center justify-center gap-1.5 cursor-pointer shrink-0 ${
+                  activeTab === 'requirements'
+                    ? 'bg-accent text-white shadow-xs'
+                    : 'text-content-secondary hover:text-content hover:bg-surface-subtle'
+                }`}
+              >
+                <Home className="w-3.5 h-3.5" />
+                <span>Specs</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab('portals')}
+                className={`flex-1 min-w-[90px] py-2 px-2.5 rounded-xl text-xs font-bold font-display transition-all flex items-center justify-center gap-1.5 cursor-pointer shrink-0 ${
+                  activeTab === 'portals'
+                    ? 'bg-accent text-white shadow-xs'
+                    : 'text-content-secondary hover:text-content hover:bg-surface-subtle'
+                }`}
+              >
+                <Eye className="w-3.5 h-3.5" />
+                <span>Portals ({portals.length})</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab('dossier')}
+                className={`flex-1 min-w-[80px] py-2 px-2.5 rounded-xl text-xs font-bold font-display transition-all flex items-center justify-center gap-1.5 cursor-pointer shrink-0 ${
+                  activeTab === 'dossier'
+                    ? 'bg-accent text-white shadow-xs'
+                    : 'text-content-secondary hover:text-content hover:bg-surface-subtle'
+                }`}
+              >
+                <CheckSquare className="w-3.5 h-3.5" />
+                <span>Audit</span>
+              </button>
+            </div>
+
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
               
               {/* ==============================================================
                   LEFT PANEL (COL-SPAN-4): PROSPECT INTELLIGENCE & ATTRIBUTION
                   ============================================================== */}
-              <div className="lg:col-span-4 space-y-4">
+              <div className={`lg:col-span-4 space-y-4 ${activeTab === 'info' ? 'block' : 'hidden lg:block'}`}>
                 
                 {/* 24-Hour WhatsApp SLA Window Card */}
                 <div className={`p-4 rounded-2xl border transition-all ${
@@ -1074,15 +1143,15 @@ export function SourceEvidenceDrawer({
               {/* ==============================================================
                   RIGHT PANEL (COL-SPAN-8): DEEP WORKSPACE TABS
                   ============================================================== */}
-              <div className="lg:col-span-8 space-y-4">
+              <div className={`lg:col-span-8 space-y-4 ${activeTab === 'info' ? 'hidden lg:block' : 'block'}`}>
                 
-                {/* Workspace Tab Strip */}
-                <div className="p-1 bg-surface border border-border rounded-2xl flex items-center gap-1 overflow-x-auto no-scrollbar shadow-2xs">
+                {/* Desktop Workspace Tab Strip (Hidden on mobile since mobile uses top segmented selector) */}
+                <div className="hidden lg:flex p-1 bg-surface border border-border rounded-2xl items-center gap-1 overflow-x-auto no-scrollbar shadow-2xs">
                   <button
                     type="button"
                     onClick={() => setActiveTab('activity')}
                     className={`flex-1 min-w-[130px] py-2 px-3 rounded-xl text-xs font-bold font-display transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                      activeTab === 'activity'
+                      activeTab === 'activity' || activeTab === 'info'
                         ? 'bg-accent text-white shadow-xs'
                         : 'text-content-secondary hover:text-content hover:bg-surface-subtle'
                     }`}
@@ -1141,7 +1210,7 @@ export function SourceEvidenceDrawer({
                 {/* ============================================================
                     TAB 1: ACTIVITY & COMMUNICATIONS
                     ============================================================ */}
-                {activeTab === 'activity' && (
+                {(activeTab === 'activity' || activeTab === 'info') && (
                   <div className="space-y-4 animate-in fade-in duration-150">
                     {/* Activity Header Controls */}
                     <div className="flex items-center justify-between flex-wrap gap-2 px-1">

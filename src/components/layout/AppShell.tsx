@@ -303,10 +303,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </a>
 
       {/* Mobile Top Header */}
-      <header aria-label="Mobile application header" className="lg:hidden flex items-center justify-between px-3 sm:px-4 h-[56px] sm:h-[60px] bg-surface/95 backdrop-blur-md border-b border-border z-50 sticky top-0 shadow-2xs">
-        <Link href="/dashboard" className="flex items-center gap-2 min-w-0">
+      <header aria-label="Mobile application header" className="lg:hidden flex items-center justify-between px-2.5 sm:px-4 h-[56px] sm:h-[60px] bg-surface/95 backdrop-blur-md border-b border-border z-50 sticky top-0 shadow-2xs">
+        <Link href="/dashboard" className="flex items-center gap-2 min-w-0 mr-1.5 flex-1 sm:flex-initial">
           <BrandLogo mode="icon" size="xs" withRera={false} firmName={currentUser?.organization?.name || 'Lucky CRM'} />
-          <div className="flex flex-col min-w-0">
+          <div className="flex flex-col min-w-0 truncate">
             <span className="font-bold text-xs tracking-tight text-content font-display truncate leading-tight">
               {currentUser?.organization?.name || 'Lucky CRM'}
             </span>
@@ -318,30 +318,30 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </div>
           </div>
         </Link>
-        <div className="flex items-center gap-1 sm:gap-1.5">
-          {/* Firm Settings Shortcut for Mobile */}
+        <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+          {/* Quick Telecaller Desk Shortcut for Mobile */}
+          <Link
+            href="/leads?view=telecaller"
+            className="flex items-center gap-1 px-2 py-1.5 sm:px-2.5 bg-accent-soft text-accent-text hover:bg-accent hover:text-white rounded-xl text-xs font-bold transition-all border border-accent/25 shadow-2xs shrink-0"
+            title="Instant Telecaller High-Velocity Desk"
+            aria-label="Telecaller High-Velocity Desk"
+          >
+            <Zap className="w-3.5 h-3.5 text-accent shrink-0" />
+            <span className="text-[11px] font-bold">Desk</span>
+          </Link>
+
+          {/* Firm Settings Shortcut for Mobile (hidden on very small 320px screens) */}
           {isAdmin && (
             <button
               type="button"
               onClick={() => setIsOrgSettingsModalOpen(true)}
-              className="w-8 h-8 rounded-xl bg-surface border border-border flex items-center justify-center text-content-muted hover:text-accent hover:bg-surface-subtle transition-colors cursor-pointer shadow-2xs shrink-0"
+              className="hidden min-[380px]:flex w-8 h-8 rounded-xl bg-surface border border-border items-center justify-center text-content-muted hover:text-accent hover:bg-surface-subtle transition-colors cursor-pointer shadow-2xs shrink-0"
               aria-label="Firm Settings"
               title="Customize Firm Profile"
             >
               <Settings className="w-3.5 h-3.5 text-accent" />
             </button>
           )}
-
-          {/* Quick Telecaller Desk Shortcut for Mobile */}
-          <Link
-            href="/leads?view=telecaller"
-            className="flex items-center gap-1 px-2.5 py-1.5 bg-accent-soft text-accent-text hover:bg-accent hover:text-white rounded-xl text-xs font-bold transition-all border border-accent/25 shadow-2xs shrink-0"
-            title="Instant Telecaller High-Velocity Desk"
-            aria-label="Telecaller High-Velocity Desk"
-          >
-            <Zap className="w-3.5 h-3.5 text-accent" />
-            <span className="text-[11px] font-bold">Desk</span>
-          </Link>
 
           {isAdmin && (
             <button
@@ -350,7 +350,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 setBackupModalMode('BACKUP');
                 setIsBackupModalOpen(true);
               }}
-              className="w-8 h-8 rounded-xl bg-surface border border-border flex items-center justify-center text-content-muted hover:text-accent hover:bg-surface-subtle transition-colors cursor-pointer shadow-2xs shrink-0"
+              className="hidden sm:flex w-8 h-8 rounded-xl bg-surface border border-border items-center justify-center text-content-muted hover:text-accent hover:bg-surface-subtle transition-colors cursor-pointer shadow-2xs shrink-0"
               aria-label="Google Drive Backup"
               title="Backup to Google Drive"
             >

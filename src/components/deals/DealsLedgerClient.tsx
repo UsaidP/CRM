@@ -59,6 +59,7 @@ export function DealsLedgerClient({
   const [viewMode, setViewMode] = useState<'pipeline' | 'ledger'>('pipeline');
   const [selectedStatus, setSelectedStatus] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
+  const [mobileKanbanStage, setMobileKanbanStage] = useState<string>('ALL');
 
   // Register Deal Modal State
   const [showRegisterModal, setShowRegisterModal] = useState(false);
@@ -452,151 +453,289 @@ export function DealsLedgerClient({
 
       {/* VIEW 1: PIPELINE KANBAN BOARD */}
       {viewMode === 'pipeline' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-start">
-          {PIPELINE_COLUMNS.map((col) => {
-            const colDeals = filteredDeals.filter((d) => d.dealStatus === col.id);
-            const colTotal = colDeals.reduce((acc, d) => acc + (d.grossBrokerageAmount || 0), 0);
+        <div className="space-y-4">
+          {/* Mobile Stage Selector for Pipeline Board (Visible on < md) */}
+          <div className="md:hidden flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 text-xs">
+            <button
+              type="button"
+              onClick={() => setMobileKanbanStage('ALL')}
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all shrink-0 cursor-pointer ${
+                mobileKanbanStage === 'ALL'
+                  ? 'bg-accent text-white shadow-xs'
+                  : 'bg-surface border border-border text-content-muted hover:text-content'
+              }`}
+            >
+              All Stages ({filteredDeals.length})
+            </button>
+            {PIPELINE_COLUMNS.map((col) => {
+              const count = filteredDeals.filter((d) => d.dealStatus === col.id).length;
+              return (
+                <button
+                  key={col.id}
+                  type="button"
+                  onClick={() => setMobileKanbanStage(col.id)}
+                  className={`px-3 py-1.5 rounded-xl font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
+                    mobileKanbanStage === col.id
+                      ? 'bg-accent text-white shadow-xs'
+                      : 'bg-surface border border-border text-content-muted hover:text-content'
+                  }`}
+                >
+                  <span>{col.label}</span>
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                    mobileKanbanStage === col.id ? 'bg-white/20 text-white' : 'bg-surface-subtle text-content-muted'
+                  }`}>
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
 
-            return (
-              <div
-                key={col.id}
-                className="rounded-2xl bg-surface border border-border shadow-xs overflow-hidden flex flex-col min-h-[460px]"
-              >
-                {/* Column Header */}
-                <div className="p-3.5 bg-surface-subtle border-b border-border space-y-1">
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-content uppercase text-[11px] tracking-wider">
-                      {col.label}
-                    </span>
-                    <span className="px-2 py-0.5 rounded-full bg-accent-soft text-accent-text border border-accent/20 text-[10px] font-bold">
-                      {colDeals.length}
-                    </span>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-start">
+            {PIPELINE_COLUMNS.map((col) => {
+              const colDeals = filteredDeals.filter((d) => d.dealStatus === col.id);
+              const colTotal = colDeals.reduce((acc, d) => acc + (d.grossBrokerageAmount || 0), 0);
+              const isVisibleOnMobile = mobileKanbanStage === 'ALL' || mobileKanbanStage === col.id;
+
+              return (
+                <div
+                  key={col.id}
+                  className={`rounded-2xl bg-surface border border-border shadow-xs overflow-hidden flex flex-col min-h-[460px] ${
+                    isVisibleOnMobile ? 'flex' : 'hidden md:flex'
+                  }`}
+                >
+                  {/* Column Header */}
+                  <div className="p-3.5 bg-surface-subtle border-b border-border space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-content uppercase text-[11px] tracking-wider">
+                        {col.label}
+                      </span>
+                      <span className="px-2 py-0.5 rounded-full bg-accent-soft text-accent-text border border-accent/20 text-[10px] font-bold">
+                        {colDeals.length}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-[10px] text-slate-400 pt-0.5">
+                      <span>{col.description}</span>
+                      <strong className="text-white font-bold">{formatINR(colTotal)}</strong>
+                    </div>
                   </div>
-                  <div className="flex justify-between items-center text-[10px] text-slate-400 pt-0.5">
-                    <span>{col.description}</span>
-                    <strong className="text-white font-bold">{formatINR(colTotal)}</strong>
-                  </div>
-                </div>
 
-                {/* Cards Container */}
-                <div className="p-3 space-y-3 flex-1 overflow-y-auto max-h-[620px]">
-                  {colDeals.map((deal) => {
-                    const daysInStatus = calculateDaysInStatus(deal.updatedAt || deal.bookingDate);
-                    const isStale = daysInStatus > 14;
-                    const isWarning = daysInStatus > 7 && daysInStatus <= 14;
+                  {/* Cards Container */}
+                  <div className="p-3 space-y-3 flex-1 overflow-y-auto max-h-[620px]">
+                    {colDeals.map((deal) => {
+                      const daysInStatus = calculateDaysInStatus(deal.updatedAt || deal.bookingDate);
+                      const isStale = daysInStatus > 14;
+                      const isWarning = daysInStatus > 7 && daysInStatus <= 14;
 
-                    return (
-                      <div
-                        key={deal.id}
-                        className="p-4 rounded-xl bg-surface border border-border hover:border-accent/50 transition-all space-y-3 shadow-xs group"
-                      >
-                        {/* Card Top: Buyer Name & Status Staleness Flag */}
-                        <div className="flex justify-between items-start gap-2">
-                          <div>
-                            <h4 className="font-bold text-content font-sans text-sm">{deal.lead?.fullName}</h4>
-                            <p className="text-[11px] text-content-muted font-mono">{deal.lead?.phoneE164}</p>
+                      return (
+                        <div
+                          key={deal.id}
+                          className="p-4 rounded-xl bg-surface border border-border hover:border-accent/50 transition-all space-y-3 shadow-xs group"
+                        >
+                          {/* Card Top: Buyer Name & Status Staleness Flag */}
+                          <div className="flex justify-between items-start gap-2">
+                            <div>
+                              <h4 className="font-bold text-content font-sans text-sm">{deal.lead?.fullName}</h4>
+                              <p className="text-[11px] text-content-muted font-mono">{deal.lead?.phoneE164}</p>
+                            </div>
+
+                            {/* Staleness Bottleneck Tag */}
+                            <span
+                              className={`px-2 py-0.5 rounded-md text-[10px] font-bold flex items-center gap-1 border ${
+                                isStale
+                                  ? 'bg-status-danger-surface text-status-danger border-status-danger/40 animate-pulse'
+                                  : isWarning
+                                  ? 'bg-status-warning-surface text-status-warning border-status-warning/40'
+                                  : 'bg-status-success-surface text-status-success border-status-success/40'
+                              }`}
+                              title={`${daysInStatus} days in this stage`}
+                            >
+                              <Clock className="w-3 h-3" />
+                              {daysInStatus}d
+                            </span>
                           </div>
 
-                          {/* Staleness Bottleneck Tag */}
-                          <span
-                            className={`px-2 py-0.5 rounded-md text-[10px] font-bold flex items-center gap-1 border ${
-                              isStale
-                                ? 'bg-status-danger-surface text-status-danger border-status-danger/40 animate-pulse'
-                                : isWarning
-                                ? 'bg-status-warning-surface text-status-warning border-status-warning/40'
-                                : 'bg-status-success-surface text-status-success border-status-success/40'
-                            }`}
-                            title={`${daysInStatus} days in this stage`}
-                          >
-                            <Clock className="w-3 h-3" />
-                            {daysInStatus}d
-                          </span>
-                        </div>
-
-                        {/* Project & Unit Details */}
-                        <div className="text-xs text-content-secondary">
-                          <strong className="text-content">{deal.developerProject?.projectName}</strong>
-                          <span className="text-[11px] text-content-muted block mt-0.5">
-                            Unit {deal.propertyUnit?.unitNumber || 'N/A'} ({deal.propertyUnit?.bhk} BHK • {deal.developerProject?.microMarket})
-                          </span>
-                        </div>
-
-                        {/* Financial Snapshot */}
-                        <div className="p-2.5 rounded-xl bg-surface-inset border border-border flex justify-between items-center text-xs">
-                          <div>
-                            <span className="text-[10px] text-content-muted block uppercase font-semibold">Agreement</span>
-                            <strong className="text-content font-mono font-bold">{formatINR(deal.agreementValue)}</strong>
+                          {/* Project & Unit Details */}
+                          <div className="text-xs text-content-secondary">
+                            <strong className="text-content">{deal.developerProject?.projectName}</strong>
+                            <span className="text-[11px] text-content-muted block mt-0.5">
+                              Unit {deal.propertyUnit?.unitNumber || 'N/A'} ({deal.propertyUnit?.bhk} BHK • {deal.developerProject?.microMarket})
+                            </span>
                           </div>
-                          <div className="text-right">
-                            <span className="text-[10px] text-accent-text block uppercase font-bold">Gross ({deal.brokeragePercent}%)</span>
-                            <strong className="text-accent-text font-mono font-bold">{formatINR(deal.grossBrokerageAmount)}</strong>
+
+                          {/* Financial Snapshot */}
+                          <div className="p-2.5 rounded-xl bg-surface-inset border border-border flex justify-between items-center text-xs">
+                            <div>
+                              <span className="text-[10px] text-content-muted block uppercase font-semibold">Agreement</span>
+                              <strong className="text-content font-mono font-bold">{formatINR(deal.agreementValue)}</strong>
+                            </div>
+                            <div className="text-right">
+                              <span className="text-[10px] text-accent-text block uppercase font-bold">Gross ({deal.brokeragePercent}%)</span>
+                              <strong className="text-accent-text font-mono font-bold">{formatINR(deal.grossBrokerageAmount)}</strong>
+                            </div>
                           </div>
-                        </div>
 
-                        {/* Card Footer: Advisor Tag & Fast Stage Advancement */}
-                        <div className="flex items-center justify-between pt-2 border-t border-border text-[11px]">
-                          <span className="text-content-muted truncate max-w-[110px]">
-                            {deal.closingBroker?.fullName || 'Senior Broker'}
-                          </span>
+                          {/* Card Footer: Advisor Tag & Fast Stage Advancement */}
+                          <div className="flex items-center justify-between pt-2 border-t border-border text-[11px]">
+                            <span className="text-content-muted truncate max-w-[110px]">
+                              {deal.closingBroker?.fullName || 'Senior Broker'}
+                            </span>
 
-                          <div className="flex items-center gap-1.5">
-                            {col.nextStage && (
+                            <div className="flex items-center gap-1.5">
+                              {col.nextStage && (
+                                <button
+                                  type="button"
+                                  onClick={() => advanceDealStage(deal, col.nextStage!)}
+                                  disabled={pendingStageIds.has(deal.id)}
+                                  aria-label={`Advance ${deal.lead?.fullName || 'deal'} to ${col.nextLabel}`}
+                                  className="px-2.5 py-1.5 rounded-lg bg-surface hover:bg-surface-subtle text-accent-text hover:text-accent border border-border hover:border-accent/40 font-bold text-xs flex items-center gap-1 transition-all shadow-2xs disabled:opacity-50"
+                                >
+                                  <span>{col.nextLabel}</span>
+                                  <ChevronRight className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+
                               <button
                                 type="button"
-                                onClick={() => advanceDealStage(deal, col.nextStage!)}
-                                disabled={pendingStageIds.has(deal.id)}
-                                aria-label={`Advance ${deal.lead?.fullName || 'deal'} to ${col.nextLabel}`}
-                                className="px-2.5 py-1.5 rounded-lg bg-surface hover:bg-surface-subtle text-accent-text hover:text-accent border border-border hover:border-accent/40 font-bold text-xs flex items-center gap-1 transition-all shadow-2xs disabled:opacity-50"
+                                onClick={() => setInvoiceDeal(deal)}
+                                className="p-1.5 rounded-lg hover:bg-surface-subtle text-content-muted hover:text-accent transition-colors cursor-pointer"
+                                title="View & Print Official Commission Invoice"
                               >
-                                <span>{col.nextLabel}</span>
-                                <ChevronRight className="w-3.5 h-3.5" />
+                                <Printer className="w-3.5 h-3.5" />
                               </button>
-                            )}
 
-                            <button
-                              type="button"
-                              onClick={() => setInvoiceDeal(deal)}
-                              className="p-1.5 rounded-lg hover:bg-surface-subtle text-content-muted hover:text-accent transition-colors cursor-pointer"
-                              title="View & Print Official Commission Invoice"
-                            >
-                              <Printer className="w-3.5 h-3.5" />
-                            </button>
-
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setUpdateDeal(deal);
-                                setNewStatus(deal.dealStatus);
-                                setInvoiceNumber(deal.developerInvoiceNumber || 'ZP-INV-2026-08');
-                              }}
-                              className="p-1.5 rounded-lg hover:bg-surface-subtle text-content-muted hover:text-content transition-colors cursor-pointer"
-                              title="Edit milestone or invoice details"
-                            >
-                              <FileText className="w-3.5 h-3.5" />
-                            </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setUpdateDeal(deal);
+                                  setNewStatus(deal.dealStatus);
+                                  setInvoiceNumber(deal.developerInvoiceNumber || 'ZP-INV-2026-08');
+                                }}
+                                className="p-1.5 rounded-lg hover:bg-surface-subtle text-content-muted hover:text-content transition-colors cursor-pointer"
+                                title="Edit milestone or invoice details"
+                              >
+                                <FileText className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
 
-                  {colDeals.length === 0 && (
-                    <div className="p-6 text-center text-slate-500 text-[11px]">
-                      No deals currently in {col.label.toLowerCase()}.
-                    </div>
-                  )}
+                    {colDeals.length === 0 && (
+                      <div className="p-6 text-center text-slate-500 text-[11px]">
+                        No deals currently in {col.label.toLowerCase()}.
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       )}
 
-      {/* VIEW 2: FULL LEDGER DATA TABLE */}
+      {/* VIEW 2: FULL LEDGER DATA TABLE (Desktop Table + Mobile Cards) */}
       {viewMode === 'ledger' && (
-        <div className="rounded-2xl bg-surface border border-border shadow-xs overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+        <div className="space-y-3">
+          {/* Mobile Deal Cards (< md) */}
+          <div className="md:hidden space-y-3">
+            {filteredDeals.map((deal) => {
+              const daysInStatus = calculateDaysInStatus(deal.updatedAt || deal.bookingDate);
+              const isPaid = deal.dealStatus === 'PAYMENT_RECEIVED';
+
+              return (
+                <div
+                  key={deal.id}
+                  className="p-4 rounded-2xl bg-surface border border-border shadow-2xs space-y-3 font-sans text-xs"
+                >
+                  <div className="flex justify-between items-start gap-2">
+                    <div>
+                      <h4 className="font-bold text-content text-sm font-display">{deal.developerProject?.projectName}</h4>
+                      <p className="text-[11px] text-content-muted mt-0.5">
+                        Unit {deal.propertyUnit?.unitNumber || 'N/A'} ({deal.propertyUnit?.bhk} BHK • {deal.developerProject?.microMarket})
+                      </p>
+                    </div>
+                    <span className={`inline-block px-2.5 py-0.5 rounded-lg text-[10px] font-bold border ${
+                      isPaid
+                        ? 'bg-status-success-surface text-status-success border-status-success/30'
+                        : deal.dealStatus === 'INVOICE_SENT'
+                        ? 'bg-accent-soft text-accent-text border-accent/20'
+                        : 'bg-status-warning-surface text-status-warning border-status-warning/30'
+                    }`}>
+                      {deal.dealStatus.replace('_', ' ')}
+                    </span>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-surface-inset border border-border space-y-2 text-xs">
+                    <div className="flex justify-between items-center">
+                      <span className="text-content-muted text-[11px]">Purchaser</span>
+                      <span className="font-bold text-content">{deal.lead?.fullName} ({deal.lead?.phoneE164})</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-content-muted text-[11px]">Agreement Value</span>
+                      <span className="font-mono font-bold text-content">{formatINR(deal.agreementValue)}</span>
+                    </div>
+                    <div className="flex justify-between items-center pt-1 border-t border-border">
+                      <span className="text-accent-text font-bold text-[11px]">Gross Brokerage ({deal.brokeragePercent}%)</span>
+                      <span className="font-mono font-bold text-accent-text">{formatINR(deal.grossBrokerageAmount)}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-[11px]">
+                      <span className="text-content-muted">Firm Net / Agent Split</span>
+                      <span className="font-mono text-content">{formatINR(deal.firmNetBrokerageAmount)} / {formatINR(deal.repCommissionAmount)}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-1 border-t border-border">
+                    <span className="text-[10px] font-mono text-content-muted">
+                      {daysInStatus}d in stage • {formatDateFull(deal.bookingDate)}
+                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setInvoiceDeal(deal)}
+                        className="h-8.5 px-3 rounded-xl bg-surface hover:bg-surface-subtle text-content-secondary hover:text-content border border-border text-xs font-bold flex items-center gap-1 shadow-2xs transition-all cursor-pointer"
+                        title="View & Print Official Commission Invoice"
+                      >
+                        <Printer className="w-3.5 h-3.5 text-accent" />
+                        <span>Invoice</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setUpdateDeal(deal);
+                          setNewStatus(deal.dealStatus);
+                          setInvoiceNumber(deal.developerInvoiceNumber || 'ZP-INV-2026-08');
+                        }}
+                        aria-label={`Edit milestone for ${deal.lead?.fullName || 'deal'}`}
+                        className="h-8.5 px-3 rounded-xl bg-surface hover:bg-surface-subtle text-accent-text hover:text-accent border border-border hover:border-accent/40 text-xs font-bold flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer"
+                      >
+                        <FileText className="w-3.5 h-3.5" />
+                        <span>Update</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+
+            {filteredDeals.length === 0 && (
+              <div className="p-8">
+                <EmptyState
+                  type="filter"
+                  title="No Deals Found"
+                  description="No closed deal files match the selected milestone filter or search term. Try switching status tabs."
+                  actionLabel="View All Deals"
+                  onAction={() => setSelectedStatus('ALL')}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Desktop Table (>= md) */}
+          <div className="hidden md:block rounded-2xl bg-surface border border-border shadow-xs overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
               <thead className="bg-surface-subtle text-content-secondary uppercase text-[10px] font-bold border-b border-border">
                 <tr>
                   <th className="p-3.5 pl-4">Project &amp; Unit</th>
@@ -722,7 +861,8 @@ export function DealsLedgerClient({
             </table>
           </div>
         </div>
-      )}
+      </div>
+    )}
 
       {/* MODAL: Register Closed Deal */}
       <AccessibleDialog

@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Plus_Jakarta_Sans, JetBrains_Mono, Playfair_Display } from 'next/font/google';
 import 'goey-toast/styles.css';
 import './globals.css';
@@ -29,6 +29,12 @@ const playfairDisplay = Playfair_Display({
   variable: '--font-serif',
   weight: ['400', '500', '600', '700', '800', '900'],
 });
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+};
 
 export const metadata: Metadata = {
   title: {

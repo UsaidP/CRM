@@ -316,33 +316,33 @@ export function UnitDetailsModal({
         />
 
         {/* Header */}
-        <div className="px-6 py-4 border-b border-border bg-surface-raised space-y-3">
+        <div className="p-4 sm:px-6 sm:py-4 border-b border-border bg-surface-raised space-y-3">
           {/* Top Row: Title + Key Status on Left | Action Toolbar + Close on Right */}
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-3 min-w-0">
               <div className="w-10 h-10 rounded-xl bg-accent-soft border border-accent/30 flex items-center justify-center text-accent shrink-0">
                 <Home className="w-5 h-5" />
               </div>
-              <div className="flex items-center gap-2.5 min-w-0 flex-wrap">
-                <h2 id="unit-modal-title" className="text-xl font-bold text-content font-display tracking-tight whitespace-nowrap">
+              <div className="flex items-center gap-2 min-w-0 flex-wrap">
+                <h2 id="unit-modal-title" className="text-lg sm:text-xl font-bold text-content font-display tracking-tight">
                   {currentUnit.unitNumber ? `Flat ${currentUnit.unitNumber}` : `Unit Specification`}
                 </h2>
                 {isOcReady ? (
-                  <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-status-success-surface text-status-success border border-status-success/30 inline-flex items-center gap-1 shrink-0">
+                  <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-status-success-surface text-status-success border border-status-success/30 inline-flex items-center gap-1 shrink-0">
                     <CheckCircle2 className="w-3 h-3" /> Ready OC (0% GST)
                   </span>
                 ) : (
-                  <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-status-warning-surface text-status-warning border border-status-warning/30 inline-flex items-center gap-1 shrink-0">
+                  <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-status-warning-surface text-status-warning border border-status-warning/30 inline-flex items-center gap-1 shrink-0">
                     <Calendar className="w-3 h-3" /> Under-Construction ({gstPercentage}% GST)
                   </span>
                 )}
                 {Boolean(currentUnit.isHotDeal) && (
-                  <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30 inline-flex items-center gap-1 shrink-0">
+                  <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30 inline-flex items-center gap-1 shrink-0">
                     <Flame className="w-3 h-3" /> Hot Deal
                   </span>
                 )}
                 {Boolean(currentUnit.isExclusive) && (
-                  <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-accent/15 text-accent border border-accent/30 inline-flex items-center gap-1 shrink-0">
+                  <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-accent/15 text-accent border border-accent/30 inline-flex items-center gap-1 shrink-0">
                     <Star className="w-3 h-3" /> Exclusive
                   </span>
                 )}
@@ -350,7 +350,7 @@ export function UnitDetailsModal({
             </div>
 
             {/* Top Right: Actions & Close */}
-            <div className="flex items-center gap-1.5 shrink-0">
+            <div className="flex items-center gap-1.5 shrink-0 justify-end">
               {onSelectUnitForCalc && (
                 <button
                   type="button"
@@ -411,16 +411,16 @@ export function UnitDetailsModal({
           </div>
 
           {/* Bottom Row: Metadata Badges & Project info on Left | All-In Cost on Right */}
-          <div className="flex items-center justify-between gap-4 pt-2.5 border-t border-border/60 text-xs">
-            <div className="flex items-center gap-2 flex-wrap min-w-0">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-2.5 border-t border-border/60 text-xs">
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap min-w-0">
               <span className="badge-cobalt shrink-0">
                 {currentUnit.bhk} BHK • {currentUnit.carpetAreaSqft || 650} Sq.Ft. RERA
               </span>
-              <span className="px-2.5 py-0.5 rounded-full font-mono bg-surface-subtle border border-border text-content-muted shrink-0">
+              <span className="px-2 py-0.5 rounded-full font-mono bg-surface-subtle border border-border text-content-muted shrink-0 text-[11px]">
                 Floor {currentUnit.floorNumber || 1} of {currentUnit.totalFloors || 14}
               </span>
               <span className="text-border-strong hidden sm:inline">•</span>
-              <span className="text-content-muted truncate">
+              <span className="text-content-muted truncate text-[11px] sm:text-xs">
                 Project: <strong className="text-content font-semibold">{currentProject.projectName || 'Developer Project'}</strong>
                 {currentProject.developerName && <span> by {currentProject.developerName}</span>}
               </span>
@@ -441,8 +441,8 @@ export function UnitDetailsModal({
             </div>
 
             {/* All-In Cost highlighted badge */}
-            <div className="flex items-center gap-2 shrink-0">
-              <span className="text-[11px] text-content-muted uppercase tracking-wider font-semibold hidden sm:inline">All-In Cost</span>
+            <div className="flex items-center justify-between sm:justify-end gap-2 shrink-0 pt-1 sm:pt-0 border-t sm:border-t-0 border-border/40">
+              <span className="text-[11px] text-content-muted uppercase tracking-wider font-semibold">All-In Cost</span>
               <div className="px-3 py-1 rounded-lg bg-surface border border-accent/30 text-accent font-mono font-bold text-sm sm:text-base shadow-2xs">
                 {formatINR(currentUnit.allInTotalCost || currentUnit.agreementValue)}
               </div>
