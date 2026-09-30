@@ -38,6 +38,7 @@
   "exclude": [
     "node_modules",
     "test",
-    "scratch"
+    "scratch",
+    "mobile-companion"
   ]
 }

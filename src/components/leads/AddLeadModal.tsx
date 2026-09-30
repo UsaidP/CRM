@@ -283,8 +283,12 @@ export function AddLeadModal({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, fullName, phone, email, leadSource, currentStage, budgetMin, budgetMax, selectedBhk, selectedLocations, notes, selectedTags, leadPriority, possession, purpose, assignedBrokerId]);
 
-  if (!isOpen) return null;
-
+  // NOTE: `getRoleGroup` and the two `useMemo` hooks below are intentionally
+  // declared BEFORE the `if (!isOpen) return null` guard further down. React
+  // requires hooks to run in the same order on every render, so an early return
+  // placed above a hook changes the hook count between renders and throws
+  // "Rendered more hooks than during the previous render" as soon as `isOpen`
+  // flips. If you add a hook to this component, add it above the guard too.
   const getRoleGroup = (role: string) => {
     switch (role) {
       case 'SUPER_ADMIN':
@@ -329,6 +333,9 @@ export function AddLeadModal({
         group: getRoleGroup(u.role),
       })),
   ], [sortedAssignableUsers, currentUserId, currentUserRole]);
+
+  // Every hook in this component must be declared above this guard.
+  if (!isOpen) return null;
 
   const handleToggleBhk = (bhk: number) => {
     if (selectedBhk.includes(bhk)) {

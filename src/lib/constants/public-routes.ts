@@ -25,6 +25,7 @@ export const PUBLIC_PATHS = [
 export const PUBLIC_API_PREFIXES = [
   '/api/v1/auth',
   '/api/v1/webhooks',
+  '/api/v1/cron',
   '/api/v1/track',
   '/api/v1/health',
   '/api/v1/inventory/rera/certificate-view',
@@ -43,12 +44,16 @@ export const PUBLIC_API_ALLOW_LIST = [
   'auth/forgot-password',
   'auth/reset-password',
   'auth/set-password',
+  'auth/otp/send',
+  'auth/otp/verify',
   // Liveness probe
   'health',
   // Inbound webhooks (must verify provider signatures or HMAC in-handler)
   'webhooks/telephony',
   'webhooks/whatsapp',
   'webhooks/instagram',
+  // Cron jobs (verified via CRON_SECRET or x-vercel-cron header in-handler)
+  'cron/daily-call-digest',
   // Public client portals + tracking pixels (token-authenticated in-handler)
   'portals/[token]',
   'portals/[token]/telemetry',

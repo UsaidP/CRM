@@ -81,3 +81,12 @@ export function normalizeIndianPhone(input: string | number): PhoneValidationRes
     rawInput: raw,
   };
 }
+
+/**
+ * Convenience wrapper: returns a clean E.164 string or null if invalid.
+ * Accepts any Indian/international phone format.
+ */
+export function normalizePhoneE164(input: string | number): string | null {
+  const result = normalizeIndianPhone(input);
+  return result.isValid ? result.e164 : null;
+}

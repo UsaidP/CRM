@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Phone, PhoneCall, PhoneMissed, PhoneOutgoing, User, Check, X, ShieldAlert, Sparkles } from 'lucide-react';
+import { Phone, PhoneCall, PhoneMissed, PhoneOutgoing, User, Check, X, ShieldAlert, Sparkles, UploadCloud, Headphones } from 'lucide-react';
 import { OFFICIAL_BROKER_NUMBERS } from '@/lib/constants/broker-constants';
 import { FeedbackAlert } from '@/components/ui/FeedbackAlert';
 
@@ -19,10 +19,37 @@ export function CallLogModal({ isOpen, onClose, onSuccess }: CallLogModalProps) 
   const [durationSeconds, setDurationSeconds] = useState(60);
   const [sourceCode, setSourceCode] = useState('');
   const [notes, setNotes] = useState('');
+  const [callOutcome, setCallOutcome] = useState('INTERESTED');
+  const [callRecordingUrl, setCallRecordingUrl] = useState('');
+  const [isUploadingAudio, setIsUploadingAudio] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   if (!isOpen) return null;
+
+  const handleAudioUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploadingAudio(true);
+    setError(null);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await fetch('/api/v1/calls/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to upload audio recording');
+      }
+      setCallRecordingUrl(data.secure_url || data.url);
+    } catch (err: any) {
+      setError(err.message || 'Error uploading recording');
+    } finally {
+      setIsUploadingAudio(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,6 +68,8 @@ export function CallLogModal({ isOpen, onClose, onSuccess }: CallLogModalProps) 
           durationSeconds: direction === 'MISSED' ? 0 : Number(durationSeconds),
           sourceCode: sourceCode.trim() ? sourceCode.trim().toUpperCase() : undefined,
           notes,
+          callOutcome,
+          callRecordingUrl: callRecordingUrl || undefined,
         }),
       });
 
@@ -250,6 +279,65 @@ export function CallLogModal({ isOpen, onClose, onSuccess }: CallLogModalProps) 
               onChange={(e) => setNotes(e.target.value)}
               className="w-full px-3.5 py-2.5 bg-surface-inset border border-border rounded-xl text-sm text-content placeholder:text-content-muted focus:outline-none focus:border-accent"
             />
+          </div>
+
+          {/* Call Outcome */}
+          <div>
+            <label className="block text-xs font-medium text-content mb-1.5">
+              Call Outcome <span className="text-accent">*</span>
+            </label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {[
+                { id: 'INTERESTED', label: 'Interested', desc: 'Wants brochure / quote' },
+                { id: 'CALLBACK_REQUESTED', label: 'Callback', desc: 'Call again later' },
+                { id: 'NOT_INTERESTED', label: 'Not Interested', desc: 'Budget / area mismatch' },
+                { id: 'NO_ANSWER', label: 'No Answer', desc: 'Ringing / not picked' },
+                { id: 'BUSY', label: 'Busy', desc: 'Line busy / cut call' },
+                { id: 'WRONG_NUMBER', label: 'Wrong Number', desc: 'Invalid contact' },
+              ].map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => setCallOutcome(item.id)}
+                  className={`p-2.5 rounded-xl border text-left transition-all text-xs ${
+                    callOutcome === item.id
+                      ? 'border-accent bg-accent-soft text-accent-text ring-1 ring-accent/30 font-semibold'
+                      : 'border-border bg-surface-inset text-content-muted hover:border-border-strong hover:text-content'
+                  }`}
+                >
+                  <p className="font-semibold text-content text-[11px]">{item.label}</p>
+                  <p className="text-[10px] text-content-muted truncate">{item.desc}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Audio Recording Upload (Optional) */}
+          <div className="p-3 bg-surface-inset rounded-xl border border-dashed border-border space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-semibold text-content flex items-center gap-1.5">
+                <Headphones className="w-3.5 h-3.5 text-accent" />
+                Attach Call Recording (Optional)
+              </label>
+              {callRecordingUrl && (
+                <span className="text-[10px] font-bold text-status-success font-mono">
+                  ✓ Recording Attached
+                </span>
+              )}
+            </div>
+            <p className="text-[11px] text-content-muted">
+              Upload MP3/M4A call audio to auto-generate a Gemini Flash transcript and summary.
+            </p>
+            <input
+              type="file"
+              accept="audio/*,.mp3,.m4a,.wav,.ogg,.amr"
+              disabled={isUploadingAudio}
+              onChange={handleAudioUpload}
+              className="text-xs text-content-muted file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-accent-soft file:text-accent-text hover:file:bg-accent/20 cursor-pointer w-full"
+            />
+            {isUploadingAudio && (
+              <p className="text-[11px] text-accent animate-pulse">Uploading audio recording...</p>
+            )}
           </div>
 
           {/* Footer Actions */}

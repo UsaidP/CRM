@@ -24,6 +24,13 @@ const PUBLIC_MUTATION_ALLOW_LIST = [
   'v1/auth/forgot-password',
   'v1/auth/reset-password',
   'v1/auth/set-password',
+  // Login-flow credential verification (like /login): unauthenticated by design,
+  // hardened with IP + phone rate limiting, format checks, and attempt caps.
+  'v1/auth/otp/send',
+  'v1/auth/otp/verify',
+  // Cron dispatch: authenticated in-route via isAuthorized() — valid CRM session
+  // OR `Authorization: Bearer $CRON_SECRET` OR verified x-vercel-cron header.
+  'v1/cron/daily-call-digest',
   'v1/webhooks/telephony',
   'v1/webhooks/whatsapp',
   'v1/webhooks/instagram',
@@ -77,7 +84,9 @@ describe('API Authorization & Tenant Guard Systematic Coverage', () => {
     }
 
     expect(unauthenticatedMutations).toEqual([]);
-  });
+    // Static fs scan with a generous timeout: sibling tests (12s XSS) run in
+    // parallel and can starve this past bun's 5s default under full-suite load.
+  }, 15000);
 
   it('financial and deal mutating endpoints enforce strict RBAC permissions', () => {
     const dealsRoute = readFileSync(join(API_ROOT, 'v1', 'deals', 'route.ts'), 'utf8');

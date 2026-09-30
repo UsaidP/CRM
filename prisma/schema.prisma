@@ -370,11 +370,18 @@ model CommunicationLog {
   messageContent      String?
   callDurationSeconds Int      @default(0)
   callRecordingUrl    String?
+  clientCallId        String?  @unique // Client-generated UUID for idempotent synchronization
+  callOutcome         String?  // INTERESTED, CALLBACK_REQUESTED, NOT_INTERESTED, NO_ANSWER, BUSY, WRONG_NUMBER
+  aiSummary           String?  @db.Text
+  aiSentiment         String?  // POSITIVE, NEUTRAL, NEGATIVE
+  transcriptText      String?  @db.Text
+  processingStatus    String   @default("COMPLETED") // PENDING, PROCESSING, COMPLETED, FAILED
   metadataJson        String   @default("{}")
   createdAt           DateTime @default(now())
 
   @@index([leadId])
   @@index([channel, direction])
+  @@index([createdAt])
 }
 
 model BuyerRequirement {
@@ -629,5 +636,23 @@ model WebhookCredential {
 
   @@unique([provider, providerIdentifier])
   @@index([organizationId])
+}
+
+// ==========================================
+// OTP-BASED PHONE AUTHENTICATION
+// ==========================================
+
+model OtpVerification {
+  id              String    @id @default(uuid())
+  phoneE164       String    // e.g. +917977552011
+  otpHash         String    // SHA-256 hash of the 6-digit OTP (never store plaintext)
+  purpose         String    @default("LOGIN") // LOGIN, REGISTER, RESET_PASSWORD
+  attempts        Int       @default(0) // Failed verification attempts (max 5)
+  expiresAt       DateTime  // OTP validity window (5 minutes)
+  verifiedAt      DateTime? // Set when OTP is successfully verified
+  createdAt       DateTime  @default(now())
+
+  @@index([phoneE164, purpose])
+  @@index([expiresAt])
 }
 

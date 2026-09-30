@@ -29,6 +29,14 @@ export function login(payload: Record<string, unknown>) {
   return post('/api/v1/auth/login', payload);
 }
 
+export function sendOtp(phone: string) {
+  return post('/api/v1/auth/otp/send', { phone });
+}
+
+export function verifyOtp(phone: string, otp: string) {
+  return post('/api/v1/auth/otp/verify', { phone, otp });
+}
+
 export async function logout(): Promise<void> {
   try {
     await post('/api/v1/auth/logout');

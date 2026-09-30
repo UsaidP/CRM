@@ -8,6 +8,8 @@ import { upsertOrCreateLead } from '@/lib/domain/lead-creation';
 import { requireSession } from '@/lib/services/api-auth';
 import { handleApiError } from '@/lib/services/api-handler';
 
+import { analyzeCallWithAI } from '@/lib/services/call-ai-service';
+
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
@@ -25,14 +27,33 @@ export async function POST(req: Request) {
       durationSeconds = 0,
       sourceCode,
       notes = '',
-      callId = `call-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      callRecordingUrl,
+      callOutcome,
+      clientCallId,
+      callId = clientCallId || `call-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
     } = body;
 
-    // Idempotency Check
-    const existing = await prisma.webhookEventInbox.findUnique({
+    // Idempotency Check on both webhook inbox and CommunicationLog clientCallId
+    const existingLog = await prisma.communicationLog.findFirst({
+      where: {
+        OR: [
+          { clientCallId: callId },
+          ...(clientCallId ? [{ clientCallId }] : []),
+        ],
+      },
+    });
+    if (existingLog) {
+      return NextResponse.json({
+        success: true,
+        message: 'Duplicate call event ignored (already logged)',
+        data: { communicationLog: existingLog },
+      });
+    }
+
+    const existingInbox = await prisma.webhookEventInbox.findUnique({
       where: { idempotencyKey: callId },
     });
-    if (existing) {
+    if (existingInbox) {
       return NextResponse.json({ success: true, message: 'Duplicate call event ignored' });
     }
 
@@ -126,14 +147,48 @@ export async function POST(req: Request) {
       }
     );
 
-    // 6. Log Communication
-    await prisma.communicationLog.create({
+    // 5. Intelligent Call Analysis via Gemini Flash
+    let aiSummary: string | undefined = undefined;
+    let aiSentiment: string | undefined = undefined;
+    let transcriptText: string | undefined = undefined;
+    let finalOutcome = callOutcome || (direction === 'MISSED' ? 'NO_ANSWER' : undefined);
+
+    try {
+      const aiAnalysis = await analyzeCallWithAI({
+        audioUrl: callRecordingUrl,
+        callerNumber: phoneResult.e164,
+        leadName: callerName || lead.fullName || 'Lead',
+        durationSeconds,
+        notes,
+      });
+
+      if (aiAnalysis) {
+        aiSummary = aiAnalysis.summary;
+        aiSentiment = aiAnalysis.sentiment;
+        transcriptText = aiAnalysis.transcript;
+        if (!finalOutcome || finalOutcome === 'CONNECTED_INTERESTED') {
+          finalOutcome = aiAnalysis.callOutcome;
+        }
+      }
+    } catch (aiErr: any) {
+      console.warn('[Call Events] Gemini AI call analysis notice:', aiErr?.message || aiErr);
+    }
+
+    // 6. Log Communication with rich Call Intelligence
+    const commLog = await prisma.communicationLog.create({
       data: {
         leadId: lead.id,
         channel: 'PHONE_CALL',
         direction: direction === 'OUTGOING' ? 'OUTBOUND' : 'INBOUND',
         callDurationSeconds: durationSeconds,
-        messageContent: `${direction} Call to ${inboundNumber} (${assignedBrokerName}). ${notes}`,
+        callRecordingUrl: callRecordingUrl || null,
+        clientCallId: callId,
+        callOutcome: finalOutcome || 'INTERESTED',
+        aiSummary,
+        aiSentiment,
+        transcriptText,
+        processingStatus: 'COMPLETED',
+        messageContent: notes || aiSummary || `${direction} Call to ${inboundNumber} (${assignedBrokerName})`,
         metadataJson: JSON.stringify({
           callId,
           direction,
@@ -141,18 +196,25 @@ export async function POST(req: Request) {
           contactedBrokerNumber: inboundNumber,
           brokerAssigned: assignedBrokerName,
           sourceCode,
+          callOutcome: finalOutcome,
+          callRecordingUrl,
+          aiSentiment,
         }),
       },
     });
 
     return NextResponse.json({
       success: true,
-      message: 'Call event captured and attributed successfully',
+      message: 'Call event captured, attributed, and analyzed successfully',
       data: {
         lead,
         contactId,
         brokerAssigned: assignedBrokerName,
         sourceConfidence,
+        communicationLog: commLog,
+        aiSummary,
+        aiSentiment,
+        callOutcome: finalOutcome,
       },
     }, { status: 201 });
   } catch (error) {

@@ -49,6 +49,16 @@ function readCookie(req: Request, name: string): string | null {
 }
 
 export async function getSessionFromRequest(req: Request): Promise<SessionPayload | null> {
+  // Support Authorization: Bearer <token> header for mobile companion apps and API clients
+  const authHeader = req.headers.get('authorization');
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const bearerToken = authHeader.substring(7).trim();
+    if (bearerToken) {
+      const verified = await verifySessionToken(bearerToken);
+      if (verified) return verified;
+    }
+  }
+
   const token = readCookie(req, SESSION_COOKIE_NAME);
   if (!token) return null;
   return verifySessionToken(token);

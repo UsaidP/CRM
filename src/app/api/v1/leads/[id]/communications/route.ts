@@ -91,14 +91,43 @@ export async function POST(
       );
     }
 
+    let aiSummary: string | undefined = undefined;
+    let aiSentiment: string | undefined = undefined;
+    let transcriptText: string | undefined = undefined;
+    let finalOutcome = outcome || 'INTERESTED';
+
+    if (channel.toUpperCase() === 'PHONE_CALL') {
+      try {
+        const { analyzeCallWithAI } = await import('@/lib/services/call-ai-service');
+        const aiRes = await analyzeCallWithAI({
+          audioUrl: callRecordingUrl,
+          leadName: lead.id,
+          durationSeconds: parseInt(String(callDurationSeconds), 10) || 0,
+          notes: messageContent,
+        });
+        if (aiRes) {
+          aiSummary = aiRes.summary;
+          aiSentiment = aiRes.sentiment;
+          transcriptText = aiRes.transcript;
+          if (!outcome) {
+            finalOutcome = aiRes.callOutcome;
+          }
+        }
+      } catch (aiErr) {
+        console.warn('[Communications API] AI analysis notice:', aiErr);
+      }
+    }
+
     const metadata = {
-      outcome: outcome || 'CONNECTED_INTERESTED',
+      outcome: finalOutcome,
       followUpDate: followUpDate || null,
       nextSteps: nextSteps || '',
-      callerName: callerName || 'Safwan Diwan',
+      callerName: callerName || session.fullName || 'Broker',
       tags: tags || [],
       loggedAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      aiSummary,
+      aiSentiment,
     };
 
     const newLog = await prisma.communicationLog.create({
@@ -106,9 +135,14 @@ export async function POST(
         leadId: id,
         channel: channel.toUpperCase(),
         direction: direction.toUpperCase(),
-        messageContent: messageContent || `Call Outcome: ${outcome}`,
+        messageContent: messageContent || aiSummary || `Call Outcome: ${finalOutcome}`,
         callDurationSeconds: parseInt(String(callDurationSeconds), 10) || 0,
         callRecordingUrl: callRecordingUrl || null,
+        callOutcome: finalOutcome,
+        aiSummary,
+        aiSentiment,
+        transcriptText,
+        processingStatus: 'COMPLETED',
         metadataJson: JSON.stringify(metadata),
       },
     });
