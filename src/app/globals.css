@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /* ============================================================================
-   ARCHITECTURAL BOTANICAL LEDGER DESIGN SYSTEM — ZamZam Properties
+   ARCHITECTURAL BOTANICAL LEDGER DESIGN SYSTEM
    GENRE: Architectural Botanical Ledger
    PALETTE: Deep Cypress Forest Green & Warm Amber Ochre on Tactile Alabaster Canvas
    PRIMARY: Deep Cypress Green (#1B4332 / #2D6A4F / #081C15)
@@ -1002,7 +1002,7 @@ textarea::placeholder {
 /* Chips, Tags & Badges */
 .badge-cobalt,
 .pillar-chip,
-.zamzam-chip,
+.lucky-chip,
 .brixi-chip,
 .tag-pill {
   transition: all var(--dur-short) var(--ease-out);
@@ -1010,7 +1010,7 @@ textarea::placeholder {
 
 .badge-cobalt:hover,
 .pillar-chip:hover,
-.zamzam-chip:hover,
+.lucky-chip:hover,
 .brixi-chip:hover {
   border-color: var(--color-accent);
   transform: translateY(-0.5px);
@@ -1383,9 +1383,9 @@ html:not(.dark) [class*="via-[#171d2e]"] {
   50% { opacity: 0.6; }
 }
 
-/* ZamZam Qualification Selector Chip */
+/* Qualification Selector Chip */
 .pillar-chip,
-.zamzam-chip,
+.lucky-chip,
 .brixi-chip {
   padding: 6px 10px;
   border-radius: var(--radius-sm);
@@ -1399,14 +1399,14 @@ html:not(.dark) [class*="via-[#171d2e]"] {
 }
 
 .pillar-chip:hover,
-.zamzam-chip:hover,
+.lucky-chip:hover,
 .brixi-chip:hover {
   border-color: var(--color-accent);
   color: var(--color-accent);
 }
 
 .pillar-chip.is-active,
-.zamzam-chip.is-active,
+.lucky-chip.is-active,
 .brixi-chip.is-active {
   background-color: var(--color-accent);
   color: #FFFFFF;
@@ -1460,7 +1460,7 @@ html:not(.dark) [class*="via-[#171d2e]"] {
 }
 
 /* ============================================================================
-   ZAMZAM THEME PRINT & EXPORT STYLESHEET
+   LUCKY CRM THEME PRINT & EXPORT STYLESHEET
    Supports High-Resolution A4 PDF & Print Export with Official Crest & Branding
    ============================================================================ */
 @media screen {
@@ -1534,8 +1534,8 @@ html:not(.dark) [class*="via-[#171d2e]"] {
     padding: 0 !important;
   }
 
-  /* ZamZam Official Letterhead Print Header */
-  .zamzam-print-header {
+  /* Official Letterhead Print Header */
+  .lucky-print-header {
     display: flex !important;
     justify-content: space-between !important;
     align-items: flex-start !important;
@@ -1544,7 +1544,7 @@ html:not(.dark) [class*="via-[#171d2e]"] {
     margin-bottom: 16pt !important;
   }
 
-  .zamzam-print-brand {
+  .lucky-print-brand {
     font-family: 'Plus Jakarta Sans', sans-serif !important;
     font-size: 18pt !important;
     font-weight: 800 !important;
@@ -1552,7 +1552,7 @@ html:not(.dark) [class*="via-[#171d2e]"] {
     letter-spacing: -0.5px !important;
   }
 
-  .zamzam-print-badge {
+  .lucky-print-badge {
     display: inline-block !important;
     padding: 2pt 6pt !important;
     background-color: #ECFDF5 !important;
@@ -1565,14 +1565,14 @@ html:not(.dark) [class*="via-[#171d2e]"] {
   }
 
   /* High Contrast Data Tables for Print */
-  .zamzam-print-table {
+  .lucky-print-table {
     width: 100% !important;
     border-collapse: collapse !important;
     margin-top: 8pt !important;
     margin-bottom: 12pt !important;
   }
 
-  .zamzam-print-table th {
+  .lucky-print-table th {
     background-color: #F8FAFC !important;
     color: #1E293B !important;
     border-top: 1pt solid #CBD5E1 !important;
@@ -1584,14 +1584,14 @@ html:not(.dark) [class*="via-[#171d2e]"] {
     letter-spacing: 0.5px !important;
   }
 
-  .zamzam-print-table td {
+  .lucky-print-table td {
     padding: 6pt 8pt !important;
     border-bottom: 1pt solid #E2E8F0 !important;
     font-size: 9.5pt !important;
     color: #1E293B !important;
   }
 
-  .zamzam-print-table tr.total-row td {
+  .lucky-print-table tr.total-row td {
     background-color: #F1F5F9 !important;
     border-top: 1.5pt solid #1B4332 !important;
     border-bottom: 2pt solid #1B4332 !important;
@@ -1601,7 +1601,7 @@ html:not(.dark) [class*="via-[#171d2e]"] {
   }
 
   /* Formal Statutory Footer */
-  .zamzam-print-footer {
+  .lucky-print-footer {
     margin-top: 20pt !important;
     padding-top: 10pt !important;
     border-top: 1pt solid #E2E8F0 !important;
@@ -1612,7 +1612,7 @@ html:not(.dark) [class*="via-[#171d2e]"] {
 }
 
 /* ==========================================================================
-   GOEY-TOAST NOTIFICATION SYSTEM (ZamZam Design System Integration)
+   GOEY-TOAST NOTIFICATION SYSTEM (Design System Integration)
    ========================================================================== */
 
 .gooey-wrapper {

@@ -71,7 +71,7 @@ export function ForgotPasswordClient() {
           </div>
           <div>
             <span className="font-extrabold text-base tracking-tight text-content font-display">
-              ZamZam Realty
+              Lucky CRM
             </span>
             <span className="block text-[10px] text-content-muted font-mono uppercase">
               Account Recovery
@@ -162,7 +162,7 @@ export function ForgotPasswordClient() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="e.g. samrin@zamzamproperties.in"
+                    placeholder="e.g. you@yourfirm.com"
                     className="w-full pl-10 pr-4 py-2.5 bg-surface-subtle border border-border rounded-xl text-xs text-content focus:outline-none focus:border-accent font-medium transition-colors"
                   />
                 </div>
@@ -192,7 +192,7 @@ export function ForgotPasswordClient() {
       </main>
 
       <footer className="p-6 text-center text-[11px] text-content-muted z-10 font-mono">
-        ZamZam Properties Real Estate Advisory • Secure Broker Desk
+        Lucky CRM • Secure Broker Desk
       </footer>
     </div>
   );

@@ -265,7 +265,7 @@ export function RegisterClient() {
                 <div className="space-y-1.5">
                   <label htmlFor="reg-firm-name" className="text-xs font-bold text-content flex items-center justify-between">
                     <span>Firm / Organization Name</span>
-                    <span className="text-[10px] text-content-muted font-normal">e.g. Apex Realty, ZamZam Properties</span>
+                    <span className="text-[10px] text-content-muted font-normal">e.g. Apex Realty, Prime Homes</span>
                   </label>
                   <div className="relative">
                     <Building2 className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-content-muted pointer-events-none" />

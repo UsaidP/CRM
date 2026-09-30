@@ -19,6 +19,7 @@ import {
   Globe
 } from 'lucide-react';
 import { resolveAssetUrl } from '@/lib/inventory-media';
+import { useFirmName } from '@/lib/client/useFirmName';
 
 interface UnitSummary {
   id: string;
@@ -63,6 +64,7 @@ export function LiveInventoryMatcher({
   projects,
   onCreatePortal,
 }: LiveInventoryMatcherProps) {
+  const firmName = useFirmName();
   const [selectedProjectIdForCost, setSelectedProjectIdForCost] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'MATCHED' | 'ALL'>('MATCHED');
 
@@ -132,7 +134,7 @@ export function LiveInventoryMatcher({
     if (!lead.phoneE164) return;
     const brochureLink = proj.brochureUrl || '';
     const text = encodeURIComponent(
-      `Hello ${lead.fullName || 'Sir/Ma\'am'}, Safwan here from ZamZam Properties. As discussed on our call, here is the official verified developer brochure and project details for *${proj.projectName}* by ${proj.developerName} in ${proj.microMarket}:\n\n📄 Project Brochure: ${brochureLink || 'Available on request'}\n\nPlease let me know if you would like me to arrange a VIP site visit this weekend.`
+      `Hello ${lead.fullName || 'Sir/Ma\'am'}, Safwan here from ${firmName}. As discussed on our call, here is the official verified developer brochure and project details for *${proj.projectName}* by ${proj.developerName} in ${proj.microMarket}:\n\n📄 Project Brochure: ${brochureLink || 'Available on request'}\n\nPlease let me know if you would like me to arrange a VIP site visit this weekend.`
     );
     window.open(`https://wa.me/${lead.phoneE164.replace(/\D/g, '')}?text=${text}`, '_blank');
   };

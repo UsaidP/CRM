@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { PRODUCT_NAME } from '@/lib/constants/brand';
 import { motion } from 'framer-motion';
 import {
   Download,
@@ -279,7 +280,7 @@ export function PortalDossierModal({
                       {advisor.fullName || 'Property Advisor'}
                     </span>
                     <span className="text-xs text-amber-300">
-                      Senior Real Estate Advisor • {portal.organization?.name || 'ZamZam Properties'} Advisory Desk
+                      Senior Real Estate Advisor • {portal.organization?.name || PRODUCT_NAME} Advisory Desk
                     </span>
                     <p className="text-xs text-slate-400 font-mono mt-0.5">
                       {advisor.phoneE164 || '+91 99677 31071'}

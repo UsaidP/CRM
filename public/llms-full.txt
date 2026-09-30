@@ -1,10 +1,10 @@
-# ZamZam Properties Real Estate CRM — Full System Reference
+# Lucky CRM — Full System Reference
 
-> Complete technical and architectural specification for ZamZam Properties CRM, an enterprise brokerage management platform for high-velocity real estate operations in Mumbai and Navi Mumbai.
+> Complete technical and architectural specification for Lucky CRM, an enterprise brokerage management platform for high-velocity real estate operations in Mumbai and Navi Mumbai.
 
 ## 1. System Overview
 
-ZamZam Properties CRM streamlines end-to-end real estate brokerage workflows:
+Lucky CRM streamlines end-to-end real estate brokerage workflows:
 - Multi-channel Lead Attribution & Ingestion (Meta, WhatsApp, YouTube, Inbound Voice, QR)
 - Inventory Management with MahaRERA verification
 - All-in Property Pricing Engine (Base Price + Stamp Duty + GST + Registration + Parking + Society)

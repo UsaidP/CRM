@@ -46,7 +46,7 @@ const TEMPLATES: QuickTemplate[] = [
       `As discussed on our call, here is the official developer brochure and architectural master plan for *${project || 'our premium Navi Mumbai project'}*.\n\n` +
       `• MahaRERA Registered & CIDCO Approved\n` +
       `• 30+ Lifestyle Amenities (Clubhouse, Infinity Pool, Rooftop Deck)\n` +
-      `• Zero brokerage through ZamZam direct developer mandate\n\n` +
+      `• Zero brokerage through direct developer mandate\n\n` +
       `Please let me know when you have had a moment to review, and I can share the sample flat walkthrough video.`,
   },
   {
@@ -84,7 +84,7 @@ const TEMPLATES: QuickTemplate[] = [
     category: 'FOLLOW_UP',
     generateText: (name) =>
       `Hello ${name || 'Sir/Ma\'am'},\n\n` +
-      `Safwan Diwan here from ZamZam Properties. I tried reaching you just now regarding your real estate inquiry, but you may have been tied up.\n\n` +
+      `Safwan Diwan here from your advisory desk. I tried reaching you just now regarding your real estate inquiry, but you may have been tied up.\n\n` +
       `Could you let me know what time today or tomorrow would be convenient for a quick 2-minute conversation? Thank you!`,
   },
 ];

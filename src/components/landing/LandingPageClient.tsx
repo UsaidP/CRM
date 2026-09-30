@@ -580,7 +580,7 @@ export function LandingPageClient() {
                 Register Your Firm &amp; Set Admin
               </h3>
               <p className="text-xs text-content-secondary leading-relaxed">
-                Provide your firm name (e.g. ZamZam Properties, Apex Realty) and optional MahaRERA number. Your isolated database tenant is provisioned with auto-approval instantly.
+                Provide your firm name (e.g. Apex Realty, Prime Homes) and optional MahaRERA number. Your isolated database tenant is provisioned with auto-approval instantly.
               </p>
             </div>
 
@@ -757,7 +757,7 @@ export function LandingPageClient() {
                 <span>Can we customize our firm name and branding inside the CRM?</span>
               </h3>
               <p className="text-xs text-content-secondary leading-relaxed pl-6">
-                <strong>Yes, absolutely!</strong> After registering and logging in, any firm administrator can rename the organization (e.g. to &ldquo;ZamZam Properties&rdquo;, &ldquo;Apex Realty&rdquo;, or &ldquo;Lodha Channel Partners&rdquo;) and configure your official MahaRERA broker registration number. This custom name is dynamically displayed across your headers, reports, and buyer presentation portals.
+                <strong>Yes, absolutely!</strong> After registering and logging in, any firm administrator can rename the organization (e.g. to &ldquo;Apex Realty&rdquo;, &ldquo;Prime Homes&rdquo;, or &ldquo;Lodha Channel Partners&rdquo;) and configure your official MahaRERA broker registration number. This custom name is dynamically displayed across your headers, reports, and buyer presentation portals.
               </p>
             </div>
 

@@ -43,6 +43,7 @@ import { CustomSelect, type CustomSelectOption } from '@/components/ui/CustomSel
 import { SourceEvidenceDrawer } from '@/components/leads/SourceEvidenceDrawer';
 import { formatDateTime, formatTimeShort } from '@/lib/date-utils';
 import { fetchCalendarEvents, createReminder, updateReminder, deleteReminder } from '@/lib/client/calendar';
+import { useFirmName } from '@/lib/client/useFirmName';
 
 const ACTION_TYPE_OPTIONS: CustomSelectOption[] = [
   { value: 'CALL', label: '📞 Phone Call' },
@@ -125,6 +126,7 @@ type ViewMode = 'MONTH' | 'WEEK' | 'DAY' | 'AGENDA';
 type FilterType = 'ALL' | 'OVERDUE' | 'TODAY' | 'CALL' | 'WHATSAPP' | 'SITE_VISIT' | 'COMPLETED';
 
 export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: CalendarViewClientProps) {
+  const firmName = useFirmName();
   const [isMounted, setIsMounted] = useState(false);
   const [events, setEvents] = useState<CalendarEvent[]>(initialEvents);
   const [leads] = useState(initialLeads);
@@ -1292,7 +1294,7 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
                                 <>
                                   <a
                                     href={`https://wa.me/${e.phoneE164.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
-                                      `Hi ${e.leadName}, following up regarding your property requirement with ZamZam Properties.`
+                                      `Hi ${e.leadName}, following up regarding your property requirement with ${firmName}.`
                                     )}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
@@ -1559,7 +1561,7 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
                                   <>
                                     <a
                                       href={`https://wa.me/${event.phoneE164.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
-                                        `Hi ${event.leadName}, following up regarding your property inquiry at ZamZam Properties.`
+                                        `Hi ${event.leadName}, following up regarding your property inquiry at ${firmName}.`
                                       )}`}
                                       target="_blank"
                                       rel="noopener noreferrer"
@@ -1746,7 +1748,7 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
                       <>
                         <a
                           href={`https://wa.me/${event.phoneE164.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
-                            `Hi ${event.leadName}, following up regarding your property inquiry at ZamZam Properties.`
+                            `Hi ${event.leadName}, following up regarding your property inquiry at ${firmName}.`
                           )}`}
                           target="_blank"
                           rel="noopener noreferrer"
@@ -1853,7 +1855,7 @@ export function CalendarViewClient({ initialEvents = [], initialLeads = [] }: Ca
                     </a>
                     <a
                       href={`https://wa.me/${selectedEvent.phoneE164.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
-                        `Hi ${selectedEvent.leadName}, following up regarding ${selectedEvent.title} with ZamZam Properties.`
+                        `Hi ${selectedEvent.leadName}, following up regarding ${selectedEvent.title} with ${firmName}.`
                       )}`}
                       target="_blank"
                       rel="noopener noreferrer"

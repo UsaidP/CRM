@@ -147,7 +147,7 @@ export function OrganizationSettingsModal({
           <div className="space-y-1.5">
             <label htmlFor="modal-firm-name" className="text-xs font-bold text-content flex items-center justify-between">
               <span>Firm / Organization Name</span>
-              <span className="text-[10px] text-content-muted font-mono font-normal">e.g. ZamZam Properties</span>
+              <span className="text-[10px] text-content-muted font-mono font-normal">e.g. Apex Realty</span>
             </label>
             <div className="relative">
               <Building2 className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-content-muted pointer-events-none" />
@@ -157,7 +157,7 @@ export function OrganizationSettingsModal({
                 required
                 value={firmName}
                 onChange={(e) => setFirmName(e.target.value)}
-                placeholder="Enter firm name (e.g. ZamZam Properties)"
+                placeholder="Enter firm name (e.g. Apex Realty)"
                 className="w-full pl-10 pr-4 py-2.5 bg-surface-subtle border border-border rounded-xl text-xs text-content focus:outline-none focus:border-accent font-medium transition-colors"
               />
             </div>

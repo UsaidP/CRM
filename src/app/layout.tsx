@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans, JetBrains_Mono, Playfair_Display } from 'next/font/g
 import 'goey-toast/styles.css';
 import './globals.css';
 import { AppShell } from '@/components/layout/AppShell';
+import { PRODUCT_NAME } from '@/lib/constants/brand';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
 import { GooeyToastProvider } from '@/components/ui/GooeyToastProvider';
 import { AgentationToolbar } from '@/components/dev/AgentationToolbar';
@@ -38,8 +39,8 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: {
-    default: 'ZamZam Properties CRM',
-    template: '%s | ZamZam CRM',
+    default: `${PRODUCT_NAME} — Real Estate Brokerage OS`,
+    template: `%s | ${PRODUCT_NAME}`,
   },
   description: 'Real estate CRM for lead attribution, property records, calculated all-in costs, requirements matching, private client portals, site visits, and deal tracking.',
   icons: {
@@ -70,7 +71,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `
               try {
-                const stored = localStorage.getItem('zamzam-theme-mode');
+                const stored = localStorage.getItem('lucky-theme-mode') ?? localStorage.getItem('zamzam-theme-mode');
                 const isDark = stored === 'dark' || (stored === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
                 const themeClass = isDark ? 'dark' : 'light';
                 document.documentElement.classList.remove('dark', 'light');

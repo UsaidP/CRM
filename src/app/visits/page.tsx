@@ -34,11 +34,18 @@ import { HallmarkStamp } from '@/components/ui/HallmarkStamp';
 import { AccessibleDialog } from '@/components/ui/AccessibleDialog';
 import { CustomSelect, type CustomSelectOption } from '@/components/ui/CustomSelect';
 import { formatSiteVisitWhatsApp } from '@/lib/export-utils';
+import { useFirmIdentity } from '@/lib/client/useFirmName';
+import { resolveFirmName } from '@/lib/constants/brand';
 import { FeedbackAlert } from '@/components/ui/FeedbackAlert';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { calculateVisitKpis } from '@/lib/domain/visit-analytics';
 
 export default function SiteVisitsPage() {
+  // Tenant identity for the tour passport and the WhatsApp itinerary.
+  // NOTE: every hook must be declared before any early return in this component.
+  const firm = useFirmIdentity();
+  const firmName = resolveFirmName(firm.name);
+
   const [visits, setVisits] = useState<any[]>([]);
   const [passportVisit, setPassportVisit] = useState<any | null>(null);
   const [leads, setLeads] = useState<any[]>([]);
@@ -428,6 +435,7 @@ export default function SiteVisitsPage() {
                 expectedTime: s.expectedTime,
                 developerPocName: s.developerPocName,
               })),
+              firm: { ...firm, name: firmName },
             });
 
             return (
@@ -876,7 +884,7 @@ export default function SiteVisitsPage() {
         )}
       </AccessibleDialog>
 
-      {/* MODAL 3: OFFICIAL ZAMZAM VIP PROPERTY TOUR PASSPORT */}
+      {/* MODAL 3: VIP PROPERTY TOUR PASSPORT */}
       <AccessibleDialog
         open={Boolean(passportVisit)}
         onClose={() => setPassportVisit(null)}
@@ -901,7 +909,7 @@ export default function SiteVisitsPage() {
                   </div>
                   <div>
                     <h2 id="tour-passport-title" className="text-base font-bold text-content font-display">
-                      ZamZam Properties — Escorted Property Tour Passport
+                      {firmName} — Escorted Property Tour Passport
                     </h2>
                     <p className="text-[10px] text-content-muted font-mono">
                       VIP Inspection Dossier &amp; Route Schedule • MahaRERA Reg: A52000028714
@@ -924,7 +932,7 @@ export default function SiteVisitsPage() {
                 {/* Header */}
                 <div className="flex justify-between items-start border-b border-slate-200 pb-3">
                   <div>
-                    <h3 className="font-extrabold text-lg text-[#1B4332] font-display">ZAMZAM PROPERTIES</h3>
+                    <h3 className="font-extrabold text-lg text-[#1B4332] font-display">{firmName.toUpperCase()}</h3>
                     <p className="text-[10px] text-slate-500 font-mono">VIP Escorted Logistics &amp; Property Tour Protocol</p>
                     <p className="text-[10px] text-slate-500">MahaRERA Reg: A52000028714 • Kharghar &amp; Taloja Hub</p>
                   </div>
@@ -948,7 +956,7 @@ export default function SiteVisitsPage() {
                   <div className="space-y-0.5">
                     <span className="text-[9px] uppercase font-bold text-slate-400 font-mono">Escort &amp; Chauffeur Details:</span>
                     <p className="font-bold text-slate-800 text-xs">Advisor: {passportVisit.assignedBroker?.fullName || 'Senior Consultant'}</p>
-                    <p className="text-slate-600">Assigned Vehicle: <strong>{passportVisit.cabDetails || 'ZamZam Chauffeur Vehicle'}</strong></p>
+                    <p className="text-slate-600">Assigned Vehicle: <strong>{passportVisit.cabDetails || 'Chauffeur Vehicle'}</strong></p>
                     <p className="text-slate-600">Emergency Support: <strong>+91 98201 23456</strong></p>
                   </div>
                 </div>

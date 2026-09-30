@@ -56,6 +56,7 @@ import { FeedbackAlert } from '@/components/ui/FeedbackAlert';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { QuickReminderModal } from '@/components/reminders/QuickReminderModal';
 import { exportLeadsToCsv } from '@/lib/export-utils';
+import { useFirmName } from '@/lib/client/useFirmName';
 import { CompleteReminderPrompt } from '@/components/reminders/CompleteReminderPrompt';
 import { QuickLogModal } from '@/components/leads/QuickLogModal';
 import { AccessibleDialog } from '@/components/ui/AccessibleDialog';
@@ -145,6 +146,8 @@ export function LeadsMatrixClient({
   currentUserId?: string;
   currentUserRole?: string;
 }) {
+  // Tenant name for the CSV letterhead (falls back to the product name).
+  const firmName = useFirmName();
   const [leads, setLeads] = useState<any[]>(initialLeads);
   const [userCanDelete, setUserCanDelete] = useState(canDeleteLeads);
   const [leadToDelete, setLeadToDelete] = useState<any | null>(null);
@@ -883,7 +886,7 @@ export function LeadsMatrixClient({
 
             <button
               type="button"
-              onClick={() => exportLeadsToCsv(filteredAndSortedLeads, { search: searchQuery, stage: selectedStage, channel: selectedSource })}
+              onClick={() => exportLeadsToCsv(filteredAndSortedLeads, { search: searchQuery, stage: selectedStage, channel: selectedSource }, firmName)}
               className="h-9 px-2.5 bg-surface hover:bg-surface-subtle border border-border hover:border-border-hover text-content font-medium text-xs rounded-xl shadow-2xs transition-all flex items-center gap-1 cursor-pointer"
               title="Export filtered buyer leads to CSV spreadsheet"
             >
@@ -1082,7 +1085,7 @@ export function LeadsMatrixClient({
                 <>
                   <a
                     href={`https://wa.me/${topConnectNext.phoneE164.replace(/\D/g, '')}?text=${encodeURIComponent(
-                      `Hello ${topConnectNext.leadName}, following up from ZamZam Properties regarding your inquiry for ${
+                      `Hello ${topConnectNext.leadName}, following up from ${firmName} regarding your inquiry for ${
                         topConnectNext.sourceCode || 'Navi Mumbai luxury projects'
                       }.`
                     )}`}
@@ -1417,7 +1420,7 @@ export function LeadsMatrixClient({
                         <>
                           <a
                             href={`https://wa.me/${cleanPhone}?text=${encodeURIComponent(
-                              `Hello ${lead.fullName || 'Sir/Madam'}, Safwan from ZamZam Properties here regarding your property inquiry.`
+                              `Hello ${lead.fullName || 'Sir/Madam'}, Safwan from ${firmName} here regarding your property inquiry.`
                             )}`}
                             target="_blank"
                             rel="noreferrer"
@@ -1777,7 +1780,7 @@ export function LeadsMatrixClient({
                               <>
                                 <a
                                   href={`https://wa.me/${lead.phoneE164.replace(/\D/g, '')}?text=${encodeURIComponent(
-                                    `Hello ${lead.fullName || 'Sir/Ma\'am'}, following up from ZamZam Properties regarding your inquiry for ${lead.sourceCode || 'Navi Mumbai luxury projects'}.`
+                                    `Hello ${lead.fullName || 'Sir/Ma\'am'}, following up from ${firmName} regarding your inquiry for ${lead.sourceCode || 'Navi Mumbai luxury projects'}.`
                                   )}`}
                                   target="_blank"
                                   rel="noreferrer"

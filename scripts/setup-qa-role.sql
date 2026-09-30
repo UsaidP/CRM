@@ -1,5 +1,5 @@
 -- ==============================================================================
--- ZAMZAM CRM: OVERNIGHT AUTONOMOUS QA READ-ONLY ROLE SETUP
+-- LUCKY CRM: OVERNIGHT AUTONOMOUS QA READ-ONLY ROLE SETUP
 -- Execute this script in your PostgreSQL / Supabase SQL Editor as a superuser.
 -- This establishes structural, database-engine level read-only enforcement for
 -- the autonomous QA agent. Prompts are wishes; grants are guarantees.

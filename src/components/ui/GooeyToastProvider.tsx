@@ -7,7 +7,7 @@ import { useTheme } from '@/components/theme/ThemeProvider';
 /**
  * GooeyToastProvider
  * 
- * Synchronizes goey-toast with the ZamZam Design System theme (Light Alabaster / Dark Obsidian).
+ * Synchronizes goey-toast with the Design System theme (Light Alabaster / Dark Obsidian).
  * Renders luxury organic spring-morphed toasts with high accessibility, countdown progress bars,
  * monospace timestamps, and swipe-to-dismiss support.
  */

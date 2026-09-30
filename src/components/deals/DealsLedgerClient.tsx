@@ -32,6 +32,7 @@ import { HallmarkStamp } from '@/components/ui/HallmarkStamp';
 import { AccessibleDialog } from '@/components/ui/AccessibleDialog';
 import { formatDateFull, formatTimeShort } from '@/lib/date-utils';
 import { exportDealsToCsv } from '@/lib/export-utils';
+import { useFirmName } from '@/lib/client/useFirmName';
 import { toast } from '@/lib/client/toast';
 import { FeedbackAlert } from '@/components/ui/FeedbackAlert';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -48,6 +49,8 @@ export function DealsLedgerClient({
   initialUnits?: any[];
   initialSummary?: any;
 }) {
+  // Tenant name for the CSV letterhead (falls back to the product name).
+  const firmName = useFirmName();
   const [deals, setDeals] = useState<any[]>(initialDeals);
   const [summary, setSummary] = useState<any>(initialSummary);
   const [leads, setLeads] = useState<any[]>(initialLeads);
@@ -326,7 +329,7 @@ export function DealsLedgerClient({
 
           <button
             type="button"
-            onClick={() => exportDealsToCsv(filteredDeals, summary, { status: selectedStatus, search: searchQuery })}
+            onClick={() => exportDealsToCsv(filteredDeals, summary, { status: selectedStatus, search: searchQuery }, firmName)}
             title="Export deals ledger to CSV spreadsheet"
             className="h-9 px-3 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-bold shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
           >
@@ -1145,7 +1148,7 @@ export function DealsLedgerClient({
         )}
       </AccessibleDialog>
 
-      {/* MODAL 3: OFFICIAL ZAMZAM REAL ESTATE COMMISSION TAX INVOICE */}
+      {/* MODAL 3: OFFICIAL COMMISSION TAX INVOICE */}
       <AccessibleDialog
         open={Boolean(invoiceDeal)}
         onClose={() => setInvoiceDeal(null)}
@@ -1161,7 +1164,7 @@ export function DealsLedgerClient({
                 </div>
                 <div>
                   <h2 id="deal-invoice-title" className="text-base font-bold text-content font-display">
-                    ZamZam Properties — Commission Tax Invoice
+                    {firmName} — Commission Tax Invoice
                   </h2>
                   <p className="text-[10px] text-content-muted font-mono">
                     Official Brokerage Billing Document • MahaRERA Reg: A52000028714
@@ -1184,7 +1187,7 @@ export function DealsLedgerClient({
               {/* Letterhead */}
               <div className="flex justify-between items-start border-b border-slate-200 pb-3">
                 <div>
-                  <h3 className="font-extrabold text-lg text-[#1B4332] font-display">ZAMZAM REAL ESTATE</h3>
+                  <h3 className="font-extrabold text-lg text-[#1B4332] font-display">{firmName.toUpperCase()}</h3>
                   <p className="text-[10px] text-slate-500 font-mono">GSTIN: 27AABCZ1234F1Z5 • MahaRERA: A52000028714</p>
                   <p className="text-[10px] text-slate-500">Sector 35, Kharghar &amp; Sector 14, Taloja, Navi Mumbai</p>
                 </div>
@@ -1248,7 +1251,7 @@ export function DealsLedgerClient({
                   <span>RTGS / NEFT Direct Settlement Details:</span>
                   <span className="font-mono text-emerald-800">Current A/C • HDFC Bank Kharghar</span>
                 </div>
-                <p className="font-mono">Account Name: <strong>ZAMZAM REAL ESTATE SERVICES LLP</strong></p>
+                <p className="font-mono">Account Name: <strong>{firmName.toUpperCase()}</strong></p>
                 <p className="font-mono">Account No: <strong>50200084920194</strong> • IFSC Code: <strong>HDFC0001234</strong></p>
               </div>
             </div>

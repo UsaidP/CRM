@@ -331,7 +331,7 @@ export function CampaignAttributionManager({ initialCampaigns = [] }: { initialC
                 <label className="block text-xs font-medium text-content mb-1">Custom WhatsApp Prefilled Text</label>
                 <textarea
                   rows={2}
-                  placeholder="Hi ZamZam, saw your video for Sai Marvel 2BHK. Code: MARVEL35..."
+                  placeholder="Hi Team, saw your video for Sai Marvel 2BHK. Code: MARVEL35..."
                   value={formText}
                   onChange={(e) => setFormText(e.target.value)}
                   className="w-full px-3 py-2 bg-surface-inset border border-border rounded-xl text-xs text-content focus:outline-none focus:border-accent"

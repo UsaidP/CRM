@@ -26,6 +26,7 @@ import {
 import { PrioritizedLeadScore } from '@/lib/domain/prioritization-engine';
 import { formatDateShort } from '@/lib/date-utils';
 import { CustomSelect, type CustomSelectOption } from '@/components/ui/CustomSelect';
+import { useFirmName } from '@/lib/client/useFirmName';
 
 export interface KanbanStageDef {
   id: string;
@@ -156,6 +157,7 @@ export function LeadsKanbanBoard({
   onOpenQuickLog,
   onStageChange,
 }: LeadsKanbanBoardProps) {
+  const firmName = useFirmName();
   const [updatingStageLeadId, setUpdatingStageLeadId] = useState<string | null>(null);
   const [draggedLeadId, setDraggedLeadId] = useState<string | null>(null);
   const [dragTarget, setDragTarget] = useState<DragTargetPosition | null>(null);
@@ -677,7 +679,7 @@ export function LeadsKanbanBoard({
                                   <>
                                     <a
                                       href={`https://wa.me/${lead.phoneE164.replace(/\D/g, '')}?text=${encodeURIComponent(
-                                        `Hello ${lead.fullName || ''}, following up from ZamZam Properties.`
+                                        `Hello ${lead.fullName || ''}, following up from ${firmName}.`
                                       )}`}
                                       target="_blank"
                                       rel="noreferrer"

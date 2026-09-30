@@ -14,6 +14,8 @@ import {
 } from '@/lib/domain/cost-calculator';
 import { NAVI_MUMBAI_MICRO_MARKETS } from '@/lib/domain/market-definitions';
 import { formatQuotationWhatsApp } from '@/lib/export-utils';
+import { useFirmIdentity } from '@/lib/client/useFirmName';
+import { resolveFirmName } from '@/lib/constants/brand';
 import { 
   Calculator, 
   HelpCircle, 
@@ -66,13 +68,25 @@ interface SavedQuote {
 }
 
 export default function CostCalculatorPage() {
+  // Tenant identity for the printed letterhead and the WhatsApp quotation.
+  // NOTE: every hook must be declared before any early return in this component.
+  const firm = useFirmIdentity();
+  const firmName = resolveFirmName(firm.name);
+  const firmInitials =
+    firmName
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((w) => w[0].toUpperCase())
+      .join('') || 'AD';
+
   // --- Unit & Project State ---
   const [selectedPresetMarket, setSelectedPresetMarket] = useState<string>('Kharghar Sector 35');
   const [selectedBhk, setSelectedBhk] = useState<number>(2);
   const [projectName, setProjectName] = useState<string>('Crown Greens');
   const [towerUnit, setTowerUnit] = useState<string>('Tower A - Unit 804');
   const [clientName, setClientName] = useState<string>('');
-  const [preparedBy, setPreparedBy] = useState<string>('ZamZam Advisory Team');
+  const [preparedBy, setPreparedBy] = useState<string>('Advisory Team');
   const [quotationNotes, setQuotationNotes] = useState<string>('Includes 1 covered stilt car parking & 1-year clubhouse access.');
 
   // --- Pricing & Dimensions ---
@@ -162,7 +176,7 @@ export default function CostCalculatorPage() {
   // Load Saved Quotes from LocalStorage on mount
   useEffect(() => {
     try {
-      const stored = localStorage.getItem('zamzam_crm_saved_quotes');
+      const stored = localStorage.getItem('lucky_crm_saved_quotes') ?? localStorage.getItem('zamzam_crm_saved_quotes');
       if (stored) {
         setSavedQuotes(JSON.parse(stored));
       }
@@ -317,7 +331,7 @@ export default function CostCalculatorPage() {
     const updated = [newQuote, ...savedQuotes.slice(0, 19)];
     setSavedQuotes(updated);
     try {
-      localStorage.setItem('zamzam_crm_saved_quotes', JSON.stringify(updated));
+      localStorage.setItem('lucky_crm_saved_quotes', JSON.stringify(updated));
       showToast('Quotation successfully saved!');
     } catch (e) {
       console.error(e);
@@ -328,7 +342,7 @@ export default function CostCalculatorPage() {
     e.stopPropagation();
     const updated = savedQuotes.filter(q => q.id !== id);
     setSavedQuotes(updated);
-    localStorage.setItem('zamzam_crm_saved_quotes', JSON.stringify(updated));
+    localStorage.setItem('lucky_crm_saved_quotes', JSON.stringify(updated));
   };
 
   // Reset all parameters to initial defaults
@@ -367,7 +381,7 @@ export default function CostCalculatorPage() {
     setTimeout(() => setCopiedToast(null), 3000);
   };
 
-  // Generate Formatted Text for Copy / WhatsApp using ZamZam Theme
+  // Generate Formatted Text for Copy / WhatsApp
   const generateQuotationText = () => {
     return formatQuotationWhatsApp({
       projectName,
@@ -396,6 +410,7 @@ export default function CostCalculatorPage() {
       requiredDownPayment: loanBreakdown.requiredDownPayment,
       monthlyEMI: loanBreakdown.monthlyEMI,
       quotationNotes,
+      firm: { ...firm, name: firmName },
     });
   };
 
@@ -1787,35 +1802,37 @@ export default function CostCalculatorPage() {
       </div>
 
       {/* =========================================================================
-         OFFICIAL ZAMZAM REAL ESTATE STATUTORY COST SHEET (PRINT / PDF EXPORT ONLY)
+         OFFICIAL STATUTORY COST SHEET (PRINT / PDF EXPORT ONLY)
          Rendered exclusively during window.print() / Save as PDF
          ========================================================================= */}
       <div className="print-only font-sans text-slate-900 bg-white p-4">
-        {/* Document Header with Official ZamZam Branding */}
-        <div className="zamzam-print-header">
+        {/* Document Header with Tenant Branding */}
+        <div className="lucky-print-header">
           <div>
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-[#1B4332] text-white flex items-center justify-center font-bold text-base">
-                ZP
+                {firmInitials}
               </div>
               <div>
-                <h1 className="zamzam-print-brand leading-none">ZAMZAM PROPERTIES</h1>
+                <h1 className="lucky-print-brand leading-none">{firmName.toUpperCase()}</h1>
                 <p className="text-[9pt] font-semibold text-slate-600 tracking-wide mt-0.5">
                   MAHARASHTRA STATUTORY PROPERTY ADVISORY
                 </p>
               </div>
             </div>
             <div className="mt-2 text-[8pt] text-slate-500 font-mono space-y-0.5">
-              <p>MahaRERA Registration: <strong className="text-slate-800 font-bold">A52000028714</strong></p>
-              <p>Office: Sector 35, Kharghar &amp; Sector 14, Taloja Phase 1, Navi Mumbai</p>
-              <p>Contact: +91 98201 23456 • advisory@zamzamproperties.in</p>
+              {firm.reraNumber && (
+                <p>MahaRERA Registration: <strong className="text-slate-800 font-bold">{firm.reraNumber}</strong></p>
+              )}
+              {firm.phone && <p>Contact: {firm.phone}</p>}
+              {firm.website && <p>Web: {firm.website}</p>}
             </div>
           </div>
 
           <div className="text-right">
-            <span className="zamzam-print-badge">OFFICIAL STATUTORY QUOTATION</span>
+            <span className="lucky-print-badge">OFFICIAL STATUTORY QUOTATION</span>
             <div className="mt-2 text-[8pt] font-mono text-slate-600 space-y-0.5">
-              <p>Ref: <strong className="text-slate-900 font-bold">ZP-COST-{new Date().getFullYear()}-{towerUnit.replace(/[^a-zA-Z0-9]/g, '') || '01'}</strong></p>
+              <p>Ref: <strong className="text-slate-900 font-bold">{firmInitials}-COST-{new Date().getFullYear()}-{towerUnit.replace(/[^a-zA-Z0-9]/g, '') || '01'}</strong></p>
               <p>Date: <strong className="text-slate-900 font-bold">{new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</strong></p>
               <p>Valid For: <strong>14 Days from issuance</strong></p>
             </div>
@@ -1827,7 +1844,7 @@ export default function CostCalculatorPage() {
           <div className="space-y-1 border-r border-slate-200 pr-3">
             <p className="text-[7.5pt] font-bold uppercase tracking-wider text-slate-500 font-mono">Purchaser Profile</p>
             <p className="font-bold text-slate-900 text-[10pt]">{clientName || 'Valued Purchaser'}</p>
-            <p className="text-slate-600">Assigned Senior Advisor: <strong>{preparedBy || 'ZamZam Executive Desk'}</strong></p>
+            <p className="text-slate-600">Assigned Senior Advisor: <strong>{preparedBy || 'Executive Desk'}</strong></p>
             <p className="text-slate-600">Structuring Mode: <strong>{stampDutyMode === 'FEMALE_5' ? 'Female Concession (5% Stamp Duty)' : 'Standard Maharashtra Levies'}</strong></p>
           </div>
 
@@ -1844,7 +1861,7 @@ export default function CostCalculatorPage() {
           <h2 className="text-[10pt] font-extrabold uppercase tracking-wide text-[#1B4332] border-b border-[#1B4332] pb-1 font-mono">
             1. Statutory Capitalized Acquisition Cost Breakdown (C_all-in)
           </h2>
-          <table className="zamzam-print-table">
+          <table className="lucky-print-table">
             <thead>
               <tr>
                 <th style={{ width: '8%', textAlign: 'center' }}>Sr</th>
@@ -1981,7 +1998,7 @@ export default function CostCalculatorPage() {
           <h2 className="text-[10pt] font-extrabold uppercase tracking-wide text-[#1B4332] border-b border-[#1B4332] pb-1 font-mono">
             2. Standard MahaRERA Construction-Linked Milestone Schedule
           </h2>
-          <table className="zamzam-print-table">
+          <table className="lucky-print-table">
             <thead>
               <tr>
                 <th style={{ width: '8%', textAlign: 'center' }}>Stage</th>
@@ -2026,14 +2043,16 @@ export default function CostCalculatorPage() {
               <p className="text-slate-500 text-[7.5pt]">Signature: ______________________</p>
             </div>
             <div className="border-t border-slate-400 pt-1 text-right">
-              <p className="font-bold text-slate-800">For ZamZam Properties</p>
+              <p className="font-bold text-slate-800">For {firmName}</p>
               <p className="text-slate-500 text-[7.5pt]">Authorized Real Estate Advisor Stamp &amp; Sign</p>
             </div>
           </div>
         </div>
 
-        <div className="zamzam-print-footer">
-          ZamZam Real Estate • MahaRERA Reg: A52000028714 • Kharghar &amp; Taloja Property Specialists • info@zamzamproperties.in
+        <div className="lucky-print-footer">
+          {[firmName, firm.reraNumber ? `MahaRERA Reg: ${firm.reraNumber}` : null, firm.website]
+            .filter(Boolean)
+            .join(' • ')}
         </div>
       </div>
     </div>

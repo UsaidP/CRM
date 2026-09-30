@@ -1,5 +1,5 @@
 /**
- * TypeScript Interfaces for ZamZam Properties CRM & Real Estate Operations Suite
+ * TypeScript Interfaces for the CRM & Real Estate Operations Suite
  */
 
 export interface Organization {

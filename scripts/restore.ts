@@ -34,7 +34,7 @@ async function runRestore() {
   }
 
   console.log(`=======================================================`);
-  console.log(`🔄 Restoring ZamZam CRM from: ${path.basename(archivePath)}`);
+  console.log(`🔄 Restoring Lucky CRM from: ${path.basename(archivePath)}`);
   console.log(`=======================================================`);
 
   const tempExtractDir = path.join(BACKUPS_DIR, `restore-temp-${Date.now()}`);

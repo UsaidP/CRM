@@ -5,7 +5,7 @@ import type { ReactNode } from 'react';
 import { toUserMessage } from '@/lib/client/user-feedback';
 
 /**
- * GooeyToast options interface re-exported and extended for ZamZam Real Estate CRM.
+ * GooeyToast options interface re-exported and extended for Lucky CRM.
  */
 export interface ToastAction {
   label: string;

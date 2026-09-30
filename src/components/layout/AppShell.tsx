@@ -33,6 +33,7 @@ import {
   X,
   Zap,
   LogOut,
+  Smartphone,
   Shield,
   Cloud,
   Home,
@@ -70,6 +71,7 @@ const navSections: NavSection[] = [
     items: [
       { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
       { href: '/leads', label: 'Leads & Calling', icon: Users },
+      { href: '/admin/companion', label: 'SIM Call Sync', icon: Smartphone },
       { href: '/calendar', label: 'Calendar & Visits', icon: CalendarDays },
     ],
   },
@@ -492,7 +494,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="text-xs font-bold text-content truncate font-display leading-snug">
-                    {currentUser?.fullName || 'ZamZam Advisor'}
+                    {currentUser?.fullName || 'Advisor'}
                   </div>
                   <div className="text-[10px] text-content-muted truncate font-mono leading-none mt-0.5">
                     {currentUser?.role === 'SUPER_ADMIN'

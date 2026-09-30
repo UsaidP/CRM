@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   try {
     const resolvedParams = await Promise.resolve(params);
     const token = resolvedParams?.token;
-    if (!token) return { title: 'Portal Not Found | ZamZam Properties' };
+    if (!token) return { title: 'Portal Not Found' };
 
     const portal = await prisma.clientPortal.findUnique({
       where: { token },

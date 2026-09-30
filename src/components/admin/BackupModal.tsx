@@ -160,7 +160,7 @@ export function BackupModal({
                 </span>
               </div>
               <p className="text-xs text-content-secondary">
-                ZamZam Real Estate Database • SQLite Snapshot • Portable JSON Tables
+                Lucky CRM Database • SQLite Snapshot • Portable JSON Tables
               </p>
             </div>
           </div>

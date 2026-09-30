@@ -41,7 +41,8 @@ import {
   CheckCheck,
   Building,
   CheckSquare,
-  ChevronRight
+  ChevronRight,
+  Headphones,
 } from 'lucide-react';
 import { YoutubeIcon, InstagramIcon } from '@/components/icons/SocialIcons';
 import { formatDateTime } from '@/lib/date-utils';
@@ -50,6 +51,8 @@ import { evaluate24HourMessagingWindow } from '@/lib/constants/broker-constants'
 import { CustomSelect, type CustomSelectOption } from '@/components/ui/CustomSelect';
 import { toast } from '@/lib/client/toast';
 import { AccessibleDialog } from '@/components/ui/AccessibleDialog';
+import { useFirmName } from '@/lib/client/useFirmName';
+import { PRODUCT_NAME } from '@/lib/constants/brand';
 
 // ============================================================================
 // CONSTANTS & OPTIONS
@@ -124,8 +127,8 @@ const WHATSAPP_TEMPLATES = [
   {
     id: 'intro',
     title: '👋 Welcome & Inquiry Greeting',
-    body: (name: string, project: string) =>
-      `Hello ${name || 'Sir/Ma\'am'}, Safwan from ZamZam Properties here regarding your inquiry for ${project || 'Navi Mumbai luxury projects'}. How can I assist you with floor plans, pricing, and availability today?`,
+    body: (name: string, project: string, firm?: string) =>
+      `Hello ${name || 'Sir/Ma\'am'}, Safwan from ${firm ?? PRODUCT_NAME} here regarding your inquiry for ${project || 'Navi Mumbai luxury projects'}. How can I assist you with floor plans, pricing, and availability today?`,
   },
   {
     id: 'brochure',
@@ -174,6 +177,7 @@ export function SourceEvidenceDrawer({
   onLeadDeleted,
   onReassign,
 }: SourceEvidenceDrawerProps) {
+  const firmName = useFirmName();
   // Tabs: 'activity' | 'requirements' | 'portals' | 'dossier'
   const [activeTab, setActiveTab] = useState<'info' | 'activity' | 'requirements' | 'portals' | 'dossier'>('activity');
   const [isFullScreen, setIsFullScreen] = useState(true);
@@ -315,6 +319,18 @@ export function SourceEvidenceDrawer({
     if (req.minCarpetSqft) setMinCarpetSqft(String(req.minCarpetSqft));
   }, [lead]);
 
+  // NOTE: This hook must stay ABOVE the `if (!lead) return null` guard below.
+  // React requires hooks to run in the same order on every render. Previously
+  // this useMemo sat after the guard, so when `lead` was falsy the component
+  // returned before reaching it and the hook count changed between renders —
+  // React throws "Rendered more hooks than during the previous render".
+  // `lead?.` is required here precisely because the guard no longer runs first.
+  const currentWhatsAppText = useMemo(() => {
+    const tmpl = WHATSAPP_TEMPLATES.find((t) => t.id === selectedTemplateId) || WHATSAPP_TEMPLATES[0];
+    return tmpl.body(profileName || lead?.fullName || 'Sir/Ma\'am', lead?.sourceCode || 'Navi Mumbai luxury projects', firmName);
+  }, [selectedTemplateId, profileName, lead?.fullName, lead?.sourceCode, firmName]);
+
+  // Every hook in this component must be declared above this guard.
   if (!lead) return null;
 
   const identities = lead.contact?.identities || [];
@@ -661,12 +677,6 @@ export function SourceEvidenceDrawer({
       setIsRemovingPortal(false);
     }
   };
-
-  // Active WhatsApp Message Text
-  const currentWhatsAppText = useMemo(() => {
-    const tmpl = WHATSAPP_TEMPLATES.find((t) => t.id === selectedTemplateId) || WHATSAPP_TEMPLATES[0];
-    return tmpl.body(profileName || lead.fullName || 'Sir/Ma\'am', lead.sourceCode || 'Navi Mumbai luxury projects');
-  }, [selectedTemplateId, profileName, lead.fullName, lead.sourceCode]);
 
   const activeStageIndex = PIPELINE_STAGES.findIndex((s) => s.id === currentStage);
 
@@ -1524,6 +1534,77 @@ export function SourceEvidenceDrawer({
                                     <div className="p-2.5 bg-surface-inset rounded-xl border border-border text-xs text-content-secondary flex items-start gap-2 mt-1">
                                       <span className="font-black text-accent shrink-0 font-display">NEXT STEP:</span>
                                       <span>{meta.nextSteps}</span>
+                                    </div>
+                                  )}
+
+                                  {/* Audio Recording Player */}
+                                  {(c.callRecordingUrl || meta.callRecordingUrl) && (
+                                    <div className="p-3 bg-surface-subtle border border-accent/20 rounded-xl space-y-2 mt-2">
+                                      <div className="flex items-center justify-between text-xs font-semibold text-content">
+                                        <span className="flex items-center gap-1.5 text-accent font-bold">
+                                          <Headphones className="w-3.5 h-3.5" />
+                                          Call Recording
+                                        </span>
+                                        <a
+                                          href={c.callRecordingUrl || meta.callRecordingUrl}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="text-[10px] text-accent hover:underline flex items-center gap-1 font-mono"
+                                        >
+                                          <ExternalLink className="w-3 h-3" /> Direct Audio
+                                        </a>
+                                      </div>
+                                      <audio
+                                        controls
+                                        preload="none"
+                                        className="w-full h-8 rounded-lg"
+                                        src={c.callRecordingUrl || meta.callRecordingUrl}
+                                      >
+                                        Your browser does not support audio playback.
+                                      </audio>
+                                    </div>
+                                  )}
+
+                                  {/* Gemini Flash Call Intelligence */}
+                                  {(c.aiSummary || meta.aiSummary) && (
+                                    <div className="p-3 bg-accent-soft/30 border border-accent/25 rounded-xl space-y-2 mt-2">
+                                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                                        <div className="flex items-center gap-1.5 text-xs font-bold text-accent">
+                                          <Sparkles className="w-3.5 h-3.5 text-accent animate-pulse" />
+                                          <span>AI Call Intelligence</span>
+                                        </div>
+                                        {(c.aiSentiment || meta.aiSentiment) && (
+                                          <span
+                                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                                              (c.aiSentiment || meta.aiSentiment) === 'POSITIVE'
+                                                ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30'
+                                                : (c.aiSentiment || meta.aiSentiment) === 'NEGATIVE'
+                                                ? 'bg-rose-500/10 text-rose-600 border-rose-500/30'
+                                                : 'bg-amber-500/10 text-amber-600 border-amber-500/30'
+                                            }`}
+                                          >
+                                            {(c.aiSentiment || meta.aiSentiment) === 'POSITIVE'
+                                              ? '🟢 Positive Intent'
+                                              : (c.aiSentiment || meta.aiSentiment) === 'NEGATIVE'
+                                              ? '🔴 Disinterested'
+                                              : '⚪ Neutral'}
+                                          </span>
+                                        )}
+                                      </div>
+                                      <p className="text-xs text-content leading-relaxed font-sans font-medium">
+                                        {c.aiSummary || meta.aiSummary}
+                                      </p>
+
+                                      {c.transcriptText && (
+                                        <details className="mt-2 text-[11px] text-content-muted">
+                                          <summary className="cursor-pointer font-semibold text-accent hover:underline flex items-center gap-1">
+                                            <span>View Full Call Transcript</span>
+                                          </summary>
+                                          <div className="mt-1.5 p-2.5 bg-surface-inset rounded-lg font-mono text-[11px] whitespace-pre-wrap max-h-48 overflow-y-auto border border-border">
+                                            {c.transcriptText}
+                                          </div>
+                                        </details>
+                                      )}
                                     </div>
                                   )}
                                 </>

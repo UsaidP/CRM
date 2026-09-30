@@ -4,7 +4,7 @@ import { RbacManagementClient } from '@/components/admin/RbacManagementClient';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Team & RBAC Authority | ZamZam CRM',
+  title: 'Team & RBAC Authority',
   description: 'Manage broker agent permissions, team assignments, and administrative access.',
 };
 

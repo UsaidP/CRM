@@ -13,7 +13,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ filename
 
     // Security sanitization: prevent directory traversal
     const safeName = path.basename(filename);
-    if (!safeName.startsWith('backup-zamzam-crm-') || !safeName.endsWith('.tar.gz')) {
+    if ((!safeName.startsWith('backup-zamzam-crm-') && !safeName.startsWith('backup-lucky-crm-')) || !safeName.endsWith('.tar.gz')) {
       return NextResponse.json({ error: 'Invalid backup file name' }, { status: 400 });
     }
 

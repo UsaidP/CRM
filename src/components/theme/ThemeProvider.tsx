@@ -19,7 +19,9 @@ const ThemeContext = createContext<ThemeContextType>({
   toggleTheme: () => {},
 });
 
-const STORAGE_KEY = 'zamzam-theme-mode';
+const STORAGE_KEY = 'lucky-theme-mode';
+/** Pre-rename key; still read once so existing users keep their preference. */
+const LEGACY_STORAGE_KEY = 'zamzam-theme-mode';
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<ThemeMode>('dark');
@@ -51,7 +53,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   // Initialize theme from storage or DOM
   useEffect(() => {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY) as ThemeMode | null;
+      const stored = (localStorage.getItem(STORAGE_KEY) ??
+        localStorage.getItem(LEGACY_STORAGE_KEY)) as ThemeMode | null;
       const initialMode: ThemeMode = stored === 'light' || stored === 'dark' || stored === 'system' ? stored : 'dark';
       
       setThemeState(initialMode);

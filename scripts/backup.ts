@@ -15,7 +15,7 @@ async function runBackup() {
   const startTime = Date.now();
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
   const dateStr = new Date().toISOString().slice(0, 10);
-  const backupName = `backup-zamzam-crm-${timestamp}`;
+  const backupName = `backup-lucky-crm-${timestamp}`;
   const stagingDir = path.join(BACKUPS_DIR, `temp-${timestamp}`);
 
   console.log(`=======================================================`);
@@ -165,7 +165,7 @@ async function runBackup() {
     // 6. Prune Old Backups (Retention Policy)
     console.log(`🧹 5. Checking retention policy (Keeping last ${RETENTION_DAYS} backups)...`);
     const allFiles = fs.readdirSync(BACKUPS_DIR)
-      .filter(f => f.startsWith("backup-zamzam-crm-") && f.endsWith(".tar.gz"))
+      .filter(f => (f.startsWith("backup-zamzam-crm-") || f.startsWith("backup-lucky-crm-")) && f.endsWith(".tar.gz"))
       .map(f => ({
         name: f,
         path: path.join(BACKUPS_DIR, f),

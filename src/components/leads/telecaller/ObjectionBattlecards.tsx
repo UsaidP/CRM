@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useFirmName } from '@/lib/client/useFirmName';
 import {
   ShieldAlert,
   HelpCircle,
@@ -75,7 +76,7 @@ const OBJECTIONS: ObjectionItem[] = [
     category: 'FAMILY',
     talkingPoints: [
       'Real estate is a collective family decision—invite entire family.',
-      'Complimentary weekend cab pickup and drop arranged by ZamZam.',
+      'Complimentary weekend cab pickup and drop arranged by our team.',
       'Sample flat, kids play area, and clubhouse tour ready for inspection.',
     ],
     rebuttalScript:
@@ -89,6 +90,7 @@ interface ObjectionBattlecardsProps {
 }
 
 export function ObjectionBattlecards({ leadPhone, leadName }: ObjectionBattlecardsProps) {
+  const firmName = useFirmName();
   const [activeObjectionId, setActiveObjectionId] = useState<string>('price-high');
   const [copiedId, setCopiedId] = useState<string | null>(null);
 

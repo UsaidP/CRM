@@ -83,7 +83,7 @@ export function PropertyMediaHub({
           kind: 'video' as const,
           title: `${project.projectName} ${unit.bhk} BHK Host Walkthrough Tour`,
           hostName: advisor.fullName || 'Property Advisor',
-          hostRole: 'Property Specialist • ZamZam Properties',
+          hostRole: `Property Specialist • ${advisor.orgName}`,
           duration: '1:15',
           posterUrl: photos[0]?.url || project.coverImageUrl || '',
         }
@@ -165,7 +165,7 @@ export function PropertyMediaHub({
         {/* Verified Ground Footing Pill */}
         <div className="hidden sm:flex items-center gap-1.5 text-xs text-gold font-bold bg-amber-50/90 px-3 py-1 rounded-full border border-amber-200 shadow-2xs font-serif">
           <YoutubeIcon className="w-3.5 h-3.5 text-red-600 shrink-0" />
-          <span>Ground Audited by ZamZam</span>
+          <span>Ground Audited by {advisor.orgName.split(' ')[0]}</span>
         </div>
       </div>
 
@@ -337,7 +337,7 @@ export function PropertyMediaHub({
                   {primaryVideo.title}
                 </h4>
                 <p className="mt-1 text-xs text-slate-200">
-                  Watch full ground walkthrough review by ZamZam Properties
+                  Watch full ground walkthrough review by {advisor.orgName}
                 </p>
               </div>
 

@@ -165,7 +165,7 @@ export function CsvImportModal({
 
           <a
             href="/api/v1/inventory/template.csv"
-            download="zamzam_kharghar_taloja_projects_template.csv"
+            download="lucky_crm_kharghar_taloja_projects_template.csv"
             className="btn-secondary px-3 py-1.5 text-xs font-medium flex items-center gap-1.5"
           >
             <Download className="w-3.5 h-3.5" /> Download Template CSV

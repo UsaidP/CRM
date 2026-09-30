@@ -50,6 +50,7 @@ import { TelecallerShiftHud, type ShiftStats } from './telecaller/TelecallerShif
 import { LiveInventoryMatcher, type ProjectMatchItem } from './telecaller/LiveInventoryMatcher';
 import { ObjectionBattlecards } from './telecaller/ObjectionBattlecards';
 import { WhatsAppQuickTemplates } from './telecaller/WhatsAppQuickTemplates';
+import { useFirmName } from '@/lib/client/useFirmName';
 
 interface LeadItem {
   id: string;
@@ -81,8 +82,10 @@ interface TelecallerConsoleViewProps {
   onSetReminder: (lead: LeadItem) => void;
 }
 
-const SHIFT_STORAGE_KEY = 'zamzam_telecaller_shift_stats_v1';
-const AUTO_ADVANCE_KEY = 'zamzam_telecaller_auto_advance';
+const SHIFT_STORAGE_KEY = 'lucky_telecaller_shift_stats_v1';
+const LEGACY_SHIFT_STORAGE_KEY = 'zamzam_telecaller_shift_stats_v1';
+const AUTO_ADVANCE_KEY = 'lucky_telecaller_auto_advance';
+const LEGACY_AUTO_ADVANCE_KEY = 'zamzam_telecaller_auto_advance';
 
 export function TelecallerConsoleView({
   leads,
@@ -91,6 +94,7 @@ export function TelecallerConsoleView({
   onLogCall,
   onSetReminder,
 }: TelecallerConsoleViewProps) {
+  const firmName = useFirmName();
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(leads[0]?.id || null);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeQueueFilter, setActiveQueueFilter] = useState<'ALL' | 'UNCONTACTED' | 'HOT' | 'OVERDUE'>('UNCONTACTED');
@@ -111,7 +115,7 @@ export function TelecallerConsoleView({
   const [shiftStats, setShiftStats] = useState<ShiftStats>(() => {
     if (typeof window !== 'undefined') {
       try {
-        const stored = localStorage.getItem(SHIFT_STORAGE_KEY);
+        const stored = localStorage.getItem(SHIFT_STORAGE_KEY) ?? localStorage.getItem(LEGACY_SHIFT_STORAGE_KEY);
         if (stored) {
           const parsed = JSON.parse(stored);
           const today = new Date().toISOString().split('T')[0];
@@ -135,7 +139,7 @@ export function TelecallerConsoleView({
   // Auto-Advance Power Dialer State
   const [autoAdvanceEnabled, setAutoAdvanceEnabled] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem(AUTO_ADVANCE_KEY);
+      const stored = localStorage.getItem(AUTO_ADVANCE_KEY) ?? localStorage.getItem(LEGACY_AUTO_ADVANCE_KEY);
       if (stored !== null) return stored === 'true';
     }
     return true; // default ON for high velocity
@@ -145,7 +149,7 @@ export function TelecallerConsoleView({
   const [pendingNextLeadId, setPendingNextLeadId] = useState<string | null>(null);
   const countdownTimerRef = useRef<any>(null);
 
-  // ZamZam 4-Pillar Qualification Scorecard State
+  // 4-Pillar Qualification Scorecard State
   const [qualificationIntent, setQualificationIntent] = useState<'IMMEDIATE' | 'EXPLORING' | 'CURIOUS'>('IMMEDIATE');
   const [qualificationBudget, setQualificationBudget] = useState<'LUXURY_125CR' | 'MID_60L_125CR' | 'AFFORDABLE_60L'>('MID_60L_125CR');
   const [qualificationLocation, setQualificationLocation] = useState<'KHARGHAR_PRIME' | 'TALOJA_METRO' | 'ULWE_PANVEL'>('KHARGHAR_PRIME');
@@ -330,7 +334,7 @@ export function TelecallerConsoleView({
     });
   }, [leads, searchQuery, activeQueueFilter]);
 
-  // ZamZam 4-Pillar Scorecard Calculation (0 - 100)
+  // 4-Pillar Scorecard Calculation (0 - 100)
   const qualificationScore = useMemo(() => {
     let score = 0;
     // 01 Intent (30 pts max)
@@ -436,8 +440,8 @@ export function TelecallerConsoleView({
       const baseNotes = cleanedUserNotes ? `${prefix}${cleanedUserNotes}` : prefixParts.join(' ');
 
       const summaryNotes = baseNotes
-        ? `${baseNotes} [ZamZam Score: ${qualificationScore}/100 - ${dispositionLabel}]`
-        : `[ZamZam Score: ${qualificationScore}/100 - ${dispositionLabel}]`;
+        ? `${baseNotes} [Qualification Score: ${qualificationScore}/100 - ${dispositionLabel}]`
+        : `[Qualification Score: ${qualificationScore}/100 - ${dispositionLabel}]`;
 
       await fetch(`/api/v1/leads/${selectedLead.id}`, {
         method: 'PATCH',
@@ -586,8 +590,8 @@ export function TelecallerConsoleView({
       : null;
 
     const prefill = portalUrl
-      ? `Assalamu Alaikum / Hello ${selectedLead.fullName || 'Sir/Madam'}, this is ZamZam Properties following up on your inquiry for ${selectedLead.sourceCode || selectedLead.preferredMicroMarket || 'Navi Mumbai luxury projects'}. Here is your private client presentation portal with verified floor plans, photos and all-in cost sheets: ${portalUrl}`
-      : `Assalamu Alaikum / Hello ${selectedLead.fullName || 'Sir/Madam'}, this is ZamZam Properties following up on your inquiry for ${selectedLead.sourceCode || selectedLead.preferredMicroMarket || 'Navi Mumbai luxury projects'}. Here are our MahaRERA verified project brochures and all-in cost sheets:`;
+      ? `Assalamu Alaikum / Hello ${selectedLead.fullName || 'Sir/Madam'}, this is ${firmName} following up on your inquiry for ${selectedLead.sourceCode || selectedLead.preferredMicroMarket || 'Navi Mumbai luxury projects'}. Here is your private client presentation portal with verified floor plans, photos and all-in cost sheets: ${portalUrl}`
+      : `Assalamu Alaikum / Hello ${selectedLead.fullName || 'Sir/Madam'}, this is ${firmName} following up on your inquiry for ${selectedLead.sourceCode || selectedLead.preferredMicroMarket || 'Navi Mumbai luxury projects'}. Here are our MahaRERA verified project brochures and all-in cost sheets:`;
     return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(prefill)}`;
   };
 
@@ -620,7 +624,7 @@ export function TelecallerConsoleView({
         body: JSON.stringify({
           leadId: selectedLead.id,
           selectedUnitIds: unitIds,
-          customMessage: `Curated MahaRERA verified options prepared for ${selectedLead.fullName || 'you'} by ZamZam Properties.`,
+          customMessage: `Curated MahaRERA verified options prepared for ${selectedLead.fullName || 'you'} by ${firmName}.`,
         }),
       });
 
@@ -1063,12 +1067,12 @@ export function TelecallerConsoleView({
                   </div>
                 </div>
 
-                {/* ZamZam 4-Pillar Buyer Qualification Scorecard */}
+                {/* 4-Pillar Buyer Qualification Scorecard */}
                 <div className="p-3.5 rounded-xl bg-surface-subtle border border-border space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-bold uppercase tracking-wider text-content flex items-center gap-1.5">
                       <Sparkles className="w-3.5 h-3.5 text-accent" />
-                      ZamZam 4-Pillar Qualification
+                      4-Pillar Qualification
                     </span>
                     <span className="font-mono text-xs font-extrabold text-accent-text">
                       Score: {qualificationScore}/100

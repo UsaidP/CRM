@@ -1,4 +1,4 @@
-# ZamZam Real Estate CRM — Domain Glossary
+# Lucky CRM — Domain Glossary
 
 This document defines canonical domain terms for the CRM codebase. Implementation details belong in code and ADRs; this is the glossary of record.
 

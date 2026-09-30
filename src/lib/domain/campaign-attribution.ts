@@ -60,7 +60,7 @@ export function generateCampaignDeepLink(options: {
   const bhkTag = options.bhk ? ` (${options.bhk} BHK)` : '';
   const codeTag = options.sourceCode.toUpperCase();
 
-  const prefilledText = `Hi ZamZam Properties, I saw your video${projTag}${bhkTag}. Code: ${codeTag}. Please share verified pricing and RERA cost sheet.`;
+  const prefilledText = `Hi, I saw your video${projTag}${bhkTag}. Code: ${codeTag}. Please share verified pricing and RERA cost sheet.`;
   const encodedText = encodeURIComponent(prefilledText);
   const waUrl = `https://wa.me/${cleanPhone}?text=${encodedText}`;
 

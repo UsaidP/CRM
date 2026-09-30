@@ -1591,7 +1591,7 @@ export function RbacManagementClient() {
                   label="Email Address"
                   type="email"
                   required
-                  placeholder="e.g. usaid@zamzamproperties.in"
+                  placeholder="e.g. admin@yourfirm.com"
                   value={newEmail}
                   onChange={(e) => setNewEmail(e.target.value)}
                 />

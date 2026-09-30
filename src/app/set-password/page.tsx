@@ -3,8 +3,8 @@ import type { Metadata } from 'next';
 import { SetPasswordClient } from '@/components/auth/SetPasswordClient';
 
 export const metadata: Metadata = {
-  title: 'Activate Account | ZamZam Properties CRM',
-  description: 'Set your password and activate your account on the ZamZam Properties Brokerage Console.',
+  title: 'Activate Account',
+  description: 'Set your password and activate your account on the brokerage console.',
 };
 
 export default function SetPasswordPage() {

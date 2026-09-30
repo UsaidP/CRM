@@ -1874,7 +1874,7 @@ export function ProjectDetailsModal({
         {/* Modal Footer */}
         <div className="p-4 border-t border-border bg-surface-raised flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="text-xs text-content-muted font-mono">
-            ZamZam Verified Real Estate Intelligence • Kharghar &amp; Taloja Corridor
+            Verified Real Estate Intelligence • Kharghar &amp; Taloja Corridor
           </div>
           <div className="flex items-center gap-2">
             {unit ? (

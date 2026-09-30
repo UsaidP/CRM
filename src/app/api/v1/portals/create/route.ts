@@ -62,7 +62,7 @@ export async function POST(req: Request) {
             create: units.map((u, idx) => ({
               propertyUnitId: u.id,
               displayOrder: idx + 1,
-              brokerHighlight: u.isHotDeal ? '🔥 Exclusive ZamZam Direct Pricing' : null,
+              brokerHighlight: u.isHotDeal ? '🔥 Exclusive Direct Pricing' : null,
               isFeatured: idx === 0,
             })),
           },

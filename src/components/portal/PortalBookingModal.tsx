@@ -67,7 +67,7 @@ export function PortalBookingModal({
                 Schedule Physical Site Visit
               </h2>
               <p id="booking-modal-description" className="text-xs text-slate-500">
-                Escorted sample flat tour with dedicated ZamZam Advisor
+                Escorted sample flat tour with dedicated Property Advisor
               </p>
             </div>
           </div>

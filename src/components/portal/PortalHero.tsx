@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { PRODUCT_NAME } from '@/lib/constants/brand';
 import { motion } from 'framer-motion';
 import {
   Sparkles,
@@ -56,7 +57,7 @@ export function PortalHero({
     `Dear ${clientName}, based on your shortlisted preferences for carpet efficiency, natural sunlight, and budget, your dedicated advisor ${advisorName} has curated this verified comparative portfolio in ${primaryLocality}.`;
 
   // Organization name cleanup to avoid duplicate "Advisory Advisory Desk"
-  const rawOrgName = portal.organization?.name || 'ZamZam Properties';
+  const rawOrgName = portal.organization?.name || PRODUCT_NAME;
   const cleanOrgName = rawOrgName.replace(/\s*advisory\s*$/i, '');
 
   const initials = (advisor.fullName || '')

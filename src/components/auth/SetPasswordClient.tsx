@@ -82,7 +82,7 @@ export function SetPasswordClient() {
           </div>
           <div>
             <span className="font-extrabold text-base tracking-tight text-content font-display">
-              ZamZam Realty
+              Lucky CRM
             </span>
             <span className="block text-[10px] text-content-muted font-mono uppercase">
               Team Onboarding
@@ -104,7 +104,7 @@ export function SetPasswordClient() {
               Activate Your Account
             </h1>
             <p className="text-xs text-content-secondary mt-1 font-medium">
-              You have been invited to the ZamZam Properties CRM. Set your password to complete onboarding.
+              You have been invited to Lucky CRM. Set your password to complete onboarding.
             </p>
           </div>
 
@@ -212,7 +212,7 @@ export function SetPasswordClient() {
       </main>
 
       <footer className="p-6 text-center text-[11px] text-content-muted z-10 font-mono">
-        ZamZam Properties Real Estate Advisory • Secure Broker Desk
+        Lucky CRM • Secure Broker Desk
       </footer>
     </div>
   );

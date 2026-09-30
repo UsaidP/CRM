@@ -24,7 +24,7 @@ export async function GET(req: Request) {
     status: 200,
     headers: {
       'Content-Type': 'text/csv; charset=utf-8',
-      'Content-Disposition': 'attachment; filename="zamzam_kharghar_taloja_projects_template.csv"',
+      'Content-Disposition': 'attachment; filename="lucky_crm_kharghar_taloja_projects_template.csv"',
     },
   });
 }

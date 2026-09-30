@@ -82,7 +82,7 @@ export function ResetPasswordClient() {
           </div>
           <div>
             <span className="font-extrabold text-base tracking-tight text-content font-display">
-              ZamZam Realty
+              Lucky CRM
             </span>
             <span className="block text-[10px] text-content-muted font-mono uppercase">
               Set New Password
@@ -213,7 +213,7 @@ export function ResetPasswordClient() {
       </main>
 
       <footer className="p-6 text-center text-[11px] text-content-muted z-10 font-mono">
-        ZamZam Properties Real Estate Advisory • Secure Broker Desk
+        Lucky CRM • Secure Broker Desk
       </footer>
     </div>
   );

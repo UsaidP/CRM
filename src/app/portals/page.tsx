@@ -374,7 +374,7 @@ export default function ClientPortalsConsolePage() {
                           <Activity className="w-3.5 h-3.5 text-accent" /> Logs ({logs.length})
                         </button>
                         <a
-                          href={`https://wa.me/${(portal.lead?.phoneE164 || '').replace(/\+/g, '')}?text=${encodeURIComponent(`Hi ${portal.lead?.fullName || 'Client'}, I noticed you were exploring your property selection on ZamZam Properties. Would you like to schedule an escorted sample flat visit this weekend?`)}`}
+                          href={`https://wa.me/${(portal.lead?.phoneE164 || '').replace(/\+/g, '')}?text=${encodeURIComponent(`Hi ${portal.lead?.fullName || 'Client'}, I noticed you were exploring your property selection. Would you like to schedule an escorted sample flat visit this weekend?`)}`}
                           target="_blank"
                           rel="noreferrer"
                           aria-label={`Follow up with ${portal.lead?.fullName || 'prospective buyer'} on WhatsApp`}

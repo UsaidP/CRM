@@ -1,6 +1,6 @@
-# ZamZam Properties Real Estate CRM
+# Lucky CRM
 
-> ZamZam Properties is an enterprise real estate brokerage operations platform, providing MahaRERA-certified inventory management, automated lead attribution, client presentation portals, and all-in total cost calculation engines.
+> Lucky CRM is an enterprise real estate brokerage operations platform, providing MahaRERA-certified inventory management, automated lead attribution, client presentation portals, and all-in total cost calculation engines.
 
 ## Public Tools & Portals
 

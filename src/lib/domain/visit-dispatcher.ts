@@ -37,13 +37,13 @@ export function buildWhatsAppSiteVisitItinerary(params: SiteVisitScheduleInput):
     stops,
   } = params;
 
-  let message = `🚗 *ZamZam Properties • Confirmed Physical Site Visit Itinerary*\n\n`;
+  let message = `🚗 *Confirmed Physical Site Visit Itinerary*\n\n`;
   message += `Hello ${leadName}! 😊 Your physical property inspection tour is confirmed for *${scheduledDateFormatted}*.\n\n`;
   message += `📍 *Pickup Point*: ${pickupLocation}\n`;
   if (cabDetails) {
     message += `🚕 *Cab Coordination*: ${cabDetails}\n`;
   }
-  message += `👤 *Your ZamZam Property Advisor*: ${assignedBrokerName} (${assignedBrokerPhone})\n\n`;
+  message += `👤 *Your Property Advisor*: ${assignedBrokerName} (${assignedBrokerPhone})\n\n`;
   message += `━━━━━━━━━━━━━━━━━━━━\n`;
   message += `📋 *SCHEDULED TOUR ITINERARY (${stops.length} Projects)*:\n\n`;
 

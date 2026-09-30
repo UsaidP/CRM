@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   DollarSign, 
   Video, 
@@ -10,13 +10,23 @@ import {
   RefreshCw, 
   Target,
   Download,
-  Printer
+  Printer,
+  PhoneCall,
+  Smartphone,
+  Send,
+  Flame,
+  PhoneIncoming,
+  PhoneOutgoing,
+  Clock,
+  Sparkles
 } from 'lucide-react';
 import { YoutubeIcon, InstagramIcon } from '@/components/icons/SocialIcons';
 import { HallmarkStamp } from '@/components/ui/HallmarkStamp';
 import { exportAnalyticsToCsv } from '@/lib/export-utils';
+import { useFirmName } from '@/lib/client/useFirmName';
 import { analyticsApi } from '@/lib/client/analytics';
 import { FeedbackAlert } from '@/components/ui/FeedbackAlert';
+import { toast } from '@/lib/client/toast';
 
 export function AnalyticsClient({
   initialRoi = [],
@@ -33,6 +43,8 @@ export function AnalyticsClient({
   initialFunnel?: any[];
   initialCashFlow?: any;
 }) {
+  // Tenant name for the CSV letterhead (falls back to the product name).
+  const firmName = useFirmName();
   const [loading, setLoading] = useState(false);
   const [uiError, setUiError] = useState<string | null>(null);
   
@@ -43,6 +55,33 @@ export function AnalyticsClient({
   const [, setFunnel] = useState<any[]>(initialFunnel);
   const [, setFunnelSummary] = useState<any>({});
   const [, setCashFlow] = useState<any>(initialCashFlow);
+
+  // SIM Call Analytics State
+  const [callTimeRange, setCallTimeRange] = useState<'today' | 'week' | 'month' | 'all'>('week');
+  const [callOverall, setCallOverall] = useState<any>(null);
+  const [repCallPerformance, setRepCallPerformance] = useState<any[]>([]);
+  const [loadingCalls, setLoadingCalls] = useState(false);
+  const [sendingDigest, setSendingDigest] = useState(false);
+
+  const fetchCallAnalytics = async (range: string = callTimeRange) => {
+    setLoadingCalls(true);
+    try {
+      const res = await fetch(`/api/v1/analytics/rep-performance?timeRange=${range}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.overall) setCallOverall(data.overall);
+        if (data.repPerformance) setRepCallPerformance(data.repPerformance);
+      }
+    } catch {
+      // ignore
+    } finally {
+      setLoadingCalls(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCallAnalytics(callTimeRange);
+  }, [callTimeRange]);
 
   const fetchAllAnalytics = async () => {
     setLoading(true);
@@ -73,10 +112,32 @@ export function AnalyticsClient({
       if (resCash.success) {
         setCashFlow(resCash.data || {});
       }
+      await fetchCallAnalytics(callTimeRange);
     } catch (err: any) {
       setUiError(err.message || 'Analytics could not be refreshed. Check your connection, then try again.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSendDigestNow = async () => {
+    setSendingDigest(true);
+    try {
+      const res = await fetch('/api/v1/cron/daily-call-digest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to dispatch WhatsApp digest');
+      }
+      toast.success('WhatsApp Daily Call Digest Dispatched!', {
+        description: `Delivered to: ${data.recipients?.join(', ') || 'Managing Brokers'}`,
+      });
+    } catch (err: any) {
+      toast.error('Failed to send digest', { description: err.message });
+    } finally {
+      setSendingDigest(false);
     }
   };
 
@@ -111,17 +172,28 @@ export function AnalyticsClient({
             <HallmarkStamp type="ledger" label="From recorded deals" />
           </div>
           <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-content font-display">
-            Content ROI &amp; Revenue Analytics
+            Executive Analytics &amp; Call Intelligence
           </h1>
           <p className="text-content-secondary text-xs mt-0.5">
-            Campaign attribution based on recorded leads and non-cancelled deals. Ad spend is not recorded.
+            Campaign attribution, sales advisor revenue production, and real-time physical SIM call analytics.
           </p>
         </div>
 
         <div className="flex items-center gap-2 flex-wrap w-full md:w-auto">
           <button
             type="button"
-            onClick={() => exportAnalyticsToCsv(contentRoi, leaderboard)}
+            onClick={handleSendDigestNow}
+            disabled={sendingDigest}
+            className="h-9 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-500/30 text-xs font-bold shadow-2xs transition-all flex items-center justify-center gap-1.5 cursor-pointer shrink-0 disabled:opacity-50"
+            title="Send daily executive call digest via WhatsApp to managers"
+          >
+            <Send className="w-3.5 h-3.5" />
+            <span>{sendingDigest ? 'Sending...' : 'WhatsApp Digest'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => exportAnalyticsToCsv(contentRoi, leaderboard, firmName)}
             className="flex-1 md:flex-initial h-9 px-3.5 py-2 rounded-xl bg-surface hover:bg-surface-subtle text-content border border-border text-xs font-bold shadow-2xs transition-all flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
             title="Export full campaign ROI & broker incentive report to CSV"
           >
@@ -216,6 +288,161 @@ export function AnalyticsClient({
         </div>
       </div>
 
+      {/* NEW: PHYSICAL SIM CALL INTELLIGENCE & CALLING PERFORMANCE SECTION */}
+      <div className="p-5 rounded-2xl bg-surface border border-border shadow-xs space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border">
+          <div className="space-y-0.5">
+            <div className="flex items-center gap-2">
+              <span className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600">
+                <PhoneCall className="w-4 h-4" />
+              </span>
+              <h2 className="text-sm font-bold text-content tracking-tight">
+                Physical SIM Calling Performance &amp; AI Intelligence
+              </h2>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-accent-soft text-accent border border-accent/20">
+                Runo-Parity
+              </span>
+            </div>
+            <p className="text-[11px] text-content-muted">
+              Live call metrics captured directly from Samsung &amp; Xiaomi companion lines with Gemini Flash analysis.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <div className="flex rounded-lg border border-border p-0.5 bg-surface-subtle text-xs">
+              {(['today', 'week', 'month', 'all'] as const).map((r) => (
+                <button
+                  key={r}
+                  type="button"
+                  onClick={() => setCallTimeRange(r)}
+                  className={`px-2.5 py-1 rounded-md font-semibold text-[11px] capitalize transition-all ${
+                    callTimeRange === r
+                      ? 'bg-accent text-white shadow-xs'
+                      : 'text-content-muted hover:text-content'
+                  }`}
+                >
+                  {r === 'all' ? 'All Time' : r === 'today' ? 'Today' : `This ${r}`}
+                </button>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() => fetchCallAnalytics(callTimeRange)}
+              disabled={loadingCalls}
+              className="p-1.5 rounded-lg border border-border hover:bg-surface-subtle text-content-muted hover:text-content transition-colors cursor-pointer"
+              title="Refresh SIM calls"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${loadingCalls ? 'animate-spin text-accent' : ''}`} />
+            </button>
+          </div>
+        </div>
+
+        {/* 4 Mini KPI Cards for Calls */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="p-3 bg-surface-inset rounded-xl border border-border space-y-1">
+            <span className="text-[10px] uppercase font-bold text-content-muted block">Total Calls Logged</span>
+            <span className="text-xl font-bold text-content font-mono">{callOverall?.totalCalls ?? 0}</span>
+            <span className="text-[10px] text-content-muted block">
+              {callOverall?.inboundCalls ?? 0} In / {callOverall?.outboundCalls ?? 0} Out
+            </span>
+          </div>
+
+          <div className="p-3 bg-surface-inset rounded-xl border border-border space-y-1">
+            <span className="text-[10px] uppercase font-bold text-content-muted block">Connected Calls</span>
+            <span className="text-xl font-bold text-emerald-600 font-mono">
+              {callOverall?.connectedCalls ?? 0}
+            </span>
+            <span className="text-[10px] text-emerald-600/80 font-bold block">
+              {callOverall?.connectionRatePercent ?? 0}% Connection Rate
+            </span>
+          </div>
+
+          <div className="p-3 bg-surface-inset rounded-xl border border-border space-y-1">
+            <span className="text-[10px] uppercase font-bold text-content-muted block">Total Talk Time</span>
+            <span className="text-xl font-bold text-content font-mono">{callOverall?.formattedDuration ?? '0s'}</span>
+            <span className="text-[10px] text-content-muted block">
+              Avg {callOverall?.averageDurationSeconds ?? 0}s per call
+            </span>
+          </div>
+
+          <div className="p-3 bg-surface-inset rounded-xl border border-border space-y-1">
+            <span className="text-[10px] uppercase font-bold text-content-muted block">High-Intent Leads</span>
+            <span className="text-xl font-bold text-accent font-mono">
+              {(callOverall?.outcomesBreakdown?.INTERESTED ?? 0) + (callOverall?.outcomesBreakdown?.CALLBACK_REQUESTED ?? 0)}
+            </span>
+            <span className="text-[10px] text-accent/80 font-bold block">
+              {callOverall?.outcomesBreakdown?.INTERESTED ?? 0} Interested / {callOverall?.outcomesBreakdown?.CALLBACK_REQUESTED ?? 0} Callback
+            </span>
+          </div>
+        </div>
+
+        {/* Advisor Calling Table */}
+        <div className="overflow-x-auto touch-scroll border border-border rounded-xl">
+          <table className="w-full text-left text-xs min-w-[620px]">
+            <thead className="bg-surface-subtle text-content-secondary uppercase text-[10px] font-bold border-b border-border">
+              <tr>
+                <th className="p-3 pl-4">Rank / Sales Advisor</th>
+                <th className="p-3 text-center">Total Calls</th>
+                <th className="p-3 text-center">Connected Rate</th>
+                <th className="p-3 text-center">Total Talk Time</th>
+                <th className="p-3 text-center">Avg Duration</th>
+                <th className="p-3 pr-4 text-right">High-Intent Leads</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border text-content-secondary">
+              {repCallPerformance.map((rep) => (
+                <tr key={rep.userId} className="hover:bg-surface-subtle/80 transition-colors">
+                  <td className="p-3 pl-4">
+                    <div className="flex items-center gap-2">
+                      <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                        rep.rank === 1 ? 'bg-accent text-white' : rep.rank === 2 ? 'bg-accent-soft text-accent-text border border-accent/20' : 'bg-surface-subtle text-content-muted border border-border'
+                      }`}>
+                        {rep.rank}
+                      </span>
+                      <div>
+                        <span className="font-bold text-content text-xs">{rep.fullName}</span>
+                        <span className="text-[10px] text-content-muted block">{rep.role}</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="p-3 text-center">
+                    <span className="font-bold text-content">{rep.totalCalls}</span>
+                    <span className="text-[10px] text-content-muted block">({rep.inboundCalls} in / {rep.outboundCalls} out)</span>
+                  </td>
+                  <td className="p-3 text-center">
+                    <span className="font-bold text-emerald-600">{rep.connectionRatePercent}%</span>
+                    <span className="text-[10px] text-content-muted block">{rep.connectedCalls} connected</span>
+                  </td>
+                  <td className="p-3 text-center font-mono font-bold text-content">
+                    {rep.formattedDuration}
+                  </td>
+                  <td className="p-3 text-center font-mono text-content-muted">
+                    {rep.averageDurationSeconds}s
+                  </td>
+                  <td className="p-3 pr-4 text-right">
+                    <span className="inline-flex items-center gap-1 font-bold text-accent font-mono">
+                      <Flame className="w-3.5 h-3.5 fill-current" />
+                      {rep.interestedCount + rep.callbackCount}
+                    </span>
+                    <span className="text-[10px] text-content-muted block">
+                      {rep.interestedCount} int / {rep.callbackCount} cb
+                    </span>
+                  </td>
+                </tr>
+              ))}
+
+              {repCallPerformance.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="p-6 text-center text-content-muted text-xs">
+                    No physical SIM call activity recorded for this period.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       {/* 2-Column Working Layout: Content Performance Matrix & Sales Rep Leaderboard */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
         {/* LEFT: Video Attribution & Content ROI Table */}
@@ -241,31 +468,22 @@ export function AnalyticsClient({
                 </tr>
               </thead>
               <tbody className="divide-y divide-border text-content-secondary">
-                {contentRoi.map((c, i) => {
-                  const title = c.campaignName || c.title || c.customSlug || 'Campaign Asset';
-                  const leads = c.totalLeads ?? c.leadCount ?? 0;
-                  const visits = c.totalVisits ?? c.siteVisitCount ?? 0;
-                  const deals = c.totalDeals ?? c.dealsClosed ?? 0;
-                  const gmv = c.attributedAgreementValue ?? c.attributedGmv;
-                  const rev = c.firmNetRupees ?? c.firmRevenue;
-
-                  return (
-                    <tr key={i} className="hover:bg-surface-subtle/80 transition-colors">
-                      <td className="p-3.5 pl-4">
-                        <div className="flex items-center gap-2">
-                          {getChannelIcon(c.channelType || c.campaignType)}
-                          <span className="font-bold text-content text-xs">{title}</span>
-                        </div>
-                        <span className="text-[11px] font-mono text-content-muted block truncate max-w-[160px]">{c.customSlug}</span>
-                      </td>
-                      <td className="p-3.5 text-center text-content font-bold">{leads}</td>
-                      <td className="p-3.5 text-center text-content-secondary">{visits}</td>
-                      <td className="p-3.5 text-center text-status-success font-bold">{deals}</td>
-                      <td className="p-3.5 text-right font-bold text-content font-mono">{formatINR(gmv)}</td>
-                      <td className="p-3.5 pr-4 text-right font-bold text-accent-text font-mono">{formatINR(rev)}</td>
-                    </tr>
-                  );
-                })}
+                {contentRoi.map((item, i) => (
+                  <tr key={i} className="hover:bg-surface-subtle/80 transition-colors">
+                    <td className="p-3.5 pl-4">
+                      <div className="flex items-center gap-2 font-bold text-content">
+                        {getChannelIcon(item.channelType)}
+                        <span className="truncate max-w-[180px]">{item.campaignName}</span>
+                      </div>
+                      <span className="text-[10px] font-mono text-content-muted block">{item.customSlug}</span>
+                    </td>
+                    <td className="p-3.5 text-center font-mono">{item.totalLeads}</td>
+                    <td className="p-3.5 text-center font-mono">{item.totalVisits}</td>
+                    <td className="p-3.5 text-center font-mono font-bold text-status-success">{item.totalDeals}</td>
+                    <td className="p-3.5 text-right font-mono text-content">{formatINR(item.attributedAgreementValue)}</td>
+                    <td className="p-3.5 pr-4 text-right font-mono font-bold text-status-success">{formatINR(item.grossBrokerageRupees)}</td>
+                  </tr>
+                ))}
 
                 {contentRoi.length === 0 && (
                   <tr>
@@ -284,7 +502,7 @@ export function AnalyticsClient({
           <div className="p-4 bg-surface-subtle border-b border-border flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Trophy className="w-4 h-4 text-accent" />
-              <h3 className="font-bold text-content text-xs uppercase tracking-wider">Broker Performance Leaderboard</h3>
+              <h3 className="font-bold text-content text-xs uppercase tracking-wider">Broker Revenue Leaderboard</h3>
             </div>
             <span className="text-[11px] font-mono text-content-muted">{leaderboard.length} Advisors</span>
           </div>

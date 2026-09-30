@@ -58,7 +58,7 @@ export async function generateFullBackup(triggeredBy?: {
   const startTime = Date.now();
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
   const dateStr = new Date().toISOString().slice(0, 10);
-  const backupName = `backup-zamzam-crm-${timestamp}`;
+  const backupName = `backup-lucky-crm-${timestamp}`;
   const stagingDir = path.join(BACKUPS_DIR, `temp-${timestamp}`);
 
   if (!fs.existsSync(BACKUPS_DIR)) {
@@ -174,7 +174,7 @@ export async function generateFullBackup(triggeredBy?: {
     const manifest = {
       backupTimestamp: new Date().toISOString(),
       date: dateStr,
-      app: 'ZamZam Real Estate CRM',
+      app: 'Lucky CRM',
       version: '1.0.0',
       retentionDays: RETENTION_DAYS,
       databaseType: isPostgres ? 'PostgreSQL' : 'SQLite',
@@ -276,7 +276,7 @@ export function getAvailableBackups(): BackupListItem[] {
   if (!fs.existsSync(BACKUPS_DIR)) return [];
 
   const files = fs.readdirSync(BACKUPS_DIR)
-    .filter(f => f.startsWith('backup-zamzam-crm-') && f.endsWith('.tar.gz'))
+    .filter(f => (f.startsWith('backup-zamzam-crm-') || f.startsWith('backup-lucky-crm-')) && f.endsWith('.tar.gz'))
     .map(f => {
       const fullPath = path.join(BACKUPS_DIR, f);
       const stats = fs.statSync(fullPath);
@@ -299,7 +299,7 @@ function pruneOldBackups() {
 
   const MAX_LOCAL_RETENTION = 3;
   const allFiles = fs.readdirSync(BACKUPS_DIR)
-    .filter(f => f.startsWith('backup-zamzam-crm-') && f.endsWith('.tar.gz'))
+    .filter(f => (f.startsWith('backup-zamzam-crm-') || f.startsWith('backup-lucky-crm-')) && f.endsWith('.tar.gz'))
     .map(f => ({
       path: path.join(BACKUPS_DIR, f),
       time: fs.statSync(path.join(BACKUPS_DIR, f)).mtime.getTime()

@@ -359,7 +359,7 @@ export function LeadCsvImportModal({
 
             <a
               href="/api/v1/leads/template.csv"
-              download="zamzam_leads_import_template.csv"
+              download="lucky_crm_leads_import_template.csv"
               className="px-3.5 py-1.5 rounded-xl bg-surface hover:bg-surface-subtle border border-border hover:border-accent text-content hover:text-accent font-bold transition-all flex items-center gap-1.5 shadow-2xs text-xs"
             >
               <Download className="w-3.5 h-3.5" /> Template

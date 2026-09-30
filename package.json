@@ -1,5 +1,5 @@
 {
-  "name": "zamzam-crm",
+  "name": "lucky-crm",
   "version": "0.1.0",
   "private": true,
   "packageManager": "bun@1.3.4",
@@ -9,6 +9,8 @@
     "postinstall": "prisma generate",
     "start": "next start",
     "lint": "eslint src/",
+    "setup:hooks": "git config core.hooksPath .githooks && echo 'git hooks enabled -> .githooks/pre-commit'",
+    "audit": "bun audit --audit-level=high",
     "db:push": "bunx prisma db push",
     "db:seed": "bun prisma/seed.js",
     "db:clean": "bun scripts/clean-db.js",
@@ -27,7 +29,9 @@
     "open:brave": "open -a 'Brave Browser' http://localhost:3000",
     "memory": "agentmemory",
     "memory:status": "agentmemory status",
-    "memory:viewer": "open http://localhost:3113"
+    "memory:viewer": "open http://localhost:3113",
+    "memory:crm": "bash scripts/agent-memory/start.sh",
+    "memory:crm:viewer": "open http://localhost:3213"
   },
   "dependencies": {
     "@google/genai": "^2.19.0",

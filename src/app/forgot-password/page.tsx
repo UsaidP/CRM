@@ -3,8 +3,8 @@ import type { Metadata } from 'next';
 import { ForgotPasswordClient } from '@/components/auth/ForgotPasswordClient';
 
 export const metadata: Metadata = {
-  title: 'Forgot Password | ZamZam Properties CRM',
-  description: 'Reset your password for the ZamZam Properties Real Estate Brokerage Console.',
+  title: 'Forgot Password',
+  description: 'Reset your password for the brokerage console.',
 };
 
 export default function ForgotPasswordPage() {

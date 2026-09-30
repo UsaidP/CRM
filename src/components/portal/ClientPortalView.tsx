@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { PRODUCT_NAME } from '@/lib/constants/brand';
 import { motion } from 'framer-motion';
 import {
   Building2,
@@ -110,10 +111,10 @@ export function ClientPortalView({ portal, token }: ClientPortalViewProps) {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: portal?.title || 'ZamZam Properties Curated Selection',
+          title: portal?.title || `${portal.organization?.name || PRODUCT_NAME} Curated Selection`,
           text: `Review these verified property options curated for ${
             portal.lead?.fullName || 'you'
-          } by ZamZam Properties:`,
+          } by ${portal.organization?.name || PRODUCT_NAME}:`,
           url: window.location.href,
         });
         sendTelemetry('PORTAL_SHARE');
@@ -134,6 +135,7 @@ export function ClientPortalView({ portal, token }: ClientPortalViewProps) {
   };
 
   const advisor = useMemo(() => {
+    const orgName = portal.organization?.name || PRODUCT_NAME;
     // 1. Creator of the portal (exact user who generated it)
     if (portal.createdBy && (portal.createdBy.fullName || portal.createdBy.phoneE164)) {
       return {
@@ -141,6 +143,7 @@ export function ClientPortalView({ portal, token }: ClientPortalViewProps) {
         phoneE164: portal.createdBy.phoneE164,
         email: portal.createdBy.email,
         role: portal.createdBy.role,
+        orgName,
       };
     }
     // 2. Assigned Lead Broker fallback
@@ -150,6 +153,7 @@ export function ClientPortalView({ portal, token }: ClientPortalViewProps) {
         phoneE164: portal.lead.assignedBroker.phoneE164,
         email: portal.lead.assignedBroker.email,
         role: portal.lead.assignedBroker.role,
+        orgName,
       };
     }
     // 3. Organization Default
@@ -158,6 +162,7 @@ export function ClientPortalView({ portal, token }: ClientPortalViewProps) {
       phoneE164: '+91 99677 31071',
       email: 'advisory@zamzamproperties.in',
       role: 'Senior Property Advisor',
+      orgName,
     };
   }, [portal]);
 
@@ -173,7 +178,7 @@ export function ClientPortalView({ portal, token }: ClientPortalViewProps) {
     const propertySummary = unit?.project?.projectName
       ? `\n\n🏡 *${unit.project.projectName}* - Unit ${unit.unitNumber || 'Selected'}\n📍 ${unit.project.microMarket || 'Navi Mumbai'}\n💰 All-In Price: ${formatLakhCr(unit.allInTotalCost || 0)} (${formatIndianRupees(unit.allInTotalCost || 0)})`
       : '';
-    const text = `Hi ${advisorName} (${portal.organization?.name || 'ZamZam Properties'}), I am reviewing the curated options for ${clientName}:${propertySummary}\n\nCould you please share more details or arrange a site visit?`;
+    const text = `Hi ${advisorName} (${portal.organization?.name || PRODUCT_NAME}), I am reviewing the curated options for ${clientName}:${propertySummary}\n\nCould you please share more details or arrange a site visit?`;
     const phone = (advisor.phoneE164 || '').replace(/[^0-9]/g, '') || '919967731071';
     window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
   };
@@ -182,7 +187,7 @@ export function ClientPortalView({ portal, token }: ClientPortalViewProps) {
     sendTelemetry('VISIT_BOOKING_CLICK', unit?.id);
     const advisorName = advisor.fullName || 'Property Advisor';
     const cabNote = needsCab ? ' (Includes station pickup cab)' : '';
-    const text = `Hi ${advisorName} (${portal.organization?.name || 'ZamZam Properties'}), I would like to schedule a physical site visit for:\n\n🏡 *${
+    const text = `Hi ${advisorName} (${portal.organization?.name || PRODUCT_NAME}), I would like to schedule a physical site visit for:\n\n🏡 *${
       unit?.project?.projectName || 'Shortlisted Property'
     }*\n📅 Preferred Slot: ${slot}${cabNote}\n👤 Name: ${portal.lead?.fullName || 'Client'}\n\nPlease confirm the itinerary.`;
     const phone = (advisor.phoneE164 || '').replace(/[^0-9]/g, '') || '919967731071';
@@ -222,7 +227,7 @@ export function ClientPortalView({ portal, token }: ClientPortalViewProps) {
       videoUrl: embedUrl,
       title,
       hostName: videoAsset?.hostName || advisor.fullName || 'Property Specialist',
-      hostRole: videoAsset?.hostRole || `${advisor.fullName ? `${advisor.fullName} • ` : ''}${portal.organization?.name || 'ZamZam Properties'} Desk`,
+      hostRole: videoAsset?.hostRole || `${advisor.fullName ? `${advisor.fullName} • ` : ''}${portal.organization?.name || PRODUCT_NAME} Desk`,
       isYouTube,
       isInstagram,
     });
@@ -315,7 +320,7 @@ export function ClientPortalView({ portal, token }: ClientPortalViewProps) {
               </h2>
             </div>
             <span className="text-xs text-slate-500 font-mono font-bold">
-              Live Verified Pricing • Ground Audited by ZamZam
+              Live Verified Pricing • Ground Audited by {(portal.organization?.name || PRODUCT_NAME).split(' ')[0]}
             </span>
           </div>
 
