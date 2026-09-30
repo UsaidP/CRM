@@ -31,8 +31,12 @@
     "context7": {
       "serverUrl": "https://mcp.context7.com/mcp",
       "headers": {
-        "Authorization": "Bearer ctx7sk-74af3138-efe7-4704-9100-2091e12301e5"
+        "Authorization": "Bearer ${CONTEXT7_API_KEY}"
       }
+    },
+    "sentry": {
+      "type": "http",
+      "url": "https://mcp.sentry.dev/mcp"
     }
   }
 }

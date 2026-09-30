@@ -1,0 +1,26 @@
+{
+  "mcpServers": {
+    "sentry": {
+      "type": "http",
+      "url": "https://mcp.sentry.dev/mcp/zamzam-crm/crm-web"
+    },
+    "context7": {
+      "type": "http",
+      "url": "https://mcp.context7.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${CONTEXT7_API_KEY}"
+      }
+    },
+    "agentmemory": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@agentmemory/mcp"
+      ],
+      "env": {
+        "AGENTMEMORY_URL": "http://localhost:3211",
+        "AGENTMEMORY_TOOLS": "all"
+      }
+    }
+  }
+}

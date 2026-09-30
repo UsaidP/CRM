@@ -23,3 +23,12 @@ test*.txt
 *.dmg
 *.pkg
 *.iso
+
+# Claude Code — machine-specific local settings.
+# .claude/settings.json IS tracked (shared team/agent config); only the local overlay is ignored.
+.claude/settings.local.json
+
+# Playwright / axe audit artifacts
+test-results/
+playwright-report/
+blob-report/

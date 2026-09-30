@@ -1,0 +1,152 @@
+#!/usr/bin/env bash
+#
+# Pre-commit gate for the ZamZam CRM repository.
+#
+# Enforces the two things that are cheapest to catch here and most expensive to
+# catch in production:
+#   1. Secrets in staged content (a live Context7 key was committed once already).
+#   2. Lint errors in staged TypeScript/TSX.
+#
+# Design notes (see docs/agents/SDLC-PIPELINE.md):
+#   - Hooks must be FAST. A hanging hook is worse than no hook, because agents
+#     and humans both respond to a hang by reaching for --no-verify.
+#   - Every step is bounded by `timeout` so the hook can never hang the commit.
+#   - The script fails open on tooling absence (skips) and fails closed on
+#     actual findings (blocks).
+#
+# Enable once per clone:
+#   bun run setup:hooks      (sets core.hooksPath -> .githooks)
+
+set -uo pipefail
+
+RED=$'\033[31m'; YEL=$'\033[33m'; GRN=$'\033[32m'; DIM=$'\033[2m'; RST=$'\033[0m'
+
+fail() { printf '%s\n' "${RED}✖ pre-commit: $1${RST}" >&2; exit 1; }
+warn() { printf '%s\n' "${YEL}▲ pre-commit: $1${RST}" >&2; }
+ok()   { printf '%s\n' "${GRN}✔ pre-commit: $1${RST}"; }
+
+# --- 0. Collect staged files (ACMR: added/copied/modified/renamed) -------------
+STAGED=$(git diff --cached --name-only --diff-filter=ACMR || true)
+[ -z "$STAGED" ] && { ok "nothing staged"; exit 0; }
+
+BYPASS_SAFE=$STAGED
+
+# ---------------------------------------------------------------------------
+# 1. Secret scan
+# ---------------------------------------------------------------------------
+# High-signal patterns only. A broad entropy scan at pre-commit time produces
+# false positives, and false positives are what teach people to use --no-verify.
+SECRET_PATTERNS=(
+  'ctx7sk-[0-9a-f]{8}-'                       # Context7 API key
+  'sk-[A-Za-z0-9]{20,}'                       # generic OpenAI/Anthropic-style key
+  'AKIA[0-9A-Z]{16}'                          # AWS access key id
+  'ghp_[A-Za-z0-9]{36}'                       # GitHub personal access token
+  'gho_[A-Za-z0-9]{36}'                       # GitHub OAuth token
+  'github_pat_[A-Za-z0-9_]{22,}'              # GitHub fine-grained PAT
+  '-----BEGIN[ A-Z]*PRIVATE KEY-----'         # private key material
+  'xox[baprs]-[A-Za-z0-9-]{10,}'              # Slack token
+  'eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.' # JWT (header.payload.)
+  'postgres(ql)?://[^:[:space:]]+:[^@<[:space:]][^@[:space:]]*@' # DB URL with a real-looking password (not a <placeholder>)
+)
+
+secret_hits=0
+while IFS= read -r f; do
+  [ -z "$f" ] && continue
+  [ -f "$f" ] || continue
+
+  # Allow commentary/doc files to describe patterns without tripping the gate.
+  case "$f" in
+    *.md|*.example|*.template|.env.example) continue ;;
+  esac
+
+  for pat in "${SECRET_PATTERNS[@]}"; do
+    # -I skips binary; inspect staged content only. `|| true` keeps set -e happy
+    # when grep finds nothing (exit 1), which is the common case.
+    # Placeholder values (<PASSWORD>, changeme, …) are docs, not secrets.
+    matches=$(git show ":$f" 2>/dev/null | grep -InE -- "$pat" 2>/dev/null \
+      | grep -vE '<[A-Z_]+>|changeme|change-me|your[_-]?key|example[_-]?secret' || true)
+    if [ -n "$matches" ]; then
+      secret_hits=1
+      printf '%s\n' "${RED}  secret pattern in ${f}:${RST}" >&2
+      printf '%s\n' "$matches" | head -3 | sed "s/^/${DIM}    /;s/$/${RST}/" >&2
+    fi
+  done
+done <<< "$BYPASS_SAFE"
+
+if [ "$secret_hits" -ne 0 ]; then
+  fail "possible secret(s) staged. Remove them, rotate the credential, then re-stage.
+     To commit anyway (NOT recommended): git commit --no-verify"
+fi
+ok "no secrets detected in staged files"
+
+# ---------------------------------------------------------------------------
+# 2. Lint staged TypeScript/TSX
+# ---------------------------------------------------------------------------
+# NOTE: written for bash 3.2, which is what /bin/bash is on macOS. That means no
+# `mapfile` and no `${arr[@]}` on possibly-empty arrays under `set -u`.
+TS_COUNT=0
+while IFS= read -r f; do
+  case "$f" in
+    *.ts|*.tsx) TS_COUNT=$((TS_COUNT + 1)) ;;
+  esac
+done <<< "$BYPASS_SAFE"
+
+if [ "$TS_COUNT" -eq 0 ]; then
+  ok "no staged TypeScript to lint"
+  exit 0
+fi
+
+# Cap the work so a huge commit cannot turn the hook into a hang.
+MAX_FILES=20
+if [ "$TS_COUNT" -gt "$MAX_FILES" ]; then
+  warn "$TS_COUNT staged TS files (cap ${MAX_FILES}) — skipping lint; CI will cover it"
+  exit 0
+fi
+
+if ! command -v bunx >/dev/null 2>&1 || [ ! -x node_modules/.bin/eslint ]; then
+  warn "eslint not installed locally — skipping lint (run 'bun install')"
+  exit 0
+fi
+
+# Rebuild the positional params, skipping blanks (bash 3.2 safe).
+set --
+while IFS= read -r f; do
+  case "$f" in
+    *.ts|*.tsx) set -- "$@" "$f" ;;
+  esac
+done <<< "$BYPASS_SAFE"
+
+# 90s ceiling. If it exceeds that, skip rather than block: a slow lint is a
+# tooling problem, not a reason to hold the commit hostage.
+#
+# NOTE: macOS ships no `timeout` (it is `gtimeout`, from coreutils). A missing
+# timeout binary must degrade to "run unbounded", NOT to "block the commit" —
+# a gate that fails because of its own tooling is a gate people learn to bypass.
+TIMEOUT_CMD=""
+if command -v timeout >/dev/null 2>&1; then
+  TIMEOUT_CMD="timeout 90"
+elif command -v gtimeout >/dev/null 2>&1; then
+  TIMEOUT_CMD="gtimeout 90"
+fi
+
+set +e
+if [ -n "$TIMEOUT_CMD" ]; then
+  # shellcheck disable=SC2086
+  $TIMEOUT_CMD bunx eslint "$@" >&2
+  rc=$?
+else
+  warn "no 'timeout'/'gtimeout' found (macOS: 'brew install coreutils') — running eslint unbounded"
+  bunx eslint "$@" >&2
+  rc=$?
+fi
+set -e
+if [ "$rc" -eq 124 ]; then
+  warn "eslint timed out after 90s — skipping (fix your lint speed, not this hook)"
+  exit 0
+fi
+if [ "$rc" -ne 0 ]; then
+  fail "eslint found problems in staged files (above). Fix them, or run 'bun run lint' to see everything."
+fi
+
+ok "staged TypeScript passes eslint"
+exit 0

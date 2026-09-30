@@ -1,0 +1,112 @@
+name: Security Gates
+
+# The gap this closes: scripts/agent-hooks/guard-bash.mjs and .githooks/pre-commit
+# stop an *agent* from committing a secret or bypassing checks locally. Neither
+# can stop a leak that reaches the remote, and neither scans dependencies for
+# newly-disclosed CVEs. This workflow is the backstop.
+#
+# Scope notes:
+#   - Semgrep / gitleaks / dependency audits are already prescribed by the
+#     constraint-driven-development skill; they were simply not wired into CI.
+#   - Blocking thresholds are deliberately ratcheted: only unambiguous findings
+#     fail the build today (real secrets, HIGH/CRITICAL CVEs, Semgrep ERROR
+#     severity). Everything else is reported. Tighten over time — do not start
+#     with a gate the codebase cannot pass, or the check becomes noise that
+#     people learn to ignore.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Weekly, so newly-disclosed CVEs in dormant dependencies still surface.
+    - cron: '0 3 * * 1'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Least privilege: every job here only reads the repo. PR commenting is disabled
+# on gitleaks specifically so that no write scope is required.
+permissions:
+  contents: read
+
+jobs:
+  secret-scan:
+    name: Secret Scan (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          # Full history: a secret removed in a later commit is still leaked.
+          fetch-depth: 0
+
+      - name: Run gitleaks
+        uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # No GITLEAKS_LICENSE needed: this is a personal repo. If the repo is
+          # ever moved under an organization, add the free key as a secret.
+          GITLEAKS_ENABLE_COMMENTS: false
+          GITLEAKS_ENABLE_SUMMARY: true
+
+  dependency-audit:
+    name: Dependency Vulnerabilities
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun Environment
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile || bun install
+
+      - name: Audit Dependencies (blocks on HIGH and CRITICAL)
+        run: bun audit --audit-level=high
+
+  static-analysis:
+    name: Static Analysis (Semgrep)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Semgrep
+        # The marketed `semgrep/semgrep-action` is deprecated; the supported
+        # path is the CLI.
+        run: pip install --disable-pip-version-check semgrep
+
+      - name: Run Semgrep
+        # --severity ERROR + --error => only ERROR-severity findings fail the
+        # build, so warnings stay visible without blocking unrelated PRs.
+        run: |
+          semgrep scan \
+            --config p/default \
+            --config p/owasp-top-ten \
+            --severity ERROR \
+            --error \
+            --sarif --output semgrep.sarif \
+            --metrics off \
+            --disable-version-check
+
+      - name: Upload Semgrep SARIF
+        # Always run: the artifact is most valuable on the run that failed.
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: semgrep-sarif
+          path: semgrep.sarif
+          if-no-files-found: ignore
+          retention-days: 14
