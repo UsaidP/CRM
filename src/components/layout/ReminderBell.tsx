@@ -343,8 +343,8 @@ export function ReminderBell({ variant = 'compact' }: ReminderBellProps) {
                 reminderType: completing.reminderType,
                 leadId: completing.leadId,
                 lead: {
-                  fullName: completing.lead?.fullName || completing.lead?.contact?.fullName || null,
-                  phoneE164: completing.lead?.phoneE164 || completing.lead?.contact?.phoneE164 || null,
+                  fullName: resolveReminderLeadName(completing),
+                  phoneE164: resolveReminderPhone(completing),
                   currentStage: completing.lead?.currentStage || undefined,
                 },
               }
