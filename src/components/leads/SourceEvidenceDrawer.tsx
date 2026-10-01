@@ -156,11 +156,13 @@ function formatIdentityType(type: string) {
     case 'PHONE':
       return { label: 'Direct Mobile', icon: Phone, color: 'text-emerald-500' };
     case 'WHATSAPP_ID':
+    case 'WHATSAPP_WAID':
     case 'WHATSAPP':
       return { label: 'WhatsApp Direct', icon: MessageSquare, color: 'text-emerald-600 dark:text-emerald-400' };
     case 'EMAIL':
       return { label: 'Email Address', icon: Mail, color: 'text-blue-500' };
     case 'INSTAGRAM_HANDLE':
+    case 'INSTAGRAM_IGID':
     case 'INSTAGRAM':
       return { label: 'Instagram Profile', icon: InstagramIcon, color: 'text-pink-500' };
     default:
@@ -1149,7 +1151,7 @@ export function SourceEvidenceDrawer({
                         const meta = formatIdentityType(id.identityType);
                         const Icon = meta.icon;
                         const isPhone = id.identityType === 'PHONE_E164' || id.identityType === 'PHONE';
-                        const isWhatsApp = id.identityType === 'WHATSAPP_ID' || id.identityType === 'WHATSAPP';
+                        const isWhatsApp = id.identityType === 'WHATSAPP_ID' || id.identityType === 'WHATSAPP_WAID' || id.identityType === 'WHATSAPP';
                         return (
                           <div
                             key={id.id}

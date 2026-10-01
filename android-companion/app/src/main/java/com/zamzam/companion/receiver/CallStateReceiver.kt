@@ -95,11 +95,13 @@ class CallStateReceiver : BroadcastReceiver() {
         var duration = 0
 
         try {
+            val selection = "${CallLog.Calls.DATE} >= ?"
+            val selectionArgs = arrayOf((callStartTimeMs - 5000).toString())
             val cursor = context.contentResolver.query(
                 CallLog.Calls.CONTENT_URI,
                 arrayOf(CallLog.Calls.NUMBER, CallLog.Calls.TYPE, CallLog.Calls.DURATION),
-                null,
-                null,
+                selection,
+                selectionArgs,
                 "${CallLog.Calls.DATE} DESC"
             )
 

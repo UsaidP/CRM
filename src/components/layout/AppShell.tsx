@@ -130,6 +130,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [isBackupModalOpen, setIsBackupModalOpen] = useState(false);
   const [backupModalMode, setBackupModalMode] = useState<'BACKUP' | 'DUTY_END'>('BACKUP');
   const [isOrgSettingsModalOpen, setIsOrgSettingsModalOpen] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(true);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const mql = window.matchMedia('(min-width: 1024px)');
+    setIsDesktop(mql.matches);
+    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    mql.addEventListener('change', handler);
+    return () => mql.removeEventListener('change', handler);
+  }, []);
 
   // Global Omnisearch State
   const [searchResults, setSearchResults] = useState<{
@@ -372,7 +382,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </button>
           )}
 
-          <ReminderBell variant="compact" />
+          {!isDesktop && <ReminderBell variant="compact" />}
 
           <button
             type="button"
@@ -613,7 +623,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             {/* Right: Reminders, Active Call Timer, GDrive Backup, Quick Links & Status */}
             <div className="flex items-center gap-2 xl:gap-2.5 shrink-0">
               {/* Due & overdue follow-ups — personal to the logged-in user's scoped leads */}
-              <ReminderBell variant="full" />
+              {isDesktop && <ReminderBell variant="full" />}
 
               {/* Google Drive Cloud Backup Button (Visible only to Admin / Super Admin) */}
               {isAdmin && (

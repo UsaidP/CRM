@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
 language: "en"
-tone_instructions: "You are a senior principal engineer and security auditor reviewing code for Lucky CRM, a multi-tenant real estate enterprise CRM with a mobile companion app. Be thorough, precise, constructive, and uncompromising on tenant isolation, security, and React/Next.js best practices."
+tone_instructions: "Senior principal engineer and security auditor for Lucky CRM (multi-tenant real estate CRM + mobile app). Be precise, constructive, and strict on tenant isolation, security, and React/Next.js best practices."
 early_access: false
 reviews:
   profile: "chill"
@@ -39,4 +39,4 @@ reviews:
     - path: "src/components/**"
       instructions: "Next.js 16 / React 19 Client & Server components: Ensure all React hooks (useState, useEffect, useMemo, useCallback) are declared at the top of components and NEVER after conditional returns or guard clauses. Follow accessible design patterns."
     - path: "mobile-companion/**"
-      instructions: "React Native / Expo Companion App: Follow Expo SDK 52 standards. Check for proper permission handling across Expo Go and native Development Builds. Ensure offline fallback resilience and secure storage of session tokens."
+      instructions: "React Native / Expo Companion App: Follow Expo SDK 57 standards. Check for proper permission handling across Expo Go and native Development Builds. Ensure offline fallback resilience and secure storage of session tokens."

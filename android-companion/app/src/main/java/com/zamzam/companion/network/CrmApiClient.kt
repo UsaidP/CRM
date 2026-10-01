@@ -25,8 +25,7 @@ class CrmApiClient {
             if (authToken.isNotBlank()) {
                 reqBuilder.addHeader("Authorization", "Bearer $authToken")
             }
-            val response = client.newCall(reqBuilder.build()).execute()
-            response.isSuccessful
+            client.newCall(reqBuilder.build()).execute().use { it.isSuccessful }
         } catch (e: Exception) {
             false
         }
@@ -43,9 +42,11 @@ class CrmApiClient {
                 reqBuilder.addHeader("Authorization", "Bearer $authToken")
             }
 
-            val res = client.newCall(reqBuilder.build()).execute()
-            val body = res.body?.string() ?: return null
-            gson.fromJson(body, UploadTicketResponse::class.java)
+            client.newCall(reqBuilder.build()).execute().use { res ->
+                if (!res.isSuccessful) return null
+                val body = res.body?.string() ?: return null
+                gson.fromJson(body, UploadTicketResponse::class.java)
+            }
         } catch (e: Exception) {
             e.printStackTrace()
             null
@@ -100,8 +101,7 @@ class CrmApiClient {
                 reqBuilder.addHeader("Authorization", "Bearer $authToken")
             }
 
-            val res = client.newCall(reqBuilder.build()).execute()
-            res.isSuccessful
+            client.newCall(reqBuilder.build()).execute().use { it.isSuccessful }
         } catch (e: Exception) {
             e.printStackTrace()
             false

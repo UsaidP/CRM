@@ -180,8 +180,8 @@ CodeRabbit (`.coderabbit.yaml`) inspects every diff against repository-specific 
 Development in this repo spans both the Web application and the Mobile Companion:
 
 - **Web CRM (`src/`)**: Next.js 16 App Router, Prisma ORM, Tailwind CSS, multi-tenant RBAC.
-- **Mobile Companion (`mobile-companion/`)**: React Native / Expo SDK 52 with custom native Android modules (`expo-call-monitor` for SIM call logging, contact management, and WhatsApp deep links).
-- **Companion Invariant**: Google Play limits `READ_CALL_LOG` on Expo Go. Use development builds (`bun run build:dev` or `bun run build:preview` via EAS) for native hardware testing, or use the built-in call simulation engine in Expo Go for rapid UI/flow validation.
+- **Mobile Companion (`mobile-companion/`)**: React Native / Expo SDK 57 with custom native Android modules (`expo-call-monitor` for SIM call logging, contact management, and WhatsApp deep links).
+- **Companion Invariant**: Google Play limits `READ_CALL_LOG` on Expo Go. Use development builds (`cd mobile-companion && bun run build:dev` or `cd mobile-companion && bun run build:preview` via EAS) for native hardware testing, or use the built-in call simulation engine in Expo Go for rapid UI/flow validation.
 
 ---
 

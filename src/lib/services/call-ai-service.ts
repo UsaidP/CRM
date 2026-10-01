@@ -66,6 +66,18 @@ async function resolveAudioBuffer(
 ): Promise<{ buffer: Buffer; mimeType: string } | null> {
   try {
     if (audioUrl.startsWith('http://') || audioUrl.startsWith('https://')) {
+      const parsedUrl = new URL(audioUrl);
+      const isAllowedHost = [
+        'res.cloudinary.com',
+        'cloudinary.com',
+        'localhost',
+        '127.0.0.1',
+      ].some((host) => parsedUrl.hostname === host || parsedUrl.hostname.endsWith(`.${host}`));
+      if (!isAllowedHost) {
+        console.warn(`[Call AI] Untrusted remote audio host rejected: ${parsedUrl.hostname}`);
+        return null;
+      }
+
       const res = await fetch(audioUrl);
       if (!res.ok) {
         console.warn(`[Call AI] Failed to fetch remote audio: HTTP ${res.status}`);
@@ -76,10 +88,12 @@ async function resolveAudioBuffer(
       return { buffer: Buffer.from(arrayBuffer), mimeType };
     }
 
-    // Local file path (e.g., /uploads/recordings/call_123.mp3)
-    let localPath = audioUrl;
-    if (audioUrl.startsWith('/')) {
-      localPath = path.join(process.cwd(), 'public', audioUrl);
+    // Local file path (strictly bounded to public/uploads/recordings)
+    const baseDir = path.resolve(process.cwd(), 'public', 'uploads', 'recordings');
+    const localPath = path.resolve(process.cwd(), 'public', audioUrl.replace(/^\/+/, ''));
+    if (!localPath.startsWith(baseDir + path.sep) && localPath !== baseDir) {
+      console.warn('[Call AI] Rejected audio path outside recordings dir:', audioUrl);
+      return null;
     }
     if (fs.existsSync(/*turbopackIgnore: true*/ localPath)) {
       const buffer = fs.readFileSync(/*turbopackIgnore: true*/ localPath);

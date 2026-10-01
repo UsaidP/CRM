@@ -16,7 +16,7 @@ class AppPreferences(context: Context) {
         set(value) = prefs.edit().putString("auth_token", value.trim()).apply()
 
     var brokerPhone: String
-        get() = prefs.getString("broker_phone", "+917977552011") ?: "+917977552011"
+        get() = prefs.getString("broker_phone", "") ?: ""
         set(value) = prefs.edit().putString("broker_phone", value.trim()).apply()
 
     var recentCallsSummary: String
