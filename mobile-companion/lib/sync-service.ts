@@ -19,17 +19,28 @@ export async function processCallEvent(event: CallEvent): Promise<void> {
   const store = useAppStore.getState();
   const brokerPhone = store.brokerPhone;
 
-  // 1. Add to local call log immediately
-  const entry: CallLogEntry = {
-    clientCallId: event.clientCallId,
-    phoneNumber: event.phoneNumber,
-    direction: event.direction,
-    durationSeconds: event.durationSeconds,
-    callEndTimeMs: event.callEndTimeMs,
-    syncStatus: 'pending',
-    timestamp: new Date(event.callEndTimeMs).toISOString(),
-  };
-  store.addCall(entry);
+  // 1. Add to local call log immediately (or update existing on retry)
+  const exists = store.recentCalls.some((c) => c.clientCallId === event.clientCallId);
+  if (exists) {
+    store.updateCallStatus(event.clientCallId, 'pending');
+  } else {
+    const entry: CallLogEntry = {
+      clientCallId: event.clientCallId,
+      phoneNumber: event.phoneNumber,
+      direction: event.direction,
+      durationSeconds: event.durationSeconds,
+      callEndTimeMs: event.callEndTimeMs,
+      syncStatus: 'pending',
+      timestamp: new Date(event.callEndTimeMs).toISOString(),
+    };
+    store.addCall(entry);
+  }
+
+  if (!brokerPhone) {
+    console.warn('[CallSync] Cannot sync call: brokerPhone is not configured');
+    store.updateCallStatus(event.clientCallId, 'failed');
+    return;
+  }
 
   // 2. Wait for OEM recorder to flush audio file (2.5 seconds, same as Kotlin app)
   await delay(2500);

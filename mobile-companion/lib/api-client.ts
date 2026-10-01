@@ -20,22 +20,31 @@ export function getDefaultServerUrl(): string {
     return 'http://localhost:3000';
   }
 
-  // 1. Try to extract the Metro dev host IP from Expo Constants
-  const hostUri =
-    Constants.expoConfig?.hostUri ||
-    (Constants as any).manifest2?.extra?.expoGo?.debuggerHost ||
-    (Constants as any).manifest?.debuggerHost ||
-    (Constants as any).expoGoConfig?.debuggerHost;
-
-  if (hostUri) {
-    const ip = hostUri.split(':')[0];
-    if (ip && ip !== 'localhost' && ip !== '127.0.0.1') {
-      return `http://${ip}:3000`;
-    }
+  // 1. Check for configured apiUrl from EAS build or app.json extra
+  const configuredApiUrl = (Constants.expoConfig?.extra as Record<string, any> | undefined)?.apiUrl;
+  if (configuredApiUrl) {
+    return configuredApiUrl;
   }
 
-  // 2. Default to current Wi-Fi LAN IP
-  return 'http://10.189.221.87:3000';
+  // 2. In development / Expo Go, extract Metro dev host IP
+  if (__DEV__) {
+    const hostUri =
+      Constants.expoConfig?.hostUri ||
+      (Constants as any).manifest2?.extra?.expoGo?.debuggerHost ||
+      (Constants as any).manifest?.debuggerHost ||
+      (Constants as any).expoGoConfig?.debuggerHost;
+
+    if (hostUri) {
+      const ip = hostUri.split(':')[0];
+      if (ip && ip !== 'localhost' && ip !== '127.0.0.1') {
+        return `http://${ip}:3000`;
+      }
+    }
+
+    return 'http://10.189.221.87:3000';
+  }
+
+  return '';
 }
 
 /**
@@ -146,7 +155,7 @@ class CrmApiClient {
 
   async init(): Promise<{ serverUrl: string; authToken: string; brokerPhone: string; userName: string }> {
     let savedUrl = (await safeGetItem(KEYS.SERVER_URL)) || '';
-    if (!savedUrl || savedUrl.includes('10.0.2.2')) {
+    if (!savedUrl || (__DEV__ && savedUrl.includes('10.0.2.2'))) {
       savedUrl = getDefaultServerUrl();
     }
     this.serverUrl = normalizeServerUrl(savedUrl);

@@ -78,11 +78,14 @@ class CallMonitorModule : Module() {
             var canQuery = false
             if (callLog) {
                 try {
+                    val callLogUri = CallLog.Calls.CONTENT_URI.buildUpon()
+                        .appendQueryParameter(CallLog.Calls.LIMIT_PARAM_KEY, "1")
+                        .build()
                     val cursor = context.contentResolver.query(
-                        CallLog.Calls.CONTENT_URI,
+                        callLogUri,
                         arrayOf(CallLog.Calls._ID),
                         null, null,
-                        "${CallLog.Calls.DATE} DESC LIMIT 1"
+                        CallLog.Calls.DEFAULT_SORT_ORDER
                     )
                     cursor?.close()
                     canQuery = true
@@ -107,11 +110,14 @@ class CallMonitorModule : Module() {
             var canQueryCallLog = false
             if (callLogPermission) {
                 try {
+                    val callLogUri = CallLog.Calls.CONTENT_URI.buildUpon()
+                        .appendQueryParameter(CallLog.Calls.LIMIT_PARAM_KEY, "1")
+                        .build()
                     val cursor = context.contentResolver.query(
-                        CallLog.Calls.CONTENT_URI,
+                        callLogUri,
                         arrayOf(CallLog.Calls._ID),
                         null, null,
-                        "${CallLog.Calls.DATE} DESC LIMIT 1"
+                        CallLog.Calls.DEFAULT_SORT_ORDER
                     )
                     cursor?.close()
                     canQueryCallLog = true
@@ -354,7 +360,7 @@ class CallMonitorService : Service() {
             startForeground(
                 NOTIFICATION_ID,
                 notification,
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_PHONE_CALL
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
             )
         } else {
             startForeground(NOTIFICATION_ID, notification)
@@ -468,10 +474,13 @@ class CallStateReceiver : BroadcastReceiver() {
         var duration = 0
 
         try {
+            val selection = "${CallLog.Calls.DATE} >= ?"
+            val selectionArgs = arrayOf((callStartTimeMs - 5000).toString())
             val cursor = context.contentResolver.query(
                 CallLog.Calls.CONTENT_URI,
                 arrayOf(CallLog.Calls.NUMBER, CallLog.Calls.TYPE, CallLog.Calls.DURATION),
-                null, null,
+                selection,
+                selectionArgs,
                 "${CallLog.Calls.DATE} DESC"
             )
 

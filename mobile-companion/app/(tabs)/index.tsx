@@ -112,6 +112,10 @@ export default function DashboardScreen() {
 
   // Test simulation: create a sample call event to verify pipeline
   const handleSimulateCall = async () => {
+    if (!__DEV__ && !isExpoGo()) {
+      Alert.alert('Simulation Restricted', 'Call simulation is only allowed in development or Expo Go.');
+      return;
+    }
     setIsSimulating(true);
     const mockCall = {
       clientCallId: `sim_${Date.now()}`,
@@ -261,7 +265,7 @@ export default function DashboardScreen() {
                       }
                       try {
                         setHasPerms(hasPermissions());
-                      } catch {}
+                      } catch { }
                     }}
                   >
                     <Ionicons name="shield-checkmark" size={14} color="#070913" />
@@ -374,17 +378,19 @@ export default function DashboardScreen() {
         </View>
 
         {/* Developer / Simulation Action */}
-        <TouchableOpacity
-          style={styles.simulateButton}
-          onPress={handleSimulateCall}
-          disabled={isSimulating}
-          activeOpacity={0.8}
-        >
-          <MaterialCommunityIcons name="test-tube" size={18} color="#d4af37" />
-          <Text style={styles.simulateButtonText}>
-            {isSimulating ? 'Processing Simulated Call...' : 'Test Simulation Call (+919820098200)'}
-          </Text>
-        </TouchableOpacity>
+        {(__DEV__ || isExpoGo()) && (
+          <TouchableOpacity
+            style={styles.simulateButton}
+            onPress={handleSimulateCall}
+            disabled={isSimulating}
+            activeOpacity={0.8}
+          >
+            <MaterialCommunityIcons name="test-tube" size={18} color="#d4af37" />
+            <Text style={styles.simulateButtonText}>
+              {isSimulating ? 'Processing Simulated Call...' : 'Test Simulation Call (+919820098200)'}
+            </Text>
+          </TouchableOpacity>
+        )}
 
         {/* Recent Calls Feed */}
         <View style={styles.card}>
@@ -410,16 +416,16 @@ export default function DashboardScreen() {
                       call.direction === 'INCOMING'
                         ? 'arrow-down'
                         : call.direction === 'OUTGOING'
-                        ? 'arrow-up'
-                        : 'close'
+                          ? 'arrow-up'
+                          : 'close'
                     }
                     size={16}
                     color={
                       call.direction === 'MISSED'
                         ? '#ef4444'
                         : call.direction === 'INCOMING'
-                        ? '#10b981'
-                        : '#38bdf8'
+                          ? '#10b981'
+                          : '#38bdf8'
                     }
                   />
                 </View>

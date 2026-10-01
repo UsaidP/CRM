@@ -45,7 +45,7 @@ export const useAppStore = create<AppState>((set) => ({
   isAuthenticated: false,
   serverUrl: '',
   userName: '',
-  brokerPhone: '+917977552011',
+  brokerPhone: '',
   isMonitoring: false,
   deviceInfo: null,
   oemRecordingPath: null,
@@ -53,14 +53,14 @@ export const useAppStore = create<AppState>((set) => ({
 
   // Auth actions
   setAuth: (serverUrl, userName, brokerPhone) =>
-    set((state) => ({
+    set({
       isAuthenticated: true,
       serverUrl,
       userName,
-      brokerPhone: brokerPhone || state.brokerPhone,
-    })),
+      brokerPhone: brokerPhone || '',
+    }),
   clearAuth: () =>
-    set({ isAuthenticated: false, serverUrl: '', userName: '' }),
+    set({ isAuthenticated: false, serverUrl: '', userName: '', brokerPhone: '' }),
 
   // Monitoring actions
   setMonitoring: (active) => set({ isMonitoring: active }),

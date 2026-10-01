@@ -22,3 +22,52 @@ if (fs.existsSync(rnDir)) {
     }
   }
 }
+
+// 2. Patch expo-modules-autolinking Gradle plugin to align with Kotlin 2.2.0 and AGP 9
+const autolinkingDir = path.resolve(__dirname, '../node_modules/expo-modules-autolinking/android/expo-gradle-plugin');
+if (fs.existsSync(autolinkingDir)) {
+  const rootBuildKts = path.join(autolinkingDir, 'build.gradle.kts');
+  if (fs.existsSync(rootBuildKts)) {
+    let content = fs.readFileSync(rootBuildKts, 'utf8');
+    const original = content;
+    content = content.replace(/version "2\.1\.\d+"/g, 'version "2.2.0"');
+    if (!content.includes('-Xskip-metadata-version-check')) {
+      content += `
+subprojects {
+  tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    compilerOptions {
+      freeCompilerArgs.add("-Xskip-metadata-version-check")
+      freeCompilerArgs.add("-Xskip-prerelease-check")
+    }
+  }
+}
+`;
+    }
+    if (content !== original) {
+      fs.writeFileSync(rootBuildKts, content, 'utf8');
+      console.log('[patch-rn] Patched expo-gradle-plugin/build.gradle.kts with Kotlin 2.2.0 and compiler flags');
+    }
+  }
+
+  const subprojects = [
+    'expo-autolinking-settings-plugin',
+    'expo-autolinking-plugin',
+    'expo-max-sdk-override-plugin',
+  ];
+
+  for (const subproj of subprojects) {
+    const subBuildKts = path.join(autolinkingDir, subproj, 'build.gradle.kts');
+    if (fs.existsSync(subBuildKts)) {
+      let content = fs.readFileSync(subBuildKts, 'utf8');
+      if (!content.includes('-Xskip-metadata-version-check')) {
+        content = content.replace(
+          'jvmTarget.set(JvmTarget.JVM_11)',
+          'jvmTarget.set(JvmTarget.JVM_11)\n    freeCompilerArgs.add("-Xskip-metadata-version-check")\n    freeCompilerArgs.add("-Xskip-prerelease-check")'
+        );
+        fs.writeFileSync(subBuildKts, content, 'utf8');
+        console.log(`[patch-rn] Patched ${subproj}/build.gradle.kts with compilerOptions`);
+      }
+    }
+  }
+}
+

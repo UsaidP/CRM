@@ -15,7 +15,6 @@ class RecordingFinderModule : Module() {
             // Samsung OneUI
             "/storage/emulated/0/Recordings/Call recordings",
             "/storage/emulated/0/Recordings/Call",
-            "/storage/emulated/0/Recordings",
             // Xiaomi / Redmi / POCO (MIUI & HyperOS)
             "/storage/emulated/0/MIUI/sound_recorder/call_rec",
             "/storage/emulated/0/sound_recorder/call_rec",
@@ -24,10 +23,8 @@ class RecordingFinderModule : Module() {
             "/storage/emulated/0/Recordings/PhoneRecord",
             // Vivo (FuntouchOS)
             "/storage/emulated/0/Record/Call",
-            "/storage/emulated/0/Record",
-            // Standard Android / Music
-            "/storage/emulated/0/CallRecordings",
-            "/storage/emulated/0/Sounds"
+            // Standard Android / OEM specific
+            "/storage/emulated/0/CallRecordings"
         )
 
         private val AUDIO_EXTENSIONS = listOf("mp3", "m4a", "wav", "amr", "aac", "ogg")
@@ -89,8 +86,11 @@ class RecordingFinderModule : Module() {
                 MediaStore.Audio.Media.DATA,
                 MediaStore.Audio.Media.DATE_MODIFIED
             )
-            val selection = "${MediaStore.Audio.Media.DATE_MODIFIED} >= ?"
-            val selectionArgs = arrayOf((windowStartMs / 1000).toString())
+            val selection = "${MediaStore.Audio.Media.DATE_MODIFIED} >= ? AND ${MediaStore.Audio.Media.DATE_MODIFIED} <= ?"
+            val selectionArgs = arrayOf(
+                (windowStartMs / 1000).toString(),
+                (windowEndMs / 1000).toString()
+            )
             val sortOrder = "${MediaStore.Audio.Media.DATE_MODIFIED} DESC"
 
             context.contentResolver.query(
@@ -98,9 +98,10 @@ class RecordingFinderModule : Module() {
                 projection, selection, selectionArgs, sortOrder
             )?.use { cursor ->
                 val dataCol = cursor.getColumnIndex(MediaStore.Audio.Media.DATA)
-                if (dataCol != -1 && cursor.moveToFirst()) {
-                    val filePath = cursor.getString(dataCol)
-                    if (filePath != null) {
+                while (dataCol != -1 && cursor.moveToNext()) {
+                    val filePath = cursor.getString(dataCol) ?: continue
+                    val lower = filePath.lowercase()
+                    if (lower.contains("call") || lower.contains("record")) {
                         val file = File(filePath)
                         if (file.exists() && file.length() > 1024) {
                             return file.absolutePath

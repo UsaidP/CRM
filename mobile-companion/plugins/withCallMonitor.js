@@ -14,6 +14,7 @@ function withGradleWrapperUpdate(config) {
   return withDangerousMod(config, [
     'android',
     async (config) => {
+      // 1. Upgrade wrapper to 9.4.1 for AGP 9 support
       const wrapperPath = path.join(
         config.modRequest.platformProjectRoot,
         'gradle',
@@ -22,9 +23,69 @@ function withGradleWrapperUpdate(config) {
       );
       if (fs.existsSync(wrapperPath)) {
         let content = fs.readFileSync(wrapperPath, 'utf8');
-        content = content.replace(/gradle-9\.[0-3]\.\d+-bin\.zip/g, 'gradle-9.4.1-bin.zip');
+        content = content.replace(/gradle-[\d\.]+-bin\.zip/g, 'gradle-9.4.1-bin.zip');
         fs.writeFileSync(wrapperPath, content, 'utf8');
       }
+
+      // 2. Set kotlin.suppressUnsupportedVersionErrors in gradle.properties
+      const gradlePropsPath = path.join(
+        config.modRequest.platformProjectRoot,
+        'gradle.properties'
+      );
+      if (fs.existsSync(gradlePropsPath)) {
+        let content = fs.readFileSync(gradlePropsPath, 'utf8');
+        if (!content.includes('kotlin.suppressUnsupportedVersionErrors')) {
+          content += '\nkotlin.suppressUnsupportedVersionErrors=true\n';
+          fs.writeFileSync(gradlePropsPath, content, 'utf8');
+        }
+      }
+
+      // 3. Patch autolinking plugin Kotlin version & compiler flags
+      const autolinkingDir = path.join(
+        config.modRequest.projectRoot,
+        'node_modules/expo-modules-autolinking/android/expo-gradle-plugin'
+      );
+      if (fs.existsSync(autolinkingDir)) {
+        const rootBuildKts = path.join(autolinkingDir, 'build.gradle.kts');
+        if (fs.existsSync(rootBuildKts)) {
+          let content = fs.readFileSync(rootBuildKts, 'utf8');
+          content = content.replace(/version "2\.1\.\d+"/g, 'version "2.2.0"');
+          if (!content.includes('-Xskip-metadata-version-check')) {
+            content += `
+subprojects {
+  tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    compilerOptions {
+      freeCompilerArgs.add("-Xskip-metadata-version-check")
+      freeCompilerArgs.add("-Xskip-prerelease-check")
+    }
+  }
+}
+`;
+          }
+          fs.writeFileSync(rootBuildKts, content, 'utf8');
+        }
+
+        const subprojects = [
+          'expo-autolinking-settings-plugin',
+          'expo-autolinking-plugin',
+          'expo-max-sdk-override-plugin',
+        ];
+
+        for (const subproj of subprojects) {
+          const subBuildKts = path.join(autolinkingDir, subproj, 'build.gradle.kts');
+          if (fs.existsSync(subBuildKts)) {
+            let content = fs.readFileSync(subBuildKts, 'utf8');
+            if (!content.includes('-Xskip-metadata-version-check')) {
+              content = content.replace(
+                'jvmTarget.set(JvmTarget.JVM_11)',
+                'jvmTarget.set(JvmTarget.JVM_11)\n    freeCompilerArgs.add("-Xskip-metadata-version-check")\n    freeCompilerArgs.add("-Xskip-prerelease-check")'
+              );
+              fs.writeFileSync(subBuildKts, content, 'utf8');
+            }
+          }
+        }
+      }
+
       return config;
     },
   ]);
@@ -49,6 +110,8 @@ function withCallMonitor(config) {
       'android.permission.WRITE_CALL_LOG',
       'android.permission.READ_PHONE_NUMBERS',
       'android.permission.PROCESS_OUTGOING_CALLS',
+      'android.permission.FOREGROUND_SERVICE',
+      'android.permission.FOREGROUND_SERVICE_DATA_SYNC',
     ];
     for (const perm of requiredPermissions) {
       const exists = manifest.manifest['uses-permission'].some(
@@ -71,7 +134,7 @@ function withCallMonitor(config) {
           'android:name': 'expo.modules.callmonitor.CallMonitorService',
           'android:enabled': 'true',
           'android:exported': 'false',
-          'android:foregroundServiceType': 'phoneCall',
+          'android:foregroundServiceType': 'dataSync',
         },
       });
     }

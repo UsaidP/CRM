@@ -28,7 +28,7 @@ export default function LoginScreen() {
       setServerUrl(getDefaultServerUrl());
     }
   }, []);
-  const [phoneNumber, setPhoneNumber] = useState('7977552011');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [countryCode, setCountryCode] = useState('+91');
   const [otp, setOtp] = useState('');
   const [step, setStep] = useState<'PHONE' | 'OTP'>('PHONE');
