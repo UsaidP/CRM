@@ -71,3 +71,35 @@ subprojects {
   }
 }
 
+// 3. Patch expo-dev-launcher and expo-modules-core Gradle plugins for Kotlin 2.2.0 compatibility
+function patchStandaloneGradlePlugin(pluginPath, name) {
+  if (fs.existsSync(pluginPath)) {
+    let content = fs.readFileSync(pluginPath, 'utf8');
+    const original = content;
+    content = content.replace(/version "2\.1\.\d+"/g, 'version "2.2.0"');
+    if (!content.includes('-Xskip-metadata-version-check')) {
+      content = content.replace(
+        'jvmTarget.set(JvmTarget.JVM_11)',
+        'jvmTarget.set(JvmTarget.JVM_11)\n    freeCompilerArgs.add("-Xskip-metadata-version-check")\n    freeCompilerArgs.add("-Xskip-prerelease-check")'
+      );
+    }
+    if (content !== original) {
+      fs.writeFileSync(pluginPath, content, 'utf8');
+      console.log(`[patch-rn] Patched ${name} with Kotlin 2.2.0 and compiler flags`);
+    }
+  }
+}
+
+const devLauncherPluginKts = path.resolve(
+  __dirname,
+  '../node_modules/expo-dev-launcher/expo-dev-launcher-gradle-plugin/build.gradle.kts'
+);
+patchStandaloneGradlePlugin(devLauncherPluginKts, 'expo-dev-launcher-gradle-plugin');
+
+const expoModulesCorePluginKts = path.resolve(
+  __dirname,
+  '../node_modules/expo-modules-core/expo-module-gradle-plugin/build.gradle.kts'
+);
+patchStandaloneGradlePlugin(expoModulesCorePluginKts, 'expo-module-gradle-plugin');
+
+

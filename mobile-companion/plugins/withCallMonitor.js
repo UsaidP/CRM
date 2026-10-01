@@ -86,6 +86,28 @@ subprojects {
         }
       }
 
+      // 4. Patch expo-dev-launcher and expo-modules-core Gradle plugins
+      const standalonePlugins = [
+        path.join(config.modRequest.projectRoot, 'node_modules/expo-dev-launcher/expo-dev-launcher-gradle-plugin/build.gradle.kts'),
+        path.join(config.modRequest.projectRoot, 'node_modules/expo-modules-core/expo-module-gradle-plugin/build.gradle.kts'),
+      ];
+      for (const pluginKts of standalonePlugins) {
+        if (fs.existsSync(pluginKts)) {
+          let content = fs.readFileSync(pluginKts, 'utf8');
+          const original = content;
+          content = content.replace(/version "2\.1\.\d+"/g, 'version "2.2.0"');
+          if (!content.includes('-Xskip-metadata-version-check')) {
+            content = content.replace(
+              'jvmTarget.set(JvmTarget.JVM_11)',
+              'jvmTarget.set(JvmTarget.JVM_11)\n    freeCompilerArgs.add("-Xskip-metadata-version-check")\n    freeCompilerArgs.add("-Xskip-prerelease-check")'
+            );
+          }
+          if (content !== original) {
+            fs.writeFileSync(pluginKts, content, 'utf8');
+          }
+        }
+      }
+
       return config;
     },
   ]);
