@@ -14,7 +14,7 @@ import {
   PhoneCall,
   RefreshCw,
 } from 'lucide-react';
-import { fetchReminders, updateReminder, type ReminderListItem } from '@/lib/client/calendar';
+import { fetchReminders, resolveReminderLeadName, resolveReminderPhone, updateReminder, type ReminderListItem } from '@/lib/client/calendar';
 import { CompleteReminderPrompt } from '@/components/reminders/CompleteReminderPrompt';
 import { toast } from '@/lib/client/toast';
 
@@ -231,8 +231,8 @@ export function ReminderBell({ variant = 'compact' }: ReminderBellProps) {
             {reminders.map((reminder) => {
               const { text: relativeText, isOverdue } = formatRelative(reminder.dueAt, now);
               const TypeIcon = TYPE_ICON[reminder.reminderType] || Clock3;
-              const leadName = reminder.lead?.fullName || reminder.lead?.contact?.fullName || 'Lead';
-              const phone = reminder.lead?.phoneE164 || reminder.lead?.contact?.phoneE164 || null;
+              const leadName = resolveReminderLeadName(reminder);
+              const phone = resolveReminderPhone(reminder);
               const isBusy = busyId === reminder.id;
 
               return (
