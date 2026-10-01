@@ -102,4 +102,40 @@ const expoModulesCorePluginKts = path.resolve(
 );
 patchStandaloneGradlePlugin(expoModulesCorePluginKts, 'expo-module-gradle-plugin');
 
+// 4. Ensure android/gradle.properties and android/app/build.gradle have AGP 9 compatibility flags
+const gradleProps = path.resolve(__dirname, '../android/gradle.properties');
+if (fs.existsSync(gradleProps)) {
+  let content = fs.readFileSync(gradleProps, 'utf8');
+  let changed = false;
+  if (!content.includes('kotlin.suppressUnsupportedVersionErrors')) {
+    content += '\nkotlin.suppressUnsupportedVersionErrors=true\n';
+    changed = true;
+  }
+  if (!content.includes('android.builtInKotlin')) {
+    content += 'android.builtInKotlin=false\n';
+    changed = true;
+  }
+  if (!content.includes('android.newDsl')) {
+    content += 'android.newDsl=false\n';
+    changed = true;
+  }
+  if (changed) {
+    fs.writeFileSync(gradleProps, content, 'utf8');
+    console.log('[patch-rn] Added AGP 9 compatibility flags to android/gradle.properties');
+  }
+}
+
+const appBuildGradle = path.resolve(__dirname, '../android/app/build.gradle');
+if (fs.existsSync(appBuildGradle)) {
+  let content = fs.readFileSync(appBuildGradle, 'utf8');
+  if (content.includes('apply plugin: "org.jetbrains.kotlin.android"') && !content.includes('findByName("kotlin")')) {
+    content = content.replace(
+      'apply plugin: "org.jetbrains.kotlin.android"',
+      'if (project.extensions.findByName("kotlin") == null) {\n    apply plugin: "org.jetbrains.kotlin.android"\n}'
+    );
+    fs.writeFileSync(appBuildGradle, content, 'utf8');
+    console.log('[patch-rn] Guarded kotlin plugin in android/app/build.gradle');
+  }
+}
+
 

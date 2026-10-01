@@ -27,16 +27,45 @@ function withGradleWrapperUpdate(config) {
         fs.writeFileSync(wrapperPath, content, 'utf8');
       }
 
-      // 2. Set kotlin.suppressUnsupportedVersionErrors in gradle.properties
+      // 2. Set AGP 9 & Kotlin compatibility flags in gradle.properties
       const gradlePropsPath = path.join(
         config.modRequest.platformProjectRoot,
         'gradle.properties'
       );
       if (fs.existsSync(gradlePropsPath)) {
         let content = fs.readFileSync(gradlePropsPath, 'utf8');
+        let changed = false;
         if (!content.includes('kotlin.suppressUnsupportedVersionErrors')) {
           content += '\nkotlin.suppressUnsupportedVersionErrors=true\n';
+          changed = true;
+        }
+        if (!content.includes('android.builtInKotlin')) {
+          content += 'android.builtInKotlin=false\n';
+          changed = true;
+        }
+        if (!content.includes('android.newDsl')) {
+          content += 'android.newDsl=false\n';
+          changed = true;
+        }
+        if (changed) {
           fs.writeFileSync(gradlePropsPath, content, 'utf8');
+        }
+      }
+
+      // Guard app/build.gradle against duplicate kotlin plugin registration in AGP 9
+      const appBuildGradlePath = path.join(
+        config.modRequest.platformProjectRoot,
+        'app',
+        'build.gradle'
+      );
+      if (fs.existsSync(appBuildGradlePath)) {
+        let content = fs.readFileSync(appBuildGradlePath, 'utf8');
+        if (content.includes('apply plugin: "org.jetbrains.kotlin.android"') && !content.includes('findByName("kotlin")')) {
+          content = content.replace(
+            'apply plugin: "org.jetbrains.kotlin.android"',
+            'if (project.extensions.findByName("kotlin") == null) {\n    apply plugin: "org.jetbrains.kotlin.android"\n}'
+          );
+          fs.writeFileSync(appBuildGradlePath, content, 'utf8');
         }
       }
 
