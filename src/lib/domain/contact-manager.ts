@@ -37,10 +37,14 @@ export async function findOrCreateContact(options: UpsertContactOptions) {
 
   let existingContactId: string | null = null;
 
-  // 1. Search existing identity matches
+  // 1. Search existing identity matches strictly within this tenant's contacts
   if (phoneE164) {
     const identity = await prisma.contactIdentity.findFirst({
-      where: { identityType: 'PHONE_E164', identityValue: phoneE164 },
+      where: {
+        identityType: 'PHONE_E164',
+        identityValue: phoneE164,
+        contact: { organizationId },
+      },
       select: { contactId: true },
     });
     if (identity) existingContactId = identity.contactId;
@@ -48,7 +52,11 @@ export async function findOrCreateContact(options: UpsertContactOptions) {
 
   if (!existingContactId && whatsappWaId) {
     const identity = await prisma.contactIdentity.findFirst({
-      where: { identityType: 'WHATSAPP_WAID', identityValue: whatsappWaId },
+      where: {
+        identityType: 'WHATSAPP_WAID',
+        identityValue: whatsappWaId,
+        contact: { organizationId },
+      },
       select: { contactId: true },
     });
     if (identity) existingContactId = identity.contactId;
@@ -56,7 +64,11 @@ export async function findOrCreateContact(options: UpsertContactOptions) {
 
   if (!existingContactId && instagramId) {
     const identity = await prisma.contactIdentity.findFirst({
-      where: { identityType: 'INSTAGRAM_IGID', identityValue: instagramId },
+      where: {
+        identityType: 'INSTAGRAM_IGID',
+        identityValue: instagramId,
+        contact: { organizationId },
+      },
       select: { contactId: true },
     });
     if (identity) existingContactId = identity.contactId;
@@ -64,7 +76,11 @@ export async function findOrCreateContact(options: UpsertContactOptions) {
 
   if (!existingContactId && email) {
     const identity = await prisma.contactIdentity.findFirst({
-      where: { identityType: 'EMAIL', identityValue: email.toLowerCase() },
+      where: {
+        identityType: 'EMAIL',
+        identityValue: email.toLowerCase(),
+        contact: { organizationId },
+      },
       select: { contactId: true },
     });
     if (identity) existingContactId = identity.contactId;
@@ -127,10 +143,13 @@ export async function findOrCreateContact(options: UpsertContactOptions) {
     });
   }
 
-  return prisma.contact.findUnique({
+  const fullContact = await prisma.contact.findUnique({
     where: { id: contact.id },
     include: { identities: true, leads: true, assignedBroker: true },
   });
+
+  if (!fullContact) return null;
+  return Object.assign(fullContact, { isNewContact: !existingContactId });
 }
 
 /**
@@ -157,12 +176,12 @@ export async function mergeContacts(params: {
   }
 
   const [source, target] = await Promise.all([
-    prisma.contact.findUnique({
-      where: { id: sourceContactId },
+    prisma.contact.findFirst({
+      where: { id: sourceContactId, organizationId },
       include: { identities: true, leads: true },
     }),
-    prisma.contact.findUnique({
-      where: { id: targetContactId },
+    prisma.contact.findFirst({
+      where: { id: targetContactId, organizationId },
       include: { identities: true, leads: true },
     }),
   ]);

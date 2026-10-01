@@ -91,12 +91,27 @@ export async function POST(
       );
     }
 
+    let parsedFollowUp: Date | null = null;
+    if (followUpDate) {
+      parsedFollowUp = new Date(followUpDate);
+      if (Number.isNaN(parsedFollowUp.getTime())) {
+        return NextResponse.json(
+          { success: false, error: 'Invalid followUpDate format' },
+          { status: 400 }
+        );
+      }
+    }
+    const hasValidFollowUp = parsedFollowUp !== null;
+
+    const normalizedChannel = String(channel || 'PHONE_CALL').toUpperCase();
+    const reminderType = normalizedChannel === 'WHATSAPP' ? 'WHATSAPP' : 'CALL';
+
     let aiSummary: string | undefined = undefined;
     let aiSentiment: string | undefined = undefined;
     let transcriptText: string | undefined = undefined;
     let finalOutcome = outcome || 'INTERESTED';
 
-    if (channel.toUpperCase() === 'PHONE_CALL') {
+    if (normalizedChannel === 'PHONE_CALL') {
       try {
         const { analyzeCallWithAI } = await import('@/lib/services/call-ai-service');
         const aiRes = await analyzeCallWithAI({
@@ -120,7 +135,7 @@ export async function POST(
 
     const metadata = {
       outcome: finalOutcome,
-      followUpDate: followUpDate || null,
+      followUpDate: parsedFollowUp ? parsedFollowUp.toISOString() : null,
       nextSteps: nextSteps || '',
       callerName: callerName || session.fullName || 'Broker',
       tags: tags || [],
@@ -133,8 +148,8 @@ export async function POST(
     const newLog = await prisma.communicationLog.create({
       data: {
         leadId: id,
-        channel: channel.toUpperCase(),
-        direction: direction.toUpperCase(),
+        channel: normalizedChannel,
+        direction: String(direction || 'OUTBOUND').toUpperCase(),
         messageContent: messageContent || aiSummary || `Call Outcome: ${finalOutcome}`,
         callDurationSeconds: parseInt(String(callDurationSeconds), 10) || 0,
         callRecordingUrl: callRecordingUrl || null,
@@ -164,15 +179,15 @@ export async function POST(
     });
 
     // Automatically sync with LeadReminder table if a follow-up date is set
-    if (followUpDate) {
+    if (hasValidFollowUp && parsedFollowUp) {
       try {
         await prisma.leadReminder.create({
           data: {
             organizationId: leadRecord.organizationId,
             leadId: id,
             title: nextSteps ? `Follow-up: ${nextSteps}` : `Follow-up on ${outcome}`,
-            reminderType: channel === 'WHATSAPP' ? 'WHATSAPP' : 'CALL',
-            dueAt: new Date(followUpDate),
+            reminderType,
+            dueAt: parsedFollowUp,
             priority: 'HIGH',
             status: 'PENDING',
             notes: messageContent || null,
@@ -183,10 +198,45 @@ export async function POST(
       }
     }
 
+    /**
+     * Safety net (Phase 1): a call that ended "no answer" / "busy, call later" is a
+     * guaranteed callback. Even if the agent closes the log modal without setting a
+     * follow-up, the retry reminder must still land on the calendar.
+     */
+    const AUTO_RETRY_OUTCOMES = new Set(['RINGING_NO_ANSWER', 'BUSY_CALL_LATER']);
+    let autoReminder: { id: string; dueAt: string; title: string } | null = null;
+    const normalizedOutcome = String(finalOutcome || '').toUpperCase();
+
+    if (!hasValidFollowUp && AUTO_RETRY_OUTCOMES.has(normalizedOutcome)) {
+      try {
+        const retryAt = new Date(Date.now() + 2 * 60 * 60 * 1000);
+        const created = await prisma.leadReminder.create({
+          data: {
+            organizationId: leadRecord.organizationId,
+            leadId: id,
+            title: `Retry call — ${normalizedOutcome === 'BUSY_CALL_LATER' ? 'client was busy' : 'no answer'}`,
+            reminderType,
+            dueAt: retryAt,
+            priority: 'URGENT',
+            status: 'PENDING',
+            notes: messageContent ? String(messageContent).slice(0, 500) : null,
+          },
+        });
+        autoReminder = {
+          id: created.id,
+          dueAt: created.dueAt.toISOString(),
+          title: created.title,
+        };
+      } catch (retryErr) {
+        console.error('Failed to auto-create retry reminder from call outcome:', retryErr);
+      }
+    }
+
     return NextResponse.json({
       success: true,
       message: 'Communication log recorded successfully',
       communication: newLog,
+      autoReminder,
     });
   } catch (error) {
     return handleApiError(error, 'Failed to create communication log');

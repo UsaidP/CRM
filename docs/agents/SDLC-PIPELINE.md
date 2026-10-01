@@ -75,6 +75,8 @@ the first and was thin on the second.
 | CI: quality | `.github/workflows/test.yml` | Lint, `tsc --noEmit`, tests, coverage |
 | CI: security | `.github/workflows/security.yml` | Leaked secrets, HIGH/CRITICAL CVEs, Semgrep ERROR findings |
 | CI: overnight QA | `.github/workflows/overnight-qa.yml` | Scheduled deep checks with artifact upload |
+| CodeRabbit review | `.coderabbit.yaml` + `coderabbit review --uncommitted` | AI architectural & Red Zone boundary review pre-commit/PR |
+| Ralph iteration loop | `ralph-loop@claude-plugins-official` (`/ralph-loop`) | Autonomous iteration until build/invariants promise is met |
 | Plugin set | `.claude/settings.json` → `enabledPlugins` + `extraKnownMarketplaces` | Declares the shared toolchain; install with `claude plugin install <p> -s project` |
 
 > **Harness gotcha.** `claude plugin install -s project` writes to
@@ -118,6 +120,7 @@ observability-and-instrumentation → Sentry + the overnight QA agent
 | Spec | Spec exists in `.scratch/<feature>/` | Human / agent | Yes, by convention |
 | Implement | Lint + types clean | `bun run lint`, `bunx tsc --noEmit`, CI `test.yml` | Yes |
 | Implement | Invariants hold | `bun run test:invariants` | Yes |
+| Self-Review | Automated AI & Red Zone review | `bun run review:cr` (`coderabbit`) | Highly recommended locally, required on PR |
 | Commit | No secrets, staged TS lints | `.githooks/pre-commit` | Yes |
 | Commit | No `--no-verify` / force-push | `guard-bash.mjs` | Yes (agent only) |
 | Push | Tests + security scan | CI `test.yml` + `security.yml` | Yes |
@@ -133,6 +136,52 @@ bun run setup:hooks     # git config core.hooksPath .githooks
 
 That is per-clone and one-time. Without it the pre-commit hook does not run —
 CI still covers the same ground, just later.
+
+---
+
+### 3.1 Autonomous TDD Iteration Loop (`ralph-loop`)
+
+For non-trivial feature implementations or refactors, use the official Ralph loop plugin (`ralph-loop@claude-plugins-official`).
+Ralph creates an autonomous feedback loop that keeps iterating across implementation and test fixes until a defined completion promise is verified:
+
+```bash
+/ralph-loop "Implement the reviewed spec. Run bun run test:invariants and bunx tsc --noEmit after each iteration; fix all failures." --max-iterations 10 --completion-promise "bun run test:invariants && bunx tsc --noEmit pass cleanly with zero errors"
+```
+
+- **Loop invariant:** Each iteration edits code, executes the gating test suite, inspects failures, and refines until the promise is satisfied.
+- **Safety guarantee:** PreToolUse hook (`scripts/agent-hooks/guard-bash.mjs`) remains active throughout all iterations, preventing runaway commands or destructive operations.
+- **Cancel any time:** Use `/cancel-ralph` to halt the active iteration loop.
+
+---
+
+### 3.2 CodeRabbit Automated Review Gating (`coderabbit`)
+
+CodeRabbit (`.coderabbit.yaml`) inspects every diff against repository-specific architectural rules and security standards:
+
+1. **Local pre-commit / staging review:**
+   ```bash
+   bun run review:cr        # executes: coderabbit review --uncommitted
+   ```
+2. **Full branch review:**
+   ```bash
+   bun run review:cr:all    # executes: coderabbit review
+   ```
+3. **What CodeRabbit checks automatically:**
+   - **Red Zone isolation:** Asserts that `organizationId` is never omitted in tenant queries (`tenant-guard.ts`, `tenant-context.ts`).
+   - **Auth integrity:** Flags unauthenticated sessions, tampered tokens, or missing RBAC checks.
+   - **React 19 / Next.js 16 Hook rules:** Detects conditional hook calls (hooks placed after early returns).
+   - **Financial calculations:** Flags unsafe floating-point rounding in `src/lib/money.ts`.
+   - **Mobile Companion standards:** Validates Expo SDK 52 compatibility, offline fallback, and permission management.
+
+---
+
+### 3.3 Multi-Platform Scope: Lucky CRM & Lucky Companion
+
+Development in this repo spans both the Web application and the Mobile Companion:
+
+- **Web CRM (`src/`)**: Next.js 16 App Router, Prisma ORM, Tailwind CSS, multi-tenant RBAC.
+- **Mobile Companion (`mobile-companion/`)**: React Native / Expo SDK 52 with custom native Android modules (`expo-call-monitor` for SIM call logging, contact management, and WhatsApp deep links).
+- **Companion Invariant**: Google Play limits `READ_CALL_LOG` on Expo Go. Use development builds (`bun run build:dev` or `bun run build:preview` via EAS) for native hardware testing, or use the built-in call simulation engine in Expo Go for rapid UI/flow validation.
 
 ---
 

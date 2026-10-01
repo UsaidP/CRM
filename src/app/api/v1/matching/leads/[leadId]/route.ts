@@ -38,8 +38,20 @@ export async function GET(req: Request, { params }: { params: Promise<{ leadId: 
       );
     }
 
-    const bhkPreferences: number[] = JSON.parse(requirementRecord.bhkPreferencesJson || '[2]');
-    const targetLocations: string[] = JSON.parse(requirementRecord.targetLocationsJson || '[]');
+    const safeParse = <T>(str: string | null | undefined, fallback: T): T => {
+      if (!str) return fallback;
+      try { return JSON.parse(str); } catch { return fallback; }
+    };
+
+    const rawBhk = safeParse<unknown>(requirementRecord.bhkPreferencesJson, [2]);
+    const bhkPreferences: number[] = Array.isArray(rawBhk)
+      ? rawBhk.map(Number).filter((n) => !isNaN(n) && Number.isInteger(n))
+      : [2];
+
+    const rawLocs = safeParse<unknown>(requirementRecord.targetLocationsJson, []);
+    const targetLocations: string[] = Array.isArray(rawLocs)
+      ? rawLocs.filter((l): l is string => typeof l === 'string' && l.trim().length > 0)
+      : [];
 
     const buyerRequirement: BuyerRequirementInput = {
       budgetMin: requirementRecord.budgetMin,
@@ -53,8 +65,11 @@ export async function GET(req: Request, { params }: { params: Promise<{ leadId: 
       floorPreference: requirementRecord.floorPreference || 'any',
     };
 
-    // Fetch all active property units
+    // Fetch all active property units scoped to tenant
     const units = await prisma.propertyUnit.findMany({
+      where: {
+        project: orgScope(auth.session),
+      },
       include: {
         project: true,
       },
@@ -62,7 +77,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ leadId: 
 
     const formattedUnits: PropertyUnitForMatching[] = units.map((u) => ({
       ...u,
-      photoGallery: JSON.parse(u.photoGalleryJson || '[]'),
+      photoGallery: safeParse(u.photoGalleryJson, []),
     }));
 
     const rankedMatches = rankMatchingProperties(buyerRequirement, formattedUnits);

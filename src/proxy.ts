@@ -2,6 +2,59 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { SESSION_COOKIE_NAME, verifySessionToken } from '@/lib/services/auth-service';
 import { PUBLIC_PATHS, PUBLIC_API_PREFIXES } from '@/lib/constants/public-routes';
 
+const CORS_ALLOWED_METHODS = 'GET,OPTIONS,PATCH,DELETE,POST,PUT';
+const CORS_ALLOWED_HEADERS =
+  'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization';
+
+function getAllowedOrigin(request: NextRequest): string | null {
+  const origin = request.headers.get('origin');
+  if (!origin) return null;
+
+  if (origin === request.nextUrl.origin) {
+    return origin;
+  }
+
+  const isDev = process.env.NODE_ENV === 'development';
+  if (
+    isDev &&
+    (/^https?:\/\/localhost(:\d+)?$/.test(origin) ||
+      /^https?:\/\/127\.0\.0\.1(:\d+)?$/.test(origin))
+  ) {
+    return origin;
+  }
+
+  const allowLan = isDev && process.env.ALLOW_LAN_CORS === 'true';
+  if (
+    allowLan &&
+    (/^https?:\/\/10\.\d{1,3}\.\d{1,3}\.\d{1,3}(:\d+)?$/.test(origin) ||
+      /^https?:\/\/192\.168\.\d{1,3}\.\d{1,3}(:\d+)?$/.test(origin))
+  ) {
+    return origin;
+  }
+
+  const allowedOrigins = (process.env.ALLOWED_ORIGINS || '')
+    .split(',')
+    .map((o) => o.trim().toLowerCase())
+    .filter(Boolean);
+
+  if (allowedOrigins.includes(origin.toLowerCase())) {
+    return origin;
+  }
+
+  return null;
+}
+
+function getCorsHeaders(allowedOrigin: string | null): Record<string, string> {
+  if (!allowedOrigin) return {};
+  return {
+    'Access-Control-Allow-Origin': allowedOrigin,
+    'Access-Control-Allow-Methods': CORS_ALLOWED_METHODS,
+    'Access-Control-Allow-Headers': CORS_ALLOWED_HEADERS,
+    'Access-Control-Allow-Credentials': 'true',
+    Vary: 'Origin',
+  };
+}
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -32,6 +85,20 @@ export async function proxy(request: NextRequest) {
   // 3. API endpoints: require a valid session EXCEPT for public prefixes
   //    (/api/v1/auth, /api/v1/portals, /api/v1/webhooks, /api/v1/track, /api/v1/health).
   if (pathname.startsWith('/api/')) {
+    const allowedOrigin = getAllowedOrigin(request);
+    const corsHeaders = getCorsHeaders(allowedOrigin);
+
+    // 3a. Handle CORS Preflight OPTIONS requests for mobile and web cross-origin clients
+    if (request.method === 'OPTIONS') {
+      return new NextResponse(null, {
+        status: 204,
+        headers: {
+          ...corsHeaders,
+          'Access-Control-Max-Age': '86400',
+        },
+      });
+    }
+
     const isPublicApi = PUBLIC_API_PREFIXES.some(
       (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
     );
@@ -43,11 +110,21 @@ export async function proxy(request: NextRequest) {
       return NextResponse.next();
     }
 
-    const apiSession = await verifySessionToken(request.cookies.get(SESSION_COOKIE_NAME)?.value);
+    const authHeader = request.headers.get('authorization');
+    const bearerToken = authHeader && /^Bearer /i.test(authHeader)
+      ? authHeader.substring(7).trim()
+      : null;
+    const cookieToken = request.cookies.get(SESSION_COOKIE_NAME)?.value;
+    const token = bearerToken || cookieToken;
+
+    const apiSession = await verifySessionToken(token);
     if (!apiSession) {
       return NextResponse.json(
         { success: false, error: 'Authentication required' },
-        { status: 401 }
+        {
+          status: 401,
+          headers: corsHeaders,
+        }
       );
     }
     return NextResponse.next();

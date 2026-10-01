@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { rankMatchingProperties, BuyerRequirementInput, PropertyUnitForMatching } from '@/lib/domain/matching-engine';
 import { generateWhatsAppPitchWithAI } from '@/lib/services/gemini-service';
-import { requireSession } from '@/lib/services/api-auth';
+import { requireSession, orgScope } from '@/lib/services/api-auth';
 import { handleApiError } from '@/lib/services/api-handler';
 
 export const dynamic = 'force-dynamic';
@@ -33,18 +33,50 @@ export async function POST(req: Request) {
       );
     }
 
+    if (
+      targetLocations !== undefined &&
+      (!Array.isArray(targetLocations) || !targetLocations.every((loc: unknown) => typeof loc === 'string'))
+    ) {
+      return NextResponse.json(
+        { success: false, error: 'targetLocations must be an array of strings' },
+        { status: 400 }
+      );
+    }
+
+    if (
+      bhkPreferences !== undefined &&
+      !(
+        (typeof bhkPreferences === 'number' && Number.isFinite(bhkPreferences)) ||
+        (Array.isArray(bhkPreferences) &&
+          bhkPreferences.every((b: unknown) => typeof b === 'number' && Number.isFinite(b)))
+      )
+    ) {
+      return NextResponse.json(
+        { success: false, error: 'bhkPreferences must be a number or an array of numbers' },
+        { status: 400 }
+      );
+    }
+
     const requirement: BuyerRequirementInput = {
       budgetMin: budgetMin ? Number(budgetMin) : null,
       budgetMax: Number(budgetMax),
       bhkPreferences: Array.isArray(bhkPreferences) ? bhkPreferences.map(Number) : [Number(bhkPreferences)],
-      targetLocations,
+      targetLocations: targetLocations || [],
       possessionPreference,
       minCarpetSqft: minCarpetSqft ? Number(minCarpetSqft) : null,
       purpose,
       floorPreference,
     };
 
+    const safeParse = <T>(str: string | null | undefined, fallback: T): T => {
+      if (!str) return fallback;
+      try { return JSON.parse(str); } catch { return fallback; }
+    };
+
     const units = await prisma.propertyUnit.findMany({
+      where: {
+        project: orgScope(auth.session),
+      },
       include: {
         project: true,
       },
@@ -52,7 +84,7 @@ export async function POST(req: Request) {
 
     const formattedUnits: PropertyUnitForMatching[] = units.map((u) => ({
       ...u,
-      photoGallery: JSON.parse(u.photoGalleryJson || '[]'),
+      photoGallery: safeParse(u.photoGalleryJson, []),
     }));
 
     const rankedMatches = rankMatchingProperties(requirement, formattedUnits);

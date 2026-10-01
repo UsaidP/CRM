@@ -123,8 +123,8 @@ export function evaluatePropertyMatch(
   }
 
   // Check 1.3: BHK Configuration match
-  const acceptableBhks = requirement.bhkPreferences && requirement.bhkPreferences.length > 0 
-    ? requirement.bhkPreferences 
+  const acceptableBhks = requirement.bhkPreferences && requirement.bhkPreferences.length > 0
+    ? requirement.bhkPreferences
     : [1, 2, 3];
 
   const isUnit1Rk = (property as any).typology === '1RK' || /1\s*RK/i.test(property.unitNumber || '');
@@ -150,7 +150,7 @@ export function evaluatePropertyMatch(
 
   // Check 1.4: Ready-to-Move OC Invariant
   if (
-    requirement.possessionPreference === 'READY_TO_MOVE' && 
+    requirement.possessionPreference === 'READY_TO_MOVE' &&
     !property.project.hasOccupancyCertificate
   ) {
     return {
@@ -170,14 +170,42 @@ export function evaluatePropertyMatch(
   // --- 2. WEIGHTED SOFT SCORING (0.0 to 1.0) ---
 
   // 2.1 Budget Score (35% weight)
-  const targetBudget = requirement.budgetMax;
-  const budgetDiff = Math.abs(property.allInTotalCost - targetBudget);
-  const budgetScore = Math.max(0.2, 1.0 - (budgetDiff / targetBudget));
-  
-  if (property.allInTotalCost <= requirement.budgetMax) {
-    matchingHighlights.push(`₹${((requirement.budgetMax - property.allInTotalCost) / 100000).toFixed(1)}L under max budget`);
+  const maxBudget = requirement.budgetMax;
+  let budgetScore = 1.0;
+
+  if (property.allInTotalCost <= maxBudget) {
+    budgetScore = 1.0;
+    const savings = maxBudget - property.allInTotalCost;
+    if (savings > 0) {
+      matchingHighlights.push(`₹${(savings / 100000).toFixed(1)}L under max budget`);
+    } else {
+      matchingHighlights.push('Exact match on max budget');
+    }
   } else {
-    tradeOffs.push(`₹${((property.allInTotalCost - requirement.budgetMax) / 100000).toFixed(1)}L slight stretch (+${(((property.allInTotalCost - requirement.budgetMax) / requirement.budgetMax) * 100).toFixed(1)}%)`);
+    const stretchAmount = property.allInTotalCost - maxBudget;
+    const stretchRatio = stretchAmount / (maxBudget * 0.05);
+    budgetScore = Math.max(0.2, Number((1.0 - stretchRatio * 0.25).toFixed(2)));
+    tradeOffs.push(`₹${(stretchAmount / 100000).toFixed(1)}L slight stretch (+${((stretchAmount / maxBudget) * 100).toFixed(1)}%)`);
+  }
+
+  // Location Preference Matching
+  if (Array.isArray(requirement.targetLocations) && requirement.targetLocations.length > 0) {
+    const propertyMarket = (property.project?.microMarket || '').trim().toLowerCase();
+    const escapeRegExp = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const isMatchedLocation = requirement.targetLocations.some((targetLoc) => {
+      if (typeof targetLoc !== 'string') return false;
+      const normLoc = targetLoc.trim().toLowerCase();
+      if (!propertyMarket || !normLoc) return false;
+      const regLoc = new RegExp(`(?:^|\\b)${escapeRegExp(normLoc)}(?:\\b|$)`, 'i');
+      const regMarket = new RegExp(`(?:^|\\b)${escapeRegExp(propertyMarket)}(?:\\b|$)`, 'i');
+      return regLoc.test(propertyMarket) || regMarket.test(normLoc);
+    });
+
+    if (isMatchedLocation) {
+      matchingHighlights.push(`🎯 Target Location: ${property.project?.microMarket || 'Preferred Area'}`);
+    } else {
+      tradeOffs.push(`Outside preferred locations (${property.project?.microMarket || 'Unknown'})`);
+    }
   }
 
   // 2.2 Carpet Area Score (25% weight)

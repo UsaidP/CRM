@@ -48,6 +48,7 @@ import { isPublicLayoutPath, isPublicAuthPath, isPublicPortalPath, isPublicLandi
 import { BackupModal } from '@/components/admin/BackupModal';
 import { OrganizationSettingsModal } from '@/components/admin/OrganizationSettingsModal';
 import { BrandLogo } from '@/components/ui/BrandLogo';
+import { ReminderBell } from '@/components/layout/ReminderBell';
 import { fetchSession, logout } from '@/lib/client/auth';
 
 interface NavItem {
@@ -71,7 +72,7 @@ const navSections: NavSection[] = [
     items: [
       { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
       { href: '/leads', label: 'Leads & Calling', icon: Users },
-      { href: '/admin/companion', label: 'SIM Call Sync', icon: Smartphone },
+      { href: '/admin/companion', label: 'SIM Call Sync', icon: Smartphone, permission: 'admin:manage_rbac', adminOnly: true },
       { href: '/calendar', label: 'Calendar & Visits', icon: CalendarDays },
     ],
   },
@@ -246,29 +247,40 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   // Role & Privilege Flags
   const isSuperAdmin = Boolean(currentUser?.isSuperAdmin || currentUser?.role === 'SUPER_ADMIN');
-  const isAdmin = Boolean(isSuperAdmin || currentUser?.role === 'ADMIN' || currentUser?.effectivePermissions?.includes('admin:manage_rbac'));
+  const isOrgAdmin = currentUser?.role === 'ADMIN';
+  const isAdmin = Boolean(isSuperAdmin || isOrgAdmin);
 
   // Filter visible nav sections based on user role and permissions.
   // NOTE: must stay ABOVE the public-portal early return — React hooks
   // cannot run conditionally (Rules of Hooks).
   const visibleNavSections = useMemo(() => {
-    const permissions = currentUser?.effectivePermissions || [];
+    // If user session is not yet loaded, hide all admin and permission-restricted items
+    if (!currentUser) {
+      return navSections
+        .map((section) => ({
+          ...section,
+          items: section.items.filter((item) => !item.adminOnly && !item.permission),
+        }))
+        .filter((section) => section.items.length > 0);
+    }
+
+    const permissions = currentUser.effectivePermissions || [];
 
     return navSections
       .map((section) => ({
         ...section,
         items: section.items.filter((item) => {
           if (item.adminOnly) {
-            return isSuperAdmin || permissions.includes('admin:manage_rbac');
+            return isAdmin;
           }
           if (item.permission) {
-            return isSuperAdmin || permissions.includes(item.permission);
+            return isAdmin || permissions.includes(item.permission);
           }
           return true;
         }),
       }))
       .filter((section) => section.items.length > 0);
-  }, [currentUser]);
+  }, [currentUser, isAdmin]);
 
   // Public layout rendering:
   // - Public auth paths (/login, /forgot-password, etc.) render their own <main> inside the page component.
@@ -359,6 +371,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <Cloud className="w-3.5 h-3.5 text-accent" />
             </button>
           )}
+
+          <ReminderBell variant="compact" />
 
           <button
             type="button"
@@ -596,8 +610,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </button>
             </div>
 
-            {/* Right: Active Call Timer, GDrive Backup, Quick Links & Status */}
+            {/* Right: Reminders, Active Call Timer, GDrive Backup, Quick Links & Status */}
             <div className="flex items-center gap-2 xl:gap-2.5 shrink-0">
+              {/* Due & overdue follow-ups — personal to the logged-in user's scoped leads */}
+              <ReminderBell variant="full" />
+
               {/* Google Drive Cloud Backup Button (Visible only to Admin / Super Admin) */}
               {isAdmin && (
                 <button

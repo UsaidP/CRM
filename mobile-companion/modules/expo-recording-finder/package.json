@@ -1,0 +1,7 @@
+{
+  "name": "expo-recording-finder",
+  "version": "1.0.0",
+  "description": "OEM call recording file discovery module for Lucky companion",
+  "main": "src/index.ts",
+  "types": "src/index.ts"
+}

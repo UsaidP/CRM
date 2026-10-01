@@ -32,6 +32,7 @@ import { HallmarkStamp } from '@/components/ui/HallmarkStamp';
 import { CustomSelect } from '@/components/ui/CustomSelect';
 import { formatDateTime } from '@/lib/date-utils';
 import { DashboardAnalyticsSuite } from './DashboardAnalyticsSuite';
+import { PRODUCT_NAME } from '@/lib/constants/brand';
 
 interface DashboardProps {
   initialData: {
@@ -434,7 +435,7 @@ export function DashboardCockpitClient({ initialData }: DashboardProps) {
               const rawPhone = topConnectNext.phoneE164 || topConnectNext.lead?.phoneE164 || '';
               const cleanDigits = rawPhone.replace(/\D/g, '');
               const leadName = topConnectNext.leadName || topConnectNext.lead?.fullName || 'Client';
-              const whatsappUrl = `https://wa.me/${cleanDigits}?text=${encodeURIComponent(`Hello ${leadName}, this is Zam Zam Properties following up on your property inquiry.`)}`;
+              const whatsappUrl = `https://wa.me/${cleanDigits}?text=${encodeURIComponent(`Hello ${leadName}, this is ${PRODUCT_NAME} following up on your property inquiry.`)}`;
 
               return (
                 <>

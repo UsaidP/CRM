@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireSession } from '@/lib/services/api-auth';
 import { prisma } from '@/lib/db/prisma';
-import { 
-  parseExcelBuffer, 
-  parseDelimitedText, 
+import {
+  parseExcelBuffer,
+  parseDelimitedText,
   parseJSONContent,
   parseHTMLTable,
   parseUnstructuredText,
   parseUniversalLeadData,
-  type FileParseResult 
+  type FileParseResult
 } from '@/lib/domain/lead-file-parser';
 import { type ColumnMapping } from '@/lib/domain/lead-auto-adjuster';
 import { findOrCreateContact } from '@/lib/domain/contact-manager';
@@ -74,9 +74,9 @@ export async function POST(request: NextRequest) {
 
     if (!parseResult || (parseResult.leads.length === 0 && parseResult.errors.length > 0)) {
       return NextResponse.json(
-        { 
-          success: false, 
-          error: parseResult?.errors.join(', ') || 'No valid lead data found. Please upload a valid CSV, Excel (.xlsx/.xls), TSV, TXT, or JSON file.' 
+        {
+          success: false,
+          error: parseResult?.errors.join(', ') || 'No valid lead data found. Please upload a valid CSV, Excel (.xlsx/.xls), TSV, TXT, or JSON file.'
         },
         { status: 400 }
       );
@@ -126,8 +126,6 @@ export async function POST(request: NextRequest) {
       const assignedBroker = findBroker(lead.assignedBrokerPhone);
 
       // 2. Find or Create Durable Contact (Deduplication)
-      const initialContactCount = await prisma.contact.count({ where: { organizationId: org.id } });
-
       const contact = await findOrCreateContact({
         organizationId: org.id,
         fullName: lead.fullName,
@@ -137,8 +135,7 @@ export async function POST(request: NextRequest) {
         notes: lead.notes,
       });
 
-      const afterContactCount = await prisma.contact.count({ where: { organizationId: org.id } });
-      if (afterContactCount > initialContactCount) {
+      if (contact?.isNewContact) {
         newContactsCount++;
       } else {
         existingContactsCount++;

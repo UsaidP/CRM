@@ -150,6 +150,32 @@ const WHATSAPP_TEMPLATES = [
   },
 ];
 
+function formatIdentityType(type: string) {
+  switch (type) {
+    case 'PHONE_E164':
+    case 'PHONE':
+      return { label: 'Direct Mobile', icon: Phone, color: 'text-emerald-500' };
+    case 'WHATSAPP_ID':
+    case 'WHATSAPP':
+      return { label: 'WhatsApp Direct', icon: MessageSquare, color: 'text-emerald-600 dark:text-emerald-400' };
+    case 'EMAIL':
+      return { label: 'Email Address', icon: Mail, color: 'text-blue-500' };
+    case 'INSTAGRAM_HANDLE':
+    case 'INSTAGRAM':
+      return { label: 'Instagram Profile', icon: InstagramIcon, color: 'text-pink-500' };
+    default:
+      return { label: type ? type.replace(/_/g, ' ') : 'Contact Channel', icon: Layers, color: 'text-content-muted' };
+  }
+}
+
+function formatPhoneDisplay(phone?: string | null) {
+  if (!phone) return 'No Phone (Social Inbound)';
+  if (phone.startsWith('+91') && phone.length === 13) {
+    return `+91 ${phone.slice(3, 8)} ${phone.slice(8)}`;
+  }
+  return phone;
+}
+
 // ============================================================================
 // COMPONENT PROPS & MAIN EXPORT
 // ============================================================================
@@ -696,7 +722,7 @@ export function SourceEvidenceDrawer({
         className={`fixed inset-y-0 right-0 z-[70] bg-surface shadow-2xl overflow-hidden flex flex-col font-sans transition-all duration-300 ${
           isFullScreen 
             ? 'inset-0 w-full max-w-full border-none animate-in fade-in' 
-            : 'w-full max-w-full sm:max-w-3xl md:max-w-4xl border-l border-border animate-in slide-in-from-right'
+            : 'w-full max-w-full sm:max-w-2xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl border-l border-border animate-in slide-in-from-right'
         }`}
       >
         {/* ==================================================================
@@ -886,80 +912,103 @@ export function SourceEvidenceDrawer({
         <div className="flex-1 overflow-y-auto touch-scroll bg-surface-inset/30">
           <div className={`p-4 sm:p-6 space-y-4 ${isFullScreen ? 'max-w-7xl mx-auto' : ''}`}>
             
-            {/* Mobile Workspace Segmented Selector (Shown on < 1024px) */}
-            <div className="lg:hidden p-1 bg-surface border border-border rounded-2xl flex items-center gap-1 overflow-x-auto no-scrollbar shadow-2xs">
+            {/* Unified Workspace Tab Navigation (Desktop + Mobile) */}
+            <div className="p-1 bg-surface border border-border rounded-2xl flex items-center gap-1.5 overflow-x-auto no-scrollbar shadow-2xs">
               <button
                 type="button"
                 onClick={() => setActiveTab('info')}
-                className={`flex-1 min-w-[95px] py-2 px-2.5 rounded-xl text-xs font-bold font-display transition-all flex items-center justify-center gap-1.5 cursor-pointer shrink-0 ${
+                className={`lg:hidden h-9 px-3.5 rounded-xl text-xs font-bold font-display transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer shrink-0 whitespace-nowrap flex-nowrap ${
                   activeTab === 'info'
                     ? 'bg-accent text-white shadow-xs'
                     : 'text-content-secondary hover:text-content hover:bg-surface-subtle'
                 }`}
               >
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Overview</span>
+                <Sparkles className="w-3.5 h-3.5 shrink-0" />
+                <span className="whitespace-nowrap">Overview</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setActiveTab('activity')}
-                className={`flex-1 min-w-[95px] py-2 px-2.5 rounded-xl text-xs font-bold font-display transition-all flex items-center justify-center gap-1.5 cursor-pointer shrink-0 ${
+                className={`flex-1 sm:flex-initial h-9 px-4 rounded-xl text-xs font-bold font-display transition-all inline-flex items-center justify-center gap-2 cursor-pointer shrink-0 whitespace-nowrap flex-nowrap ${
                   activeTab === 'activity'
                     ? 'bg-accent text-white shadow-xs'
                     : 'text-content-secondary hover:text-content hover:bg-surface-subtle'
                 }`}
               >
-                <MessageSquare className="w-3.5 h-3.5" />
-                <span>Activity ({communications.length})</span>
+                <MessageSquare className="w-3.5 h-3.5 shrink-0" />
+                <span className="whitespace-nowrap">Activity &amp; Calls</span>
+                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono shrink-0 whitespace-nowrap ${
+                  activeTab === 'activity' ? 'bg-white/20 text-white' : 'bg-surface-subtle text-content-muted border border-border'
+                }`}>
+                  {communications.length}
+                </span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setActiveTab('requirements')}
-                className={`flex-1 min-w-[95px] py-2 px-2.5 rounded-xl text-xs font-bold font-display transition-all flex items-center justify-center gap-1.5 cursor-pointer shrink-0 ${
+                className={`flex-1 sm:flex-initial h-9 px-4 rounded-xl text-xs font-bold font-display transition-all inline-flex items-center justify-center gap-2 cursor-pointer shrink-0 whitespace-nowrap flex-nowrap ${
                   activeTab === 'requirements'
                     ? 'bg-accent text-white shadow-xs'
                     : 'text-content-secondary hover:text-content hover:bg-surface-subtle'
                 }`}
               >
-                <Home className="w-3.5 h-3.5" />
-                <span>Specs</span>
+                <Home className="w-3.5 h-3.5 shrink-0" />
+                <span className="whitespace-nowrap">Buyer Requirements</span>
+                {bhkPreferences.length > 0 && (
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono shrink-0 whitespace-nowrap ${
+                    activeTab === 'requirements' ? 'bg-white/20 text-white' : 'bg-surface-subtle text-accent font-black border border-accent/20'
+                  }`}>
+                    {bhkPreferences.map((b) => b === 0 ? '1 RK' : `${b} BHK`).join(', ')}
+                  </span>
+                )}
               </button>
 
               <button
                 type="button"
                 onClick={() => setActiveTab('portals')}
-                className={`flex-1 min-w-[90px] py-2 px-2.5 rounded-xl text-xs font-bold font-display transition-all flex items-center justify-center gap-1.5 cursor-pointer shrink-0 ${
+                className={`flex-1 sm:flex-initial h-9 px-4 rounded-xl text-xs font-bold font-display transition-all inline-flex items-center justify-center gap-2 cursor-pointer shrink-0 whitespace-nowrap flex-nowrap ${
                   activeTab === 'portals'
                     ? 'bg-accent text-white shadow-xs'
                     : 'text-content-secondary hover:text-content hover:bg-surface-subtle'
                 }`}
               >
-                <Eye className="w-3.5 h-3.5" />
-                <span>Portals ({portals.length})</span>
+                <Eye className="w-3.5 h-3.5 shrink-0" />
+                <span className="whitespace-nowrap">Portals &amp; Views</span>
+                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono shrink-0 whitespace-nowrap ${
+                  activeTab === 'portals' ? 'bg-white/20 text-white' : 'bg-surface-subtle text-content-muted border border-border'
+                }`}>
+                  {portals.length}
+                </span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setActiveTab('dossier')}
-                className={`flex-1 min-w-[80px] py-2 px-2.5 rounded-xl text-xs font-bold font-display transition-all flex items-center justify-center gap-1.5 cursor-pointer shrink-0 ${
+                className={`flex-1 sm:flex-initial h-9 px-4 rounded-xl text-xs font-bold font-display transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer shrink-0 whitespace-nowrap flex-nowrap ${
                   activeTab === 'dossier'
                     ? 'bg-accent text-white shadow-xs'
                     : 'text-content-secondary hover:text-content hover:bg-surface-subtle'
                 }`}
               >
-                <CheckSquare className="w-3.5 h-3.5" />
-                <span>Audit</span>
+                <CheckSquare className="w-3.5 h-3.5 shrink-0" />
+                <span className="whitespace-nowrap">Full Audit</span>
               </button>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
               
               {/* ==============================================================
-                  LEFT PANEL (COL-SPAN-4): PROSPECT INTELLIGENCE & ATTRIBUTION
+                  LEFT PANEL: PROSPECT INTELLIGENCE & ATTRIBUTION
                   ============================================================== */}
-              <div className={`lg:col-span-4 space-y-4 ${activeTab === 'info' ? 'block' : 'hidden lg:block'}`}>
+              <div className={`${
+                activeTab === 'info'
+                  ? 'lg:col-span-5 block'
+                  : activeTab === 'activity'
+                  ? 'lg:col-span-5 xl:col-span-4 hidden lg:block'
+                  : 'hidden'
+              } space-y-4`}>
                 
                 {/* 24-Hour WhatsApp SLA Window Card */}
                 <div className={`p-4 rounded-2xl border transition-all ${
@@ -968,11 +1017,11 @@ export function SourceEvidenceDrawer({
                     : 'bg-surface border-border'
                 }`}>
                   <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <div className={`w-2.5 h-2.5 rounded-full ${messagingWindow.isOpen ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
-                      <span className="text-xs font-black font-display text-content">24-Hour WhatsApp Window</span>
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${messagingWindow.isOpen ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
+                      <span className="text-xs font-black font-display text-content truncate">24-Hour WhatsApp Window</span>
                     </div>
-                    <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border ${
+                    <span className={`text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full border shrink-0 whitespace-nowrap ${
                       messagingWindow.isOpen 
                         ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30' 
                         : 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30'
@@ -990,29 +1039,29 @@ export function SourceEvidenceDrawer({
 
                 {/* Attribution & Campaign Intelligence */}
                 <div className="p-4 rounded-2xl bg-surface border border-border space-y-3.5 shadow-2xs">
-                  <div className="flex items-center justify-between pb-2 border-b border-border">
-                    <span className="text-xs font-black uppercase tracking-wider text-content font-display flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5 text-accent" />
+                  <div className="flex items-center justify-between pb-2 border-b border-border gap-2">
+                    <span className="text-xs font-black uppercase tracking-wider text-content font-display flex items-center gap-1.5 truncate min-w-0">
+                      <Sparkles className="w-3.5 h-3.5 text-accent shrink-0" />
                       Attribution &amp; Source
                     </span>
-                    <span className="text-xs font-mono text-content-muted flex items-center gap-1">
+                    <span className="text-xs font-mono text-content-muted flex items-center gap-1 shrink-0 whitespace-nowrap">
                       {getSourceIcon(lead.leadSource)}
-                      {lead.leadSource}
+                      <span>{lead.leadSource}</span>
                     </span>
                   </div>
 
                   <div className="space-y-2.5 text-xs">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-content-muted">Campaign Code:</span>
-                      <span className="font-mono font-bold text-accent-text px-2.5 py-0.5 rounded-lg bg-accent-soft border border-accent/20">
+                      <span className="text-content-muted shrink-0">Campaign Code:</span>
+                      <span className="font-mono font-bold text-accent-text px-2.5 py-0.5 rounded-lg bg-accent-soft border border-accent/20 shrink-0 whitespace-nowrap">
                         {lead.sourceCode || 'NO_EXPLICIT_CODE'}
                       </span>
                     </div>
 
                     {lead.campaign && (
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-content-muted">Linked Campaign:</span>
-                        <span className="font-semibold text-content truncate max-w-[180px]" title={lead.campaign.campaignName}>
+                      <div className="flex items-center justify-between gap-2 min-w-0">
+                        <span className="text-content-muted shrink-0">Linked Campaign:</span>
+                        <span className="font-semibold text-content truncate" title={lead.campaign.campaignName}>
                           {lead.campaign.campaignName}
                         </span>
                       </div>
@@ -1020,8 +1069,8 @@ export function SourceEvidenceDrawer({
 
                     {lead.inboundNumber && (
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-content-muted">Inbound Number Dialed:</span>
-                        <span className="font-mono text-content-secondary">{lead.inboundNumber}</span>
+                        <span className="text-content-muted shrink-0">Inbound Number Dialed:</span>
+                        <span className="font-mono text-content-secondary shrink-0 whitespace-nowrap">{lead.inboundNumber}</span>
                       </div>
                     )}
 
@@ -1029,7 +1078,7 @@ export function SourceEvidenceDrawer({
                     <div className="pt-2 border-t border-border flex flex-col gap-1.5">
                       <div className="flex items-center justify-between text-xs">
                         <span className="text-content-muted font-medium flex items-center gap-1">
-                          <UserCheck className="w-3.5 h-3.5 text-accent" />
+                          <UserCheck className="w-3.5 h-3.5 text-accent shrink-0" />
                           Assigned Telecaller / Rep:
                         </span>
                       </div>
@@ -1058,12 +1107,12 @@ export function SourceEvidenceDrawer({
                           triggerClassName="bg-surface-inset border-border rounded-xl text-xs font-semibold"
                         />
                       ) : (
-                        <div className="p-2.5 rounded-xl bg-surface-inset border border-border flex items-center justify-between">
-                          <span className="font-bold text-content text-xs">
+                        <div className="p-2.5 rounded-xl bg-surface-inset border border-border flex items-center justify-between gap-2">
+                          <span className="font-bold text-content text-xs truncate">
                             {lead.assignedBroker?.fullName || 'Unassigned'}
                           </span>
                           {lead.assignedBroker?.role && (
-                            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-surface border border-border text-content-muted">
+                            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-surface border border-border text-content-muted shrink-0 whitespace-nowrap">
                               {lead.assignedBroker.role}
                             </span>
                           )}
@@ -1073,50 +1122,111 @@ export function SourceEvidenceDrawer({
                   </div>
                 </div>
 
-                {/* Durable Multi-Channel Identities */}
+                {/* Verified Contact Numbers & Channels */}
                 <div className="p-4 rounded-2xl bg-surface border border-border space-y-3 shadow-2xs">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-xs font-black uppercase tracking-wider text-content flex items-center gap-2 font-display">
-                      <Layers className="w-3.5 h-3.5 text-accent" />
-                      Durable Identities ({identities.length || (lead.phoneE164 ? 1 : 0)})
-                    </h3>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <h3 className="text-xs font-black uppercase tracking-wider text-content flex items-center gap-1.5 font-display truncate">
+                        <Phone className="w-3.5 h-3.5 text-accent shrink-0" />
+                        Verified Contacts ({identities.length || (lead.phoneE164 ? 1 : 0)})
+                      </h3>
+                      <p className="text-[10px] text-content-muted mt-0.5 truncate">Active phone and messaging channels</p>
+                    </div>
                     <button
                       type="button"
                       onClick={() => onOpenMergeModal(lead)}
-                      className="text-[11px] text-accent hover:underline flex items-center gap-1 font-bold transition-colors cursor-pointer"
+                      className="text-[11px] text-accent hover:text-accent-hover bg-accent-soft hover:bg-accent-soft/80 px-2.5 py-1 rounded-lg border border-accent/20 flex items-center gap-1.5 font-bold transition-all cursor-pointer shadow-2xs hover:shadow-xs shrink-0 whitespace-nowrap"
+                      title="Merge duplicate leads or combine phone numbers"
                     >
-                      <GitMerge className="w-3.5 h-3.5" />
-                      Merge Duplicates
+                      <GitMerge className="w-3 h-3 text-accent shrink-0" />
+                      <span>Merge Duplicates</span>
                     </button>
                   </div>
 
                   <div className="space-y-2">
                     {identities.length > 0 ? (
-                      identities.map((id: any) => (
-                        <div
-                          key={id.id}
-                          className="p-2.5 bg-surface-inset border border-border rounded-xl flex items-center justify-between text-xs"
-                        >
-                          <div className="flex items-center gap-2">
-                            <span className="font-mono text-[9px] px-1.5 py-0.5 rounded bg-surface-subtle text-content-muted border border-border">
-                              {id.identityType}
-                            </span>
-                            <span className="font-mono text-content font-bold">{id.identityValue}</span>
+                      identities.map((id: any) => {
+                        const meta = formatIdentityType(id.identityType);
+                        const Icon = meta.icon;
+                        const isPhone = id.identityType === 'PHONE_E164' || id.identityType === 'PHONE';
+                        const isWhatsApp = id.identityType === 'WHATSAPP_ID' || id.identityType === 'WHATSAPP';
+                        return (
+                          <div
+                            key={id.id}
+                            className="p-3 bg-surface-inset border border-border rounded-xl flex items-center justify-between text-xs gap-2 transition-colors hover:border-accent/30"
+                          >
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <div className="w-7 h-7 rounded-lg bg-surface border border-border flex items-center justify-center shrink-0">
+                                <Icon className={`w-3.5 h-3.5 ${meta.color}`} />
+                              </div>
+                              <div className="min-w-0">
+                                <div className="text-[10px] font-medium text-content-muted leading-tight">
+                                  {meta.label}
+                                </div>
+                                <div className="font-mono text-content font-bold truncate">
+                                  {isPhone ? formatPhoneDisplay(id.identityValue) : id.identityValue}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              {id.isPrimary && (
+                                <span className="text-[9px] uppercase font-bold text-accent-text bg-accent-soft px-2 py-0.5 rounded-full border border-accent/20 shrink-0 whitespace-nowrap">
+                                  Primary
+                                </span>
+                              )}
+                              {isPhone && (
+                                <a
+                                  href={`tel:${id.identityValue}`}
+                                  className="p-1.5 rounded-lg bg-surface hover:bg-emerald-500/10 text-content-muted hover:text-emerald-600 transition-colors"
+                                  title="Call directly"
+                                >
+                                  <Phone className="w-3 h-3" />
+                                </a>
+                              )}
+                              {isWhatsApp && (
+                                <a
+                                  href={`https://wa.me/${id.identityValue.replace(/\+/g, '')}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="p-1.5 rounded-lg bg-surface hover:bg-emerald-500/10 text-content-muted hover:text-emerald-600 transition-colors"
+                                  title="Chat on WhatsApp"
+                                >
+                                  <MessageSquare className="w-3 h-3" />
+                                </a>
+                              )}
+                            </div>
                           </div>
-                          {id.isPrimary && (
-                            <span className="text-[9px] uppercase font-bold text-accent-text bg-accent-soft px-2 py-0.5 rounded border border-accent/20">
-                              Primary
-                            </span>
+                        );
+                      })
+                    ) : (
+                      <div className="p-3 bg-surface-inset border border-border rounded-xl flex items-center justify-between text-xs gap-2 transition-colors hover:border-accent/30">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="w-7 h-7 rounded-lg bg-surface border border-border flex items-center justify-center shrink-0">
+                            <Phone className="w-3.5 h-3.5 text-emerald-500" />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="text-[10px] font-medium text-content-muted leading-tight">
+                              Primary Mobile
+                            </div>
+                            <div className="font-mono text-content font-bold truncate">
+                              {formatPhoneDisplay(lead.phoneE164)}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <span className="text-[9px] uppercase font-bold text-accent-text bg-accent-soft px-2 py-0.5 rounded-full border border-accent/20 shrink-0 whitespace-nowrap">
+                            Primary
+                          </span>
+                          {lead.phoneE164 && (
+                            <a
+                              href={`tel:${lead.phoneE164}`}
+                              className="p-1.5 rounded-lg bg-surface hover:bg-emerald-500/10 text-content-muted hover:text-emerald-600 transition-colors"
+                              title="Call directly"
+                            >
+                              <Phone className="w-3 h-3" />
+                            </a>
                           )}
                         </div>
-                      ))
-                    ) : (
-                      <div className="p-2.5 bg-surface-inset border border-border rounded-xl flex items-center justify-between text-xs">
-                        <span className="font-mono text-content-muted text-[11px]">PHONE_E164</span>
-                        <span className="font-mono text-content font-bold">{lead.phoneE164 || 'No Phone (Social Inbound)'}</span>
-                        <span className="text-[9px] uppercase font-bold text-accent-text bg-accent-soft px-2 py-0.5 rounded border border-accent/20">
-                          Primary
-                        </span>
                       </div>
                     )}
                   </div>
@@ -1124,19 +1234,19 @@ export function SourceEvidenceDrawer({
 
                 {/* Broker Scratchpad & Private Remarks */}
                 <div className="p-4 rounded-2xl bg-surface border border-border space-y-2.5 shadow-2xs">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-black uppercase tracking-wider text-content font-display flex items-center gap-1.5">
-                      <FileText className="w-3.5 h-3.5 text-accent" />
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-black uppercase tracking-wider text-content font-display flex items-center gap-1.5 truncate min-w-0">
+                      <FileText className="w-3.5 h-3.5 text-accent shrink-0" />
                       Private Broker Memo
                     </span>
                     <button
                       type="button"
                       disabled={isSavingNotes}
                       onClick={handleSaveQuickNotes}
-                      className="px-2.5 py-1 rounded-lg bg-accent-soft hover:bg-accent-soft/80 border border-accent/25 text-accent-text text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer"
+                      className="px-2.5 py-1 rounded-lg bg-accent-soft hover:bg-accent-soft/80 border border-accent/25 text-accent-text text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer shrink-0 whitespace-nowrap"
                     >
-                      <Save className="w-3 h-3" />
-                      {isSavingNotes ? 'Saving...' : 'Save Note'}
+                      <Save className="w-3 h-3 shrink-0" />
+                      <span>{isSavingNotes ? 'Saving...' : 'Save Note'}</span>
                     </button>
                   </div>
                   <textarea
@@ -1151,71 +1261,15 @@ export function SourceEvidenceDrawer({
               </div>
 
               {/* ==============================================================
-                  RIGHT PANEL (COL-SPAN-8): DEEP WORKSPACE TABS
+                  RIGHT PANEL: DEEP WORKSPACE TABS
                   ============================================================== */}
-              <div className={`lg:col-span-8 space-y-4 ${activeTab === 'info' ? 'hidden lg:block' : 'block'}`}>
-                
-                {/* Desktop Workspace Tab Strip (Hidden on mobile since mobile uses top segmented selector) */}
-                <div className="hidden lg:flex p-1 bg-surface border border-border rounded-2xl items-center gap-1 overflow-x-auto no-scrollbar shadow-2xs">
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('activity')}
-                    className={`flex-1 min-w-[130px] py-2 px-3 rounded-xl text-xs font-bold font-display transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                      activeTab === 'activity' || activeTab === 'info'
-                        ? 'bg-accent text-white shadow-xs'
-                        : 'text-content-secondary hover:text-content hover:bg-surface-subtle'
-                    }`}
-                  >
-                    <MessageSquare className="w-4 h-4" />
-                    Activity &amp; Calls ({communications.length})
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('requirements')}
-                    className={`flex-1 min-w-[130px] py-2 px-3 rounded-xl text-xs font-bold font-display transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                      activeTab === 'requirements'
-                        ? 'bg-accent text-white shadow-xs'
-                        : 'text-content-secondary hover:text-content hover:bg-surface-subtle'
-                    }`}
-                  >
-                    <Home className="w-4 h-4" />
-                    Buyer Requirements
-                    {bhkPreferences.length > 0 && (
-                      <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
-                        activeTab === 'requirements' ? 'bg-white/20 text-white' : 'bg-surface-subtle text-accent font-black border border-accent/20'
-                      }`}>
-                        {bhkPreferences.map((b) => b === 0 ? '1 RK' : `${b} BHK`).join(', ')}
-                      </span>
-                    )}
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('portals')}
-                    className={`flex-1 min-w-[130px] py-2 px-3 rounded-xl text-xs font-bold font-display transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                      activeTab === 'portals'
-                        ? 'bg-accent text-white shadow-xs'
-                        : 'text-content-secondary hover:text-content hover:bg-surface-subtle'
-                    }`}
-                  >
-                    <Eye className="w-4 h-4" />
-                    Portals &amp; Views ({portals.length})
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('dossier')}
-                    className={`flex-1 min-w-[110px] py-2 px-3 rounded-xl text-xs font-bold font-display transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                      activeTab === 'dossier'
-                        ? 'bg-accent text-white shadow-xs'
-                        : 'text-content-secondary hover:text-content hover:bg-surface-subtle'
-                    }`}
-                  >
-                    <CheckSquare className="w-4 h-4" />
-                    Full Audit
-                  </button>
-                </div>
+              <div className={`${
+                activeTab === 'info'
+                  ? 'lg:col-span-7 hidden lg:block'
+                  : activeTab === 'activity'
+                  ? 'lg:col-span-7 xl:col-span-8 block'
+                  : 'col-span-12 block'
+              } space-y-4`}>
 
                 {/* ============================================================
                     TAB 1: ACTIVITY & COMMUNICATIONS
@@ -1223,19 +1277,19 @@ export function SourceEvidenceDrawer({
                 {(activeTab === 'activity' || activeTab === 'info') && (
                   <div className="space-y-4 animate-in fade-in duration-150">
                     {/* Activity Header Controls */}
-                    <div className="flex items-center justify-between flex-wrap gap-2 px-1">
-                      <div>
-                        <h3 className="text-sm font-black text-content font-display">Communication Timeline</h3>
-                        <p className="text-xs text-content-muted">Record outbound calls, WhatsApp chats, and schedule follow-ups.</p>
+                    <div className="flex items-center justify-between gap-3 flex-wrap sm:flex-nowrap px-1">
+                      <div className="min-w-0">
+                        <h3 className="text-sm font-black text-content font-display truncate">Communication Timeline</h3>
+                        <p className="text-xs text-content-muted truncate">Record outbound calls, WhatsApp chats, and schedule follow-ups.</p>
                       </div>
 
                       <button
                         type="button"
                         onClick={() => setShowAddForm(!showAddForm)}
-                        className="px-3.5 py-2 rounded-xl bg-accent text-white hover:bg-accent-hover text-xs font-bold flex items-center gap-2 transition-all shadow-xs cursor-pointer"
+                        className="px-3.5 py-2 rounded-xl bg-accent text-white hover:bg-accent-hover text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer shrink-0 whitespace-nowrap"
                       >
-                        <PlusCircle className="w-4 h-4" />
-                        {showAddForm ? 'Close Form' : '+ Log Call / Note'}
+                        <PlusCircle className="w-4 h-4 shrink-0" />
+                        <span>{showAddForm ? 'Close Form' : '+ Log Call / Note'}</span>
                       </button>
                     </div>
 

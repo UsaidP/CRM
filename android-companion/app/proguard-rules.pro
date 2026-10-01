@@ -1,0 +1,5 @@
+# ZamZam Companion Proguard rules
+-keepattributes *Annotation*
+-keepclassmembers class * {
+    @com.google.gson.annotations.SerializedName <fields>;
+}

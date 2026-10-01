@@ -82,15 +82,21 @@ describe('zero-fabrication: MahaRERA certificate & form isolation', () => {
   });
 
   it('downloadAndSaveMahaReraCertificate marks unverified project as PENDING_PORTAL_SYNC without fake PDF', async () => {
-    const { downloadAndSaveMahaReraCertificate } = await import('@/lib/services/maharera-service');
-    // Using an unregistered dummy RERA number
-    const result = await downloadAndSaveMahaReraCertificate('P52000099999', 'Fake Project', 'Fake Dev', 'Fake_Project');
-    
-    // Must NOT fabricate a PDF
-    expect(result.isAuthentic).toBe(false);
-    expect(result.certificateUrl).toBeUndefined();
-    expect(result.syncStatus).toBe('PENDING_PORTAL_SYNC');
-    expect(result.isOriginalScannedDocument).toBe(false);
+    const origFetch = globalThis.fetch;
+    globalThis.fetch = (async () => new Response('Not found', { status: 404 })) as any;
+    try {
+      const { downloadAndSaveMahaReraCertificate } = await import('@/lib/services/maharera-service');
+      // Using an unregistered dummy RERA number
+      const result = await downloadAndSaveMahaReraCertificate('P52000099999', 'Fake Project', 'Fake Dev', 'Fake_Project');
+      
+      // Must NOT fabricate a PDF
+      expect(result.isAuthentic).toBe(false);
+      expect(result.certificateUrl).toBeUndefined();
+      expect(result.syncStatus).toBe('PENDING_PORTAL_SYNC');
+      expect(result.isOriginalScannedDocument).toBe(false);
+    } finally {
+      globalThis.fetch = origFetch;
+    }
   });
 
   it('fetchAuthenticMahaReraCertificate validates inputs cleanly', async () => {

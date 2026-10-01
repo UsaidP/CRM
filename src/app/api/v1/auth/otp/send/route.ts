@@ -16,9 +16,11 @@ export const dynamic = 'force-dynamic';
  */
 export async function POST(req: Request) {
   try {
-    // 1. Rate limit by IP — 3 OTP sends per 5 minutes
+    // 1. Rate limit by IP — 3 OTP sends per 5 minutes (opt-in relaxed rate limit only for dev testing)
+    const isRelaxed = process.env.NODE_ENV !== 'production' && process.env.OTP_RELAXED_RATE_LIMIT === 'true';
+    const maxAttempts = isRelaxed ? 30 : 3;
     const clientIp = getClientIp(req);
-    const rateLimit = checkRateLimit(`otp-send:${clientIp}`, 3, 5 * 60 * 1000);
+    const rateLimit = checkRateLimit(`otp-send:${clientIp}`, maxAttempts, 5 * 60 * 1000);
     if (!rateLimit.allowed) {
       return rateLimitResponse(rateLimit.retryAfterSec);
     }
@@ -42,8 +44,8 @@ export async function POST(req: Request) {
       );
     }
 
-    // 3. Also rate limit by phone number — 3 OTP sends per 5 minutes
-    const phoneRateLimit = checkRateLimit(`otp-send:${phoneE164}`, 3, 5 * 60 * 1000);
+    // 3. Also rate limit by phone number
+    const phoneRateLimit = checkRateLimit(`otp-send:${phoneE164}`, maxAttempts, 5 * 60 * 1000);
     if (!phoneRateLimit.allowed) {
       return rateLimitResponse(phoneRateLimit.retryAfterSec);
     }

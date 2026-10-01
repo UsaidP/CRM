@@ -282,7 +282,7 @@ export function CompanionSetupClient() {
                   <li>Open default Samsung <strong>Phone</strong> app &rarr; Tap the <strong>3 vertical dots</strong> (top right) &rarr; <strong>Settings</strong>.</li>
                   <li>Tap <strong>Record calls</strong> &rarr; Toggle <strong>Auto record calls</strong> to <span className="text-emerald-600 font-bold">ON</span> (choose &quot;All numbers&quot;).</li>
                   <li>Recordings are automatically stored in <code className="bg-surface px-1 py-0.5 rounded font-mono text-accent">/Recordings/Call recordings/</code>.</li>
-                  <li>Open ZamZam Companion &rarr; Disable Battery Optimization so Samsung does not pause sync.</li>
+                  <li>Open Lucky Companion &rarr; Disable Battery Optimization so Samsung does not pause sync.</li>
                 </ol>
               </div>
             )}
@@ -297,7 +297,7 @@ export function CompanionSetupClient() {
                   <li>Open default <strong>Dialer</strong> &rarr; Settings &rarr; <strong>Call recording</strong>.</li>
                   <li>Turn on <strong>Record calls automatically</strong>.</li>
                   <li>Recordings are saved to <code className="bg-surface px-1 py-0.5 rounded font-mono text-accent">/MIUI/sound_recorder/call_rec/</code>.</li>
-                  <li>Go to <strong>Settings &rarr; Apps &rarr; ZamZam Companion &rarr; Battery saver</strong> &rarr; Select <strong>No restrictions</strong>.</li>
+                  <li>Go to <strong>Settings &rarr; Apps &rarr; Lucky Companion &rarr; Battery saver</strong> &rarr; Select <strong>No restrictions</strong>.</li>
                 </ol>
               </div>
             )}
@@ -310,8 +310,8 @@ export function CompanionSetupClient() {
                 </p>
                 <ol className="list-decimal list-inside space-y-1.5 pl-1 leading-relaxed">
                   <li>Open Dialer settings &rarr; Call Recording &rarr; Select <strong>Auto Record All Calls</strong>.</li>
-                  <li>In Phone Manager / Security app, enable <strong>Auto-start</strong> for ZamZam Companion.</li>
-                  <li>Lock the ZamZam app in the Recent Apps overview so memory cleaners do not clear it.</li>
+                  <li>In Phone Manager / Security app, enable <strong>Auto-start</strong> for Lucky Companion.</li>
+                  <li>Lock the Lucky app in the Recent Apps overview so memory cleaners do not clear it.</li>
                 </ol>
               </div>
             )}

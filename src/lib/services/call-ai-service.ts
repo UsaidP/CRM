@@ -81,8 +81,8 @@ async function resolveAudioBuffer(
     if (audioUrl.startsWith('/')) {
       localPath = path.join(process.cwd(), 'public', audioUrl);
     }
-    if (fs.existsSync(localPath)) {
-      const buffer = fs.readFileSync(localPath);
+    if (fs.existsSync(/*turbopackIgnore: true*/ localPath)) {
+      const buffer = fs.readFileSync(/*turbopackIgnore: true*/ localPath);
       const mimeType = detectAudioMimeType(localPath);
       return { buffer, mimeType };
     }

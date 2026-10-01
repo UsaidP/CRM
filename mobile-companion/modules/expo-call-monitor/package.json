@@ -1,0 +1,7 @@
+{
+  "name": "expo-call-monitor",
+  "version": "1.0.0",
+  "description": "Native foreground call monitoring module for Lucky companion",
+  "main": "src/index.ts",
+  "types": "src/index.ts"
+}

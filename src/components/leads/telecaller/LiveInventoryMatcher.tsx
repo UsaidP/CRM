@@ -78,20 +78,43 @@ export function LiveInventoryMatcher({
       return { matchedProjects: [], allProjects: [] };
     }
 
+    const hasAnyPreference = Boolean(leadBhk || leadMarket || leadBudget);
+    const escapeRegExp = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
     const scored = projects.map((proj) => {
-      let score = 0;
       const projUnits = proj.units || [];
       const hasBhkMatch = leadBhk ? projUnits.some((u) => u.bhk === leadBhk) : true;
-      if (hasBhkMatch) score += 40;
+      if (!hasBhkMatch) {
+        return { project: proj, score: 0 };
+      }
+
+      let score = 0;
+      if (leadBhk) {
+        score += 40; // BHK preference explicitly satisfied
+      }
 
       const projMarket = (proj.microMarket || '').toLowerCase();
-      if (leadMarket && projMarket.includes(leadMarket)) score += 30;
+      if (leadMarket && projMarket) {
+        const regLead = new RegExp(`(?:^|\\b)${escapeRegExp(leadMarket)}(?:\\b|$)`, 'i');
+        const regProj = new RegExp(`(?:^|\\b)${escapeRegExp(projMarket)}(?:\\b|$)`, 'i');
+        if (regLead.test(projMarket) || regProj.test(leadMarket)) {
+          score += 30;
+        }
+      }
 
       if (leadBudget) {
-        const hasBudgetMatch = projUnits.some(
-          (u) => u.allInTotalCost && u.allInTotalCost <= leadBudget * 1.15
+        const eligibleUnits = leadBhk ? projUnits.filter((u) => u.bhk === leadBhk) : projUnits;
+        const hasSweetSpotMatch = eligibleUnits.some(
+          (u) => u.allInTotalCost && u.allInTotalCost <= leadBudget
         );
-        if (hasBudgetMatch) score += 30;
+        const hasStretchMatch = eligibleUnits.some(
+          (u) => u.allInTotalCost && u.allInTotalCost <= leadBudget * 1.05
+        );
+        if (hasSweetSpotMatch) {
+          score += 30;
+        } else if (hasStretchMatch) {
+          score += 20;
+        }
       }
 
       return { project: proj, score };
@@ -100,11 +123,13 @@ export function LiveInventoryMatcher({
     // Sort scored
     scored.sort((a, b) => b.score - a.score);
 
-    const matched = scored.filter((s) => s.score > 0).map((s) => s.project);
     const all = scored.map((s) => s.project);
+    const matched = hasAnyPreference
+      ? scored.filter((s) => s.score > 0).map((s) => s.project)
+      : all;
 
     return {
-      matchedProjects: matched.length > 0 ? matched : all.slice(0, 3),
+      matchedProjects: matched,
       allProjects: all,
     };
   }, [projects, leadBhk, leadMarket, leadBudget]);
@@ -220,8 +245,14 @@ export function LiveInventoryMatcher({
       {/* Projects List */}
       {displayedProjects.length === 0 ? (
         <div className="p-4 rounded-xl border border-dashed border-border text-center space-y-1">
-          <p className="text-xs text-content font-medium">No verified projects found.</p>
-          <p className="text-[10px] text-content-muted">Upload inventory in Project Master to pitch directly to leads.</p>
+          <p className="text-xs text-content font-medium">
+            {projects.length === 0 ? 'No verified projects found.' : 'No matching projects found.'}
+          </p>
+          <p className="text-[10px] text-content-muted">
+            {projects.length === 0
+              ? 'Upload inventory in Project Master to pitch directly to leads.'
+              : 'Switch to the "All" tab to view all inventory or adjust lead preferences.'}
+          </p>
         </div>
       ) : (
         <div className="space-y-2.5">

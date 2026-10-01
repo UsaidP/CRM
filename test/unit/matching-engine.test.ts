@@ -278,5 +278,70 @@ describe('Domain: Multi-Factor AI Matching Engine', () => {
       expect(result.tier).toBe('DISQUALIFIED');
       expect(result.disqualificationReason).toContain('buyer strictly requested 1 RK');
     });
+
+    it('gives full budget score (1.0) when property is within budgetMin and budgetMax', () => {
+      const sweetSpotProp = createMockProperty({
+        allInTotalCost: 7500000,
+        project: {
+          ...createMockProperty().project,
+          microMarket: 'Kharghar Sector 35',
+        },
+      });
+
+      const result = evaluatePropertyMatch(baseRequirement, sweetSpotProp);
+      expect(result.budgetScore).toBe(1.0);
+      expect(result.matchingHighlights.some((h) => h.includes('under max budget'))).toBe(true);
+      expect(result.matchingHighlights.some((h) => h.includes('Target Location'))).toBe(true);
+    });
+
+    it('highlights location trade-off when property is outside buyer targetLocations', () => {
+      const outsideLocProp = createMockProperty({
+        allInTotalCost: 7500000,
+        project: {
+          ...createMockProperty().project,
+          microMarket: 'Panvel East',
+        },
+      });
+
+      const result = evaluatePropertyMatch(baseRequirement, outsideLocProp);
+      expect(result.tradeOffs.some((t) => t.includes('Outside preferred locations'))).toBe(true);
+    });
+
+    it('matches location with token boundaries (does not match Sector 3 against Sector 35)', () => {
+      const propSector35 = createMockProperty({
+        allInTotalCost: 7500000,
+        project: {
+          ...createMockProperty().project,
+          microMarket: 'Kharghar Sector 35',
+        },
+      });
+
+      const reqSector3: BuyerRequirementInput = {
+        ...baseRequirement,
+        targetLocations: ['Kharghar Sector 3'],
+      };
+
+      const result = evaluatePropertyMatch(reqSector3, propSector35);
+      expect(result.matchingHighlights.some((h) => h.includes('Target Location'))).toBe(false);
+      expect(result.tradeOffs.some((t) => t.includes('Outside preferred locations'))).toBe(true);
+    });
+
+    it('matches broader region against specific microMarket with token boundary', () => {
+      const propSector35 = createMockProperty({
+        allInTotalCost: 7500000,
+        project: {
+          ...createMockProperty().project,
+          microMarket: 'Kharghar Sector 35',
+        },
+      });
+
+      const reqBroad: BuyerRequirementInput = {
+        ...baseRequirement,
+        targetLocations: ['Kharghar'],
+      };
+
+      const result = evaluatePropertyMatch(reqBroad, propSector35);
+      expect(result.matchingHighlights.some((h) => h.includes('Target Location'))).toBe(true);
+    });
   });
 });

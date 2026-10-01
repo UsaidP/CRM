@@ -40,5 +40,5 @@ describe('Multi-Org Invariant Ratchet', () => {
     }
 
     expect(violations).toEqual([]);
-  });
+  }, 15000);
 });

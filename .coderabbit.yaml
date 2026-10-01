@@ -1,0 +1,42 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: "en"
+tone_instructions: "You are a senior principal engineer and security auditor reviewing code for Lucky CRM, a multi-tenant real estate enterprise CRM with a mobile companion app. Be thorough, precise, constructive, and uncompromising on tenant isolation, security, and React/Next.js best practices."
+early_access: false
+reviews:
+  profile: "chill"
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  auto_review:
+    enabled: true
+    drafts: false
+  path_filters:
+    - "!node_modules/**"
+    - "!.next/**"
+    - "!dist/**"
+    - "!build/**"
+    - "!**/*.lock"
+    - "!**/package-lock.json"
+    - "!**/bun.lock"
+    - "!**/bun.lockb"
+    - "!**/*.log"
+    - "!.scratch/**"
+  path_instructions:
+    - path: "src/lib/db/tenant-*.ts"
+      instructions: "CRITICAL RED ZONE: Multi-tenant database boundary. Verify strict isolation: organizationId must never be omitted, bypassed, or defaulted to a fallback. Ensure queries cannot leak cross-tenant leads or entities under any circumstances."
+    - path: "src/lib/domain/rbac-engine.ts"
+      instructions: "CRITICAL RED ZONE: Role-based access control. Ensure no privilege escalation vectors exist. Verify that roles (SUPERADMIN, ADMIN, AGENT, TELECALLER, etc.) have explicit, deterministic permission mappings."
+    - path: "src/lib/services/*auth*.ts"
+      instructions: "CRITICAL RED ZONE: Authentication and session verification. Enforce strict token validation, cryptographic integrity, cookie security flags (HttpOnly, Secure, SameSite=Lax), and prevent unauthenticated session minting."
+    - path: "src/lib/money.ts"
+      instructions: "CRITICAL RED ZONE: Financial precision and Indian Rupee notation (Lakhs/Crores). Ensure exact arithmetic, avoid floating-point drift, and prevent silent rounding in invoice/commission computations."
+    - path: "prisma/schema.prisma"
+      instructions: "CRITICAL RED ZONE: Database schema. Verify organizationId relations, indices on tenant fields, foreign key cascade behaviors, and ensure no breaking migration changes are introduced without parity."
+    - path: "src/app/api/**"
+      instructions: "API route handler: Enforce session verification (verifySession or verifyApiAuth), Zod schema validation for input payloads and query parameters, explicit tenant filtering on all queries, and safe error responses that never leak internals."
+    - path: "src/components/**"
+      instructions: "Next.js 16 / React 19 Client & Server components: Ensure all React hooks (useState, useEffect, useMemo, useCallback) are declared at the top of components and NEVER after conditional returns or guard clauses. Follow accessible design patterns."
+    - path: "mobile-companion/**"
+      instructions: "React Native / Expo Companion App: Follow Expo SDK 52 standards. Check for proper permission handling across Expo Go and native Development Builds. Ensure offline fallback resilience and secure storage of session tokens."
