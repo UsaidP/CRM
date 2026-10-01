@@ -124,11 +124,15 @@ function withCallMonitor(config) {
       }
     }
 
-    // 1. Add CallMonitorService (foreground service)
-    const hasService = mainApp.service.some(
+    // 1. Add or update CallMonitorService (foreground service)
+    const existingService = mainApp.service.find(
       (s) => s.$?.['android:name'] === 'expo.modules.callmonitor.CallMonitorService'
     );
-    if (!hasService) {
+    if (existingService) {
+      existingService.$['android:foregroundServiceType'] = 'dataSync';
+      existingService.$['android:enabled'] = 'true';
+      existingService.$['android:exported'] = 'false';
+    } else {
       mainApp.service.push({
         $: {
           'android:name': 'expo.modules.callmonitor.CallMonitorService',
