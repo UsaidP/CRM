@@ -202,6 +202,10 @@ if (fs.existsSync(gradleProps)) {
     content += 'android.newDsl=false\n';
     changed = true;
   }
+  if (!content.includes('android.sourceset.disallowProvider')) {
+    content += 'android.sourceset.disallowProvider=false\n';
+    changed = true;
+  }
   if (content.includes('android.defaults.buildfeatures.buildconfig')) {
     content = content.replace(/android\.defaults\.buildfeatures\.buildconfig=.*\n?/g, '');
     changed = true;
