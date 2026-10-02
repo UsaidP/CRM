@@ -37,7 +37,10 @@ export interface ProjectMatchItem {
   subLocality?: string | null;
   brochureUrl?: string | null;
   coverImageUrl?: string | null;
-  elevationsJson?: string | null;
+  // Field name mirrors prisma/schema.prisma `DeveloperProject.elevationImagesJson`.
+  // This is NOT `elevationsJson` — that column does not exist, so reading it
+  // silently yielded undefined and the elevation cover image never resolved.
+  elevationImagesJson?: string | null;
   floorPlanImagesJson?: string | null;
   basePricePerSqft?: number | null;
   units?: UnitSummary[];
@@ -154,6 +157,24 @@ export function LiveInventoryMatcher({
     return null;
   };
 
+  // Cover image for a project: explicit coverImageUrl, else first elevation image.
+  // Uses `elevationImagesJson` (the real column); the previous `elevationsJson`
+  // read was always undefined, so this fallback never fired. Safe-parsed for the
+  // same reason as above — a malformed column must not blank out the tab.
+  const getCoverImageForProject = (proj: ProjectMatchItem) => {
+    if (proj.coverImageUrl) return proj.coverImageUrl;
+    if (!proj.elevationImagesJson) return null;
+    try {
+      const parsed = JSON.parse(proj.elevationImagesJson);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return resolveAssetUrl(parsed[0].imageUrl || parsed[0].url || parsed[0]);
+      }
+    } catch {
+      // ignore
+    }
+    return null;
+  };
+
   // 1-Click WhatsApp links
   const handleSendBrochure = (proj: ProjectMatchItem) => {
     if (!lead.phoneE164) return;
@@ -258,7 +279,7 @@ export function LiveInventoryMatcher({
         <div className="space-y-2.5">
           {displayedProjects.map((proj) => {
             const floorPlanUrl = getFloorPlanForLead(proj);
-            const coverImage = proj.coverImageUrl || (proj.elevationsJson ? JSON.parse(proj.elevationsJson || '[]')[0]?.url : null);
+            const coverImage = getCoverImageForProject(proj);
             const isCostOpen = selectedProjectIdForCost === proj.id;
             const approxAgreement = proj.units?.[0]?.agreementValue || (proj.basePricePerSqft ? proj.basePricePerSqft * (leadBhk === 1 ? 450 : 650) : 6500000);
 

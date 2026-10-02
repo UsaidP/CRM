@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { resolveBuyerPreference } from '@/lib/domain/buyer-preference';
 import {
   Phone,
   PhoneCall,
@@ -65,9 +66,21 @@ interface LeadItem {
   notes?: string | null;
   createdAt: string;
   reminders?: any[];
-  requirements?: any[];
+  // Mirrors prisma/schema.prisma `BuyerRequirement`. Deliberately explicit:
+  // the console previously read `requirements[0].maxBudget` and
+  // `requirements[0].preferredMicroMarket`, neither of which exists, so the
+  // fallbacks silently evaluated to undefined. Do not add non-column fields.
+  requirements?: {
+    budgetMax?: number | null;
+    bhkPreferencesJson?: string | null;
+    targetLocationsJson?: string | null;
+    isActive?: boolean;
+  }[];
   portals?: any[];
   city?: string | null;
+  // Flattened aliases produced by /api/v1/search. NOT produced by /api/v1/leads —
+  // use resolveBuyerPreference() rather than reading these directly, so the
+  // telecaller console works against both endpoints.
   preferredBhk?: number | string | null;
   budgetCeiling?: number | null;
   preferredMicroMarket?: string | null;
@@ -169,6 +182,21 @@ export function TelecallerConsoleView({
     return leads.find((l) => l.id === selectedLeadId) || leads[0] || null;
   }, [leads, selectedLeadId]);
 
+  // Buyer preference (BHK / budget / micro-market), decoded from the real
+  // BuyerRequirement columns. Resolved ONCE here and threaded to every consumer.
+  //
+  // Previously each site read `lead.budgetCeiling` / `lead.preferredBhk` /
+  // `lead.preferredMicroMarket` — aliases only the /api/v1/search route computes —
+  // with fallbacks to `requirements[0].maxBudget` and
+  // `requirements[0].preferredMicroMarket`. Neither column exists (the real ones
+  // are `budgetMax` and `targetLocationsJson`), and /api/v1/leads returns the raw
+  // requirement rows without the aliases. Every path therefore resolved to
+  // undefined and the console showed hardcoded defaults for real buyers.
+  const buyerPreference = useMemo(() => resolveBuyerPreference(selectedLead), [selectedLead]);
+  const preferredBhk = buyerPreference.preferredBhk;
+  const budgetCeiling = buyerPreference.budgetCeiling;
+  const preferredMicroMarket = buyerPreference.preferredMicroMarket;
+
   // Lead metadata & tags parser (extracts [Priority: ...], [WhatsApp: ...], [Tags: ...] without polluting input)
   const leadMeta = useMemo(() => {
     const raw = selectedLead?.notes || '';
@@ -266,21 +294,17 @@ export function TelecallerConsoleView({
       setCopiedPhone(false);
 
       // Auto-set qualification pillars if lead has preferences
-      const budget = selectedLead.budgetCeiling || selectedLead.requirements?.[0]?.maxBudget;
+      const budget = budgetCeiling;
       if (budget && budget >= 12500000) setQualificationBudget('LUXURY_125CR');
       else if (budget && budget >= 6000000) setQualificationBudget('MID_60L_125CR');
       else setQualificationBudget('AFFORDABLE_60L');
 
-      const loc = (
-        selectedLead.preferredMicroMarket ||
-        selectedLead.requirements?.[0]?.preferredMicroMarket ||
-        ''
-      ).toLowerCase();
+      const loc = (preferredMicroMarket || '').toLowerCase();
       if (loc.includes('taloja')) setQualificationLocation('TALOJA_METRO');
       else if (loc.includes('ulwe') || loc.includes('panvel')) setQualificationLocation('ULWE_PANVEL');
       else setQualificationLocation('KHARGHAR_PRIME');
     }
-  }, [selectedLead?.id]);
+  }, [selectedLead?.id, budgetCeiling, preferredMicroMarket]);
 
   // Call timer effect
   useEffect(() => {
@@ -590,8 +614,8 @@ export function TelecallerConsoleView({
       : null;
 
     const prefill = portalUrl
-      ? `Assalamu Alaikum / Hello ${selectedLead.fullName || 'Sir/Madam'}, this is ${firmName} following up on your inquiry for ${selectedLead.sourceCode || selectedLead.preferredMicroMarket || 'Navi Mumbai luxury projects'}. Here is your private client presentation portal with verified floor plans, photos and all-in cost sheets: ${portalUrl}`
-      : `Assalamu Alaikum / Hello ${selectedLead.fullName || 'Sir/Madam'}, this is ${firmName} following up on your inquiry for ${selectedLead.sourceCode || selectedLead.preferredMicroMarket || 'Navi Mumbai luxury projects'}. Here are our MahaRERA verified project brochures and all-in cost sheets:`;
+      ? `Assalamu Alaikum / Hello ${selectedLead.fullName || 'Sir/Madam'}, this is ${firmName} following up on your inquiry for ${selectedLead.sourceCode || preferredMicroMarket || 'Navi Mumbai luxury projects'}. Here is your private client presentation portal with verified floor plans, photos and all-in cost sheets: ${portalUrl}`
+      : `Assalamu Alaikum / Hello ${selectedLead.fullName || 'Sir/Madam'}, this is ${firmName} following up on your inquiry for ${selectedLead.sourceCode || preferredMicroMarket || 'Navi Mumbai luxury projects'}. Here are our MahaRERA verified project brochures and all-in cost sheets:`;
     return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(prefill)}`;
   };
 
@@ -603,8 +627,8 @@ export function TelecallerConsoleView({
       if (!unitIds || unitIds.length === 0) {
         const allUnits = inventoryProjects.flatMap((p) => p.units || []);
         if (allUnits.length > 0) {
-          const bhkMatches = selectedLead.preferredBhk
-            ? allUnits.filter((u) => u.bhk === Number(selectedLead.preferredBhk))
+          const bhkMatches = preferredBhk
+            ? allUnits.filter((u) => u.bhk === preferredBhk)
             : [];
           const chosen = bhkMatches.length > 0 ? bhkMatches.slice(0, 3) : allUnits.slice(0, 3);
           unitIds = chosen.map((u) => u.id);
@@ -1032,7 +1056,7 @@ export function TelecallerConsoleView({
                     <div className="min-w-0 flex-1">
                       <div className="text-[10px] uppercase font-semibold text-content-secondary leading-none">Pref</div>
                       <div className="font-bold text-accent-text truncate text-xs mt-0.5">
-                        {selectedLead.preferredBhk ? `${selectedLead.preferredBhk} BHK` : '1 & 2 BHK'}
+                        {preferredBhk ? `${preferredBhk} BHK` : '1 & 2 BHK'}
                       </div>
                     </div>
                   </div>
@@ -1045,9 +1069,9 @@ export function TelecallerConsoleView({
                       <div className="text-[10px] uppercase font-semibold text-content-secondary leading-none">Market</div>
                       <div
                         className="font-bold text-content truncate text-xs mt-0.5"
-                        title={selectedLead.preferredMicroMarket || 'Kharghar / Taloja Corridor'}
+                        title={preferredMicroMarket || 'Kharghar / Taloja Corridor'}
                       >
-                        {selectedLead.preferredMicroMarket || 'Kharghar / Taloja'}
+                        {preferredMicroMarket || 'Kharghar / Taloja'}
                       </div>
                     </div>
                   </div>
@@ -1059,8 +1083,8 @@ export function TelecallerConsoleView({
                     <div className="min-w-0 flex-1">
                       <div className="text-[10px] uppercase font-semibold text-content-secondary leading-none">Budget</div>
                       <div className="font-bold text-content truncate text-xs mt-0.5">
-                        {selectedLead.budgetCeiling
-                          ? `₹${(selectedLead.budgetCeiling / 100000).toFixed(1)}L`
+                        {budgetCeiling
+                          ? `₹${(budgetCeiling / 100000).toFixed(1)}L`
                           : '₹45L - ₹85L'}
                       </div>
                     </div>
@@ -1482,9 +1506,9 @@ export function TelecallerConsoleView({
                   id: selectedLead?.id,
                   fullName: selectedLead?.fullName,
                   phoneE164: selectedLead?.phoneE164,
-                  preferredBhk: selectedLead?.preferredBhk,
-                  budgetCeiling: selectedLead?.budgetCeiling,
-                  preferredMicroMarket: selectedLead?.preferredMicroMarket,
+                  preferredBhk,
+                  budgetCeiling,
+                  preferredMicroMarket,
                   sourceCode: selectedLead?.sourceCode,
                   portals: selectedLead?.portals,
                 }}
@@ -1509,7 +1533,7 @@ export function TelecallerConsoleView({
                 leadPhone={selectedLead?.phoneE164}
                 leadName={selectedLead?.fullName}
                 projectName={selectedLead?.sourceCode || 'Navi Mumbai Residential Project'}
-                preferredBhk={selectedLead?.preferredBhk}
+                preferredBhk={preferredBhk}
               />
             )}
           </div>

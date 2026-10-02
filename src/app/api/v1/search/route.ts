@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requireSession, scopedLeadFilter } from '@/lib/services/api-auth';
 import { getPermissionScope } from '@/lib/domain/rbac-engine';
+import { resolveBuyerPreference } from '@/lib/domain/buyer-preference';
 import { prisma } from '@/lib/db/prisma';
 import { handleApiError } from '@/lib/services/api-handler';
 
@@ -71,13 +72,11 @@ export async function GET(req: Request) {
       email: l.email,
       currentStage: l.currentStage,
       sourceCode: l.sourceCode,
-      preferredMicroMarket: l.requirements?.[0]?.targetLocationsJson
-        ? JSON.parse(l.requirements[0].targetLocationsJson || '[]')[0] || l.city
-        : l.city,
-      preferredBhk: l.requirements?.[0]?.bhkPreferencesJson
-        ? JSON.parse(l.requirements[0].bhkPreferencesJson || '[]')[0]
-        : null,
-      budgetCeiling: l.requirements?.[0]?.budgetMax || null,
+      // Shared decoder: reads the real BuyerRequirement columns
+      // (budgetMax / bhkPreferencesJson / targetLocationsJson). Replaces an
+      // inline decode that used unguarded JSON.parse — a malformed column threw
+      // and turned the whole search request into a 500.
+      ...resolveBuyerPreference(l),
       leadSource: l.leadSource,
       createdAt: l.createdAt,
     }));
