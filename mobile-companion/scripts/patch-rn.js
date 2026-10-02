@@ -102,6 +102,33 @@ const expoModulesCorePluginKts = path.resolve(
 );
 patchStandaloneGradlePlugin(expoModulesCorePluginKts, 'expo-module-gradle-plugin');
 
+// Patch AndroidLibraryExtension.kt and ExpoModulesCorePlugin.gradle to remove targetSdk on library modules for AGP 9
+const androidLibraryExtKt = path.resolve(
+  __dirname,
+  '../node_modules/expo-modules-core/expo-module-gradle-plugin/src/main/kotlin/expo/modules/plugin/android/AndroidLibraryExtension.kt'
+);
+if (fs.existsSync(androidLibraryExtKt)) {
+  let content = fs.readFileSync(androidLibraryExtKt, 'utf8');
+  if (content.includes('this@defaultConfig.targetSdk = targetSdk')) {
+    content = content.replace(/this@defaultConfig\.targetSdk\s*=\s*targetSdk/g, '// this@defaultConfig.targetSdk = targetSdk (removed in AGP 9)');
+    fs.writeFileSync(androidLibraryExtKt, content, 'utf8');
+    console.log('[patch-rn] Patched AndroidLibraryExtension.kt to remove targetSdk for AGP 9');
+  }
+}
+
+const expoModulesCorePluginGradle = path.resolve(
+  __dirname,
+  '../node_modules/expo-modules-core/android/ExpoModulesCorePlugin.gradle'
+);
+if (fs.existsSync(expoModulesCorePluginGradle)) {
+  let content = fs.readFileSync(expoModulesCorePluginGradle, 'utf8');
+  if (content.includes('targetSdkVersion project.ext.safeExtGet')) {
+    content = content.replace(/targetSdkVersion project\.ext\.safeExtGet.*$/m, '// targetSdkVersion removed for AGP 9');
+    fs.writeFileSync(expoModulesCorePluginGradle, content, 'utf8');
+    console.log('[patch-rn] Patched ExpoModulesCorePlugin.gradle to remove targetSdkVersion for AGP 9');
+  }
+}
+
 // 4. Ensure android/gradle.properties and android/app/build.gradle have AGP 9 compatibility flags
 const gradleProps = path.resolve(__dirname, '../android/gradle.properties');
 if (fs.existsSync(gradleProps)) {
