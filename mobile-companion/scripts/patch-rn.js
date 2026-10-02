@@ -202,13 +202,13 @@ if (fs.existsSync(gradleProps)) {
     content += 'android.newDsl=false\n';
     changed = true;
   }
-  if (!content.includes('android.defaults.buildfeatures.buildconfig')) {
-    content += 'android.defaults.buildfeatures.buildconfig=true\n';
+  if (content.includes('android.defaults.buildfeatures.buildconfig')) {
+    content = content.replace(/android\.defaults\.buildfeatures\.buildconfig=.*\n?/g, '');
     changed = true;
   }
   if (changed) {
     fs.writeFileSync(gradleProps, content, 'utf8');
-    console.log('[patch-rn] Added AGP 9 compatibility flags to android/gradle.properties');
+    console.log('[patch-rn] Cleaned AGP 9 compatibility flags in android/gradle.properties');
   }
 }
 

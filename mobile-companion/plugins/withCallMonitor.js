@@ -47,8 +47,8 @@ function withGradleWrapperUpdate(config) {
           content += 'android.newDsl=false\n';
           changed = true;
         }
-        if (!content.includes('android.defaults.buildfeatures.buildconfig')) {
-          content += 'android.defaults.buildfeatures.buildconfig=true\n';
+        if (content.includes('android.defaults.buildfeatures.buildconfig')) {
+          content = content.replace(/android\.defaults\.buildfeatures\.buildconfig=.*\n?/g, '');
           changed = true;
         }
         if (changed) {
