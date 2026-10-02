@@ -47,12 +47,46 @@ function withGradleWrapperUpdate(config) {
           content += 'android.newDsl=false\n';
           changed = true;
         }
+        if (!content.includes('android.defaults.buildfeatures.buildconfig')) {
+          content += 'android.defaults.buildfeatures.buildconfig=true\n';
+          changed = true;
+        }
         if (changed) {
           fs.writeFileSync(gradlePropsPath, content, 'utf8');
         }
       }
 
-      // Guard app/build.gradle against duplicate kotlin plugin registration and update proguard file in AGP 9
+      // Root android/build.gradle: ensure subprojects has buildFeatures.buildConfig = true for AGP 9
+      const rootBuildGradlePath = path.join(
+        config.modRequest.platformProjectRoot,
+        'build.gradle'
+      );
+      if (fs.existsSync(rootBuildGradlePath)) {
+        let content = fs.readFileSync(rootBuildGradlePath, 'utf8');
+        if (!content.includes('buildConfig = true')) {
+          content += `
+subprojects { subproject ->
+  subproject.plugins.withId("com.android.library") {
+    subproject.android {
+      buildFeatures {
+        buildConfig = true
+      }
+    }
+  }
+  subproject.plugins.withId("com.android.application") {
+    subproject.android {
+      buildFeatures {
+        buildConfig = true
+      }
+    }
+  }
+}
+`;
+          fs.writeFileSync(rootBuildGradlePath, content, 'utf8');
+        }
+      }
+
+      // Guard app/build.gradle against duplicate kotlin plugin registration, update proguard file, and enable buildFeatures
       const appBuildGradlePath = path.join(
         config.modRequest.platformProjectRoot,
         'app',
@@ -70,6 +104,13 @@ function withGradleWrapperUpdate(config) {
         }
         if (content.includes('proguard-android.txt')) {
           content = content.replace(/proguard-android\.txt/g, 'proguard-android-optimize.txt');
+          changed = true;
+        }
+        if (!content.includes('buildFeatures {')) {
+          content = content.replace(
+            'compileSdk rootProject.ext.compileSdkVersion',
+            'compileSdk rootProject.ext.compileSdkVersion\n\n    buildFeatures {\n        buildConfig = true\n    }'
+          );
           changed = true;
         }
         if (changed) {
@@ -159,15 +200,26 @@ subprojects {
         }
       }
 
-      // 5. Patch AndroidLibraryExtension.kt and ExpoModulesCorePlugin.gradle to remove targetSdk on library modules for AGP 9
+      // 5. Patch AndroidLibraryExtension.kt and ExpoModulesCorePlugin.gradle for AGP 9
       const androidLibraryExtKt = path.join(
         config.modRequest.projectRoot,
         'node_modules/expo-modules-core/expo-module-gradle-plugin/src/main/kotlin/expo/modules/plugin/android/AndroidLibraryExtension.kt'
       );
       if (fs.existsSync(androidLibraryExtKt)) {
         let content = fs.readFileSync(androidLibraryExtKt, 'utf8');
+        let changed = false;
         if (content.includes('this@defaultConfig.targetSdk = targetSdk')) {
           content = content.replace(/this@defaultConfig\.targetSdk\s*=\s*targetSdk/g, '// this@defaultConfig.targetSdk = targetSdk (removed in AGP 9)');
+          changed = true;
+        }
+        if (!content.includes('buildFeatures {')) {
+          content = content.replace(
+            '// this@defaultConfig.targetSdk = targetSdk (removed in AGP 9)\n  }',
+            '// this@defaultConfig.targetSdk = targetSdk (removed in AGP 9)\n  }\n  buildFeatures {\n    buildConfig = true\n  }'
+          );
+          changed = true;
+        }
+        if (changed) {
           fs.writeFileSync(androidLibraryExtKt, content, 'utf8');
         }
       }
@@ -178,9 +230,52 @@ subprojects {
       );
       if (fs.existsSync(expoModulesCorePluginGradle)) {
         let content = fs.readFileSync(expoModulesCorePluginGradle, 'utf8');
+        let changed = false;
         if (content.includes('targetSdkVersion project.ext.safeExtGet')) {
           content = content.replace(/targetSdkVersion project\.ext\.safeExtGet.*$/m, '// targetSdkVersion removed for AGP 9');
+          changed = true;
+        }
+        if (!content.includes('buildFeatures {')) {
+          content = content.replace(
+            '// targetSdkVersion removed for AGP 9\n    }',
+            '// targetSdkVersion removed for AGP 9\n    }\n\n    buildFeatures {\n      buildConfig = true\n    }'
+          );
+          changed = true;
+        }
+        if (changed) {
           fs.writeFileSync(expoModulesCorePluginGradle, content, 'utf8');
+        }
+      }
+
+      // Patch ProjectConfiguration.kt to avoid SoftwareComponent 'release' not found crash
+      const projectConfigKt = path.join(
+        config.modRequest.projectRoot,
+        'node_modules/expo-modules-core/expo-module-gradle-plugin/src/main/kotlin/expo/modules/plugin/ProjectConfiguration.kt'
+      );
+      if (fs.existsSync(projectConfigKt)) {
+        let content = fs.readFileSync(projectConfigKt, 'utf8');
+        if (!content.includes('components.findByName("release") == null')) {
+          content = content.replace(
+            'afterEvaluate {\n    val publicationInfo = PublicationInfo(this)',
+            'afterEvaluate {\n    if (project.components.findByName("release") == null) {\n      createEmptyExpoPublishTask()\n      createEmptyExpoPublishToMavenLocalTask()\n      return@afterEvaluate\n    }\n    val publicationInfo = PublicationInfo(this)'
+          );
+          fs.writeFileSync(projectConfigKt, content, 'utf8');
+        }
+      }
+
+      // Patch @expo/log-box/android/build.gradle directly with buildFeatures.buildConfig = true
+      const expoLogBoxBuildGradle = path.join(
+        config.modRequest.projectRoot,
+        'node_modules/@expo/log-box/android/build.gradle'
+      );
+      if (fs.existsSync(expoLogBoxBuildGradle)) {
+        let content = fs.readFileSync(expoLogBoxBuildGradle, 'utf8');
+        if (!content.includes('buildFeatures {')) {
+          content = content.replace(
+            'namespace "expo.modules.logbox"',
+            'namespace "expo.modules.logbox"\n  buildFeatures {\n    buildConfig = true\n  }'
+          );
+          fs.writeFileSync(expoLogBoxBuildGradle, content, 'utf8');
         }
       }
 

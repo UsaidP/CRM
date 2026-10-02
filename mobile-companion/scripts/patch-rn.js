@@ -109,10 +109,21 @@ const androidLibraryExtKt = path.resolve(
 );
 if (fs.existsSync(androidLibraryExtKt)) {
   let content = fs.readFileSync(androidLibraryExtKt, 'utf8');
+  let changed = false;
   if (content.includes('this@defaultConfig.targetSdk = targetSdk')) {
     content = content.replace(/this@defaultConfig\.targetSdk\s*=\s*targetSdk/g, '// this@defaultConfig.targetSdk = targetSdk (removed in AGP 9)');
+    changed = true;
+  }
+  if (!content.includes('buildFeatures {')) {
+    content = content.replace(
+      '// this@defaultConfig.targetSdk = targetSdk (removed in AGP 9)\n  }',
+      '// this@defaultConfig.targetSdk = targetSdk (removed in AGP 9)\n  }\n  buildFeatures {\n    buildConfig = true\n  }'
+    );
+    changed = true;
+  }
+  if (changed) {
     fs.writeFileSync(androidLibraryExtKt, content, 'utf8');
-    console.log('[patch-rn] Patched AndroidLibraryExtension.kt to remove targetSdk for AGP 9');
+    console.log('[patch-rn] Patched AndroidLibraryExtension.kt for AGP 9 (removed targetSdk, added buildFeatures)');
   }
 }
 
@@ -122,14 +133,59 @@ const expoModulesCorePluginGradle = path.resolve(
 );
 if (fs.existsSync(expoModulesCorePluginGradle)) {
   let content = fs.readFileSync(expoModulesCorePluginGradle, 'utf8');
+  let changed = false;
   if (content.includes('targetSdkVersion project.ext.safeExtGet')) {
     content = content.replace(/targetSdkVersion project\.ext\.safeExtGet.*$/m, '// targetSdkVersion removed for AGP 9');
+    changed = true;
+  }
+  if (!content.includes('buildFeatures {')) {
+    content = content.replace(
+      '// targetSdkVersion removed for AGP 9\n    }',
+      '// targetSdkVersion removed for AGP 9\n    }\n\n    buildFeatures {\n      buildConfig = true\n    }'
+    );
+    changed = true;
+  }
+  if (changed) {
     fs.writeFileSync(expoModulesCorePluginGradle, content, 'utf8');
-    console.log('[patch-rn] Patched ExpoModulesCorePlugin.gradle to remove targetSdkVersion for AGP 9');
+    console.log('[patch-rn] Patched ExpoModulesCorePlugin.gradle for AGP 9 (removed targetSdkVersion, added buildFeatures)');
   }
 }
 
-// 4. Ensure android/gradle.properties and android/app/build.gradle have AGP 9 compatibility flags
+// Patch ProjectConfiguration.kt to avoid SoftwareComponent 'release' not found crash
+const projectConfigKt = path.resolve(
+  __dirname,
+  '../node_modules/expo-modules-core/expo-module-gradle-plugin/src/main/kotlin/expo/modules/plugin/ProjectConfiguration.kt'
+);
+if (fs.existsSync(projectConfigKt)) {
+  let content = fs.readFileSync(projectConfigKt, 'utf8');
+  if (!content.includes('components.findByName("release") == null')) {
+    content = content.replace(
+      'afterEvaluate {\n    val publicationInfo = PublicationInfo(this)',
+      'afterEvaluate {\n    if (project.components.findByName("release") == null) {\n      createEmptyExpoPublishTask()\n      createEmptyExpoPublishToMavenLocalTask()\n      return@afterEvaluate\n    }\n    val publicationInfo = PublicationInfo(this)'
+    );
+    fs.writeFileSync(projectConfigKt, content, 'utf8');
+    console.log('[patch-rn] Patched ProjectConfiguration.kt with release component safeguard');
+  }
+}
+
+// Patch @expo/log-box/android/build.gradle directly with buildFeatures.buildConfig = true
+const expoLogBoxBuildGradle = path.resolve(
+  __dirname,
+  '../node_modules/@expo/log-box/android/build.gradle'
+);
+if (fs.existsSync(expoLogBoxBuildGradle)) {
+  let content = fs.readFileSync(expoLogBoxBuildGradle, 'utf8');
+  if (!content.includes('buildFeatures {')) {
+    content = content.replace(
+      'namespace "expo.modules.logbox"',
+      'namespace "expo.modules.logbox"\n  buildFeatures {\n    buildConfig = true\n  }'
+    );
+    fs.writeFileSync(expoLogBoxBuildGradle, content, 'utf8');
+    console.log('[patch-rn] Patched @expo/log-box/android/build.gradle with buildFeatures.buildConfig = true');
+  }
+}
+
+// 4. Ensure android/gradle.properties, android/build.gradle, and android/app/build.gradle have AGP 9 compatibility flags
 const gradleProps = path.resolve(__dirname, '../android/gradle.properties');
 if (fs.existsSync(gradleProps)) {
   let content = fs.readFileSync(gradleProps, 'utf8');
@@ -146,9 +202,40 @@ if (fs.existsSync(gradleProps)) {
     content += 'android.newDsl=false\n';
     changed = true;
   }
+  if (!content.includes('android.defaults.buildfeatures.buildconfig')) {
+    content += 'android.defaults.buildfeatures.buildconfig=true\n';
+    changed = true;
+  }
   if (changed) {
     fs.writeFileSync(gradleProps, content, 'utf8');
     console.log('[patch-rn] Added AGP 9 compatibility flags to android/gradle.properties');
+  }
+}
+
+const rootBuildGradle = path.resolve(__dirname, '../android/build.gradle');
+if (fs.existsSync(rootBuildGradle)) {
+  let content = fs.readFileSync(rootBuildGradle, 'utf8');
+  if (!content.includes('buildConfig = true')) {
+    content += `
+subprojects { subproject ->
+  subproject.plugins.withId("com.android.library") {
+    subproject.android {
+      buildFeatures {
+        buildConfig = true
+      }
+    }
+  }
+  subproject.plugins.withId("com.android.application") {
+    subproject.android {
+      buildFeatures {
+        buildConfig = true
+      }
+    }
+  }
+}
+`;
+    fs.writeFileSync(rootBuildGradle, content, 'utf8');
+    console.log('[patch-rn] Added subprojects buildFeatures block to android/build.gradle');
   }
 }
 
@@ -167,9 +254,16 @@ if (fs.existsSync(appBuildGradle)) {
     content = content.replace(/proguard-android\.txt/g, 'proguard-android-optimize.txt');
     changed = true;
   }
+  if (!content.includes('buildFeatures {')) {
+    content = content.replace(
+      'compileSdk rootProject.ext.compileSdkVersion',
+      'compileSdk rootProject.ext.compileSdkVersion\n\n    buildFeatures {\n        buildConfig = true\n    }'
+    );
+    changed = true;
+  }
   if (changed) {
     fs.writeFileSync(appBuildGradle, content, 'utf8');
-    console.log('[patch-rn] Updated android/app/build.gradle with kotlin guard and proguard-android-optimize.txt');
+    console.log('[patch-rn] Updated android/app/build.gradle with kotlin guard, proguard-android-optimize.txt, and buildFeatures');
   }
 }
 
