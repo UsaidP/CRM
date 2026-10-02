@@ -128,14 +128,33 @@ if (fs.existsSync(gradleProps)) {
 const appBuildGradle = path.resolve(__dirname, '../android/app/build.gradle');
 if (fs.existsSync(appBuildGradle)) {
   let content = fs.readFileSync(appBuildGradle, 'utf8');
+  let changed = false;
   if (content.includes('apply plugin: "org.jetbrains.kotlin.android"') && !content.includes('findByName("kotlin")')) {
     content = content.replace(
       'apply plugin: "org.jetbrains.kotlin.android"',
       'if (project.extensions.findByName("kotlin") == null) {\n    apply plugin: "org.jetbrains.kotlin.android"\n}'
     );
+    changed = true;
+  }
+  if (content.includes('proguard-android.txt')) {
+    content = content.replace(/proguard-android\.txt/g, 'proguard-android-optimize.txt');
+    changed = true;
+  }
+  if (changed) {
     fs.writeFileSync(appBuildGradle, content, 'utf8');
-    console.log('[patch-rn] Guarded kotlin plugin in android/app/build.gradle');
+    console.log('[patch-rn] Updated android/app/build.gradle with kotlin guard and proguard-android-optimize.txt');
   }
 }
+
+const proguardRules = path.resolve(__dirname, '../android/app/proguard-rules.pro');
+if (fs.existsSync(proguardRules)) {
+  let content = fs.readFileSync(proguardRules, 'utf8');
+  if (!content.includes('-dontoptimize')) {
+    content += '\n# AGP 9 proguard-android-optimize compatibility\n-dontoptimize\n';
+    fs.writeFileSync(proguardRules, content, 'utf8');
+    console.log('[patch-rn] Added -dontoptimize to android/app/proguard-rules.pro');
+  }
+}
+
 
 
